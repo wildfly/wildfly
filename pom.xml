@@ -498,7 +498,7 @@
         <version.org.keycloak>17.0.0</version.org.keycloak>
         <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>3.4.6</version.org.opensaml.opensaml>
-        <version.org.ow2.asm>9.2</version.org.ow2.asm>
+        <version.org.ow2.asm>9.3</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <!-- Test dependency -->
