@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,22 +22,12 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
-import org.wildfly.clustering.ejb.LegacyClientMappingsRegistryProviderFactory;
+import org.wildfly.clustering.ee.infinispan.InfinispanCacheConfiguration;
+import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 
 /**
- * Factory for creating legacy version of the InfinispanClientMappingsRegistryProvider
- *
- * @author Richard Achmatowicz
+ * Configuration of an Infinispan-based bean management provider.
+ * @author Paul Ferraro
  */
-@Deprecated
-@MetaInfServices(LegacyClientMappingsRegistryProviderFactory.class)
-public class LegacyInfinispanClientMappingsRegistryProviderFactory implements LegacyClientMappingsRegistryProviderFactory {
-
-    @Override
-    public ClientMappingsRegistryProvider createClientMappingsRegistryProvider(String clusterName) {
-        // need to create and return a configured client mappings registry factory
-        return new LegacyInfinispanClientMappingsRegistryProvider(clusterName);
-    }
+public interface InfinispanBeanManagementConfiguration extends InfinispanCacheConfiguration, BeanPassivationConfiguration {
 }

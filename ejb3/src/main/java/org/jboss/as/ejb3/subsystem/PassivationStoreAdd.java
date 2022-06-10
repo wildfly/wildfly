@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.ejb3.cache.distributable.LegacyDistributableCacheFactoryBuilderServiceConfigurator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.ejb.LegacyBeanManagementConfiguration;
 
 /**
  * @author Paul Ferraro
@@ -60,7 +60,7 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
     }
 
     protected void install(OperationContext context, ModelNode operation, final int maxSize, final String containerName, final String cacheName) {
-        BeanManagerFactoryServiceConfiguratorConfiguration config = new BeanManagerFactoryServiceConfiguratorConfiguration() {
+        LegacyBeanManagementConfiguration config = new LegacyBeanManagementConfiguration() {
             @Override
             public String getContainerName() {
                 return containerName;

@@ -35,7 +35,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
@@ -59,7 +58,7 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
 
     private final String name;
     private final StatefulBeanConfiguration beanConfiguration;
-    private final BeanManagerFactoryServiceConfiguratorConfiguration configuration;
+    private final InfinispanBeanManagementConfiguration configuration;
 
     private final SupplierDependency<MarshallingConfigurationRepository> repository;
 
@@ -68,7 +67,7 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
     private volatile SupplierDependency<Group<Address>> group;
     private volatile SupplierDependency<CommandDispatcherFactory> dispatcherFactory;
 
-    public InfinispanBeanManagerFactoryServiceConfigurator(String name, StatefulBeanConfiguration beanConfiguration, BeanManagerFactoryServiceConfiguratorConfiguration configuration) {
+    public InfinispanBeanManagerFactoryServiceConfigurator(String name, StatefulBeanConfiguration beanConfiguration, InfinispanBeanManagementConfiguration configuration) {
         super(beanConfiguration.getDeploymentUnitServiceName().append(beanConfiguration.getName()).append("bean-manager"));
         this.name = name;
         this.beanConfiguration = beanConfiguration;

@@ -38,7 +38,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ejb.BeanManagementProvider;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.ejb.infinispan.InfinispanBeanManagementConfiguration;
 import org.wildfly.clustering.ejb.infinispan.InfinispanBeanManagementProvider;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -53,7 +53,7 @@ import static org.wildfly.extension.clustering.ejb.InfinispanBeanManagementResou
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class InfinispanBeanManagementServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<BeanManagementProvider>, BeanManagerFactoryServiceConfiguratorConfiguration {
+public class InfinispanBeanManagementServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<BeanManagementProvider>, InfinispanBeanManagementConfiguration {
 
     private volatile String name;
     private volatile String containerName;

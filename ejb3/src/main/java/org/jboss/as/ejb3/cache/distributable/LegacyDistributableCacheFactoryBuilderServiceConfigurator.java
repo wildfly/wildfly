@@ -30,7 +30,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.ejb.LegacyBeanManagementConfiguration;
 import org.wildfly.clustering.ejb.LegacyBeanManagementProviderFactory;
 import org.wildfly.clustering.service.SimpleSupplierDependency;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -43,9 +43,10 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
+@Deprecated
 public class LegacyDistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends AbstractDistributableCacheFactoryBuilderServiceConfigurator<K, V> {
 
-    public LegacyDistributableCacheFactoryBuilderServiceConfigurator(PathAddress address, BeanManagerFactoryServiceConfiguratorConfiguration config) {
+    public LegacyDistributableCacheFactoryBuilderServiceConfigurator(PathAddress address, LegacyBeanManagementConfiguration config) {
         super(address);
         this.accept(new SimpleSupplierDependency<>(load().createBeanManagementProvider(address.getLastElement().getValue(), config)));
     }

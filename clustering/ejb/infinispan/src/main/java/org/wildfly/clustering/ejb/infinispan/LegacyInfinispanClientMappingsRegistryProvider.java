@@ -54,6 +54,7 @@ import org.wildfly.clustering.service.SupplierDependency;
  *
  * @author Paul Ferraro
  */
+@Deprecated
 @MetaInfServices(ClientMappingsRegistryProvider.class)
 public class LegacyInfinispanClientMappingsRegistryProvider implements ClientMappingsRegistryProvider, Consumer<ConfigurationBuilder> {
 

@@ -31,7 +31,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.ejb.LegacyBeanManagementConfiguration;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
 
@@ -56,7 +56,7 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
     @Deprecated
     static final SimpleAttributeDefinition CACHE_CONTAINER = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CACHE_CONTAINER, ModelType.STRING, true)
             .setXmlName(EJB3SubsystemXMLAttribute.CACHE_CONTAINER.getLocalName())
-            .setDefaultValue(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME))
+            .setDefaultValue(new ModelNode(LegacyBeanManagementConfiguration.DEFAULT_CONTAINER_NAME))
             // Capability references should not allow expressions
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)

@@ -23,17 +23,33 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ejb.BeanManagementProvider;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.ejb.LegacyBeanManagementConfiguration;
 import org.wildfly.clustering.ejb.LegacyBeanManagementProviderFactory;
 
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 @MetaInfServices(LegacyBeanManagementProviderFactory.class)
 public class InfinispanLegacyBeanManagementProviderFactory implements LegacyBeanManagementProviderFactory {
 
     @Override
-    public BeanManagementProvider createBeanManagementProvider(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
-        return new InfinispanBeanManagementProvider<>(name, config);
+    public BeanManagementProvider createBeanManagementProvider(String name, LegacyBeanManagementConfiguration config) {
+        return new InfinispanBeanManagementProvider<>(name, new InfinispanBeanManagementConfiguration() {
+            @Override
+            public String getContainerName() {
+                return config.getContainerName();
+            }
+
+            @Override
+            public String getCacheName() {
+                return config.getCacheName();
+            }
+
+            @Override
+            public Integer getMaxActiveBeans() {
+                return config.getMaxActiveBeans();
+            }
+        });
     }
 }

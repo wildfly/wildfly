@@ -27,6 +27,7 @@ package org.wildfly.clustering.ejb;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
+@Deprecated
 public interface LegacyClientMappingsRegistryProviderFactory {
     ClientMappingsRegistryProvider createClientMappingsRegistryProvider(String clusterName);
 }

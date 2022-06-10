@@ -36,7 +36,6 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.BeanManagementProvider;
 import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
@@ -67,9 +66,9 @@ public class InfinispanBeanManagementProvider<I> implements BeanManagementProvid
     }
 
     private final String name;
-    private final BeanManagerFactoryServiceConfiguratorConfiguration config;
+    private final InfinispanBeanManagementConfiguration config;
 
-    public InfinispanBeanManagementProvider(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
+    public InfinispanBeanManagementProvider(String name, InfinispanBeanManagementConfiguration config) {
         this.name = name;
         this.config = config;
     }

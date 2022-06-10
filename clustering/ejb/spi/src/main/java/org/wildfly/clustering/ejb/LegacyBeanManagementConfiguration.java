@@ -25,7 +25,8 @@ package org.wildfly.clustering.ejb;
  * Configuration of a bean manager factory builder.
  * @author Paul Ferraro
  */
-public interface BeanManagerFactoryServiceConfiguratorConfiguration extends BeanPassivationConfiguration {
+@Deprecated
+public interface LegacyBeanManagementConfiguration extends BeanPassivationConfiguration {
     String DEFAULT_CONTAINER_NAME = "ejb";
 
     String getContainerName();
