@@ -67,8 +67,8 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     }
 
     @Override
-    public Affinity getStrictAffinity() {
-        return this.manager.getStrictAffinity();
+    public Affinity getStrongAffinity() {
+        return this.manager.getStrongAffinity();
     }
 
     @Override

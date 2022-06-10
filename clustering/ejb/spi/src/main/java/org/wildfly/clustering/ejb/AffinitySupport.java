@@ -31,7 +31,18 @@ import org.jboss.ejb.client.Affinity;
  * @param <I> the bean type
  */
 public interface AffinitySupport<I> {
-    Affinity getStrictAffinity();
+    /**
+     * Returns the strong affinity for all invocations.
+     * Strong affinity indicates a strict load balancing requirement.
+     * @return an affinity
+     */
+    Affinity getStrongAffinity();
 
+    /**
+     * Returns the weak affinity of the specified bean identifier.
+     * Weak affinity indicates a load balancing preference within the confines of the strong affinity.
+     * @param id a bean identifier
+     * @return an affinity
+     */
     Affinity getWeakAffinity(I id);
 }

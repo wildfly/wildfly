@@ -81,7 +81,7 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V>, P
     }
 
     @Override
-    public Affinity getStrictAffinity() {
+    public Affinity getStrongAffinity() {
         return new NodeAffinity(this.environment.getNodeName());
     }
 

@@ -145,7 +145,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
     }
 
     @Override
-    public Affinity getStrictAffinity() {
+    public Affinity getStrongAffinity() {
         return this.cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(this.group.getName()) : new NodeAffinity(this.group.getLocalMember().getName());
     }
 

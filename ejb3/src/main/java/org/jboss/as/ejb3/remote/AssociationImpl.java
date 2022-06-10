@@ -678,7 +678,7 @@ final class AssociationImpl implements Association, AutoCloseable {
     }
 
     private static Affinity getStrongAffinity(final StatefulSessionComponent statefulSessionComponent) {
-        return statefulSessionComponent.getCache().getStrictAffinity();
+        return statefulSessionComponent.getCache().getStrongAffinity();
     }
 
     private static Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator<?> statefulEJBLocator) {

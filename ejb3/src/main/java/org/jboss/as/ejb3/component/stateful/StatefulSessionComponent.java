@@ -209,11 +209,11 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
             return AccessController.doPrivileged(new PrivilegedAction<EJBObject>() {
                 @Override
                 public EJBObject run() {
-                   return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), getCache().getStrictAffinity()));
+                   return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), getCache().getStrongAffinity()));
                 }
             });
         } else {
-            return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity()));
+            return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrongAffinity()));
         }
     }
 
