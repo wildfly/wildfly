@@ -47,6 +47,7 @@
     </properties>
 
     <modules>
+        <module>smoke</module>
         <module>web</module>
     </modules>
 
