@@ -622,7 +622,7 @@
         <preview.version.org.wildfly.security.elytron>2.0.0.Beta1</preview.version.org.wildfly.security.elytron>
         <preview.version.org.wildfly.security.elytron-mp>2.0.0.Beta3</preview.version.org.wildfly.security.elytron-mp>
         <preview.version.org.wildfly.security.elytron-web>2.0.0.Beta3</preview.version.org.wildfly.security.elytron-web>
-        <preview.version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta3</preview.version.org.wildfly.security.jakarta.elytron-ee>
+        <preview.version.org.wildfly.security.jakarta.elytron-ee>3.0.0.Beta1</preview.version.org.wildfly.security.jakarta.elytron-ee>
         <preview.version.sun.jaxb>${preview.version.org.glassfish.jaxb}</preview.version.sun.jaxb>
 
         <!-- Base wildfly version used by testsuite/galleon/update test to install a server that gets updated to the SNAPSHOT version -->
