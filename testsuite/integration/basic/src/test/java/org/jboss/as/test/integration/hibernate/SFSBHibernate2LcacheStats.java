@@ -153,7 +153,7 @@ public class SFSBHibernate2LcacheStats {
 
     // fetch statistics after eviction of collection from cache
     public Statistics getStatisticsAfterEviction() {
-        sessionFactory.getCache().evictCollection(
+        sessionFactory.getCache().evictCollectionData(
                 org.jboss.as.test.integration.hibernate.Planet.class.getName() + ".satellites", new Integer(1));
         Statistics sessionStats = sessionFactory.getStatistics();
         return sessionStats;

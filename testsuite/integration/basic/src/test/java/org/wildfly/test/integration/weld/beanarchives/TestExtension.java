@@ -116,7 +116,7 @@ public class TestExtension implements Extension {
             return Collections.emptySet();
         }
 
-        @Override
+        //@Override Not part of Bean interface in CDI 4
         public boolean isNullable() {
             return false;
         }
