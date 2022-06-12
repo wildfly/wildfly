@@ -56,7 +56,6 @@ public class SFSBHibernateSFNaturalId {
         try {
             final ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder(new BootstrapServiceRegistryBuilder().build())
                     .configure("hibernate.cfg.xml")
-                    .applySetting(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true")
                     .applySetting(AvailableSettings.HBM2DDL_AUTO, "create-drop")
                     .applySetting(AvailableSettings.DATASOURCE, "java:jboss/datasources/ExampleDS")
                     .build();
