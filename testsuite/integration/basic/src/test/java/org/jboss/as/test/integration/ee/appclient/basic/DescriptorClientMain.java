@@ -35,7 +35,6 @@ public class DescriptorClientMain {
     private static String envEntry;
 
     public static void main(final String[] params) {
-        org.junit.Assert.assertEquals("foo", System.getProperty("aaa"));
         appClientSingletonRemote.makeAppClientCall(envEntry);
     }
 

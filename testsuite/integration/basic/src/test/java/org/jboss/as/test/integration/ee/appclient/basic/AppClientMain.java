@@ -46,8 +46,8 @@ public class AppClientMain {
             logger.error("InAppClientContainer was not true");
             throw new RuntimeException("InAppClientContainer was not true");
         }
+
         try {
-            org.junit.Assert.assertEquals("foo", System.getProperty("aaa"));
             appClientSingletonRemote.makeAppClientCall(params[0]);
             logger.trace("Main method invocation completed with success");
         } catch (Exception e) {
