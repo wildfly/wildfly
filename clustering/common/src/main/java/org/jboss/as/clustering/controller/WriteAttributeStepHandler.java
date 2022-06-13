@@ -54,11 +54,6 @@ public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandl
     }
 
     @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return super.requiresRuntime(context) && (this.handler != null);
-    }
-
-    @Override
     public void register(ManagementResourceRegistration registration) {
         for (AttributeDefinition attribute : this.descriptor.getAttributes()) {
             registration.registerReadWriteAttribute(attribute, null, this);
@@ -94,7 +89,7 @@ public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandl
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handback) throws OperationFailedException {
         boolean updated = super.applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
-        if (updated) {
+        if (updated && handler != null) {
             PathAddress address = context.getCurrentAddress();
             if (context.isResourceServiceRestartAllowed() && this.getAttributeDefinition(attributeName).getFlags().contains(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES) && context.markResourceRestarted(address, this.handler)) {
                 this.restartServices(context);
