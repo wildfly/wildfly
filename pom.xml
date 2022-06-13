@@ -616,6 +616,9 @@
         <preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>1.0.0.Final</preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>
         <preview.version.org.jboss.weld.weld>5.0.0.SP2</preview.version.org.jboss.weld.weld>
         <preview.version.org.jboss.weld.weld-api>5.0.Final</preview.version.org.jboss.weld.weld-api>
+        <preview.version.org.jboss.ws.api>2.0.0.Final</preview.version.org.jboss.ws.api>
+        <preview.version.org.jboss.ws.common>4.0.0.Final</preview.version.org.jboss.ws.common>
+        <preview.version.org.jboss.ws.spi>4.1.0.Final</preview.version.org.jboss.ws.spi>
         <preview.version.org.opensaml.opensaml>4.2.0</preview.version.org.opensaml.opensaml>
         <preview.version.org.jvnet.staxex>2.0.1</preview.version.org.jvnet.staxex>
         <preview.version.org.testng>7.4.0</preview.version.org.testng>
