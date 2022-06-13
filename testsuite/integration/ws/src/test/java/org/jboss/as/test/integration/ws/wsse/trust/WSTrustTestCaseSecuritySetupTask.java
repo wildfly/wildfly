@@ -17,7 +17,7 @@ import java.util.Map;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
@@ -38,7 +38,7 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
         List<ModelNode> operations = new ArrayList<>();
         addSSLContext(operations);
         addHttpsListener(operations);
-        ModelNode updateOp = Operations.createCompositeOperation(operations);
+        ModelNode updateOp = Util.createCompositeOperation(operations);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
         securityDomainsSubtask.setup(managementClient, containerId);
@@ -50,7 +50,7 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
         List<ModelNode> operations = new ArrayList<>();
         removeHttpsListener(operations);
         removeSSLContext(operations);
-        ModelNode updateOp = Operations.createCompositeOperation(operations);
+        ModelNode updateOp = Util.createCompositeOperation(operations);
         updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());

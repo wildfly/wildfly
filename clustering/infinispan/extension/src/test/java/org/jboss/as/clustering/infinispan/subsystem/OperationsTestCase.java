@@ -4,8 +4,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -108,22 +108,22 @@ public class OperationsTestCase extends OperationTestCaseBase {
         String key = "infinispan.client.hotrod.ping_on_startup";
         String value = "true";
 
-        ModelNode operation = Operations.createMapPutOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key, value);
+        ModelNode operation = Util.createMapPutOperation(address, StoreResourceDefinition.Attribute.PROPERTIES.getName(), key, value);
         ModelNode result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Operations.createMapGetOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key);
+        operation = Util.createMapGetOperation(address, StoreResourceDefinition.Attribute.PROPERTIES.getName(), key);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals(value, result.get(RESULT).asString());
 
-        operation = Operations.createMapRemoveOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key);
+        operation = Util.createMapRemoveOperation(address, StoreResourceDefinition.Attribute.PROPERTIES.getName(), key);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Operations.createMapGetOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key);
+        operation = Util.createMapGetOperation(address, StoreResourceDefinition.Attribute.PROPERTIES.getName(), key);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
@@ -136,22 +136,22 @@ public class OperationsTestCase extends OperationTestCaseBase {
         PathAddress address = getCacheContainerAddress("minimal");
         String alias = "alias0";
 
-        ModelNode operation = Operations.createListAddOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, alias);
+        ModelNode operation = Util.createListAddOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES.getName(), alias);
         ModelNode result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, 0);
+        operation = Util.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES.getName(), 0);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals(new ModelNode(alias), result.get(RESULT));
 
-        operation = Operations.createListRemoveOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, 0);
+        operation = Util.createListRemoveOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES.getName(), 0);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, 0);
+        operation = Util.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES.getName(), 0);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());

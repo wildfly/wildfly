@@ -23,14 +23,13 @@
 package org.jboss.as.test.integration.jca.statistics;
 
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
@@ -49,24 +48,20 @@ public class DataSourceMultipleConnStatsServerSetupTask extends SnapshotRestoreS
 
     @Override
     public void doSetup(ManagementClient managementClient, String s) throws Exception {
-        List<ModelNode> operations = new ArrayList<>();
 
         ModelNode enableStatsOp = createOpNode("subsystem=datasources/data-source=ExampleDS", ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
         enableStatsOp.get(ModelDescriptionConstants.NAME).set("statistics-enabled");
         enableStatsOp.get(ModelDescriptionConstants.VALUE).set(true);
-        operations.add(enableStatsOp);
 
         ModelNode maxPoolSizeOp = createOpNode("subsystem=datasources/data-source=ExampleDS", ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
         maxPoolSizeOp.get(ModelDescriptionConstants.NAME).set("max-pool-size");
         maxPoolSizeOp.get(ModelDescriptionConstants.VALUE).set(1);
-        operations.add(maxPoolSizeOp);
 
         ModelNode minPoolSizeOp = createOpNode("subsystem=datasources/data-source=ExampleDS", ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
         minPoolSizeOp.get(ModelDescriptionConstants.NAME).set("min-pool-size");
         minPoolSizeOp.get(ModelDescriptionConstants.VALUE).set(1);
-        operations.add(minPoolSizeOp);
 
-        ModelNode updateOp = Operations.createCompositeOperation(operations);
+        ModelNode updateOp = Util.createCompositeOperation(List.of(enableStatsOp, maxPoolSizeOp, minPoolSizeOp));
         updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());

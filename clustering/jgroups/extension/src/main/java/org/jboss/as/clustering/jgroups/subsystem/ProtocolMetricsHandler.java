@@ -33,12 +33,12 @@ import java.util.Map;
 
 import org.jboss.as.clustering.controller.FunctionExecutor;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -235,7 +235,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        String name = Operations.getAttributeName(operation);
+        String name = operation.get(ModelDescriptionConstants.NAME).asString();
         String protocolName = context.getCurrentAddressValue();
         ServiceName channelServiceName = JGroupsRequirement.CHANNEL.getServiceName(context, UnaryCapabilityNameResolver.PARENT);
         ExceptionFunction<JChannel, ModelNode, Exception> function = new ExceptionFunction<JChannel, ModelNode, Exception>() {

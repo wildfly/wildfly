@@ -23,10 +23,10 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -52,11 +52,11 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected static ModelNode getSubsystemReadOperation(Attribute attribute) {
-        return Operations.createReadAttributeOperation(getSubsystemAddress(), attribute);
+        return Util.getReadAttributeOperation(getSubsystemAddress(), attribute.getName());
     }
 
     protected static ModelNode getSubsystemWriteOperation(Attribute attribute, String value) {
-        return Operations.createWriteAttributeOperation(getSubsystemAddress(), attribute, new ModelNode(value));
+        return Util.getWriteAttributeOperation(getSubsystemAddress(), attribute.getName(), new ModelNode(value));
     }
 
     protected static ModelNode getSubsystemRemoveOperation() {
@@ -68,13 +68,12 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected static ModelNode getProtocolStackAddOperationWithParameters(String stackName) {
-        ModelNode[] operations = new ModelNode[] {
+        return Util.createCompositeOperation(List.of(
                 getProtocolStackAddOperation(stackName),
                 getTransportAddOperation(stackName, "UDP"),
                 getProtocolAddOperation(stackName, "PING"),
-                getProtocolAddOperation(stackName, "pbcast.FLUSH"),
-        };
-        return Operations.createCompositeOperation(operations);
+                getProtocolAddOperation(stackName, "pbcast.FLUSH")
+        ));
     }
 
     protected static ModelNode getProtocolStackRemoveOperation(String stackName) {
@@ -92,32 +91,32 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected static ModelNode getTransportReadOperation(String stackName, String type, Attribute attribute) {
-        return Operations.createReadAttributeOperation(getTransportAddress(stackName, type), attribute);
+        return Util.getReadAttributeOperation(getTransportAddress(stackName, type), attribute.getName());
     }
 
     protected static ModelNode getTransportWriteOperation(String stackName, String type, Attribute attribute, String value) {
-        return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), attribute, new ModelNode(value));
+        return Util.getWriteAttributeOperation(getTransportAddress(stackName, type), attribute.getName(), new ModelNode(value));
     }
 
     // Transport property map operations
     protected static ModelNode getTransportGetPropertyOperation(String stackName, String type, String propertyName) {
-        return Operations.createMapGetOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
+        return Util.createMapGetOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName(), propertyName);
     }
 
     protected static ModelNode getTransportPutPropertyOperation(String stackName, String type, String propertyName, String propertyValue) {
-        return Operations.createMapPutOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES, propertyName, propertyValue);
+        return Util.createMapPutOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName(), propertyName, propertyValue);
     }
 
     protected static ModelNode getTransportRemovePropertyOperation(String stackName, String type, String propertyName) {
-        return Operations.createMapRemoveOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
+        return Util.createMapRemoveOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName(), propertyName);
     }
 
     protected static ModelNode getTransportClearPropertiesOperation(String stackName, String type) {
-        return Operations.createMapClearOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
+        return Util.createMapClearOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName());
     }
 
     protected static ModelNode getTransportUndefinePropertiesOperation(String stackName, String type) {
-        return Operations.createUndefineAttributeOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
+        return Util.getUndefineAttributeOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName());
     }
 
     /**
@@ -126,7 +125,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
      * @return resulting :write-attribute operation
      */
     protected static ModelNode getTransportSetPropertiesOperation(String stackName, String type, ModelNode values) {
-        return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES, values);
+        return Util.getWriteAttributeOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName(), values);
     }
 
     protected static ModelNode getThreadPoolAddOperation(String stackName, String type, String threadPoolName) {
@@ -139,38 +138,38 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected static ModelNode getProtocolReadOperation(String stackName, String protocolName, Attribute attribute) {
-        return Operations.createReadAttributeOperation(getProtocolAddress(stackName, protocolName), attribute);
+        return Util.getReadAttributeOperation(getProtocolAddress(stackName, protocolName), attribute.getName());
     }
 
     protected static ModelNode getProtocolWriteOperation(String stackName, String protocolName, Attribute attribute, String value) {
-        return Operations.createWriteAttributeOperation(getProtocolAddress(stackName, protocolName), attribute, new ModelNode(value));
+        return Util.getWriteAttributeOperation(getProtocolAddress(stackName, protocolName), attribute.getName(), new ModelNode(value));
     }
 
     protected static ModelNode getProtocolGetPropertyOperation(String stackName, String protocolName, String propertyName) {
-        return Operations.createMapGetOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
+        return Util.createMapGetOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName(), propertyName);
     }
 
     protected static ModelNode getProtocolPutPropertyOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
-        return Operations.createMapPutOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES, propertyName, propertyValue);
+        return Util.createMapPutOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName(), propertyName, propertyValue);
     }
 
     protected static ModelNode getProtocolRemovePropertyOperation(String stackName, String protocolName, String propertyName) {
-        return Operations.createMapRemoveOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
+        return Util.createMapRemoveOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName(), propertyName);
     }
 
     protected static ModelNode getProtocolClearPropertiesOperation(String stackName, String protocolName) {
-        return Operations.createMapClearOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
+        return Util.createMapClearOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName());
     }
 
     protected static ModelNode getProtocolUndefinePropertiesOperation(String stackName, String protocolName) {
-        return Operations.createUndefineAttributeOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
+        return Util.getUndefineAttributeOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName());
     }
 
     /**
      * Creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d})".
      */
     protected static ModelNode getProtocolSetPropertiesOperation(String stackName, String protocolName, ModelNode values) {
-        return Operations.createWriteAttributeOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES, values);
+        return Util.getWriteAttributeOperation(getProtocolAddress(stackName, protocolName), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName(), values);
     }
 
     protected static ModelNode getProtocolRemoveOperation(String stackName, String type) {

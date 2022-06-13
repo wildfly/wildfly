@@ -31,12 +31,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.Operation;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.LifecycleEvent;
@@ -65,7 +65,7 @@ public class StackOperationHandler extends AbstractRuntimeOnlyHandler implements
     /* Method is synchronized to avoid duplicate service exceptions if called concurrently */
     @Override
     protected synchronized void executeRuntimeStep(OperationContext context, ModelNode op) throws OperationFailedException {
-        String name = Operations.getName(op);
+        String name = op.get(ModelDescriptionConstants.OP).asString();
         Operation<ChannelFactory> operation = this.operations.get(name);
         ServiceName serviceName = JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, UnaryCapabilityNameResolver.DEFAULT);
         Function<ChannelFactory, ModelNode> operationFunction = new Function<ChannelFactory, ModelNode>() {

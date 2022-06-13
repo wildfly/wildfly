@@ -26,7 +26,6 @@ import java.util.EnumSet;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
@@ -117,7 +116,7 @@ public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSch
         final PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement("maximal"));
 
         //Check the fork protocols honour indexed adds by inserting a protocol at the start
-        ModelNode add = Operations.createAddOperation(forkAddress.append(ProtocolResourceDefinition.pathElement("MERGE3")), 0);
+        ModelNode add = Util.createAddOperation(forkAddress.append(ProtocolResourceDefinition.pathElement("MERGE3")), 0);
         ModelTestUtils.checkOutcome(services.executeOperation(add));
 
         ModelNode subsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());
@@ -130,7 +129,7 @@ public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSch
         //Check the stack protocols honour indexed adds by removing a protocol in the middle and readding it
         ModelNode remove = Util.createRemoveOperation(stackAddress.append(ProtocolResourceDefinition.pathElement("FD")));
         ModelTestUtils.checkOutcome(services.executeOperation(remove));
-        add = Operations.createAddOperation(stackAddress.append(ProtocolResourceDefinition.pathElement("FD")), 3); //The original index of the FD protocol
+        add = Util.createAddOperation(stackAddress.append(ProtocolResourceDefinition.pathElement("FD")), 3); //The original index of the FD protocol
         ModelTestUtils.checkOutcome(services.executeOperation(add));
 
         subsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());

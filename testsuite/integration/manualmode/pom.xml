@@ -147,7 +147,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
+            <artifactId>wildfly-naming</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Required for MicroProfile Tests -->

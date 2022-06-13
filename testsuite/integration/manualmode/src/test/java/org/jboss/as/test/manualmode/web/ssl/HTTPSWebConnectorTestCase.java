@@ -59,7 +59,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -401,7 +400,7 @@ public class HTTPSWebConnectorTestCase {
         addSSLContext(operations, SSL_CONTEXT_NEED, false, true);
         addSSLContext(operations, SSL_CONTEXT_WANT, true, false);
 
-        return Operations.createCompositeOperation(operations);
+        return Util.createCompositeOperation(operations);
     }
 
     private ModelNode createRemoveSSLContexts() throws Exception {
@@ -415,7 +414,7 @@ public class HTTPSWebConnectorTestCase {
 
         operations.add(createOpNode("subsystem=elytron/key-store=TestStore", ModelDescriptionConstants.REMOVE));
 
-        return Operations.createCompositeOperation(operations);
+        return Util.createCompositeOperation(operations);
     }
 
     private void addSSLContext(List<ModelNode> operations, final String name, final boolean wantClientAuth,

@@ -48,9 +48,9 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.dmr.ModelNode;
@@ -337,7 +337,7 @@ public class HttpManagementConstantHeadersTestCase {
     */
    private boolean checkIfMetricsUsable() throws IOException {
       if (Boolean.getBoolean("ts.layers")) {
-         ModelNode metricsReadOp = Operations.createReadResourceOperation(PathAddress.pathAddress(SUBSYSTEM, "metrics"));
+         ModelNode metricsReadOp = Util.getReadResourceOperation(PathAddress.pathAddress(SUBSYSTEM, "metrics"));
          ModelNode result = managementClient.getControllerClient().execute(metricsReadOp);
          if (!result.get(OUTCOME).asString().equals(SUCCESS)) {
             return false;

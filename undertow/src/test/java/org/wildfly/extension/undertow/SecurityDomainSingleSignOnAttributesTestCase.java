@@ -1,7 +1,7 @@
 package org.wildfly.extension.undertow;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -24,9 +24,7 @@ public class SecurityDomainSingleSignOnAttributesTestCase extends AbstractSubsys
         PathAddress address = PathAddress.pathAddress("subsystem", "undertow")
                 .append("application-security-domain", "other")
                 .append("setting", "single-sign-on");
-        ModelNode result = mainServices.executeOperation(
-                Operations.createWriteAttributeOperation(address, SingleSignOnDefinition.Attribute.PATH,
-                        new ModelNode("/modified-path")));
+        ModelNode result = mainServices.executeOperation(Util.getWriteAttributeOperation(address, SingleSignOnDefinition.Attribute.PATH.getName(), new ModelNode("/modified-path")));
         assertEquals("success", result.get("outcome").asString());
         assertTrue("It is expected that reload is required after the operation.",
                 result.get("response-headers").get("operation-requires-reload").asBoolean());

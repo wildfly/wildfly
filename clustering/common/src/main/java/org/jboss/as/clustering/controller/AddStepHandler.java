@@ -171,7 +171,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
                         operation.get(targetName).set(targetValue);
                     }
                 } else {
-                    ModelNode writeAttributeOperation = Operations.createWriteAttributeOperation(targetAddress, targetAttribute, targetValue);
+                    ModelNode writeAttributeOperation = Util.getWriteAttributeOperation(targetAddress, targetAttribute.getName(), targetValue);
                     ImmutableManagementResourceRegistration registration = (currentAddress == targetAddress) ? context.getResourceRegistration() : context.getRootResourceRegistration().getSubModel(targetAddress);
                     if (registration == null) {
                         throw new OperationFailedException(ControllerLogger.MGMT_OP_LOGGER.noSuchResourceType(targetAddress));

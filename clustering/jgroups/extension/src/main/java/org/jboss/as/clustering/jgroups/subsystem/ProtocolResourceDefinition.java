@@ -27,7 +27,6 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.OperationContext;
@@ -66,7 +65,7 @@ public class ProtocolResourceDefinition extends AbstractProtocolResourceDefiniti
         }
     }
 
-    static final UnaryOperator<OperationStepHandler> LEGACY_OPERATION_TRANSFORMER = new UnaryOperator<OperationStepHandler>() {
+    static final UnaryOperator<OperationStepHandler> LEGACY_OPERATION_TRANSFORMER = new UnaryOperator<>() {
         @Override
         public OperationStepHandler apply(OperationStepHandler handler) {
             return new OperationStepHandler() {
@@ -79,8 +78,8 @@ public class ProtocolResourceDefinition extends AbstractProtocolResourceDefiniti
                     // If legacy protocol exists, transform this operation using the legacy protocol as the target resource
                     if (parent.hasChild(legacyPath)) {
                         PathAddress legacyAddress = parentAddress.append(legacyPath);
-                        Operations.setPathAddress(operation, legacyAddress);
-                        String operationName = Operations.getName(operation);
+                        operation.get(ModelDescriptionConstants.OP_ADDR).set(legacyAddress.toModelNode());
+                        String operationName = operation.get(ModelDescriptionConstants.OP).asString();
                         context.addStep(operation, context.getRootResourceRegistration().getOperationHandler(legacyAddress, operationName), OperationContext.Stage.MODEL);
                     } else {
                         handler.execute(context, operation);
@@ -121,7 +120,7 @@ public class ProtocolResourceDefinition extends AbstractProtocolResourceDefiniti
                     PathElement path = context.getCurrentAddress().getLastElement();
                     // This is a legacy add operation - process it using the generic handler
                     OperationStepHandler genericHandler = context.getResourceRegistration().getParent().getOperationHandler(PathAddress.pathAddress(ProtocolResourceDefinition.WILDCARD_PATH), ModelDescriptionConstants.ADD);
-                    Operations.setPathAddress(operation, context.getCurrentAddress().getParent().append(GenericProtocolResourceDefinition.pathElement(path.getValue())));
+                    operation.get(ModelDescriptionConstants.OP_ADDR).set(context.getCurrentAddress().getParent().append(GenericProtocolResourceDefinition.pathElement(path.getValue())).toModelNode());
                     // Process this step first to preserve protocol order
                     context.addStep(operation, genericHandler, OperationContext.Stage.MODEL, true);
                 } else {
