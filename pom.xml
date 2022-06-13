@@ -270,7 +270,7 @@
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>6.0.0.Alpha2</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>6.0.0.Alpha4</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>7.0.0.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>2.0.1.Final</version.org.wildfly.plugin>
@@ -498,7 +498,7 @@
         <version.org.keycloak>17.0.0</version.org.keycloak>
         <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>3.4.6</version.org.opensaml.opensaml>
-        <version.org.ow2.asm>9.2</version.org.ow2.asm>
+        <version.org.ow2.asm>9.3</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <!-- Test dependency -->
@@ -523,7 +523,7 @@
 
         <!-- WildFly Preview version propertie -->
         <preview.version.antlr>4.10</preview.version.antlr>
-        <preview.version.com.sun.faces>4.0.0-M7.SP01</preview.version.com.sun.faces>
+        <preview.version.com.sun.faces>4.0.0.SP01</preview.version.com.sun.faces>
         <preview.version.com.sun.istack>4.1.0</preview.version.com.sun.istack>
         <preview.version.com.sun.xml.messaging.saaj>2.0.0.SP1</preview.version.com.sun.xml.messaging.saaj>
         <preview.version.io.agroal>2.0</preview.version.io.agroal>
@@ -531,14 +531,14 @@
         <preview.version.io.undertow.jastow>2.2.0.Final</preview.version.io.undertow.jastow>
         <preview.version.jakarta.activation.jakarta.activation-api>2.1.0</preview.version.jakarta.activation.jakarta.activation-api>
         <preview.version.jakarta.annotation.jakarta-annotation-api>2.1.0</preview.version.jakarta.annotation.jakarta-annotation-api>
-        <preview.version.jakarta.authentication.jakarta-authentication-api>2.0.0</preview.version.jakarta.authentication.jakarta-authentication-api>
-        <preview.version.jakarta.authorization.jakarta-authorization-api>2.0.0</preview.version.jakarta.authorization.jakarta-authorization-api>
+        <preview.version.jakarta.authentication.jakarta-authentication-api>3.0.0</preview.version.jakarta.authentication.jakarta-authentication-api>
+        <preview.version.jakarta.authorization.jakarta-authorization-api>2.1.0</preview.version.jakarta.authorization.jakarta-authorization-api>
         <preview.version.jakarta.batch.jakarta.batch-api>2.1.0</preview.version.jakarta.batch.jakarta.batch-api>
-        <preview.version.jakarta.ejb.jakarta-ejb-api>4.0.0</preview.version.jakarta.ejb.jakarta-ejb-api>
+        <preview.version.jakarta.ejb.jakarta-ejb-api>4.0.1</preview.version.jakarta.ejb.jakarta-ejb-api>
         <preview.version.jakarta.el.jakarta-el-api>5.0.0</preview.version.jakarta.el.jakarta-el-api>
         <preview.version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</preview.version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <preview.version.jakarta.enterprise>4.0.0</preview.version.jakarta.enterprise>
-        <preview.version.jakarta.faces.jakarta-faces-api>4.0.0</preview.version.jakarta.faces.jakarta-faces-api>
+        <preview.version.jakarta.faces.jakarta-faces-api>4.0.1</preview.version.jakarta.faces.jakarta-faces-api>
         <preview.version.jakarta.inject.jakarta.inject-api>2.0.1</preview.version.jakarta.inject.jakarta.inject-api>
         <preview.version.jakarta.interceptor.jakarta-interceptors-api>2.1.0</preview.version.jakarta.interceptor.jakarta-interceptors-api>
         <preview.version.jakarta.jms.jakarta-jms-api>3.0.0</preview.version.jakarta.jms.jakarta-jms-api>
@@ -624,7 +624,7 @@
         <preview.version.org.wildfly.security.elytron>2.0.0.Beta1</preview.version.org.wildfly.security.elytron>
         <preview.version.org.wildfly.security.elytron-mp>2.0.0.Beta3</preview.version.org.wildfly.security.elytron-mp>
         <preview.version.org.wildfly.security.elytron-web>2.0.0.Beta3</preview.version.org.wildfly.security.elytron-web>
-        <preview.version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta3</preview.version.org.wildfly.security.jakarta.elytron-ee>
+        <preview.version.org.wildfly.security.jakarta.elytron-ee>3.0.0.Beta1</preview.version.org.wildfly.security.jakarta.elytron-ee>
         <preview.version.sun.jaxb>${preview.version.org.glassfish.jaxb}</preview.version.sun.jaxb>
 
         <!-- Base wildfly version used by testsuite/galleon/update test to install a server that gets updated to the SNAPSHOT version -->

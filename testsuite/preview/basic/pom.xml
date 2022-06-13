@@ -488,6 +488,14 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions>
+                            <!-- Disable the standard copy-based provisioning -->
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
                             <execution>
                                 <id>copy-module-files</id>
                                 <goals>
@@ -588,20 +596,6 @@
                                         <layer>h2-default-datasource</layer>
                                     </layers>
                                 </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Disable the standard copy-based provisioning -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.copy-wildfly</id>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <phase>none</phase>
                             </execution>
                         </executions>
                     </plugin>
