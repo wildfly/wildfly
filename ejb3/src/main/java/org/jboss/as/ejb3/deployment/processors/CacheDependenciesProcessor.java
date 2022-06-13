@@ -13,7 +13,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
 import org.jboss.as.ejb3.cache.CacheInfo;
-import org.jboss.as.ejb3.component.stateful.MarshallingConfigurationRepositoryServiceConfigurator;
+import org.jboss.as.ejb3.component.stateful.ByteBufferMarshallerServiceConfigurator;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -77,8 +77,8 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
         }
         builder.setInstance(service).install();
 
-        // Install versioned marshalling configuration
-        new MarshallingConfigurationRepositoryServiceConfigurator(unit).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        // Install marshaller for deployment
+        new ByteBufferMarshallerServiceConfigurator(unit).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
     }
 
     private static ServiceName getCacheFactoryBuilderServiceName(StatefulComponentDescription description) {

@@ -22,7 +22,6 @@
 package org.wildfly.clustering.ejb;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * Interface for installing bean management services for a deployment and individual stateful EJB components.
@@ -32,11 +31,13 @@ import org.jboss.msc.service.ServiceName;
  */
 public interface BeanManagementProvider {
 
+    String getName();
+
     /**
      * Installs dependencies for a deployment unit
      * @param name the service name of the deployment unit
      */
-    Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(ServiceName name);
+    Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(String beanManagerName);
 
     /**
      * Builds a bean manager factory for an Jakarta Enterprise Beans within a deployment.

@@ -56,6 +56,7 @@
         <module name="org.wildfly.clustering.infinispan.embedded.api"/>
         <module name="org.wildfly.clustering.infinispan.embedded.service"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
+        <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.server.service"/>
         <module name="org.wildfly.clustering.server.spi"/>

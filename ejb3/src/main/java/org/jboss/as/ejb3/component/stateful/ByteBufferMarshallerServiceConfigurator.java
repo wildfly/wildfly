@@ -36,8 +36,10 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
+import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
@@ -48,7 +50,7 @@ import org.wildfly.clustering.service.SupplierDependency;
  * Service that provides a versioned marshalling configuration for a deployment unit.
  * @author Paul Ferraro
  */
-public class MarshallingConfigurationRepositoryServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator, MarshallingConfigurationContext, Supplier<MarshallingConfigurationRepository> {
+public class ByteBufferMarshallerServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator, MarshallingConfigurationContext, Supplier<ByteBufferMarshaller> {
 
     enum MarshallingVersion implements Function<MarshallingConfigurationContext, MarshallingConfiguration> {
         VERSION_1() {
@@ -86,7 +88,7 @@ public class MarshallingConfigurationRepositoryServiceConfigurator extends Simpl
     private final Module module;
     private final SupplierDependency<ModuleDeployment> deployment;
 
-    public MarshallingConfigurationRepositoryServiceConfigurator(DeploymentUnit unit) {
+    public ByteBufferMarshallerServiceConfigurator(DeploymentUnit unit) {
         super(unit.getServiceName().append("marshalling"));
         this.module = unit.getAttachment(Attachments.MODULE);
         this.deployment = new ServiceSupplierDependency<>(unit.getServiceName().append(ModuleDeployment.SERVICE_NAME));
@@ -96,14 +98,15 @@ public class MarshallingConfigurationRepositoryServiceConfigurator extends Simpl
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceName name = this.getServiceName();
         ServiceBuilder<?> builder = target.addService(name);
-        Consumer<MarshallingConfigurationRepository> repository = this.deployment.register(builder).provides(name);
-        Service service = new FunctionalService<>(repository, Function.identity(), this);
+        Consumer<ByteBufferMarshaller> marshaller = this.deployment.register(builder).provides(name);
+        Service service = new FunctionalService<>(marshaller, Function.identity(), this);
         return builder.setInstance(service);
     }
 
     @Override
-    public MarshallingConfigurationRepository get() {
-        return new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this);
+    public ByteBufferMarshaller get() {
+        MarshallingConfigurationRepository repository = new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this);
+        return new JBossByteBufferMarshaller(repository, this.module.getClassLoader());
     }
 
     @Override

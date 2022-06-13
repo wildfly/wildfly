@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -31,8 +30,6 @@ import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
-import org.jboss.as.server.deployment.Services;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.BeanManagementProvider;
 import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
@@ -43,7 +40,6 @@ import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
 import org.wildfly.clustering.server.service.group.DistributedCacheGroupServiceConfiguratorProvider;
-import org.wildfly.clustering.service.ServiceDependency;
 
 /**
  * Builds an infinispan-based {@link BeanManagerFactory}.
@@ -55,16 +51,6 @@ import org.wildfly.clustering.service.ServiceDependency;
  */
 public class InfinispanBeanManagementProvider<I> implements BeanManagementProvider {
 
-    static String getCacheName(ServiceName deploymentUnitServiceName, String beanManagerFactoryName) {
-        List<String> parts = new ArrayList<>(3);
-        if (Services.JBOSS_DEPLOYMENT_SUB_UNIT.isParentOf(deploymentUnitServiceName)) {
-            parts.add(deploymentUnitServiceName.getParent().getSimpleName());
-        }
-        parts.add(deploymentUnitServiceName.getSimpleName());
-        parts.add(beanManagerFactoryName);
-        return String.join("/", parts);
-    }
-
     private final String name;
     private final InfinispanBeanManagementConfiguration config;
 
@@ -74,8 +60,12 @@ public class InfinispanBeanManagementProvider<I> implements BeanManagementProvid
     }
 
     @Override
-    public Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(final ServiceName name) {
-        String cacheName = getCacheName(name, this.name);
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(String cacheName) {
         String containerName = this.config.getContainerName();
         String templateCacheName = this.config.getCacheName();
 
@@ -99,7 +89,7 @@ public class InfinispanBeanManagementProvider<I> implements BeanManagementProvid
         };
 
         CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, cacheName), containerName, cacheName, templateCacheName, configurator);
-        CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, cacheName), containerName, cacheName).require(new ServiceDependency(name.append("marshalling")));
+        CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, cacheName), containerName, cacheName);
         CapabilityServiceConfigurator groupConfigurator = new ProvidedCacheServiceConfigurator<>(DistributedCacheGroupServiceConfiguratorProvider.class, containerName, cacheName);
         return List.of(configurationConfigurator, cacheConfigurator, groupConfigurator);
     }

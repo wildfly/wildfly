@@ -23,6 +23,8 @@
 package org.jboss.as.ejb3.cache.distributable;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
@@ -32,6 +34,7 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
+import org.jboss.as.ejb3.component.stateful.ByteBufferMarshallerServiceConfigurator;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.as.server.deployment.Attachments;
@@ -44,6 +47,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ejb.BeanManagementProvider;
 import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 
 /**
@@ -77,13 +82,26 @@ public abstract class AbstractDistributableCacheFactoryBuilderServiceConfigurato
         this.provider = provider;
     }
 
+    private String getBeanManagerName(DeploymentUnit unit) {
+        BeanManagementProvider provider = this.provider.get();
+        List<String> parts = new ArrayList<>(3);
+        DeploymentUnit parent = unit.getParent();
+        if (parent != null) {
+            parts.add(parent.getServiceName().getSimpleName());
+        }
+        parts.add(unit.getServiceName().getSimpleName());
+        parts.add(provider.getName());
+        return String.join("/", parts);
+    }
+
     @Override
     public Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit) {
-        return this.provider.get().getDeploymentServiceConfigurators(unit.getServiceName());
+        return this.provider.get().getDeploymentServiceConfigurators(this.getBeanManagerName(unit));
     }
 
     @Override
     public CapabilityServiceConfigurator getServiceConfigurator(DeploymentUnit unit, StatefulComponentDescription description, ComponentConfiguration configuration) {
+        String beanManagerName = this.getBeanManagerName(unit);
         StatefulBeanConfiguration statefulBeanConfiguration = new StatefulBeanConfiguration() {
             @Override
             public String getName() {
@@ -105,6 +123,16 @@ public abstract class AbstractDistributableCacheFactoryBuilderServiceConfigurato
                 StatefulTimeoutInfo info = description.getStatefulTimeout();
                 // A value of -1 means the bean will never be removed due to timeout
                 return (info != null && info.getValue() >= 0) ? Duration.of(info.getValue(), info.getTimeUnit().toChronoUnit()) : null;
+            }
+
+            @Override
+            public SupplierDependency<ByteBufferMarshaller> getMarshallerDependency() {
+                return new ServiceSupplierDependency<>(new ByteBufferMarshallerServiceConfigurator(unit));
+            }
+
+            @Override
+            public String getBeanManagerName() {
+                return beanManagerName;
             }
         };
         CapabilityServiceConfigurator configurator = this.provider.get().getBeanManagerFactoryServiceConfigurator(statefulBeanConfiguration);

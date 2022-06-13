@@ -31,7 +31,6 @@ import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
@@ -40,7 +39,7 @@ import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
-import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
@@ -57,10 +56,11 @@ import org.wildfly.clustering.service.SupplierDependency;
 public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanBeanManagerFactoryConfiguration {
 
     private final String name;
+    private final String cacheName;
     private final StatefulBeanConfiguration beanConfiguration;
     private final InfinispanBeanManagementConfiguration configuration;
 
-    private final SupplierDependency<MarshallingConfigurationRepository> repository;
+    private final SupplierDependency<ByteBufferMarshaller> marshaller;
 
     private volatile SupplierDependency<Cache<?, ?>> cache;
     private volatile SupplierDependency<KeyAffinityServiceFactory> affinityFactory;
@@ -72,26 +72,24 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
         this.name = name;
         this.beanConfiguration = beanConfiguration;
         this.configuration = configuration;
-        ServiceName deploymentUnitServiceName = beanConfiguration.getDeploymentUnitServiceName();
-        this.repository = new ServiceSupplierDependency<>(deploymentUnitServiceName.append("marshalling"));
+        this.marshaller = beanConfiguration.getMarshallerDependency();
+        this.cacheName = beanConfiguration.getBeanManagerName();
     }
 
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
         String containerName = this.configuration.getContainerName();
-        ServiceName deploymentUnitServiceName = this.beanConfiguration.getDeploymentUnitServiceName();
-        String cacheName = InfinispanBeanManagementProvider.getCacheName(deploymentUnitServiceName, this.name);
-        this.cache = new ServiceSupplierDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, cacheName));
+        this.cache = new ServiceSupplierDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, this.cacheName));
         this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, containerName));
         this.dispatcherFactory = new ServiceSupplierDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, containerName));
-        this.group = new ServiceSupplierDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, containerName, cacheName));
+        this.group = new ServiceSupplierDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, containerName, this.cacheName));
         return this;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        new CompositeDependency(this.cache, this.affinityFactory, this.repository, this.group, this.dispatcherFactory).register(builder);
+        new CompositeDependency(this.cache, this.affinityFactory, this.marshaller, this.group, this.dispatcherFactory).register(builder);
         Consumer<BeanManagerFactory<I, T, TransactionBatch>> factory = builder.provides(this.getServiceName());
         Service service = Service.newInstance(factory, new InfinispanBeanManagerFactory<>(this));
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
@@ -119,8 +117,8 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
     }
 
     @Override
-    public MarshallingConfigurationRepository getMarshallingConfigurationRepository() {
-        return this.repository.get();
+    public ByteBufferMarshaller getMarshaller() {
+        return this.marshaller.get();
     }
 
     @Override

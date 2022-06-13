@@ -23,12 +23,19 @@ package org.wildfly.clustering.ejb;
 
 import java.time.Duration;
 
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.service.SupplierDependency;
+
 /**
  * Specifies the configuration of a stateful EJB.
  *
  * @author Paul Ferraro
  */
 public interface StatefulBeanConfiguration extends BeanConfiguration {
+
+    SupplierDependency<ByteBufferMarshaller> getMarshallerDependency();
+
+    String getBeanManagerName();
 
     /**
      * Returns the duration of time this bean can be idle after which it will expire.

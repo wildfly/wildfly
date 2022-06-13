@@ -39,7 +39,6 @@ import org.wildfly.clustering.ejb.RemoveListener;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanFactory;
 import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupFactory;
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
@@ -64,7 +63,7 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
 
     @Override
     public BeanManager<I, T, TransactionBatch> createBeanManager(Supplier<I> identifierFactory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener) {
-        ByteBufferMarshaller marshaller = new JBossByteBufferMarshaller(this.configuration.getMarshallingConfigurationRepository(), this.configuration.getBeanConfiguration().getModule().getClassLoader());
+        ByteBufferMarshaller marshaller = this.configuration.getMarshaller();
         MarshalledValueFactory<ByteBufferMarshaller> factory = new ByteBufferMarshalledValueFactory(marshaller);
         Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.configuration.getCache();
         Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, ByteBufferMarshaller>> groupCache = this.configuration.getCache();
