@@ -228,7 +228,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.jakarta.xml.soap</groupId>
-      <artifactId>jboss-saaj-api_2.0_spec</artifactId>
+      <artifactId>jboss-saaj-api_3.0_spec</artifactId>
       <licenses>
         <license>
           <name>Eclipse Public License 2.0</name>
