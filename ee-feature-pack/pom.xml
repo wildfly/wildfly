@@ -4279,6 +4279,53 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.ws</groupId>
+                <artifactId>jbossws-api</artifactId>
+                <version>${version.org.jboss.ws.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws</groupId>
+                <artifactId>jbossws-common</artifactId>
+                <version>${version.org.jboss.ws.common}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws</groupId>
+                <artifactId>jbossws-common-tools</artifactId>
+                <version>${version.org.jboss.ws.common.tools}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws</groupId>
+                <artifactId>jbossws-spi</artifactId>
+                <version>${version.org.jboss.ws.spi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.wildfly.transaction</groupId>
                 <artifactId>wildfly-transaction-client</artifactId>
                 <version>${version.org.wildfly.transaction.client}</version>

@@ -4279,58 +4279,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.ws</groupId>
-                <artifactId>jbossws-api</artifactId>
-                <version>${version.org.jboss.ws.api}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws</groupId>
-                <artifactId>jbossws-common</artifactId>
-                <version>${version.org.jboss.ws.common}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-beanutils</groupId>
-                        <artifactId>commons-beanutils</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jboss.jaxbintros</groupId>
-                        <artifactId>jboss-jaxb-intros</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws</groupId>
-                <artifactId>jbossws-common-tools</artifactId>
-                <version>${version.org.jboss.ws.common.tools}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>gnu-getopt</groupId>
-                        <artifactId>getopt</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>gnu.getopt</groupId>
-                        <artifactId>java-getopt</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws</groupId>
-                <artifactId>jbossws-spi</artifactId>
-                <version>${version.org.jboss.ws.spi}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-client</artifactId>
                 <version>${version.org.jboss.ws.cxf}</version>
