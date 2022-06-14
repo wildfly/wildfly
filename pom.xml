@@ -525,7 +525,7 @@
         <preview.version.antlr>4.10</preview.version.antlr>
         <preview.version.com.sun.faces>4.0.0.SP01</preview.version.com.sun.faces>
         <preview.version.com.sun.istack>4.1.0</preview.version.com.sun.istack>
-        <preview.version.com.sun.xml.messaging.saaj>2.0.0.SP1</preview.version.com.sun.xml.messaging.saaj>
+        <preview.version.com.sun.xml.messaging.saaj>3.0.0-M2</preview.version.com.sun.xml.messaging.saaj>
         <preview.version.io.agroal>2.0</preview.version.io.agroal>
         <preview.version.io.undertow>2.3.0.Alpha1</preview.version.io.undertow>
         <preview.version.io.undertow.jastow>2.2.0.Final</preview.version.io.undertow.jastow>
@@ -612,8 +612,8 @@
         <preview.version.org.jboss.resteasy.microprofile>2.0.0.Beta1</preview.version.org.jboss.resteasy.microprofile>
         <preview.version.org.jboss.resteasy.spring>3.0.0.Alpha3</preview.version.org.jboss.resteasy.spring>
         <preview.version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.0.Alpha1</preview.version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
+        <preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>1.0.0.Final</preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>
         <preview.version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>1.0.0.Final</preview.version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>
-        <preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>1.0.0.Final</preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>
         <preview.version.org.jboss.weld.weld>5.0.0.SP2</preview.version.org.jboss.weld.weld>
         <preview.version.org.jboss.weld.weld-api>5.0.Final</preview.version.org.jboss.weld.weld-api>
         <preview.version.org.opensaml.opensaml>4.2.0</preview.version.org.opensaml.opensaml>

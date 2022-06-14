@@ -2402,8 +2402,8 @@
 
             <dependency>
                 <groupId>org.jboss.spec.jakarta.xml.soap</groupId>
-                <artifactId>jboss-saaj-api_2.0_spec</artifactId>
-                <version>${preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec}</version>
+                <artifactId>jboss-saaj-api_3.0_spec</artifactId>
+                <version>${preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
