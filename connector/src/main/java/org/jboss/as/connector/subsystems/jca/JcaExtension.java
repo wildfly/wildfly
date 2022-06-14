@@ -80,7 +80,7 @@ public class JcaExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jca";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(5, 1, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 0, 0);
 
     private static final String RESOURCE_NAME = JcaExtension.class.getPackage().getName() + ".LocalDescriptions";
 
