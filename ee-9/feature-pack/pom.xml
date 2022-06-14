@@ -1007,6 +1007,22 @@
                     <groupId>org.jboss.narayana.jts</groupId>
                     <artifactId>narayana-jts-integration</artifactId>
                 </exclusion>
+               <exclusion>
+                    <groupId>org.jboss.narayana.xts</groupId>
+                    <artifactId>jbossxts-jakarta</artifactId>
+               </exclusion>
+               <exclusion>
+                    <groupId>org.jboss.narayana</groupId>
+                    <artifactId>jbosstxbridge-jakarta</artifactId>
+               </exclusion>
+               <exclusion>
+                    <groupId>org.jboss.narayana.compensations</groupId>
+                    <artifactId>compensations-jakarta</artifactId>
+               </exclusion>
+               <exclusion>
+                    <groupId>org.jboss.narayana.txframework</groupId>
+                    <artifactId>txframework-jakarta</artifactId>
+               </exclusion>
 		<!-- RTS -->
 		<exclusion>
 		    <groupId>org.jboss.narayana.rts</groupId>
