@@ -1175,7 +1175,6 @@
                                         <include>org/jboss/as/test/integration/ee/naming/defaultbindings/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</include>
                                         <include>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</include>
                                     </includes>
 
@@ -1235,7 +1234,6 @@
                                         <exclude>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jaxrs/cfg/**/ResteasyAttributeTestCase.java</exclude>
                                     </excludes>
@@ -3452,12 +3450,9 @@
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/mdb/timeout/MessageDriven*TimeoutTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase.java</exclude><!-- TODO be more precise about what is excluded -->
-                                        <!-- Requires JSR77 -->
-                                        <exclude>org/jboss/as/test/integration/jsr77/*TestCase.java</exclude>
                                         <!-- TODO figure out the problem -->
                                         <exclude>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</exclude><!-- probably mdb -->
                                         <exclude>org/jboss/as/test/integration/ejb/pool/lifecycle/PooledEJBLifecycleTestCase.java</exclude><!-- probably mdb -->
-                                        <exclude>org/jboss/as/test/integration/jmx/full/JMXFilterTestCase.java</exclude><!-- Uses jsr77 subsystem as test subject -->
                                         <exclude>org/jboss/as/test/integration/management/cli/DeploymentOverlayCLITestCase.java</exclude><!-- use of unmanaged (exploded) deployments?? -->
                                         <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude><!-- Problem is probably MDB use -->
                                         <!-- EE 8 vs EE 9 differences beyond javax->jakarta -->
@@ -3514,7 +3509,6 @@
                                         <exclude>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jaxrs/cfg/**/ResteasyAttributeTestCase.java</exclude>
 
