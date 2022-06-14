@@ -1274,6 +1274,17 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-webservices-server-integration-jakarta</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-weld-bean-validation-jakarta</artifactId>
             <exclusions>
                 <exclusion>

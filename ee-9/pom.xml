@@ -2761,6 +2761,42 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.ws</groupId>
+                <artifactId>jbossws-api</artifactId>
+                <version>${preview.version.org.jboss.ws.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws</groupId>
+                <artifactId>jbossws-common</artifactId>
+                <version>${preview.version.org.jboss.ws.common}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws</groupId>
+                <artifactId>jbossws-spi</artifactId>
+                <version>${preview.version.org.jboss.ws.spi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-ejb</artifactId>
                 <version>${preview.version.org.jboss.weld.weld}</version>
@@ -2900,7 +2936,17 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-webservices-server-integration-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
             <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-jsf</artifactId>
