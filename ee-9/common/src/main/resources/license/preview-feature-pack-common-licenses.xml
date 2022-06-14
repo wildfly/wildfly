@@ -859,7 +859,6 @@
     <dependency>
       <groupId>org.wildfly</groupId>
       <artifactId>wildfly-web-common-jakarta</artifactId>
-      <version>26.0.0.Beta1-SNAPSHOT</version>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
