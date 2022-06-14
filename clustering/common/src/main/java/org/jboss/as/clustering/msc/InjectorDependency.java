@@ -34,7 +34,7 @@ import org.wildfly.clustering.service.ServiceSupplierDependency;
  * @author Paul Ferraro
  * @deprecated Replaced by {@link ServiceSupplierDependency}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class InjectorDependency<T> implements Dependency {
     private final ServiceName name;
     private final Class<T> targetClass;

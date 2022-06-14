@@ -29,7 +29,7 @@ import org.wildfly.common.function.ExceptionRunnable;
  * @author Paul Ferraro
  * @deprecated To be removed without replacement
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public interface Executor extends java.util.concurrent.Executor {
 
     /**

@@ -32,7 +32,7 @@ import org.wildfly.common.function.ExceptionSupplier;
  * @author Paul Ferraro
  * @deprecated To be removed without replacement
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public interface ServiceExecutor extends Executor {
 
     /**
