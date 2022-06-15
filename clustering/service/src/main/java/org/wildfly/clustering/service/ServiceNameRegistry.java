@@ -27,6 +27,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * Registry of services names for a set of requirements.
  * @author Paul Ferraro
+ * @deprecated To be removed without replacement.
  */
 @Deprecated(forRemoval = true)
 public interface ServiceNameRegistry<R extends Requirement> {

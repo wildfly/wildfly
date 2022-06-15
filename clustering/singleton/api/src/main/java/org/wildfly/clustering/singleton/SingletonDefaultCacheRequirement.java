@@ -30,6 +30,9 @@ import org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFact
  */
 public enum SingletonDefaultCacheRequirement implements UnaryRequirement {
 
+    /**
+     * @deprecated Use {@link SingletonDefaultCacheRequirement#SINGLETON_SERVICE_CONFIGURATOR_FACTORY} instead.
+     */
     @Deprecated(forRemoval = true) SINGLETON_SERVICE_BUILDER_FACTORY("org.wildfly.clustering.cache.default-singleton-service-builder-factory", SingletonServiceBuilderFactory.class),
     SINGLETON_SERVICE_CONFIGURATOR_FACTORY("org.wildfly.clustering.cache.default-singleton-service-configurator-factory", SingletonServiceConfiguratorFactory.class),
     ;
