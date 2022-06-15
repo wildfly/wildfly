@@ -29,7 +29,7 @@ import org.jboss.msc.service.Service;
  * @author Paul Ferraro
  * @deprecated Replaced by {@link org.wildfly.clustering.singleton.service.SingletonService}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public interface SingletonService<T> extends org.wildfly.clustering.singleton.service.SingletonService, Service<T> {
 
 }

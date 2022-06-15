@@ -30,7 +30,7 @@ import org.wildfly.clustering.service.UnaryRequirement;
  * @author Paul Ferraro
  */
 public enum SingletonDefaultCacheRequirement implements UnaryServiceNameFactoryProvider {
-    @Deprecated SINGLETON_SERVICE_BUILDER_FACTORY(org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY),
+    @Deprecated(forRemoval = true) SINGLETON_SERVICE_BUILDER_FACTORY(org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY),
     SINGLETON_SERVICE_CONFIGURATOR_FACTORY(org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY),
     ;
     private final UnaryServiceNameFactory factory;

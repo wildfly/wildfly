@@ -30,7 +30,7 @@ import org.wildfly.clustering.singleton.service.SingletonServiceConfigurator;
  * @param <T> the singleton service value type
  * @deprecated Replaced by {@link SingletonServiceConfigurator}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public interface SingletonServiceBuilder<T> extends Builder<T> {
 
     /**

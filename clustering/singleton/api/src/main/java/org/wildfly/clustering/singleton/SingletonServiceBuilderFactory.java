@@ -30,7 +30,7 @@ import org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFact
  * @author Paul Ferraro
  * @deprecated Replaced by {@link SingletonServiceConfiguratorFactory}
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public interface SingletonServiceBuilderFactory extends SingletonPolicy, SingletonServiceConfiguratorFactory {
 
     @Override
