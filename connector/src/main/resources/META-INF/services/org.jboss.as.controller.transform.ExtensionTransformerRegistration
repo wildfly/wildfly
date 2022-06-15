@@ -21,3 +21,4 @@
 #
 
 org.jboss.as.connector.subsystems.datasources.DataSourcesTransformers
+org.jboss.as.connector.subsystems.jca.JcaTransformers

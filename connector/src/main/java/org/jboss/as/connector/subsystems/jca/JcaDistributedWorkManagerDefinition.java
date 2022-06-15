@@ -27,6 +27,7 @@ import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_ENABLED_NA
 import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_MANAGED_SECURITY;
 import static org.jboss.as.connector.subsystems.jca.JcaWorkManagerDefinition.registerSubModels;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import org.jboss.as.connector.metadata.api.common.Security;
@@ -166,6 +167,10 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
         }
 
         private AttributeDefinition attribute;
+
+        static AttributeDefinition[] getAttributes() {
+            return Arrays.stream(DWmParameters.values()).map(DWmParameters::getAttribute).toArray(AttributeDefinition[]::new);
+        }
     }
 
     enum DWmCapabilities {
