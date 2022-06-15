@@ -445,7 +445,7 @@
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
-        <version.org.jboss.hal.console>3.5.12.Final</version.org.jboss.hal.console>
+        <version.org.jboss.hal.console>3.6.0.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.2.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.5.5.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
@@ -3859,84 +3859,8 @@
                 <classifier>resources</classifier>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.hal</groupId>
-                        <artifactId>hal-ballroom</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.hal</groupId>
-                        <artifactId>hal-config</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.hal</groupId>
-                        <artifactId>hal-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.hal</groupId>
-                        <artifactId>hal-dmr</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.hal</groupId>
-                        <artifactId>hal-flow</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.hal</groupId>
-                        <artifactId>hal-js</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.hal</groupId>
-                        <artifactId>hal-meta</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.hal</groupId>
-                        <artifactId>hal-processors</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.hal</groupId>
-                        <artifactId>hal-resources</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.hal</groupId>
-                        <artifactId>hal-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.hal</groupId>
-                        <artifactId>hal-theme-hal</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.gwt.elemento</groupId>
-                        <artifactId>elemento-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.gwt.elemento</groupId>
-                        <artifactId>elemento-widget</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.gwt.elemento</groupId>
-                        <artifactId>elemento-template-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.gwtplatform</groupId>
-                        <artifactId>gwtp-all</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.gwt</groupId>
-                        <artifactId>gwt-elemental</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>guava-gwt</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.intendia.gwt.rxgwt</groupId>
-                        <artifactId>rxgwt</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>ru.finam</groupId>
-                        <artifactId>slf4j-gwt</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.gwt</groupId>
-                        <artifactId>gwt-user</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
