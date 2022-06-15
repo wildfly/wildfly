@@ -251,10 +251,18 @@ public final class EndpointService implements Service {
                         .getCapabilityServiceName(domainName, ApplicationSecurityDomainService.ApplicationSecurityDomain.class);
                 ejbApplicationSecurityDomain = builder.requires(ejbSecurityDomainServiceName);
             } else {
-                ServiceName securityDomainName = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
-                        .getCapabilityServiceName(
-                                Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN,
-                                domainName).append(Constants.SECURITY_DOMAIN);
+                CapabilityServiceSupport capabilitySupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+                ServiceName securityDomainName = null;
+                if (capabilitySupport == null) {
+                    securityDomainName = ServiceNameFactory
+                            .parseServiceName(WEB_APPLICATION_SECURITY_DOMAIN)
+                            .append(domainName)
+                            .append(Constants.SECURITY_DOMAIN);
+                } else {
+                    securityDomainName = capabilitySupport.getCapabilityServiceName(
+                            Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN,
+                            domainName).append(Constants.SECURITY_DOMAIN);
+                }
                 elytronSecurityDomain = builder.requires(securityDomainName);
             }
             endpoint.setProperty(ELYTRON_SECURITY_DOMAIN, true);
