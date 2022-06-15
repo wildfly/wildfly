@@ -131,7 +131,6 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                 .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
                 .build());
 
-
         public static AttributeDefinition[] getAttributeDefinitions() {
             final AttributeDefinition[] returnValue = new AttributeDefinition[DWmParameters.values().length];
             int i = 0;

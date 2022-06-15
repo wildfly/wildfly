@@ -18,8 +18,6 @@
 
 package org.jboss.as.test.integration.jca.security.workmanager;
 
-import static org.hamcrest.CoreMatchers.containsString;
-
 import java.util.function.Consumer;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -35,9 +33,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
@@ -45,16 +41,16 @@ import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
 
 /**
  * Test security inflow with Jakarta Connectors work manager where RA is configured with Elytron security domain
- * and Workmanager is configured with legacy security (it doesn't have elytron-enabled=true),
- * it is not allowed to mix security configuration and it should fail
+ * and Workmanager is configured with Elytron security explicitly configured (it doesn't have elytron-enabled=true).
+ * Default workmanager behavior if unconfigured is elytron is enabled so this should deploy successfully.
  */
 @RunWith(Arquillian.class)
 @ServerSetup({
-        WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronDisabledTestCase.ElytronSetup.class,
-        WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronDisabledTestCase.JcaSetup.class,
-        WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronDisabledTestCase.RaSetup.class})
+        WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronUnconfiguredTestCase.ElytronSetup.class,
+        WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronUnconfiguredTestCase.JcaSetup.class,
+        WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronUnconfiguredTestCase.RaSetup.class})
 @RunAsClient
-public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronDisabledTestCase {
+public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronUnconfiguredTestCase {
     private static final String ADMIN_OBJ_JNDI_NAME = "java:jboss/admObj";
     private static final String WM_ELYTRON_SECURITY_DOMAIN_NAME = "RaRealmElytron";
     private static final String BOOTSTRAP_CTX_NAME = "wrongContext";
@@ -131,15 +127,11 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronDis
         return rar;
     }
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     @ArquillianResource
     private Deployer deployer;
 
     @Test
-    public void testMixedSecurity() throws Throwable {
-        expectedException.expectMessage(containsString("WFLYJCA0111"));
+    public void testUnconfiguredElytron() throws Throwable {
         deployer.deploy("wf-ra-wm-security-domain-rar");
         try {
             deployer.undeploy("wf-ra-wm-security-domain-rar");

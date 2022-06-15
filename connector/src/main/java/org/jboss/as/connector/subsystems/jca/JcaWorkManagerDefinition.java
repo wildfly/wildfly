@@ -157,11 +157,13 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
                 .setRestartAllServices()
                 .setXmlName("name")
                 .build()),
+
         ELYTRON_ENABLED(new SimpleAttributeDefinitionBuilder(ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
                 .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
                 .setAllowExpression(true)
                 .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
                 .build());
+
 
         WmParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
