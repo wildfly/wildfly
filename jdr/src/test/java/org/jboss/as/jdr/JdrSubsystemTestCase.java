@@ -58,46 +58,13 @@ public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem.xml");
+        return "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\"/>";
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
         return "schema/jboss-as-jdr_1_0.xsd";
     }
-
-    //todo not sure how much sense does it make to test this as model version is exactly the same as in current version
-    /*@Test
-    public void testTransformersEAP620() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 2, 0));
-    }
-
-    @Test
-    public void testTransformersEAP630() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 2, 0));
-    }
-
-    @Test
-    public void testTransformersEAP640() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 2, 0));
-    }
-
-    private void testJdrTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-        String subsystemXml = "subsystem.xml";
-        //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource(subsystemXml);
-
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-jdr:" + controllerVersion.getMavenGavVersion());
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertNotNull(mainServices);
-        Assert.assertNotNull(legacyServices);
-        checkSubsystemModelTransformation(mainServices, modelVersion);
-    }*/
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
