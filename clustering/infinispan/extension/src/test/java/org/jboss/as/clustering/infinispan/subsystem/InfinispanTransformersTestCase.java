@@ -235,6 +235,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
         List<String> rejectedRemoteContainerAttributes = new LinkedList<>();
 
+        if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.pathElement("repl"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY.getDefinition()));
+            config.addFailedAttribute(containerAddress.append(DistributedCacheResourceDefinition.pathElement("dist"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT.getDefinition()));
+        }
+
         if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(containerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(CacheContainerResourceDefinition.Attribute.MARSHALLER.getDefinition()));
             rejectedRemoteContainerAttributes.add(RemoteCacheContainerResourceDefinition.Attribute.MARSHALLER.getName());

@@ -691,6 +691,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void parsePartitionHandling(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = cacheAddress.append(PartitionHandlingResourceDefinition.PATH);
@@ -701,8 +702,23 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ENABLED: {
-                    readAttribute(reader, i, operation, PartitionHandlingResourceDefinition.Attribute.ENABLED);
+                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                    readAttribute(reader, i, operation, PartitionHandlingResourceDefinition.DeprecatedAttribute.ENABLED);
                     break;
+                }
+                case WHEN_SPLIT: {
+                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                        readAttribute(reader, i, operation, PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT);
+                        break;
+                    }
+                }
+                case MERGE_POLICY: {
+                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                        readAttribute(reader, i, operation, PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY);
+                        break;
+                    }
                 }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);

@@ -90,6 +90,7 @@ public enum XMLAttribute {
     @Deprecated MAX_ENTRIES("max-entries"),
     MAX_IDLE(ExpirationResourceDefinition.Attribute.MAX_IDLE),
     MAX_THREADS(ThreadPoolResourceDefinition.values()[0].getMaxThreads()),
+    MERGE_POLICY(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY),
     MIN_THREADS(ThreadPoolResourceDefinition.values()[0].getMinThreads()),
     MODE(TransactionResourceDefinition.Attribute.MODE),
     MODIFICATION_QUEUE_SIZE(StoreWriteBehindResourceDefinition.Attribute.MODIFICATION_QUEUE_SIZE),
@@ -131,6 +132,7 @@ public enum XMLAttribute {
     @Deprecated THREAD_POOL_SIZE("thread-pool-size"),
     TIMEOUT(StateTransferResourceDefinition.Attribute.TIMEOUT),
     TYPE(TableResourceDefinition.ColumnAttribute.ID.getColumnType()),
+    WHEN_SPLIT(PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT),
 
     // hotrod store
     CACHE_CONFIGURATION(HotRodStoreResourceDefinition.Attribute.CACHE_CONFIGURATION),
