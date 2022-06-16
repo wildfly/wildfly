@@ -542,4 +542,14 @@
         <cve>CVE-2021-3629</cve>
     </suppress>
 
+    <!-- Vulnerability is in wildfly-core up to 17.0 but we are using 18.x.  -->
+    <!-- This is false positive because cve regex matches a different package: wildfly-plugin-core -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-plugin-core-2.0.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
+        <cve>CVE-2021-3717</cve>
+    </suppress>
+
 </suppressions>
