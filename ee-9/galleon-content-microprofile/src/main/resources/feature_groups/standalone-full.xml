@@ -2,7 +2,10 @@
 <feature-group-spec name="standalone-full" xmlns="urn:jboss:galleon:feature-group:1.0">
 
     <feature-group name="standalone-full-x-messaging"/>
+    <!-- TODO go back to a non-embedded-broker config
     <feature-group name="messaging-remote-activemq"/>
+    -->
+    <feature-group name="messaging-activemq"/>
     <feature-group name="microprofile-opentracing-jaeger"/>
     <feature spec="socket-binding-group">
         <param name="socket-binding-group" value="standard-sockets" />
