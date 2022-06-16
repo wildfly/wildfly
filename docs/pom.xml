@@ -70,6 +70,7 @@
 
                         <!-- Default asciidoc setting attributes -->
                         <linkcss>false</linkcss>
+                        <sectanchors/>
                         <toc>left</toc>
                     </attributes>
                     <backend>html5</backend>
