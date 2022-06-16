@@ -885,6 +885,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-rts</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-weld-bean-validation</artifactId>
                 </exclusion>
                 <exclusion>
@@ -1009,34 +1013,38 @@
                 </exclusion>
                <exclusion>
                     <groupId>org.jboss.narayana.xts</groupId>
-                    <artifactId>jbossxts-jakarta</artifactId>
+                    <artifactId>jbossxts</artifactId>
                </exclusion>
                <exclusion>
                     <groupId>org.jboss.narayana</groupId>
-                    <artifactId>jbosstxbridge-jakarta</artifactId>
+                    <artifactId>jbosstxbridge</artifactId>
                </exclusion>
                <exclusion>
                     <groupId>org.jboss.narayana.compensations</groupId>
-                    <artifactId>compensations-jakarta</artifactId>
+                    <artifactId>compensations</artifactId>
                </exclusion>
                <exclusion>
                     <groupId>org.jboss.narayana.txframework</groupId>
-                    <artifactId>txframework-jakarta</artifactId>
+                    <artifactId>txframework</artifactId>
                </exclusion>
-		<!-- RTS -->
-		<exclusion>
-		    <groupId>org.jboss.narayana.rts</groupId>
-		    <artifactId>restat-bridge</artifactId>
+                <!-- RTS -->
+                <exclusion>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-bridge</artifactId>
                 </exclusion>
-		<exclusion>
-		    <groupId>org.jboss.narayana.rts</groupId>
-		    <artifactId>restat-api</artifactId>
+                <exclusion>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-api</artifactId>
                 </exclusion>
-		<exclusion>
-		    <groupId>org.jboss.narayana.rts</groupId>
-		    <artifactId>restat-util</artifactId>
+                <exclusion>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-integration</artifactId>
                 </exclusion>
-		<!-- end RTS -->
+                <exclusion>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-util</artifactId>
+                </exclusion>
+                <!-- end RTS -->
                 <exclusion>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-spring</artifactId>
