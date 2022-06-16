@@ -530,7 +530,7 @@
         <preview.version.io.undertow>2.3.0.Alpha1</preview.version.io.undertow>
         <preview.version.io.undertow.jastow>2.2.0.Final</preview.version.io.undertow.jastow>
         <preview.version.jakarta.activation.jakarta.activation-api>2.1.0</preview.version.jakarta.activation.jakarta.activation-api>
-        <preview.version.jakarta.annotation.jakarta-annotation-api>2.1.0</preview.version.jakarta.annotation.jakarta-annotation-api>
+        <preview.version.jakarta.annotation.jakarta-annotation-api>2.1.1</preview.version.jakarta.annotation.jakarta-annotation-api>
         <preview.version.jakarta.authentication.jakarta-authentication-api>3.0.0</preview.version.jakarta.authentication.jakarta-authentication-api>
         <preview.version.jakarta.authorization.jakarta-authorization-api>2.1.0</preview.version.jakarta.authorization.jakarta-authorization-api>
         <preview.version.jakarta.batch.jakarta.batch-api>2.1.0</preview.version.jakarta.batch.jakarta.batch-api>
