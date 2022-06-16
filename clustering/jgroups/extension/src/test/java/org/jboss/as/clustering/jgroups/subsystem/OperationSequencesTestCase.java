@@ -25,7 +25,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import org.jboss.as.clustering.controller.Operations;
+import java.util.List;
+
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -58,7 +60,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         KernelServices services = buildKernelServices();
 
-        ModelNode operation = Operations.createCompositeOperation(addStackOp, addTransportOp, addProtocolOp);
+        ModelNode operation = Util.createCompositeOperation(List.of(addStackOp, addTransportOp, addProtocolOp));
 
         // add a protocol stack, its transport and a protocol as a batch
         ModelNode result = services.executeOperation(operation);
@@ -78,7 +80,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         KernelServices services = buildKernelServices();
 
-        ModelNode operation = Operations.createCompositeOperation(addStackOp, addTransportOp, addProtocolOp);
+        ModelNode operation = Util.createCompositeOperation(List.of(addStackOp, addTransportOp, addProtocolOp));
 
         // add a protocol stack
         ModelNode result = services.executeOperation(operation);

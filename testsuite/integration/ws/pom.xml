@@ -163,11 +163,6 @@
             <artifactId>stax-ex</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <profiles>

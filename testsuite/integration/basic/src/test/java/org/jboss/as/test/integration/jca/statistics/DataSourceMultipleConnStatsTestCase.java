@@ -30,7 +30,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.ManagementOperations;
@@ -46,7 +46,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -179,24 +178,19 @@ public class DataSourceMultipleConnStatsTestCase {
     // /subsystem=datasources/data-source=ExampleDS:write-attribute(name=min-pool-size, value=5)
     // /subsystem=datasources/data-source=ExampleDS:write-attribute(name=pool-prefill, value=true)
     private void setConnectionPool() throws Exception {
-        List<ModelNode> operations = new ArrayList<>();
-
         ModelNode maxPoolSizeOp = createOpNode("subsystem=datasources/data-source=ExampleDS", WRITE_ATTRIBUTE_OPERATION);
         maxPoolSizeOp.get(NAME).set("max-pool-size");
         maxPoolSizeOp.get(VALUE).set(5);
-        operations.add(maxPoolSizeOp);
 
         ModelNode minPoolSizeOp = createOpNode("subsystem=datasources/data-source=ExampleDS", WRITE_ATTRIBUTE_OPERATION);
         minPoolSizeOp.get(NAME).set("min-pool-size");
         minPoolSizeOp.get(VALUE).set(5);
-        operations.add(minPoolSizeOp);
 
         ModelNode prefillOp = createOpNode("subsystem=datasources/data-source=ExampleDS", WRITE_ATTRIBUTE_OPERATION);
         prefillOp.get(NAME).set("pool-prefill");
         prefillOp.get(VALUE).set(true);
-        operations.add(prefillOp);
 
-        ModelNode updateOp = Operations.createCompositeOperation(operations);
+        ModelNode updateOp = Util.createCompositeOperation(List.of(maxPoolSizeOp, minPoolSizeOp, prefillOp));
         updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());

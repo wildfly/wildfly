@@ -23,11 +23,10 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.Map;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -64,16 +63,16 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     // cache container access
     protected static ModelNode getCacheContainerAddOperation(String containerName) {
         PathAddress address = getCacheContainerAddress(containerName);
-        return Operations.createAddOperation(address, Collections.<Attribute, ModelNode>singletonMap(CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE, new ModelNode("default")));
+        return Util.createAddOperation(address, Map.of(CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE.getName(), new ModelNode("default")));
     }
 
     protected static ModelNode getCacheContainerReadOperation(String containerName, Attribute attribute) {
-        return Operations.createReadAttributeOperation(getCacheContainerAddress(containerName), attribute);
+        return Util.getReadAttributeOperation(getCacheContainerAddress(containerName), attribute.getName());
     }
 
     protected static ModelNode getCacheContainerWriteOperation(String containerName, Attribute attribute, String value) {
         PathAddress cacheAddress = getCacheContainerAddress(containerName);
-        return Operations.createWriteAttributeOperation(cacheAddress, attribute, new ModelNode(value));
+        return Util.getWriteAttributeOperation(cacheAddress, attribute.getName(), new ModelNode(value));
     }
 
     protected static ModelNode getCacheContainerRemoveOperation(String containerName) {
@@ -84,15 +83,15 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     // cache access
     protected static ModelNode getCacheAddOperation(String containerName, String cacheType, String cacheName) {
         PathAddress address = getCacheAddress(containerName, cacheType, cacheName);
-        return Operations.createAddOperation(address, Collections.emptyMap());
+        return Util.createAddOperation(address, Map.of());
     }
 
     protected static ModelNode getCacheReadOperation(String containerName, String cacheType, String cacheName, Attribute attribute) {
-        return Operations.createReadAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), attribute);
+        return Util.getReadAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), attribute.getName());
     }
 
     protected static ModelNode getCacheWriteOperation(String containerName, String cacheType, String cacheName, Attribute attribute, String value) {
-        return Operations.createWriteAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), attribute, new ModelNode(value));
+        return Util.getWriteAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), attribute.getName(), new ModelNode(value));
     }
 
     protected static ModelNode getCacheRemoveOperation(String containerName, String cacheType, String cacheName) {
@@ -101,36 +100,36 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     // cache store access
     protected static ModelNode getCacheStoreReadOperation(String containerName, String cacheType, String cacheName, Attribute attribute) {
-        return Operations.createReadAttributeOperation(getCustomCacheStoreAddress(containerName, cacheType, cacheName), attribute);
+        return Util.getReadAttributeOperation(getCustomCacheStoreAddress(containerName, cacheType, cacheName), attribute.getName());
     }
 
     protected static ModelNode getCacheStoreWriteOperation(String containerName, String cacheName, String cacheType, Attribute attribute, String value) {
-        return Operations.createWriteAttributeOperation(getCustomCacheStoreAddress(containerName, cacheType, cacheName), attribute, new ModelNode(value));
+        return Util.getWriteAttributeOperation(getCustomCacheStoreAddress(containerName, cacheType, cacheName), attribute.getName(), new ModelNode(value));
     }
 
     protected static ModelNode getJDBCCacheStoreReadOperation(String containerName, String cacheType, String cacheName, Attribute attribute) {
-        return Operations.createReadAttributeOperation(getJDBCCacheStoreAddress(containerName, cacheType, cacheName), attribute);
+        return Util.getReadAttributeOperation(getJDBCCacheStoreAddress(containerName, cacheType, cacheName), attribute.getName());
     }
 
     protected static ModelNode getJDBCCacheStoreWriteOperation(String containerName, String cacheType, String cacheName, Attribute attribute, String value) {
-        return Operations.createWriteAttributeOperation(getJDBCCacheStoreAddress(containerName, cacheType, cacheName), attribute, new ModelNode(value));
+        return Util.getWriteAttributeOperation(getJDBCCacheStoreAddress(containerName, cacheType, cacheName), attribute.getName(), new ModelNode(value));
     }
 
     // cache store property access
     protected static ModelNode getCacheStoreGetPropertyOperation(PathAddress cacheStoreAddress, String propertyName) {
-        return Operations.createMapGetOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES, propertyName);
+        return Util.createMapGetOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES.getName(), propertyName);
     }
 
     protected static ModelNode getCacheStorePutPropertyOperation(PathAddress cacheStoreAddress, String propertyName, String propertyValue) {
-        return Operations.createMapPutOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES, propertyName, propertyValue);
+        return Util.createMapPutOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES.getName(), propertyName, propertyValue);
     }
 
     protected static ModelNode getCacheStoreRemovePropertyOperation(PathAddress cacheStoreAddress, String propertyName) {
-        return Operations.createMapRemoveOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES, propertyName);
+        return Util.createMapRemoveOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES.getName(), propertyName);
     }
 
     protected static ModelNode getCacheStoreClearPropertiesOperation(PathAddress cacheStoreAddress) {
-        return Operations.createMapClearOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES);
+        return Util.createMapClearOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES.getName());
     }
 
     protected static ModelNode getCacheStoreUndefinePropertiesOperation(PathAddress cacheStoreAddress) {
