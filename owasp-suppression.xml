@@ -727,4 +727,39 @@
         <packageUrl regex="true">^pkg:maven/com\.google\.code\.gson/gson@.*$</packageUrl>
         <cve>CVE-2022-25647</cve>
     </suppress>
+
+    <!-- The io.undertow is in version 2.2.17.Final which is higher then vulnerable ones (prior to 2.2.11.Final) -->
+    <!-- undertow-server is a complete different dependency -->
+    <!-- wildfly-plugin-core is a complete different dependency -->
+    <!-- wildfly-remoting is a complete different dependency -->
+    <!-- wildfly-server is a complete different dependency -->
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-server-1.8.0.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server.*$</packageUrl>
+        <cve>CVE-2021-3629</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-plugin-core-2.0.0.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
+        <cve>CVE-2021-3629</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-remoting-13.0.3-10-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-.*$</packageUrl>
+        <cve>CVE-2021-3629</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-server-13.0.3-10-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-server@.*$</packageUrl>
+        <cve>CVE-2021-3629</cve>
+    </suppress>
+
 </suppressions>
