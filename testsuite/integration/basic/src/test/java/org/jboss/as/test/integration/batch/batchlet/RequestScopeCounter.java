@@ -17,7 +17,7 @@
 package org.jboss.as.test.integration.batch.batchlet;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.RequestScoped;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

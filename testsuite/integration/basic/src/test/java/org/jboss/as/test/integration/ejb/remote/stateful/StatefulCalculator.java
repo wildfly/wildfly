@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.stateful;
 
-import javax.ejb.Stateful;
+import jakarta.ejb.Stateful;
 
 /**
  * User: jpai

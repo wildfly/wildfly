@@ -8,7 +8,7 @@
     <servlet-name>test</servlet-name>
     <servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
      <init-param>
-       <param-name>javax.ws.rs.core.Application</param-name>
+       <param-name>jakarta.ws.rs.core.Application</param-name>
        <param-value>org.jboss.as.test.integration.jaxrs.spec.basic.resource.JaxrsAppTwo</param-value>
      </init-param>
   </servlet>

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.producer;
 
-import javax.annotation.ManagedBean;
-import javax.inject.Inject;
+import jakarta.annotation.ManagedBean;
+import jakarta.inject.Inject;
 
 /**
  * @author Thomas.Diesler@jboss.com

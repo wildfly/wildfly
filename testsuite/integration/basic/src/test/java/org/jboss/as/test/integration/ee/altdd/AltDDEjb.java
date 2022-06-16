@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ee.altdd;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Stuart Douglas

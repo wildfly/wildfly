@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.jca.deployment;
 
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * This is interface for the stateless ejb.

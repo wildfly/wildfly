@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.tx.timeout;
 
-import javax.annotation.Resource;
-import javax.transaction.TransactionManager;
+import jakarta.annotation.Resource;
+import jakarta.transaction.TransactionManager;
 
 import org.wildfly.transaction.client.LocalTransaction;
 

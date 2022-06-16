@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.naming.connector;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;

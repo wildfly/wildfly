@@ -25,9 +25,9 @@ package org.jboss.as.test.integration.ejb.security.callerprincipal;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ejb.Remote;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 @Singleton
 @Startup

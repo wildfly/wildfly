@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.lifecycle.destroy;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas, Ondrej Chaloupka

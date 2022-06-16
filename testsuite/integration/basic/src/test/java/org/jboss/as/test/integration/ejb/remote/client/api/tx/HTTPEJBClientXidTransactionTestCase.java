@@ -59,8 +59,8 @@ import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 import org.wildfly.transaction.client.LocalTransactionContext;
 import org.wildfly.transaction.client.provider.jboss.JBossLocalTransactionProvider;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import java.io.File;
 import java.net.URI;

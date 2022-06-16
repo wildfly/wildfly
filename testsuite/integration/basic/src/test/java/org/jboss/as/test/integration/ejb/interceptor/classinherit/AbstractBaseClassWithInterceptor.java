@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.interceptor.classinherit;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

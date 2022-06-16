@@ -26,7 +26,7 @@
      version="1.0">
     <step id="jobStep">
         <properties>
-            <property name="javax.transaction.global.timeout" value="1"/>
+            <property name="jakarta.transaction.global.timeout" value="1"/>
         </properties>
         <chunk item-count="20" retry-count="1">
             <reader ref="transactedReader">

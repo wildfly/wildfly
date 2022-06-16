@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.localview;
 
-import javax.ejb.Local;
-import javax.ejb.Stateless;
+import jakarta.ejb.Local;
+import jakarta.ejb.Stateless;
 
 /**
  * This bean class has a two local interfaces, declared on the bean class

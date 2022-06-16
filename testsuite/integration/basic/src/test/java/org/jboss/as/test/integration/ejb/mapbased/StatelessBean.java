@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.mapbased;
 
-import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
-import javax.ejb.EJBContext;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.PermitAll;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 

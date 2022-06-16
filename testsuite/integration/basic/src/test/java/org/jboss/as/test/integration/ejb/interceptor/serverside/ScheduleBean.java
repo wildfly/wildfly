@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.serverside;
 
-import javax.ejb.Local;
-import javax.ejb.Schedule;
-import javax.ejb.Stateless;
-import javax.ejb.Timer;
+import jakarta.ejb.Local;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Timer;
 
 /**
  * @author <a href="mailto:szhantem@redhat.com">Sultan Zhantemirov</a> (c) 2019 Red Hat, inc.

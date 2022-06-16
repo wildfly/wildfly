@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.interceptor.serverside.secured;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;

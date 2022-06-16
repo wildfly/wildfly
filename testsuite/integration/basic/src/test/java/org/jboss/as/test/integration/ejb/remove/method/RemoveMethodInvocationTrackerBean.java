@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.remove.method;
 
-import javax.ejb.Remote;
-import javax.ejb.Singleton;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Singleton;
 
 /**
  * @author Jaikiran Pai

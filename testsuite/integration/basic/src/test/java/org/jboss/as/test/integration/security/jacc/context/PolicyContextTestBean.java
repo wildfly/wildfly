@@ -22,17 +22,17 @@
 
 package org.jboss.as.test.integration.security.jacc.context;
 
-import javax.ejb.Stateless;
-import javax.security.jacc.PolicyContext;
-import javax.security.jacc.PolicyContextException;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.ejb.Stateless;
+import jakarta.security.jacc.PolicyContext;
+import jakarta.security.jacc.PolicyContextException;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Stateless
 public class PolicyContextTestBean {
 
     public HttpServletRequest getHttpServletRequestFromPolicyContext() throws PolicyContextException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) PolicyContext
-                .getContext("javax.servlet.http.HttpServletRequest");
+                .getContext("jakarta.servlet.http.HttpServletRequest");
         return httpServletRequest;
     }
 }

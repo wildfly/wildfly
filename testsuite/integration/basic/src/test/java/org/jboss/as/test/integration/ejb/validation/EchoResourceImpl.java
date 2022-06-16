@@ -24,9 +24,9 @@ package org.jboss.as.test.integration.ejb.validation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Response;
 
 @Stateless
 public class EchoResourceImpl implements EchoResource {

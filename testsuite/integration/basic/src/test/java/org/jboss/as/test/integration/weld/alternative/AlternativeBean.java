@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.alternative;
 
-import javax.enterprise.inject.Alternative;
+import jakarta.enterprise.inject.Alternative;
 
 /**
  * @author Stuart Douglas

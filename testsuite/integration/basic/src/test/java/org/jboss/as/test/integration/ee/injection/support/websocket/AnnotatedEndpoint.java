@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.ee.injection.support.websocket;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.websocket.OnMessage;
-import javax.websocket.server.PathParam;
-import javax.websocket.server.ServerEndpoint;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.server.PathParam;
+import jakarta.websocket.server.ServerEndpoint;
 
 import org.jboss.as.test.integration.ee.injection.support.Alpha;
 import org.jboss.as.test.integration.ee.injection.support.AroundConstructBinding;

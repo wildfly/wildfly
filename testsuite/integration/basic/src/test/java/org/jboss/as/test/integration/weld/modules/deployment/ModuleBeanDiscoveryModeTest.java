@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.modules.deployment;
 
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;

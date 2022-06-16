@@ -23,11 +23,11 @@
 package org.jboss.as.test.integration.ejb.ejb2.reference.annotation;
 
 import java.rmi.NoSuchObjectException;
-import javax.ejb.EJBHome;
-import javax.ejb.EJBMetaData;
-import javax.ejb.EJBObject;
-import javax.ejb.Handle;
-import javax.ejb.HomeHandle;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBMetaData;
+import jakarta.ejb.EJBObject;
+import jakarta.ejb.Handle;
+import jakarta.ejb.HomeHandle;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;

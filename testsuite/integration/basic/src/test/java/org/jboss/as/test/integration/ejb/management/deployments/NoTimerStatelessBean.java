@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
 
 import org.jboss.ejb3.annotation.Pool;
 import org.jboss.ejb3.annotation.SecurityDomain;

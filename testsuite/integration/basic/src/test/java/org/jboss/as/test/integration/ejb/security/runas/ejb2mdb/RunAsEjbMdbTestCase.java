@@ -26,7 +26,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 
 import java.util.PropertyPermission;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;

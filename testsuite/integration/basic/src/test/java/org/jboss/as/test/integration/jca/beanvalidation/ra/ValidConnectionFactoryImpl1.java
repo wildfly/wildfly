@@ -23,8 +23,8 @@ package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionManager;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionManager;
 
 /**
  * Connection factory implementation
@@ -74,7 +74,7 @@ public class ValidConnectionFactoryImpl1 implements ValidConnectionFactory1 {
      * Get connection from factory
      *
      * @return Connection instance
-     * @throws javax.resource.ResourceException Thrown if a connection can't be obtained
+     * @throws jakarta.resource.ResourceException Thrown if a connection can't be obtained
      */
     @Override
     public ValidConnection getConnection() throws ResourceException {

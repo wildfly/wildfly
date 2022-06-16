@@ -27,7 +27,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;

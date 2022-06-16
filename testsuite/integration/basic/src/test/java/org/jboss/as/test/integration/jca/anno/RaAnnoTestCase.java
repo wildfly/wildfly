@@ -29,8 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.jboss.logging.Logger;
-import javax.annotation.Resource;
-import javax.resource.spi.ActivationSpec;
+import jakarta.annotation.Resource;
+import jakarta.resource.spi.ActivationSpec;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.web.injection;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
 
 /**
  * A simple stateless session bean.

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.packaging.multimodule;
 
-import javax.ejb.Stateful;
+import jakarta.ejb.Stateful;
 
 /**
  * @author Stuart Douglas

@@ -23,13 +23,13 @@
 package org.jboss.as.test.integration.jpa.sibling;
 
 import java.util.Map;
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
-import javax.persistence.PersistenceUnit;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Stateful;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContextType;
+import jakarta.persistence.PersistenceUnit;
 
 /**
  * @author Scott Marlow

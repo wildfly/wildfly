@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.aroundconstruct.simple;
 
-import javax.annotation.PostConstruct;
-import javax.interceptor.AroundConstruct;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.interceptor.AroundConstruct;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author Dmitrii Tikhomirov

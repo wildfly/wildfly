@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.ejb.packaging.war.namingcontext;
 
 import javax.naming.NamingException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 /**
  * @author Stuart Douglas

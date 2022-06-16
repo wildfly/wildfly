@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.transaction.bmt.timeout;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-import javax.transaction.RollbackException;
-import javax.transaction.TransactionManager;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.logging.Logger;

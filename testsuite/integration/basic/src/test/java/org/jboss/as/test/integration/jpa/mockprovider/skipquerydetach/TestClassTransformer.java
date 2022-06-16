@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import javax.persistence.spi.ClassTransformer;
+import jakarta.persistence.spi.ClassTransformer;
 
 /**
  * TestClassTransformer

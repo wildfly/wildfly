@@ -24,10 +24,10 @@ package org.jboss.as.test.integration.batch.common;
 
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.batch.api.BatchProperty;
-import javax.batch.api.chunk.ItemReader;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.chunk.ItemReader;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

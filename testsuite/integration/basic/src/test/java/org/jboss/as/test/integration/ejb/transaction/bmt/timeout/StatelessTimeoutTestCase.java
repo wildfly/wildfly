@@ -42,10 +42,10 @@ import org.junit.runner.RunWith;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 import java.util.PropertyPermission;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 /**
  * BMT test where transaction timeout is involved.

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.interceptors.exceptions;
 
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

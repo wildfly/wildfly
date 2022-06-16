@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.naming.shared;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 import java.util.concurrent.TimeUnit;
 
 /**

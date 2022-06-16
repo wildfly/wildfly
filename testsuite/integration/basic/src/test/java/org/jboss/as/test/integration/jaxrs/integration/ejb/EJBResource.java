@@ -21,15 +21,15 @@
  */
 package org.jboss.as.test.integration.jaxrs.integration.ejb;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionSynchronizationRegistry;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 
 @Path("ejbInterceptor")
 @Produces({"text/plain"})

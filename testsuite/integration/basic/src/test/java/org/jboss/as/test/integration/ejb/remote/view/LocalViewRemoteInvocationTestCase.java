@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.remote.view;
 
 import java.util.Hashtable;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 

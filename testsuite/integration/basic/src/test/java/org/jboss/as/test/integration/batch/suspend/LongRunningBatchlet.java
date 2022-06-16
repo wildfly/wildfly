@@ -19,10 +19,10 @@ package org.jboss.as.test.integration.batch.suspend;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.batch.api.BatchProperty;
-import javax.batch.api.Batchlet;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.Batchlet;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * <p>Batchlet that runs until the static method <em>success</em> is called.

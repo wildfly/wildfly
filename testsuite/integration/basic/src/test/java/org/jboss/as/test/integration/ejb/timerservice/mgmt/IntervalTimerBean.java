@@ -1,8 +1,8 @@
 package org.jboss.as.test.integration.ejb.timerservice.mgmt;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
-import javax.ejb.TimerConfig;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TimerConfig;
 
 /**
  * @author: baranowb

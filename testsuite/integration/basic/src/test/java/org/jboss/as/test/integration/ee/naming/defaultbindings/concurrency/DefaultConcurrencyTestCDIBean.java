@@ -23,11 +23,11 @@ package org.jboss.as.test.integration.ee.naming.defaultbindings.concurrency;
 
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import javax.annotation.Resource;
-import javax.enterprise.concurrent.ContextService;
-import javax.enterprise.concurrent.ManagedExecutorService;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.enterprise.concurrent.ManagedThreadFactory;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.concurrent.ContextService;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
+import jakarta.enterprise.concurrent.ManagedThreadFactory;
 
 /**
  * @author Eduardo Martins

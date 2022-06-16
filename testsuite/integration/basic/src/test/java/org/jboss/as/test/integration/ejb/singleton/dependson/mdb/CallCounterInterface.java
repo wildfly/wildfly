@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.singleton.dependson.mdb;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @author baranowb

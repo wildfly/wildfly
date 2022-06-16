@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.home.localhome.annotation;
 
-import javax.annotation.Resource;
-import javax.ejb.LocalHome;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.LocalHome;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 
 import org.jboss.as.test.integration.ejb.home.localhome.SimpleLocalHome;
 

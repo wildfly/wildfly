@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.ejb.injection;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 /**
  * @author Stuart Douglas

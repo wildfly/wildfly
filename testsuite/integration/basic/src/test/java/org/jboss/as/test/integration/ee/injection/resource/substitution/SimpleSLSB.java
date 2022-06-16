@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.substitution;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
 
 /**
  * User: jpai

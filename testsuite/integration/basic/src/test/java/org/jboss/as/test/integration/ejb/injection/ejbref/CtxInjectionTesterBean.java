@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.injection.ejbref;
 
-import javax.ejb.SessionContext;
+import jakarta.ejb.SessionContext;
 
 /**
  * Checks whether injection via ejb-jar.xml of a SessionContext works.

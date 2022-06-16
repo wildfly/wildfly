@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.interceptor.ExcludeClassInterceptors;
-import javax.interceptor.ExcludeDefaultInterceptors;
-import javax.interceptor.Interceptors;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.ExcludeClassInterceptors;
+import jakarta.interceptor.ExcludeDefaultInterceptors;
+import jakarta.interceptor.Interceptors;
 
 /**
  * @author Stuart Douglas

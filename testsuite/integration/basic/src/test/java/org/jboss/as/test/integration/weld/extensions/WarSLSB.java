@@ -23,9 +23,9 @@ package org.jboss.as.test.integration.weld.extensions;
 
 import org.junit.Assert;
 
-import javax.ejb.Local;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
+import jakarta.ejb.Local;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 
 /**
  * @author Stuart Douglas

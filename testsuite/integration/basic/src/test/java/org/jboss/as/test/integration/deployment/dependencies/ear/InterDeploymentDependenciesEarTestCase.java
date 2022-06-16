@@ -27,7 +27,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.Hashtable;
 
-import javax.ejb.NoSuchEJBException;
+import jakarta.ejb.NoSuchEJBException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

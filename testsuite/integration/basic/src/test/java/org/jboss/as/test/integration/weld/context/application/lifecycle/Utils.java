@@ -24,10 +24,10 @@ package org.jboss.as.test.integration.weld.context.application.lifecycle;
 
 import org.jboss.logging.Logger;
 
-import javax.enterprise.context.control.RequestContextController;
-import javax.jms.JMSContext;
-import javax.jms.JMSProducer;
-import javax.jms.Queue;
+import jakarta.enterprise.context.control.RequestContextController;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSProducer;
+import jakarta.jms.Queue;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

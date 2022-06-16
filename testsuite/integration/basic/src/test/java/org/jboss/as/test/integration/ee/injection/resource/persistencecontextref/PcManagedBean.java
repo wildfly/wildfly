@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.persistencecontextref;
 
-import javax.annotation.ManagedBean;
-import javax.ejb.EJB;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.annotation.ManagedBean;
+import jakarta.ejb.EJB;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * Managed bean with persistence unit definitions.

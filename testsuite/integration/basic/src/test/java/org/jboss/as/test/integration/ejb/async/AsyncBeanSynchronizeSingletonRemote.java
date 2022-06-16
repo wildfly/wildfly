@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.async;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author Ondrej Chaloupka

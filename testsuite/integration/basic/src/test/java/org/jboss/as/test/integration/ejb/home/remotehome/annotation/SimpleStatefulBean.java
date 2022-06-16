@@ -23,10 +23,10 @@ package org.jboss.as.test.integration.ejb.home.remotehome.annotation;
 
 import java.rmi.RemoteException;
 
-import javax.annotation.Resource;
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateful;
+import jakarta.annotation.Resource;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateful;
 
 import org.jboss.as.test.integration.ejb.home.remotehome.SimpleInterface;
 import org.jboss.as.test.integration.ejb.home.remotehome.SimpleStatefulHome;

@@ -22,8 +22,8 @@
 
 package org.wildfly.test.integration.weld.asyncobserver;
 
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;

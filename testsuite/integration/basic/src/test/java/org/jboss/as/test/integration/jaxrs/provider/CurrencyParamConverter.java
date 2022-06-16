@@ -19,9 +19,9 @@ package org.jboss.as.test.integration.jaxrs.provider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Currency;
-import javax.ws.rs.ext.ParamConverter;
-import javax.ws.rs.ext.ParamConverterProvider;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.ext.ParamConverter;
+import jakarta.ws.rs.ext.ParamConverterProvider;
+import jakarta.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
 

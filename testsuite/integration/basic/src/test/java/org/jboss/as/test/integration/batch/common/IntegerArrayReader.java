@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.batch.common;
 
-import javax.batch.api.chunk.ItemReader;
-import javax.inject.Named;
+import jakarta.batch.api.chunk.ItemReader;
+import jakarta.inject.Named;
 
 @Named("integerArrayReader")
 public final class IntegerArrayReader extends IntegerArrayReaderWriterBase implements ItemReader {

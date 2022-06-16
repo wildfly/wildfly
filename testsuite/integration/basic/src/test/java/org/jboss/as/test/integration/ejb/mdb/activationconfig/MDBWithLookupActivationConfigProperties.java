@@ -24,12 +24,12 @@ package org.jboss.as.test.integration.ejb.mdb.activationconfig;
 
 import static org.jboss.as.test.integration.ejb.mdb.activationconfig.JMSHelper.reply;
 
-import javax.annotation.Resource;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
-import javax.jms.ConnectionFactory;
-import javax.jms.Message;
-import javax.jms.MessageListener;
+import jakarta.annotation.Resource;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.MessageDriven;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
 
 /**
  * This message-driven bean does not implement MessageListener interface; instead

@@ -22,16 +22,16 @@
 
 package org.jboss.as.test.integration.messaging.jms.context.auxiliary;
 
-import static javax.ejb.TransactionAttributeType.REQUIRED;
+import static jakarta.ejb.TransactionAttributeType.REQUIRED;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.jms.Destination;
-import javax.jms.JMSContext;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSContext;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.

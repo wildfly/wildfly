@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.multipleinterceptors;
 
-import javax.annotation.ManagedBean;
-import javax.interceptor.Interceptors;
+import jakarta.annotation.ManagedBean;
+import jakarta.interceptor.Interceptors;
 
 /**
  * @author Stuart Douglas

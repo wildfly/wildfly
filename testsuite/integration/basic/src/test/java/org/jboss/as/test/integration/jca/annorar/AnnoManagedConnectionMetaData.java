@@ -22,8 +22,8 @@
 package org.jboss.as.test.integration.jca.annorar;
 
 import org.jboss.logging.Logger;
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnectionMetaData;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnectionMetaData;
 
 /**
  * AnnoManagedConnectionMetaData

@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 import java.io.Serializable;
-import javax.resource.Referenceable;
+import jakarta.resource.Referenceable;
 
 /**
  * Admin object

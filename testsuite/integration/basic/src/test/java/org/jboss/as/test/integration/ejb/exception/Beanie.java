@@ -21,13 +21,13 @@
  */
 package org.jboss.as.test.integration.ejb.exception;
 
-import static javax.ejb.TransactionAttributeType.NEVER;
-import static javax.ejb.TransactionAttributeType.NOT_SUPPORTED;
+import static jakarta.ejb.TransactionAttributeType.NEVER;
+import static jakarta.ejb.TransactionAttributeType.NOT_SUPPORTED;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

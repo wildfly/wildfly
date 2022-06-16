@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.annotation;
 
-import javax.ejb.EJBLocalObject;
+import jakarta.ejb.EJBLocalObject;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>

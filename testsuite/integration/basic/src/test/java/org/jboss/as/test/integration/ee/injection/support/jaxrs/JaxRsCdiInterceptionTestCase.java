@@ -56,7 +56,7 @@ public class JaxRsCdiInterceptionTestCase {
         war.add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
         war.addClasses(JaxRsResource.class, ResourceInterceptor.class, ComponentInterceptorBinding.class,
                 ComponentInterceptor.class, Bravo.class, Alpha.class);
-        war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
+        war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" + "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n"
                 + "        <url-pattern>/rest/*</url-pattern>\n" + "    </servlet-mapping>\n" + "\n"), "web.xml");
         return war;
     }

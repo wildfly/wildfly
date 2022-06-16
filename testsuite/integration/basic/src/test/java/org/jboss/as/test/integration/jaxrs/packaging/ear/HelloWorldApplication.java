@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jaxrs.packaging.ear;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 
 /**
  * Application with no path

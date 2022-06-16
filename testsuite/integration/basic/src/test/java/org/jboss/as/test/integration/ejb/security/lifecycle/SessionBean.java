@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.ejb.security.lifecycle;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJBContext;
-import javax.ejb.Remove;
-import javax.ejb.SessionContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.Remove;
+import jakarta.ejb.SessionContext;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>

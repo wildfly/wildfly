@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.jboss.logging.Logger;
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

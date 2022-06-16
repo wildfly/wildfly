@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.singleton.dependson.session;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.EJB;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.EJB;
 
 import org.jboss.as.test.integration.ejb.singleton.dependson.mdb.CallCounterProxy;
 import org.jboss.logging.Logger;

@@ -22,16 +22,16 @@
 
 package org.jboss.as.test.integration.ejb.mdb.activationconfig;
 
-import static javax.jms.Session.AUTO_ACKNOWLEDGE;
+import static jakarta.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.junit.Assert.assertEquals;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.JMSContext;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.TemporaryQueue;
-import javax.jms.TextMessage;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.TemporaryQueue;
+import jakarta.jms.TextMessage;
 
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;

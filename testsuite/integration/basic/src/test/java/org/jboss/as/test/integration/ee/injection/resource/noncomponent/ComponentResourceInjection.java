@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.noncomponent;
 
-import javax.annotation.ManagedBean;
-import javax.annotation.Resource;
-import javax.transaction.UserTransaction;
+import jakarta.annotation.ManagedBean;
+import jakarta.annotation.Resource;
+import jakarta.transaction.UserTransaction;
 
 /**
  * This class is a managed bean, and it's resource injection should be able to be looked up

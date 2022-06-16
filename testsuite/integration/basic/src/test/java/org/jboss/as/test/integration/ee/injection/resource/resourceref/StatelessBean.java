@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 
-import javax.annotation.Resource;
-import javax.ejb.EJBContext;
-import javax.ejb.SessionContext;
-import javax.jms.Queue;
-import javax.transaction.UserTransaction;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.SessionContext;
+import jakarta.jms.Queue;
+import jakarta.transaction.UserTransaction;
 
 /**
  * @author Jaikiran Pai

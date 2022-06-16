@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

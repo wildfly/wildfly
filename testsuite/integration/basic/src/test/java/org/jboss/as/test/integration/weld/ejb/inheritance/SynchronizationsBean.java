@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.ejb.inheritance;
 
-import javax.ejb.Local;
-import javax.ejb.Stateful;
+import jakarta.ejb.Local;
+import jakarta.ejb.Stateful;
 
 /**
  * @author Stuart Douglas

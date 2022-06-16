@@ -24,8 +24,8 @@ package org.jboss.as.test.integration.transaction.inflow;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.resource.spi.work.WorkEvent;
-import javax.resource.spi.work.WorkListener;
+import jakarta.resource.spi.work.WorkEvent;
+import jakarta.resource.spi.work.WorkListener;
 
 /**
  * Simple listener to monitor if work was done already.

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.packaging.injection;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateless;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Stuart Douglas

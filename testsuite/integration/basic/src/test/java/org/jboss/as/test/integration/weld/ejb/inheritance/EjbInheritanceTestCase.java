@@ -30,7 +30,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Tests that ejb's can be injected into an injection point of a type that does not exactly correlate

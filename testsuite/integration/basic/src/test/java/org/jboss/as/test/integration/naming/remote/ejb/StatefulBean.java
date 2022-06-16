@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.naming.remote.ejb;
 
-import javax.ejb.Stateful;
+import jakarta.ejb.Stateful;
 
 /**
  * @author John Bailey, Ondrej Chaloupka

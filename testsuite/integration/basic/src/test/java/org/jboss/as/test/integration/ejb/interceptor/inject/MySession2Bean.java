@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.interceptor.inject;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>

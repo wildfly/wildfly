@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.ejb.security.missingmethodpermission;
 
 import java.util.concurrent.Callable;
 
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;

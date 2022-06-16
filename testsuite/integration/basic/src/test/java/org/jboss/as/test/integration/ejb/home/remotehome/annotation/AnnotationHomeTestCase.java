@@ -26,7 +26,7 @@ import static org.junit.Assert.fail;
 
 import java.rmi.NoSuchObjectException;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;

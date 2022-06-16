@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.container.interceptor;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * Simple interceptor, which only adds its classname in front of the result of {@link InvocationContext#proceed()}

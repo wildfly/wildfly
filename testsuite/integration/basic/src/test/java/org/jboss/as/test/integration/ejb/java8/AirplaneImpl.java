@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.java8;
 
-import javax.ejb.Stateful;
+import jakarta.ejb.Stateful;
 
 @Stateful
 public class AirplaneImpl implements CargoPlane {

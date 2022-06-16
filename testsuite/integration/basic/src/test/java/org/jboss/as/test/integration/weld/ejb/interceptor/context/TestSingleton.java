@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.weld.ejb.interceptor.context;
 
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 @Singleton
 @Startup

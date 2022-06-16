@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ee.injection.support.jpa;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Id;
 
 /**
  * Employee entity class

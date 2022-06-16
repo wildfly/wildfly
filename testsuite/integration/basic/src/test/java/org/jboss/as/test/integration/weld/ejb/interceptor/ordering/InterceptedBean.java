@@ -19,11 +19,11 @@ package org.jboss.as.test.integration.weld.ejb.interceptor.ordering;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.ejb.Stateful;
-import javax.enterprise.context.ApplicationScoped;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptors;
-import javax.interceptor.InvocationContext;
+import jakarta.ejb.Stateful;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptors;
+import jakarta.interceptor.InvocationContext;
 
 @Stateful
 @ApplicationScoped

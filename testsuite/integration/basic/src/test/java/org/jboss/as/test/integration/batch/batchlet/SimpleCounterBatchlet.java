@@ -16,10 +16,10 @@
 
 package org.jboss.as.test.integration.batch.batchlet;
 
-import javax.batch.api.AbstractBatchlet;
-import javax.batch.api.BatchProperty;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.batch.api.AbstractBatchlet;
+import jakarta.batch.api.BatchProperty;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

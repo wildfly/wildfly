@@ -22,15 +22,15 @@
 
 package org.jboss.as.test.integration.transaction.inflow;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.ejb3.annotation.ResourceAdapter;

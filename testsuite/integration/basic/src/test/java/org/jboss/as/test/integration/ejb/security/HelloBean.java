@@ -1,11 +1,11 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import java.rmi.RemoteException;
-import javax.ejb.EJBException;
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.SessionBean;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 

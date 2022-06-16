@@ -63,7 +63,7 @@ public class JSF23SanityTestCase {
     @ArquillianResource
     private URL url;
 
-    private final Pattern viewStatePattern = Pattern.compile("id=\".*javax.faces.ViewState.*\" value=\"([^\"]*)\"");
+    private final Pattern viewStatePattern = Pattern.compile("id=\".*jakarta.faces.ViewState.*\" value=\"([^\"]*)\"");
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
@@ -107,7 +107,7 @@ public class JSF23SanityTestCase {
             HttpPost post = new HttpPost(requestUrl);
 
             List<NameValuePair> list = new ArrayList<NameValuePair>();
-            list.add(new BasicNameValuePair("javax.faces.ViewState", jsfViewState));
+            list.add(new BasicNameValuePair("jakarta.faces.ViewState", jsfViewState));
             list.add(new BasicNameValuePair("register", "register"));
             list.add(new BasicNameValuePair("register:registerButton", "Register"));
 

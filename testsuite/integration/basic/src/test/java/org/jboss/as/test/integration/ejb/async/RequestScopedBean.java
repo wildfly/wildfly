@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ejb.async;
 
-import javax.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.RequestScoped;
 
 /**
  * @author Stuart Douglas

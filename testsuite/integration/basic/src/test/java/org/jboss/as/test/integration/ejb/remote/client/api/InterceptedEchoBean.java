@@ -24,11 +24,11 @@ package org.jboss.as.test.integration.ejb.remote.client.api;
 
 import java.util.concurrent.Future;
 
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import jakarta.ejb.AsyncResult;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
 
 import org.jboss.logging.Logger;
 

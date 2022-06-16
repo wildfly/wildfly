@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * @author Marek Schmidt

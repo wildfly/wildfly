@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.localview;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * EJB with a single implicit local interface

@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ejb.interceptor.inject;
 
 import java.util.ArrayList;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 import javax.sql.DataSource;
 
 /**

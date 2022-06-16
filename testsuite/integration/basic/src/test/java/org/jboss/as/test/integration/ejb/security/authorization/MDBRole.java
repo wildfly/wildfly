@@ -24,19 +24,19 @@ package org.jboss.as.test.integration.ejb.security.authorization;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 
-import javax.annotation.Resource;
-import javax.annotation.security.RunAs;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
-import javax.ejb.MessageDriven;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.JMSContext;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.TextMessage;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.RunAs;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBAccessException;
+import jakarta.ejb.MessageDriven;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
+import jakarta.jms.TextMessage;
 
 /**
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.

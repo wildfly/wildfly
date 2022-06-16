@@ -35,8 +35,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.jboss.logging.Logger;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.EJB;
+import jakarta.ejb.ConcurrentAccessTimeoutException;
+import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

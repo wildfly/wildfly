@@ -24,8 +24,8 @@ package org.jboss.as.test.integration.ee.injection.resource.infinispan;
 
 import java.util.Map;
 
-import javax.annotation.Resource;
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * @author Paul Ferraro

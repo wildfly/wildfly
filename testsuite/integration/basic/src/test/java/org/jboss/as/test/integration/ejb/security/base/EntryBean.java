@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.security.base;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.SessionContext;
 
 import java.util.concurrent.Callable;
 

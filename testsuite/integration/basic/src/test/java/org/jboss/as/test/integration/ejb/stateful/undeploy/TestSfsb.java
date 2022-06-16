@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.stateful.undeploy;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.Stateful;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.Stateful;
 
 /**
  * @author Stuart Douglas

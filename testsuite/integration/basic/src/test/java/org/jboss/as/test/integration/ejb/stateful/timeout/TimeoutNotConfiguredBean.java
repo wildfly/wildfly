@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.stateful.timeout;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.Stateful;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.Stateful;
 
 /**
  * stateful session bean that does not configure stateful timeout via annotation or deployment descriptor.

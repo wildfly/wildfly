@@ -38,8 +38,8 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.List;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.TransactionManagementType;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.TransactionManagementType;
 
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -261,10 +261,10 @@ public class EjbJarRuntimeResourceTestBase {
 
         // MDB specific resources
         if (MESSAGE_DRIVEN.equals(type)) {
-            assertEquals("javax.jms.MessageListener", resource.get(MESSAGING_TYPE).asString());
+            assertEquals("jakarta.jms.MessageListener", resource.get(MESSAGING_TYPE).asString());
 
             if (componentClassName.equals("org.jboss.as.test.integration.ejb.management.deployments.NoTimerMDB")) {
-                assertEquals("javax.jms.Queue", resource.get(MESSAGE_DESTINATION_TYPE).asString());
+                assertEquals("jakarta.jms.Queue", resource.get(MESSAGE_DESTINATION_TYPE).asString());
                 assertEquals("queue/NoTimerMDB-queue", resource.get(MESSAGE_DESTINATION_LINK).asString());
             }
 
@@ -277,7 +277,7 @@ public class EjbJarRuntimeResourceTestBase {
                 final String pValue = p.getValue().asString();
                 switch (pName) {
                     case "destinationType":
-                        assertEquals("javax.jms.Queue", pValue);
+                        assertEquals("jakarta.jms.Queue", pValue);
                         break;
                     case "destination":
                         assertTrue(pValue.startsWith("java:/queue/"));
@@ -413,7 +413,7 @@ public class EjbJarRuntimeResourceTestBase {
             }
         }
         if (expectTimer) {
-            assertTrue(resource.get(TIMEOUT_METHOD).asString().contains("timeout(javax.ejb.Timer)"));
+            assertTrue(resource.get(TIMEOUT_METHOD).asString().contains("timeout(jakarta.ejb.Timer)"));
         }
     }
 

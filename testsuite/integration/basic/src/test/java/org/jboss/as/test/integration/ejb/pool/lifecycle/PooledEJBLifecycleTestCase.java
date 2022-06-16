@@ -22,18 +22,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.PropertyPermission;
-import javax.ejb.EJB;
-import javax.jms.Connection;
-import javax.jms.Destination;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSession;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import jakarta.ejb.EJB;
+import jakarta.jms.Connection;
+import jakarta.jms.Destination;
+import jakarta.jms.Message;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueConnection;
+import jakarta.jms.QueueConnectionFactory;
+import jakarta.jms.QueueReceiver;
+import jakarta.jms.QueueSession;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -234,7 +234,7 @@ public class PooledEJBLifecycleTestCase {
             assertEquals("Unexpected reply messsage", Constants.REPLY_MESSAGE_PREFIX + requestMessage, result);
         } finally {
             if (connection != null) {
-                // just closing the connection will close the session and other related resources (@see javax.jms.Connection)
+                // just closing the connection will close the session and other related resources (@see jakarta.jms.Connection)
                 safeClose(connection);
             }
         }

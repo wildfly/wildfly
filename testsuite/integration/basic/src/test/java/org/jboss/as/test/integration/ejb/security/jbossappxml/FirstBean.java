@@ -23,10 +23,10 @@ package org.jboss.as.test.integration.ejb.security.jbossappxml;
 
 import org.jboss.ejb3.annotation.RunAsPrincipal;
 
-import javax.annotation.security.RunAs;
-import javax.ejb.EJB;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.annotation.security.RunAs;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 /**
  * Simple EJB3 bean that calls another bean with a run as

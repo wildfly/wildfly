@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.multipleinterceptors;
 
-import javax.annotation.Resource;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.Resource;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas

@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.weld.ejb.interceptor.context;
 
-import javax.ejb.Stateless;
-import javax.ejb.Startup;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Startup;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 @Stateless
 @Startup

@@ -24,9 +24,9 @@ package org.jboss.as.test.integration.ejb.timerservice.tx.timeout;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.ejb.Schedule;
-import javax.ejb.Stateless;
-import javax.ejb.Timer;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Timer;
 
 import org.jboss.ejb3.annotation.TransactionTimeout;
 

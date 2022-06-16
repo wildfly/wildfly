@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.deployment.dependencies.ear;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 import org.jboss.logging.Logger;
 
@@ -39,7 +39,7 @@ public class SleeperContextListener implements ServletContextListener {
 
     /**
      * @param arg0
-     * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
+     * @see jakarta.servlet.ServletContextListener#contextDestroyed(jakarta.servlet.ServletContextEvent)
      */
     public void contextDestroyed(ServletContextEvent arg0) {
         LOGGER.trace("Context destroyed");
@@ -47,7 +47,7 @@ public class SleeperContextListener implements ServletContextListener {
 
     /**
      * @param arg0
-     * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
+     * @see jakarta.servlet.ServletContextListener#contextInitialized(jakarta.servlet.ServletContextEvent)
      */
     public void contextInitialized(ServletContextEvent arg0) {
         LOGGER.trace("Context initialized - going to sleep");

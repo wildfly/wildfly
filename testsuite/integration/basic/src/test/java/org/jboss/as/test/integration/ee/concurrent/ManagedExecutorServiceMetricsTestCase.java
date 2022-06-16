@@ -46,7 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 
-import javax.enterprise.concurrent.ManagedExecutorService;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
 import javax.naming.InitialContext;
 import java.io.FilePermission;
 import java.io.IOException;

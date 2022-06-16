@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.ejb.removemethod;
 
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
+import jakarta.ejb.Remove;
+import jakarta.ejb.Stateful;
 
 /**
  * @author Stuart Douglas

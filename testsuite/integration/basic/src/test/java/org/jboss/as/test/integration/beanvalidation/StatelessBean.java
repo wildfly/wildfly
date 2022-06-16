@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.beanvalidation;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 /**
  * User: Jaikiran Pai

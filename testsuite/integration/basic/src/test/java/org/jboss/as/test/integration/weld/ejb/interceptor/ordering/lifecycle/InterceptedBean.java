@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.weld.ejb.interceptor.ordering.lifecycle;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.Stateful;
-import javax.interceptor.Interceptors;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.Stateful;
+import jakarta.interceptor.Interceptors;
 
 @Stateful
 @Interceptors(LegacyInterceptor.class)

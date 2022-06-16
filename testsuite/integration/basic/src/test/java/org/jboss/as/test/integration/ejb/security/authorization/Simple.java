@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.security.authorization;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * Simple local interface

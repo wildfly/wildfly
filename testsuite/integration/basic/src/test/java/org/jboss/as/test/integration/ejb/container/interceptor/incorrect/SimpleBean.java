@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.container.interceptor.incorrect;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
 
 import org.jboss.logging.Logger;
 

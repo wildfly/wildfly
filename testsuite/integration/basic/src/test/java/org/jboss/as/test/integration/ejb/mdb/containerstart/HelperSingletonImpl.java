@@ -26,9 +26,9 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.ejb.Remote;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>

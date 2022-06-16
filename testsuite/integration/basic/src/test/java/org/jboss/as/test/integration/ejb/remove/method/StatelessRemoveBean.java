@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.remove.method;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * Defines a custom "remove" method that is not associated w/ EJBOBject/EJBLocalObject.remove

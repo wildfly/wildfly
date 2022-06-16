@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.transaction.cmt.beforecompletion;
 
-import javax.ejb.BeforeCompletion;
-import javax.ejb.Stateful;
+import jakarta.ejb.BeforeCompletion;
+import jakarta.ejb.Stateful;
 
 /**
  *

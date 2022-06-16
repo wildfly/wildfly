@@ -24,11 +24,11 @@ package org.jboss.as.test.integration.ejb.singleton.reentrant;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Resource;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
-import javax.ejb.SessionContext;
-import javax.ejb.Singleton;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Lock;
+import jakarta.ejb.LockType;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Singleton;
 
 import org.jboss.logging.Logger;
 

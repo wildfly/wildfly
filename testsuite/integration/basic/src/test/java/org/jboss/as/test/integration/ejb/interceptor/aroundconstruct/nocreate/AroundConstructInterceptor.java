@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.aroundconstruct.nocreate;
 
-import javax.interceptor.AroundConstruct;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundConstruct;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas

@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.naming.remote.ejb;
 /**
  * @author John Bailey
  */
-@javax.ejb.Remote
+@jakarta.ejb.Remote
 public interface Remote {
     String echo(String value);
 }

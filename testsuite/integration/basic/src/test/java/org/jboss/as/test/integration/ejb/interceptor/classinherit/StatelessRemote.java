@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.interceptor.classinherit;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  *

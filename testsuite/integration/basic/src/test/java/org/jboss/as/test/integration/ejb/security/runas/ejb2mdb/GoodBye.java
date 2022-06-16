@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
 import java.rmi.RemoteException;
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 
 /**
  * @author Ondrej Chaloupka

@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ejb.descriptor;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 
 /**
  * @author Stuart Douglas

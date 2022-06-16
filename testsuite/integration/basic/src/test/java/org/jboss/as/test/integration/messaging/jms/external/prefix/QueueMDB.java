@@ -26,15 +26,15 @@ package org.jboss.as.test.integration.messaging.jms.external.prefix;
 import static org.jboss.as.test.integration.messaging.jms.external.prefix.ExternalJMSDestinationDefinitionMessagingDeploymentTestCase.REMOTE_PCF;
 import static org.jboss.as.test.integration.messaging.jms.external.prefix.ExternalJMSDestinationDefinitionMessagingDeploymentTestCase.QUEUE_LOOKUP;
 
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
-import javax.inject.Inject;
-import javax.jms.Destination;
-import javax.jms.JMSContext;
-import javax.jms.JMSPasswordCredential;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.TextMessage;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.MessageDriven;
+import jakarta.inject.Inject;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSPasswordCredential;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
+import jakarta.jms.TextMessage;
 import org.jboss.ejb3.annotation.ResourceAdapter;
 
 /**
@@ -42,7 +42,7 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
  */
 @MessageDriven(
         activationConfig = {
-            @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+            @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue"),
             @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = QUEUE_LOOKUP),
             @ActivationConfigProperty(propertyName="user", propertyValue="guest"),
             @ActivationConfigProperty(propertyName="password", propertyValue="guest")

@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.transaction.cmt.timeout;
 import static org.junit.Assert.assertEquals;
 
 import javax.naming.InitialContext;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

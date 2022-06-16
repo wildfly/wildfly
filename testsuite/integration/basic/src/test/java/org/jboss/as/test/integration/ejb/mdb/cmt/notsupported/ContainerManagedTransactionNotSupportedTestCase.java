@@ -31,14 +31,14 @@ import static org.junit.Assert.assertTrue;
 import java.util.PropertyPermission;
 import java.util.UUID;
 
-import javax.annotation.Resource;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.JMSContext;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.TemporaryQueue;
-import javax.jms.TextMessage;
+import jakarta.annotation.Resource;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSContext;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
+import jakarta.jms.TemporaryQueue;
+import jakarta.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -111,7 +111,7 @@ public class ContainerManagedTransactionNotSupportedTestCase {
     }
 
     /**
-     * Test that the {@link javax.ejb.MessageDrivenContext#setRollbackOnly()} throws an IllegalStateException
+     * Test that the {@link jakarta.ejb.MessageDrivenContext#setRollbackOnly()} throws an IllegalStateException
      * when a CMT MDB with NOT_SUPPORTED transaction attribute is invoked.
      *
      * @throws Exception

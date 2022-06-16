@@ -56,7 +56,7 @@ public class ExceptionHandlingTestCase {
                 .addClasses(ExceptionHandlingTestCase.class, HelloWorldResource.class, NPExceptionMapper.class)
                 .setWebXML(
                         WebXml.get("<servlet-mapping>\n"
-                                + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
+                                + "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n"
                                 + "        <url-pattern>/myjaxrs/*</url-pattern>\n" + "</servlet-mapping>\n"));
     }
 

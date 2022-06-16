@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.singleton.dependson;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 
 /**
  * Counting ordering of calls.

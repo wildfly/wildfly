@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
 
 /**
  * <p>Tests the Jakarta Server Faces deployment failure due to UnsupportedOperationException when
- * <em>javax.faces.FACELETS_VIEW_MAPPINGS</em> is defined with something that
+ * <em>jakarta.faces.FACELETS_VIEW_MAPPINGS</em> is defined with something that
  * does not include <em>*.xhtml</em>.</p>
  * <p>
  * For details check https://issues.redhat.com/browse/WFLY-13792
@@ -100,7 +100,7 @@ public class FaceletsViewMappingsTestCase {
             HttpResponse response = httpclient.execute(httpget);
             String result = EntityUtils.toString(response.getEntity());
 
-            Assert.assertEquals("Jakarta Server Faces deployment failed due to UnsupportedOperationException when javax.faces.FACELETS_VIEW_MAPPINGS valued wrong",
+            Assert.assertEquals("Jakarta Server Faces deployment failed due to UnsupportedOperationException when jakarta.faces.FACELETS_VIEW_MAPPINGS valued wrong",
                     HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
             MatcherAssert.assertThat("Hello World is in place", result, CoreMatchers.containsString("Hello World!"));
         }

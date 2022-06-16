@@ -15,7 +15,7 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.dynamic.impl;
 
-import javax.resource.spi.endpoint.MessageEndpoint;
+import jakarta.resource.spi.endpoint.MessageEndpoint;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.io.PrintStream;

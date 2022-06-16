@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ejb.annotationprocessing;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 public abstract class AbstractReferencingBeanA {
 

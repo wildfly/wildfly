@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.transaction.exception.bean.ejb2;
 
-import javax.annotation.Resource;
-import javax.ejb.Local;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
-import javax.transaction.TransactionManager;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Local;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
+import jakarta.transaction.TransactionManager;
 
 @Local(TestBean2Local.class)
 @Remote(TestBean2Remote.class)

@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.beanclass.validity;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 
 /**
  * Invalid use of @Singleton annotation on an interface

@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.security.singleton;
 
-import javax.annotation.Resource;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.EJBContext;
-import javax.ejb.Remote;
-import javax.ejb.Singleton;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Singleton;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 

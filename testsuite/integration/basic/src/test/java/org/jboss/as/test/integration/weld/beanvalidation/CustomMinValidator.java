@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.weld.beanvalidation;
 
-import javax.inject.Inject;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.inject.Inject;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * A validator that uses constructor injection.

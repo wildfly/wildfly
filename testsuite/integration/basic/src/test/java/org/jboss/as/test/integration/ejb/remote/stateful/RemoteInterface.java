@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.remote.stateful;
 
-import javax.ejb.Remote;
-import javax.ejb.Remove;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Remove;
 
 /**
  * @author Stuart Douglas

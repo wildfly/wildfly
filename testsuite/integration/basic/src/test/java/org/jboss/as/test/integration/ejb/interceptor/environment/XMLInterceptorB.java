@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.environment;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 import org.jboss.logging.Logger;
 

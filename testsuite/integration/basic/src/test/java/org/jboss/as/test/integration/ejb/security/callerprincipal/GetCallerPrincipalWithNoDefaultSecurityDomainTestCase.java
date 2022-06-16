@@ -138,7 +138,7 @@ public class GetCallerPrincipalWithNoDefaultSecurityDomainTestCase {
     }
 
     /**
-     * Tests that the {@link javax.ejb.EJBContext#getCallerPrincipal()} works as expected in the absence of
+     * Tests that the {@link jakarta.ejb.EJBContext#getCallerPrincipal()} works as expected in the absence of
      * any default security domain at EJB3 susbsystem level and any explicit security domain on the bean
      */
     @Test

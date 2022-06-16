@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.web.security.runas;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 /**
  * @author olukas

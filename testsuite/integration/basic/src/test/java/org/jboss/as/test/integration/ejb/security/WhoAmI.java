@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import java.security.Principal;
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * The local interface to the simple WhoAmI bean.

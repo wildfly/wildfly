@@ -30,10 +30,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 /**
- * Test that a bean which uses {@link javax.ejb.TransactionManagement} annotation
+ * Test that a bean which uses {@link jakarta.ejb.TransactionManagement} annotation
  * without any explicit value, doesn't cause a deployment failure.
  *
  * @see https://issues.jboss.org/browse/AS7-1506

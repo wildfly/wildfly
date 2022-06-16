@@ -25,8 +25,8 @@ import java.net.SocketPermission;
 import java.net.URI;
 import java.util.PropertyPermission;
 
-import javax.websocket.ContainerProvider;
-import javax.websocket.WebSocketContainer;
+import jakarta.websocket.ContainerProvider;
+import jakarta.websocket.WebSocketContainer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -60,7 +60,7 @@ public class WebSocketInjectionSupportTestCase {
                         ComponentInterceptor.class).addClasses(InjectionSupportTestCase.constructTestsHelperClasses)
                 .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .addAsManifestResource(new StringAsset("io.undertow.websockets.jsr.UndertowContainerProvider"),
-                        "services/javax.websocket.ContainerProvider")
+                        "services/jakarta.websocket.ContainerProvider")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         // Needed for the TestSuiteEnvironment.getServerAddress() and TestSuiteEnvironment.getHttpPort()
                         new PropertyPermission("management.address", "read"),

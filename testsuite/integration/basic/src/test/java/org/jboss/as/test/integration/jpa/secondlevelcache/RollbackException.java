@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.jpa.secondlevelcache;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 @ApplicationException(rollback = true)
 public class RollbackException extends RuntimeException {

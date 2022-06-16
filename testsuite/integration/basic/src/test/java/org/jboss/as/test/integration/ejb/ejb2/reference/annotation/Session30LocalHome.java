@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.annotation;
 
-import javax.ejb.EJBLocalHome;
+import jakarta.ejb.EJBLocalHome;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
 public interface Session30LocalHome extends EJBLocalHome {
-    LocalSession30 create() throws javax.ejb.CreateException;
+    LocalSession30 create() throws jakarta.ejb.CreateException;
 }

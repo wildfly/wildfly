@@ -31,7 +31,7 @@
             <transaction-type>Container</transaction-type>
             <message-selector>MessageFormat = 'Version 1.1'</message-selector>
             <message-driven-destination>
-                <destination-type>javax.jms.Queue</destination-type>
+                <destination-type>jakarta.jms.Queue</destination-type>
             </message-driven-destination>
         </message-driven>
     </enterprise-beans>

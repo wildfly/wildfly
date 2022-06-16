@@ -24,8 +24,8 @@ import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
 import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
 import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBAccessException;
 import java.io.File;
 import java.util.concurrent.Callable;
 

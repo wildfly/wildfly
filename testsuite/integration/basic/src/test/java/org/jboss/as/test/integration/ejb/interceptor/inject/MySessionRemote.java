@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ejb.interceptor.inject;
 
 import java.util.ArrayList;
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>

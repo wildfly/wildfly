@@ -37,8 +37,8 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import java.rmi.RemoteException;
 import java.security.AllPermission;
 
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException;

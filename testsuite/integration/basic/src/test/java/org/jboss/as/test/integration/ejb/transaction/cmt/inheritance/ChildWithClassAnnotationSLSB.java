@@ -16,10 +16,10 @@ limitations under the License.
 
 package org.jboss.as.test.integration.ejb.transaction.cmt.inheritance;
 
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.transaction.Transaction;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.transaction.Transaction;
 import org.jboss.logging.Logger;
 
 /**

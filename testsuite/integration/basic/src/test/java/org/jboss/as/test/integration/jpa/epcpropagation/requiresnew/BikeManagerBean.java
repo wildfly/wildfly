@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.jpa.epcpropagation.requiresnew;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 
 import org.junit.Assert;
 

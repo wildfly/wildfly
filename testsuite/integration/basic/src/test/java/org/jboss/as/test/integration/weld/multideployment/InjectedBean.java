@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.multideployment;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class InjectedBean {
 

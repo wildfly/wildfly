@@ -17,7 +17,7 @@
 
 package org.jboss.as.test.integration.weld.ejb.interceptor.interceptorsorderwithexclusions;
 
-import javax.interceptor.InterceptorBinding;
+import jakarta.interceptor.InterceptorBinding;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;

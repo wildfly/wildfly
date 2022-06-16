@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ee.naming.defaultbindings.datasource;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.sql.DataSource;
 
 /**

@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.stateless.systemexception;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * stateful session bean

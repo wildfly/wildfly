@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ejb.interceptor.environment;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface MyTestRemoteB {

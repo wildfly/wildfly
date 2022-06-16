@@ -15,9 +15,9 @@
  */
 package org.wildfly.test.integration.weld.builtinBeans;
 
-import javax.ejb.Stateless;
-import javax.ejb.EJBContext;
-import javax.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.EJBContext;
+import jakarta.annotation.Resource;
 
 @Stateless
 public class BeanWithPrincipalFromEJBContext {

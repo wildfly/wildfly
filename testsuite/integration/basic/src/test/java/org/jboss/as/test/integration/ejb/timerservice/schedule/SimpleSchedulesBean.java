@@ -25,12 +25,12 @@ import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-import javax.ejb.Schedule;
-import javax.ejb.Schedules;
-import javax.ejb.Stateless;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Schedules;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
 
 /**
  * @author Stuart Douglas

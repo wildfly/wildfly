@@ -24,15 +24,15 @@ package org.jboss.as.test.integration.transaction.inflow;
 
 import java.util.Enumeration;
 import java.util.Random;
-import javax.jms.Destination;
-import javax.jms.JMSException;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
 
 /**
  * Test message used for testing in Jakarta Connectors inflow transaction rar.
  *
  * @author Ondrej Chaloupka <ochaloup@redhat.com>
  */
-public class TransactionInflowTextMessage implements javax.jms.TextMessage {
+public class TransactionInflowTextMessage implements jakarta.jms.TextMessage {
     private int messageId = new Random().nextInt();
     private String text;
 

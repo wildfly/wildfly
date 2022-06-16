@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Hibernate "hibernate.ejb.use_class_enhancer" test that causes hibernate to add a
- * javax.persistence.spi.ClassTransformer to the pu.
+ * jakarta.persistence.spi.ClassTransformer to the pu.
  *
  * @author Scott Marlow
  */

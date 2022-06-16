@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.weld.modules;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * @author Stuart Douglas

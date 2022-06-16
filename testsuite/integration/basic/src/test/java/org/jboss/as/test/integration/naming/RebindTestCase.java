@@ -45,7 +45,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import java.io.FilePermission;
 import java.net.URL;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

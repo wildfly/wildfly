@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.byreference;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface HelloRemote {

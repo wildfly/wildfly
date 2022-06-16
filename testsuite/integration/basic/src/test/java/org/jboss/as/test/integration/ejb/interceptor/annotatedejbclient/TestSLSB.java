@@ -1,9 +1,9 @@
 package org.jboss.as.test.integration.ejb.interceptor.annotatedejbclient;
 
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class TestSLSB implements TestRemote {

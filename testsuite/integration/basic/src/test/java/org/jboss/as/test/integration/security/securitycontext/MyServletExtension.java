@@ -15,7 +15,7 @@ limitations under the License.
  */
 package org.jboss.as.test.integration.security.securitycontext;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.servlet.ServletExtension;

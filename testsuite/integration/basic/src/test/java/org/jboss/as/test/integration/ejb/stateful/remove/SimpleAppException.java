@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.stateful.remove;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 /**
  * User: jpai

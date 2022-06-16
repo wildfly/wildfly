@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.mail;
 
-import javax.annotation.Resource;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
-import javax.mail.Session;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
+import jakarta.mail.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -54,7 +54,7 @@ public class StatelessMailBean
 
         // JavaMail Session
         Object obj = myEnv.lookup("MyDefaultMail");
-        if ((obj instanceof javax.mail.Session) == false) { throw new NamingException("DefaultMail is not a javax.mail.Session"); }
+        if ((obj instanceof jakarta.mail.Session) == false) { throw new NamingException("DefaultMail is not a jakarta.mail.Session"); }
     }
 
     public void testMailInjection() {

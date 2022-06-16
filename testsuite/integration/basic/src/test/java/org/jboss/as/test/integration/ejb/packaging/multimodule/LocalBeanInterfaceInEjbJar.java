@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.packaging.multimodule;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * User: jpai

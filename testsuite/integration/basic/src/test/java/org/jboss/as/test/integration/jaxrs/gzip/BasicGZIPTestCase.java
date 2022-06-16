@@ -68,7 +68,7 @@ public class BasicGZIPTestCase {
                 .addClasses(BasicGZIPTestCase.class, GZIPResource.class, JaxbModel.class)
                 .setWebXML(
                         WebXml.get("<servlet-mapping>\n"
-                                + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
+                                + "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n"
                                 + "        <url-pattern>/myjaxrs/*</url-pattern>\n" + "</servlet-mapping>\n"
                                 + " <context-param><param-name>resteasy.allowGzip</param-name><param-value>true</param-value></context-param>\n"));
     }

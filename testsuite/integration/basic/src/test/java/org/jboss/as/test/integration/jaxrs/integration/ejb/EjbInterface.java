@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.jaxrs.integration.ejb;
 
-import javax.transaction.SystemException;
+import jakarta.transaction.SystemException;
 
 /**
  * @author Stuart Douglas

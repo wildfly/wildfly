@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.packaging.war;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 /**
  * Stateless bean placed into jar archive in war archive.

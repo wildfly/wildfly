@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.validation;
 
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 @Startup
 @Singleton

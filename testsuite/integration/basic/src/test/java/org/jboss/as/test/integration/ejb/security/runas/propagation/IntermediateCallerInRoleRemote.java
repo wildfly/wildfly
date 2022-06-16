@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.security.runas.propagation;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author tmiyar

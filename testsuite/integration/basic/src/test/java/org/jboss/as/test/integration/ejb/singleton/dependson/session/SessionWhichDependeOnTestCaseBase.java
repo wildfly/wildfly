@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.singleton.dependson.session;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.test.api.ArquillianResource;

@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.weld.services;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.enterprise.context.RequestScoped;
-import javax.xml.ws.WebServiceContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.xml.ws.WebServiceContext;
 import java.security.Principal;
 
 @RequestScoped

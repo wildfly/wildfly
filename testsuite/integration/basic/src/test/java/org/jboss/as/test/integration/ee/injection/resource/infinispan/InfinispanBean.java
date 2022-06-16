@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.infinispan;
 
-import javax.annotation.ManagedBean;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.ManagedBean;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

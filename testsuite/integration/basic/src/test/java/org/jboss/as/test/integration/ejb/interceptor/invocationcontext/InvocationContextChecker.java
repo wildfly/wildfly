@@ -1,7 +1,7 @@
 package org.jboss.as.test.integration.ejb.interceptor.invocationcontext;
 
-import javax.ejb.Timer;
-import javax.interceptor.InvocationContext;
+import jakarta.ejb.Timer;
+import jakarta.interceptor.InvocationContext;
 
 import org.jboss.logging.Logger;
 

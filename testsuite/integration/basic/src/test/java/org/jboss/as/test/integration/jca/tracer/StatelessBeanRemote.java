@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.tracer;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author Ondra Chaloupka <ochaloup@redhat.com>

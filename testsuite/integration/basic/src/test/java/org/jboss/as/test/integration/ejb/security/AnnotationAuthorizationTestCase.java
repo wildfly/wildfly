@@ -43,8 +43,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBAccessException;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.concurrent.Callable;
