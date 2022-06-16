@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.jboss.narayana.compensations:compensations}"/>
+        <artifact name="\${org.jboss.narayana.compensations:compensations@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>

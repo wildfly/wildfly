@@ -2416,7 +2416,7 @@
                 <groupId>org.jboss.narayana.xts</groupId>
                 <artifactId>jbossxts-jakarta</artifactId>
                 <version>${version.org.jboss.narayana}</version>
-		<classifier>api</classifier>
+                <classifier>api</classifier>
                 <exclusions>
                     <exclusion>
                         <artifactId>*</artifactId>
