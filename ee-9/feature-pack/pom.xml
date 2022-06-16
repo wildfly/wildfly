@@ -538,18 +538,18 @@
                                 <!-- end JPMS or OSGi metadata excludes -->
                                 <!-- Only contains hard-coded strings that are either not used or both the javax and
                                 jakarta names are used or legacy text files like XSD's or XML configuration files -->
-                                <excluded>jakarta.xml.bind:jakarta.xml.bind-api\z</excluded>
+                                <exclude>jakarta.xml.bind:jakarta.xml.bind-api\z</exclude>
                                 <exclude>org.apache.logging.log4j:log4j-api\z</exclude>
+                                <exclude>org.apache.cxf:cxf-core\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-bindings-xml\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-databinding-jaxb\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-frontend-simple\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-transports-jms\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-transports-http\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-ws-rm\z</exclude>
+                                <exclude>org.apache.cxf:cxf-tools-common\z</exclude>
+                                <exclude>org.apache.cxf:cxf-tools-java2ws\z</exclude>
                                 <exclude>org.glassfish.jaxb:jaxb-xjc\z</exclude>
-                                <excluded>org.apache.cxf:cxf-core\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-bindings-xml\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-databinding-jaxb\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-frontend-simple\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-transports-jms\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-transports-http\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-ws-rm\z</excluded>
-                                <excluded>org.apache.cxf:cxf-tools-common\z</excluded>
-                                <excluded>org.apache.cxf:cxf-tools-java2ws\z</excluded>
 
                                 <!-- Uses JSON only for formatting and uses an internal JSON generator -->
                                 <exlude>org.jboss.logmanager:jboss-logmanager\z</exlude>
@@ -591,7 +591,7 @@
                                      do not work with WildFly. We should ignore the transformation as we'll be removing
                                      in the near future.
                                   -->
-                                <excluded>org.jboss.logmanager:log4j-jboss-logmanager\z</excluded>
+                                <exclude>org.jboss.logmanager:log4j-jboss-logmanager\z</exclude>
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
