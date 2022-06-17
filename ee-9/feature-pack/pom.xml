@@ -586,6 +586,13 @@
                                 <exclude>org.glassfish:jakarta.json\z</exclude>
                                 <exclude>activemq-artemis-native\z</exclude>
                                 <exclude>org.jboss.activemq.artemis.integration:artemis-wildfly-jakarta-integration\z</exclude>
+
+                                <!-- Depends on javax.json API that it bundles.
+                                   Transformation bound to org.wildfly.security.auth.client.spi.WebServicesClientConfigProviderImpl
+                                   is meaningless, this class is not being used by CLI.
+                                -->
+                                <exclude>org.wildfly.core:wildfly-cli:client\z</exclude>
+
                                 <!-- Issue filed for removal of log4j 1.x, WFCORE-5781. Skipping this may break users
                                      who use appenders like the SMTPAppender. However, most of the Jakarta EE appenders
                                      do not work with WildFly. We should ignore the transformation as we'll be removing
