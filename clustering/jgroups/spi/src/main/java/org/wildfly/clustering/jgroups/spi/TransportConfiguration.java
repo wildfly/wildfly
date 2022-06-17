@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.jgroups.spi;
 
+import org.jboss.as.network.SocketBinding;
 import org.jgroups.protocols.TP;
 
 /**
@@ -30,6 +31,8 @@ import org.jgroups.protocols.TP;
 public interface TransportConfiguration<T extends TP> extends ProtocolConfiguration<T> {
 
     Topology getTopology();
+
+    SocketBinding getSocketBinding();
 
     interface Topology {
         String getMachine();
