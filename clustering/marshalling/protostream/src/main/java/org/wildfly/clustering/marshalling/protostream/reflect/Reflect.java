@@ -32,6 +32,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Utility methods requiring privileged actions for use by reflection-based marshallers.
+ * Do not change class/method visibility to avoid being called from other {@link java.security.CodeSource}s, thus granting privilege escalation to external code.
  * @author Paul Ferraro
  */
 final class Reflect {
