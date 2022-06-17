@@ -43,6 +43,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.TimeoutIncrementorBean;
+import org.jboss.as.test.clustering.cluster.ejb.stateful.servlet.AbstractStatefulServlet;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.servlet.StatefulServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
@@ -78,7 +79,7 @@ public class StatefulTimeoutTestCase extends AbstractClusteringTestCase {
     private static WebArchive createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addClasses(TimeoutIncrementorBean.class, Incrementor.class);
-        war.addPackage(StatefulServlet.class.getPackage());
+        war.addClasses(StatefulServlet.class, AbstractStatefulServlet.class);
         war.addPackage(EJBDirectory.class.getPackage());
         war.setWebXML(StatefulServlet.class.getPackage(), "web.xml");
         return war;

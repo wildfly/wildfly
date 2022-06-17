@@ -1,0 +1,10 @@
+package jakarta.faces.view;
+
+/**
+ * @TypeId(505)
+ */
+message Location {
+	optional	string	path	 = 1;
+	optional	uint32	line	 = 2;
+	optional	uint32	column	 = 3;
+}

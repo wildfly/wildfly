@@ -22,7 +22,7 @@
 package org.wildfly.clustering.web.session;
 
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 
@@ -35,15 +35,17 @@ import org.wildfly.clustering.web.WebDeploymentConfiguration;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> extends WebDeploymentConfiguration {
+public interface SessionManagerFactoryConfiguration<S, SC, AL, LC> extends WebDeploymentConfiguration {
 
     Integer getMaxActiveSessions();
 
-    MarshalledValueFactory<MC> getMarshalledValueFactory();
+    ByteBufferMarshaller getMarshaller();
 
     LocalContextFactory<LC> getLocalContextFactory();
 
     Immutability getImmutability();
 
     SpecificationProvider<S, SC, AL> getSpecificationProvider();
+
+    SessionAttributePersistenceStrategy getAttributePersistenceStrategy();
 }

@@ -24,6 +24,7 @@ package org.wildfly.extension.clustering.server.dispatcher;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.AbstractMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
@@ -51,7 +52,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
-import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
+import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.protostream.ModuleClassLoaderMarshaller;
@@ -83,10 +84,10 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 ClassLoader userLoader = entry.getValue();
                 ClassLoader loader = WildFlySecurityManager.getClassLoaderPrivileged(ChannelCommandDispatcherFactory.class);
-                ClassLoader[] loaders = userLoader.equals(loader) ? new ClassLoader[] { userLoader } : new ClassLoader[] { userLoader, loader };
+                List<ClassLoader> loaders = userLoader.equals(loader) ? List.of(userLoader) : List.of(userLoader, loader);
                 config.setClassResolver(entry.getKey());
                 config.setClassTable(new DynamicClassTable(loaders));
-                config.setObjectTable(new ExternalizerObjectTable(loaders));
+                config.setObjectTable(new DynamicExternalizerObjectTable(loaders));
                 return config;
             }
         },

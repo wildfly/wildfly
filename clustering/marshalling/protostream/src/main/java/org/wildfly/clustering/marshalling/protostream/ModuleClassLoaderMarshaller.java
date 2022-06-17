@@ -68,7 +68,7 @@ public class ModuleClassLoaderMarshaller implements ClassLoaderMarshaller {
     public ClassLoader readField(ProtoStreamReader reader, int index, ClassLoader loader) throws IOException {
         switch (index) {
             case MODULE_INDEX:
-                String moduleName = reader.readString();
+                String moduleName = reader.readAny(String.class);
                 try {
                     Module module = this.loader.loadModule(moduleName);
                     return module.getClassLoader();
@@ -86,7 +86,7 @@ public class ModuleClassLoaderMarshaller implements ClassLoaderMarshaller {
     public void writeFields(ProtoStreamWriter writer, int startIndex, ClassLoader loader) throws IOException {
         Module module = Module.forClassLoader(loader, false);
         if (module != null && !this.defaultModule.equals(module)) {
-            writer.writeString(startIndex + MODULE_INDEX, module.getName());
+            writer.writeAny(startIndex + MODULE_INDEX, module.getName());
         }
     }
 }

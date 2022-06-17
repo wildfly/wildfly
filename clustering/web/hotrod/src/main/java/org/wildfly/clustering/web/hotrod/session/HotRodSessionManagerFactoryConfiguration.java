@@ -22,16 +22,14 @@
 package org.wildfly.clustering.web.hotrod.session;
 
 import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 
 /**
  * @param <S> the HttpSession specification type
  * @param <SC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
- * @param <MC> the marshalling context type
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> extends DistributableSessionManagementConfiguration, SessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, HotRodConfiguration {
+public interface HotRodSessionManagerFactoryConfiguration<S, SC, AL, LC> extends SessionManagerFactoryConfiguration<S, SC, AL, LC>, HotRodConfiguration {
 }

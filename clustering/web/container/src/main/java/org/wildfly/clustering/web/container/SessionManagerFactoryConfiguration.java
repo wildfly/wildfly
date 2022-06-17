@@ -23,7 +23,7 @@ package org.wildfly.clustering.web.container;
 
 import java.time.Duration;
 
-import org.jboss.modules.Module;
+import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
  * Defines the container configuration for a session manager factory of a deployment.
@@ -44,8 +44,8 @@ public interface SessionManagerFactoryConfiguration extends WebDeploymentConfigu
     Duration getDefaultSessionTimeout();
 
     /**
-     * The module of this deployment
-     * @return a module
+     * The deployment unit with which this session manager factory is to be associated.
+     * @return a deployment unit
      */
-    Module getModule();
+    DeploymentUnit getDeploymentUnit();
 }

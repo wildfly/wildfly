@@ -1,0 +1,10 @@
+package com.sun.faces.util;
+
+/**
+ * @TypeId(530)
+ */
+message LRUMap {
+	repeated	bytes	key	 = 1;
+	repeated	bytes	value	 = 2;
+	optional	uint32	maxCapacity	 = 3;
+}

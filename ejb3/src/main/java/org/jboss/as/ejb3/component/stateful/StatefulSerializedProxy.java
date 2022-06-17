@@ -40,14 +40,22 @@ import org.jboss.msc.service.ServiceName;
  */
 public class StatefulSerializedProxy implements Serializable {
 
-
     private static final long serialVersionUID = 627023970448688592L;
+
     private final String viewName;
     private final SessionID sessionID;
 
     public StatefulSerializedProxy(final String viewName, final SessionID sessionID) {
         this.viewName = viewName;
         this.sessionID = sessionID;
+    }
+
+    public String getViewName() {
+        return this.viewName;
+    }
+
+    public SessionID getSessionID() {
+        return this.sessionID;
     }
 
     private Object readResolve() throws ObjectStreamException {

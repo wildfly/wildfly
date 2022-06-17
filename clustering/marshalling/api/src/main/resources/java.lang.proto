@@ -7,7 +7,7 @@ package java.lang;
  */
 message Class {
 	required	string	name	= 1;
-	optional	string	module	= 2;
+	optional	bytes	module	= 2;
 }
 
 /**

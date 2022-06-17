@@ -1,0 +1,27 @@
+package org.glassfish.expressly.lang;
+
+/**
+ * @TypeId(415)
+ */
+message Function {
+	optional	string	prefix	 = 1;
+	optional	string	localName	 = 2;
+	optional	string	declaringClass	 = 3;
+	optional	string	methodName	 = 4;
+	repeated	string	parameterType	 = 5;
+}
+
+/**
+ * @TypeId(416)
+ */
+message FunctionMapperImpl {
+	repeated	Function	function	 = 2;
+}
+
+/**
+ * @TypeId(417)
+ */
+message VariableMapperImpl {
+	repeated	string	variable	 = 1;
+	repeated	bytes	expression	 = 2;
+}

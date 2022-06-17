@@ -30,15 +30,15 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.web.infinispan.InfinispanCacheConfiguration;
 import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
-import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.extension.clustering.web.routing.infinispan.RankedRouteLocatorServiceConfiguratorFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class RankedAffinityServiceConfigurator extends AffinityServiceConfigurator<InfinispanSessionManagementConfiguration> implements RankedRoutingConfiguration {
+public class RankedAffinityServiceConfigurator<C extends InfinispanCacheConfiguration> extends AffinityServiceConfigurator<C> implements RankedRoutingConfiguration {
 
     private volatile String delimiter;
     private volatile int maxRoutes;
@@ -55,8 +55,8 @@ public class RankedAffinityServiceConfigurator extends AffinityServiceConfigurat
     }
 
     @Override
-    public RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> get() {
-        return new RankedRouteLocatorServiceConfiguratorFactory(this);
+    public RouteLocatorServiceConfiguratorFactory<C> get() {
+        return new RankedRouteLocatorServiceConfiguratorFactory<>(this);
     }
 
     @Override

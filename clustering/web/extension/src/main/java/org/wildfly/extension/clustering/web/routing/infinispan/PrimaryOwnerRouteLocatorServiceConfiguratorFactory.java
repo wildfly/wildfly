@@ -24,17 +24,17 @@ package org.wildfly.extension.clustering.web.routing.infinispan;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
+import org.wildfly.clustering.web.infinispan.InfinispanCacheConfiguration;
 import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * Factory for creating a service configurator for a primary owner route locator.
  * @author Paul Ferraro
  */
-public class PrimaryOwnerRouteLocatorServiceConfiguratorFactory implements RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> {
+public class PrimaryOwnerRouteLocatorServiceConfiguratorFactory<C extends InfinispanCacheConfiguration> implements RouteLocatorServiceConfiguratorFactory<C> {
 
     @Override
-    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(InfinispanSessionManagementConfiguration managementConfiguration, WebDeploymentConfiguration deploymentConfiguration) {
-        return new PrimaryOwnerRouteLocatorServiceConfigurator(managementConfiguration, deploymentConfiguration);
+    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(C configuration, WebDeploymentConfiguration deploymentConfiguration) {
+        return new PrimaryOwnerRouteLocatorServiceConfigurator(configuration, deploymentConfiguration);
     }
 }

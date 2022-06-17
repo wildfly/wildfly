@@ -1,0 +1,54 @@
+package org.jboss.weld.bean.proxy;
+
+import "java.lang.proto";
+import "org.jboss.weld.interceptor.proxy.proto";
+
+/**
+ * @TypeId(470)
+ */
+message CombinedInterceptorAndDecoratorStackMethodHandler {
+	optional	org.jboss.weld.interceptor.proxy.InterceptorMethodHandler	handler	 = 1;
+	optional	bytes	decorator	 = 2;
+}
+
+/**
+ * @TypeId(471)
+ */
+message ContextBeanInstance {
+	optional	bytes	contextId	 = 1;
+	optional	bytes	beanId	 = 2;
+}
+
+/**
+ * @TypeId(472)
+ */
+message DecoratorProxyMethodHandler {
+	optional	bytes	decorator	 = 1;
+	optional	bytes	delegate	 = 2;
+}
+
+/**
+ * @TypeId(473)
+ */
+message EnterpriseTargetBeanInstance {
+	optional	bytes	contextId	 = 1;
+	optional	bytes	beanId	 = 2;
+}
+
+/**
+ * @TypeId(474)
+ */
+message ProxyMethodHandler {
+	optional	bytes	contextId	 = 1;
+	optional	bytes	instance	 = 2;
+	optional	bytes	beanId	 = 3;
+}
+
+/**
+ * @TypeId(475)
+ */
+message TargetBeanInstance {
+	optional	bytes	instance	 = 1;
+	optional	java.lang.Class	type	 = 2;
+	optional	bytes	handler	 = 3;
+}

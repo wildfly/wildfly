@@ -36,6 +36,7 @@ import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.CompositeServiceBuilder;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -49,7 +50,7 @@ import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.server.NodeFactory;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
@@ -77,14 +78,13 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <S> the HttpSession specification type
  * @param <SC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
- * @param <MC> the marshalling context type
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, LC> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanSessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>>, Consumer<ConfigurationBuilder> {
+public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, LC> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanSessionManagerFactoryConfiguration<S, SC, AL, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>>, Consumer<ConfigurationBuilder> {
 
-    private final InfinispanSessionManagementConfiguration configuration;
-    private final SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> factoryConfiguration;
+    private final InfinispanSessionManagementConfiguration<DeploymentUnit> configuration;
+    private final SessionManagerFactoryConfiguration<S, SC, AL, LC> factoryConfiguration;
 
     private volatile ServiceConfigurator configurationConfigurator;
     private volatile ServiceConfigurator cacheConfigurator;
@@ -96,7 +96,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, L
     @SuppressWarnings("rawtypes")
     private volatile Supplier<Cache> cache;
 
-    public InfinispanSessionManagerFactoryServiceConfigurator(InfinispanSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> factoryConfiguration) {
+    public InfinispanSessionManagerFactoryServiceConfigurator(InfinispanSessionManagementConfiguration<DeploymentUnit> configuration, SessionManagerFactoryConfiguration<S, SC, AL, LC> factoryConfiguration) {
         super(ServiceName.JBOSS.append("clustering", "web", factoryConfiguration.getDeploymentName()));
         this.configuration = configuration;
         this.factoryConfiguration = factoryConfiguration;
@@ -179,7 +179,12 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, L
 
     @Override
     public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
-        return this.configuration.getAttributePersistenceStrategy();
+        return this.factoryConfiguration.getAttributePersistenceStrategy();
+    }
+
+    @Override
+    public ByteBufferMarshaller getMarshaller() {
+        return this.factoryConfiguration.getMarshaller();
     }
 
     @Override
@@ -195,11 +200,6 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, L
     @Override
     public String getDeploymentName() {
         return this.factoryConfiguration.getDeploymentName();
-    }
-
-    @Override
-    public MarshalledValueFactory<MC> getMarshalledValueFactory() {
-        return this.factoryConfiguration.getMarshalledValueFactory();
     }
 
     @Override

@@ -1,0 +1,29 @@
+package jakarta.faces.component;
+
+/**
+ * @TypeId(500)
+ */
+enum PropertyKeys {
+	rendered	 = 0;
+	attributes	 = 1;
+	bindings	 = 2;
+	rendererType	 = 3;
+	systemEventListeners	 = 4;
+	behaviors	 = 5;
+	passThroughAttributes	 = 6;
+}
+
+/**
+ * @TypeId(501)
+ */
+enum PropertyKeysPrivate {
+	attributesThatAreSet	 = 0;
+}
+
+/**
+ * @TypeId(502)
+ */
+message StateHolderSaver {
+	optional	string	className	 = 1;
+	optional	bytes	savedState	 = 2;
+}

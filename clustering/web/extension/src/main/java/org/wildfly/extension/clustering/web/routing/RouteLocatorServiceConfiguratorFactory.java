@@ -24,12 +24,11 @@ package org.wildfly.extension.clustering.web.routing;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**
  * Factory for creating a service configurator for a route locator.
  * @author Paul Ferraro
  */
-public interface RouteLocatorServiceConfiguratorFactory<C extends DistributableSessionManagementConfiguration> {
-    CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(C managementConfiguration, WebDeploymentConfiguration deploymentConfiguration);
+public interface RouteLocatorServiceConfiguratorFactory<C> {
+    CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(C configuration, WebDeploymentConfiguration deploymentConfiguration);
 }

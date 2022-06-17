@@ -1,0 +1,15 @@
+package org.jboss.weld.module.web.el;
+
+/**
+ * @TypeId(480)
+ */
+message WeldMethodExpression {
+	optional	bytes	expression	 = 1;
+}
+
+/**
+ * @TypeId(481)
+ */
+message WeldValueExpression {
+	optional	bytes	expression	 = 1;
+}

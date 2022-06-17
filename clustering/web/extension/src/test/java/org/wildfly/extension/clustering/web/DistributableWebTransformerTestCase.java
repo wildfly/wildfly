@@ -27,6 +27,8 @@ import java.util.List;
 
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -164,6 +166,18 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         List<ModelNode> operations = builder.parseXmlResource("wildfly-distributable-web-transform-reject.xml");
-        ModelTestUtils.checkFailedTransformedBootOperations(services, this.version, operations, new FailedOperationTransformationConfig());
+        ModelTestUtils.checkFailedTransformedBootOperations(services, this.version, operations, this.createFailedOperationTransformationConfig());
+    }
+
+    private FailedOperationTransformationConfig createFailedOperationTransformationConfig() {
+        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
+        PathAddress subsystemAddress = PathAddress.pathAddress(ModelDescriptionConstants.SUBSYSTEM, DistributableWebExtension.SUBSYSTEM_NAME);
+
+        if (DistributableWebModel.VERSION_3_0_0.requiresTransformation(this.version)) {
+            config.addFailedAttribute(subsystemAddress.append(InfinispanSessionManagementResourceDefinition.pathElement("protostream")), new FailedOperationTransformationConfig.NewAttributesConfig(SessionManagementResourceDefinition.Attribute.MARSHALLER.getName()));
+            config.addFailedAttribute(subsystemAddress.append(HotRodSessionManagementResourceDefinition.pathElement("remote-protostream")), new FailedOperationTransformationConfig.NewAttributesConfig(SessionManagementResourceDefinition.Attribute.MARSHALLER.getName()));
+        }
+
+        return config;
     }
 }

@@ -1,0 +1,11 @@
+package org.jboss.as.ejb3.component.stateful;
+
+import "org.jboss.ejb.client.proto";
+
+/**
+ * @TypeId(360)
+ */
+message StatefulSerializedProxy {
+	optional	string	viewName	 = 1;
+	optional	org.jboss.ejb.client.SessionID	sessionId	 = 2;
+}

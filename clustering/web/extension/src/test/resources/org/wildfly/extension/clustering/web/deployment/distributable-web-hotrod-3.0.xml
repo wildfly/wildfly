@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<distributable-web xmlns="urn:jboss:distributable-web:3.0">
+    <hotrod-session-management remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE">
+        <no-affinity/>
+    </hotrod-session-management>
+</distributable-web>

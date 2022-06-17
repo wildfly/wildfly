@@ -392,8 +392,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 }
 
                 @Override
-                public Module getModule() {
-                    return module;
+                public DeploymentUnit getDeploymentUnit() {
+                    return deploymentUnit;
                 }
 
                 @Override

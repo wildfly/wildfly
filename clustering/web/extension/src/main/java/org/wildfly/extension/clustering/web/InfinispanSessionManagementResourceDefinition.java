@@ -41,7 +41,10 @@ import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequireme
  */
 public class InfinispanSessionManagementResourceDefinition extends SessionManagementResourceDefinition {
 
-    static final PathElement WILDCARD_PATH = PathElement.pathElement("infinispan-session-management");
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement("infinispan-session-management", name);
+    }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         CACHE_CONTAINER("cache-container", ModelType.STRING) {

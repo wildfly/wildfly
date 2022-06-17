@@ -23,6 +23,7 @@
 package org.wildfly.extension.clustering.web.session.hotrod;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
@@ -31,16 +32,16 @@ import org.wildfly.extension.clustering.web.routing.LocalRouteLocatorServiceConf
 /**
  * @author Paul Ferraro
  */
-public class HotRodSessionManagementProvider implements DistributableSessionManagementProvider {
+public class HotRodSessionManagementProvider implements DistributableSessionManagementProvider<HotRodSessionManagementConfiguration<DeploymentUnit>> {
 
-    private final HotRodSessionManagementConfiguration configuration;
+    private final HotRodSessionManagementConfiguration<DeploymentUnit> configuration;
 
-    public HotRodSessionManagementProvider(HotRodSessionManagementConfiguration configuration) {
+    public HotRodSessionManagementProvider(HotRodSessionManagementConfiguration<DeploymentUnit> configuration) {
         this.configuration = configuration;
     }
 
     @Override
-    public <S, SC, AL, MC, LC> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> config) {
+    public <S, SC, AL, LC> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<S, SC, AL, LC> config) {
         return new HotRodSessionManagerFactoryServiceConfigurator<>(this.configuration, config);
     }
 
@@ -49,7 +50,8 @@ public class HotRodSessionManagementProvider implements DistributableSessionMana
         return new LocalRouteLocatorServiceConfigurator(configuration);
     }
 
-    public HotRodSessionManagementConfiguration getSessionManagementConfiguration() {
+    @Override
+    public HotRodSessionManagementConfiguration<DeploymentUnit> getSessionManagementConfiguration() {
         return this.configuration;
     }
 }
