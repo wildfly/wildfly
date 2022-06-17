@@ -31,10 +31,10 @@ import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinit
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.jgroups.ClassLoaderThreadFactory;
@@ -124,9 +124,9 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
 
     @Override
     public Map<String, SocketBinding> getSocketBindings() {
-        Map<String, SocketBinding> bindings = new HashMap<>();
+        Map<String, SocketBinding> bindings = new TreeMap<>();
         SocketBinding binding = this.getSocketBinding();
-        for (String serviceName : Arrays.asList("jgroups.udp.mcast_sock", "jgroups.udp.sock", "jgroups.tcp.server", "jgroups.nio.client", "jgroups.nio.server", "jgroups.tunnel.ucast_sock")) {
+        for (String serviceName : Set.of("jgroups.udp.mcast_sock", "jgroups.udp.sock", "jgroups.tcp.server", "jgroups.nio.client", "jgroups.nio.server", "jgroups.tunnel.ucast_sock")) {
             bindings.put(serviceName, binding);
         }
         bindings.put("jgroups.tp.diag.mcast_sock", this.diagnosticsSocketBinding.get());

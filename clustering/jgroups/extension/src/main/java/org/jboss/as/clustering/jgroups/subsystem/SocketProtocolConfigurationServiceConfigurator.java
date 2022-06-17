@@ -28,7 +28,6 @@ import static org.jboss.as.clustering.jgroups.subsystem.SocketProtocolResourceDe
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -80,10 +79,7 @@ public class SocketProtocolConfigurationServiceConfigurator extends ProtocolConf
 
     @Override
     public Map<String, SocketBinding> getSocketBindings() {
-        Map<String, SocketBinding> bindings = new HashMap<>();
-        bindings.put("jgroups.fd_sock.srv_sock", this.binding.get());
-        bindings.put("jgroups.fd.ping_sock", this.clientBinding.get());
-        return bindings;
+        return Map.of("jgroups.fd_sock.srv_sock", this.binding.get(), "jgroups.fd.ping_sock", this.clientBinding.get());
     }
 
     @Override
