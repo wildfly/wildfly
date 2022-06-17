@@ -62,6 +62,9 @@
         <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
         <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
         <module.jms.suffix>jakarta</module.jms.suffix>
+
+        <!-- Miscellaneous properties -->
+        <jakarta.transform.verbose>false</jakarta.transform.verbose>
     </properties>
 
     <build>
@@ -482,7 +485,7 @@
                             </task-properties>
                             <jakarta-transform>true</jakarta-transform>
                             <!--<jakarta-transform-configs-dir>EXTERNAL_FOLDER</jakarta-transform-configs-dir>-->
-                            <jakarta-transform-verbose>false</jakarta-transform-verbose>
+                            <jakarta-transform-verbose>${jakarta.transform.verbose}</jakarta-transform-verbose>
                             <jakarta-transform-excluded-artifacts>
                                 <!-- Don't transform libs that use javax.servlet to provide side
                                      functionality (e.g. consoles or similar) that we do not support. -->
@@ -538,18 +541,21 @@
                                 <!-- end JPMS or OSGi metadata excludes -->
                                 <!-- Only contains hard-coded strings that are either not used or both the javax and
                                 jakarta names are used or legacy text files like XSD's or XML configuration files -->
-                                <excluded>jakarta.xml.bind:jakarta.xml.bind-api\z</excluded>
+                                <exclude>jakarta.xml.bind:jakarta.xml.bind-api\z</exclude>
                                 <exclude>org.apache.logging.log4j:log4j-api\z</exclude>
+                                <exclude>org.apache.cxf:cxf-core\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-bindings-xml\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-databinding-jaxb\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-frontend-simple\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-transports-jms\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-transports-http\z</exclude>
+                                <exclude>org.apache.cxf:cxf-rt-ws-rm\z</exclude>
+                                <exclude>org.apache.cxf:cxf-tools-common\z</exclude>
+                                <exclude>org.apache.cxf:cxf-tools-java2ws\z</exclude>
                                 <exclude>org.glassfish.jaxb:jaxb-xjc\z</exclude>
-                                <excluded>org.apache.cxf:cxf-core\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-bindings-xml\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-databinding-jaxb\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-frontend-simple\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-transports-jms\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-transports-http\z</excluded>
-                                <excluded>org.apache.cxf:cxf-rt-ws-rm\z</excluded>
-                                <excluded>org.apache.cxf:cxf-tools-common\z</excluded>
-                                <excluded>org.apache.cxf:cxf-tools-java2ws\z</excluded>
+                                <exclude>org.hibernate.orm:hibernate-core\z</exclude>
+                                <exclude>org.hibernate.orm:hibernate-envers\z</exclude>
+                                <exclude>org.hibernate.search:hibernate-search-mapper-orm-orm6\z</exclude>
 
                                 <!-- Uses JSON only for formatting and uses an internal JSON generator -->
                                 <exlude>org.jboss.logmanager:jboss-logmanager\z</exlude>
@@ -591,7 +597,7 @@
                                      do not work with WildFly. We should ignore the transformation as we'll be removing
                                      in the near future.
                                   -->
-                                <excluded>org.jboss.logmanager:log4j-jboss-logmanager\z</excluded>
+                                <exclude>org.jboss.logmanager:log4j-jboss-logmanager\z</exclude>
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
@@ -819,6 +825,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${ee.maven.groupId}</groupId>
+                    <artifactId>jipijapa-hibernate5-3</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${ee.maven.groupId}</groupId>
                     <artifactId>wildfly-opentelemetry-api</artifactId>
                 </exclusion>
 
@@ -885,6 +895,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-rts</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-weld-bean-validation</artifactId>
                 </exclusion>
                 <exclusion>
@@ -910,6 +924,10 @@
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-weld-transactions</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-xts</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.sun.istack</groupId>
@@ -961,6 +979,14 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-envers</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-search-engine</artifactId>
                 </exclusion>
                 <exclusion>
@@ -1009,34 +1035,38 @@
                 </exclusion>
                <exclusion>
                     <groupId>org.jboss.narayana.xts</groupId>
-                    <artifactId>jbossxts-jakarta</artifactId>
+                    <artifactId>jbossxts</artifactId>
                </exclusion>
                <exclusion>
                     <groupId>org.jboss.narayana</groupId>
-                    <artifactId>jbosstxbridge-jakarta</artifactId>
+                    <artifactId>jbosstxbridge</artifactId>
                </exclusion>
                <exclusion>
                     <groupId>org.jboss.narayana.compensations</groupId>
-                    <artifactId>compensations-jakarta</artifactId>
+                    <artifactId>compensations</artifactId>
                </exclusion>
                <exclusion>
                     <groupId>org.jboss.narayana.txframework</groupId>
-                    <artifactId>txframework-jakarta</artifactId>
+                    <artifactId>txframework</artifactId>
                </exclusion>
-		<!-- RTS -->
-		<exclusion>
-		    <groupId>org.jboss.narayana.rts</groupId>
-		    <artifactId>restat-bridge</artifactId>
+                <!-- RTS -->
+                <exclusion>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-bridge</artifactId>
                 </exclusion>
-		<exclusion>
-		    <groupId>org.jboss.narayana.rts</groupId>
-		    <artifactId>restat-api</artifactId>
+                <exclusion>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-api</artifactId>
                 </exclusion>
-		<exclusion>
-		    <groupId>org.jboss.narayana.rts</groupId>
-		    <artifactId>restat-util</artifactId>
+                <exclusion>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-integration</artifactId>
                 </exclusion>
-		<!-- end RTS -->
+                <exclusion>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-util</artifactId>
+                </exclusion>
+                <!-- end RTS -->
                 <exclusion>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-spring</artifactId>
