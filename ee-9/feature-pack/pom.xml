@@ -62,6 +62,9 @@
         <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
         <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
         <module.jms.suffix>jakarta</module.jms.suffix>
+
+        <!-- Miscellaneous properties -->
+        <jakarta.transform.verbose>false</jakarta.transform.verbose>
     </properties>
 
     <build>
@@ -482,7 +485,7 @@
                             </task-properties>
                             <jakarta-transform>true</jakarta-transform>
                             <!--<jakarta-transform-configs-dir>EXTERNAL_FOLDER</jakarta-transform-configs-dir>-->
-                            <jakarta-transform-verbose>false</jakarta-transform-verbose>
+                            <jakarta-transform-verbose>${jakarta.transform.verbose}</jakarta-transform-verbose>
                             <jakarta-transform-excluded-artifacts>
                                 <!-- Don't transform libs that use javax.servlet to provide side
                                      functionality (e.g. consoles or similar) that we do not support. -->
