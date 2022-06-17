@@ -17,7 +17,7 @@
  */
 package org.jboss.as.jpa.hibernate.service;
 
-import static org.hibernate.cfg.AvailableSettings.JPA_SHARED_CACHE_MODE;
+import static org.hibernate.cfg.AvailableSettings.JAKARTA_SHARED_CACHE_MODE;
 import static org.hibernate.cfg.AvailableSettings.USE_SECOND_LEVEL_CACHE;
 import static org.jboss.as.jpa.hibernate.JpaLogger.JPA_LOGGER;
 
@@ -42,7 +42,7 @@ public class WildFlyCustomRegionFactoryInitiator extends RegionFactoryInitiator 
     @Override
     protected RegionFactory resolveRegionFactory(Map configurationValues, ServiceRegistryImplementor registry) {
         final Object useSecondLevelCache = configurationValues.get(USE_SECOND_LEVEL_CACHE);
-        final String jpaSharedCodeModeValue = configurationValues.get(JPA_SHARED_CACHE_MODE) != null ? configurationValues.get(JPA_SHARED_CACHE_MODE).toString() : UNSPECIFIED;
+        final String jpaSharedCodeModeValue = configurationValues.get(JAKARTA_SHARED_CACHE_MODE) != null ? configurationValues.get(JAKARTA_SHARED_CACHE_MODE).toString() : UNSPECIFIED;
         final Object regionFactory = configurationValues.get(HIBERNATE_REGION_FACTORY_CLASS);
 
         // treat Hibernate 2lc as off, if not specified.

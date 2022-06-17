@@ -550,6 +550,9 @@
                                 <exclude>org.apache.cxf:cxf-tools-common\z</exclude>
                                 <exclude>org.apache.cxf:cxf-tools-java2ws\z</exclude>
                                 <exclude>org.glassfish.jaxb:jaxb-xjc\z</exclude>
+                                <exclude>org.hibernate.orm:hibernate-core\z</exclude>
+                                <exclude>org.hibernate.orm:hibernate-envers\z</exclude>
+                                <exclude>org.hibernate.search:hibernate-search-mapper-orm-orm6\z</exclude>
 
                                 <!-- Uses JSON only for formatting and uses an internal JSON generator -->
                                 <exlude>org.jboss.logmanager:jboss-logmanager\z</exlude>
@@ -819,6 +822,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${ee.maven.groupId}</groupId>
+                    <artifactId>jipijapa-hibernate5-3</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${ee.maven.groupId}</groupId>
                     <artifactId>wildfly-opentelemetry-api</artifactId>
                 </exclusion>
 
@@ -966,6 +973,14 @@
                 <exclusion>
                     <groupId>org.jboss</groupId>
                     <artifactId>jboss-ejb-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-envers</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.hibernate</groupId>
