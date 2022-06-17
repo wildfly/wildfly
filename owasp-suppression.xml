@@ -762,4 +762,12 @@
         <cve>CVE-2021-3629</cve>
     </suppress>
 
+    <!-- According to author of okhttp this vulnerability can only be exploited when the vulnerable method is called directly, which it isn't in WF. See https://github.com/square/okhttp/issues/6724#issuecomment-866701186  -->
+    <suppress>
+        <notes><![CDATA[
+        file name: okhttp-3.9.0.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.squareup\.okhttp3/okhttp@.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-0341</vulnerabilityName>
+     </suppress>
 </suppressions>
