@@ -22,7 +22,6 @@
 package org.jboss.as.clustering.jgroups;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -101,7 +100,7 @@ public class JChannelFactory implements ChannelFactory {
         // Add RELAY2 to the top of the stack, if defined
         List<ProtocolConfiguration<? extends Protocol>> relays = this.configuration.getRelay().isPresent() ? Collections.singletonList(this.configuration.getRelay().get()) : Collections.emptyList();
         List<Protocol> protocols = new ArrayList<>(transports.size() + this.configuration.getProtocols().size() + relays.size() + 1);
-        for (List<ProtocolConfiguration<? extends Protocol>> protocolConfigs : Arrays.asList(transports, this.configuration.getProtocols(), relays)) {
+        for (List<ProtocolConfiguration<? extends Protocol>> protocolConfigs : List.of(transports, this.configuration.getProtocols(), relays)) {
             for (ProtocolConfiguration<? extends Protocol> protocolConfig : protocolConfigs) {
                 protocols.add(protocolConfig.createProtocol(this.configuration));
                 bindings.putAll(protocolConfig.getSocketBindings());
