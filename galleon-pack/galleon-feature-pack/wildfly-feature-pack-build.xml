@@ -61,6 +61,8 @@
     <config name="host.xml" model="host"/>
     <config name="host-master.xml" model="host"/>
     <config name="host-slave.xml" model="host"/>
+    <config name="standalone-bdew.xml" model="standalone"/>	
+
 
     <plugins>
         <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
