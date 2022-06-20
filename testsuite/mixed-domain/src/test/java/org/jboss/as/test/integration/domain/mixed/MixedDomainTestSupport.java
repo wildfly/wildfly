@@ -132,7 +132,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     private void startSlaveServer() {
         DomainClient client = getDomainMasterLifecycleUtil().getDomainClient();
-        PathElement hostElement = PathElement.pathElement("host", "slave");
+        PathElement hostElement = PathElement.pathElement("host", "secondary");
 
         try {
             PathAddress pa = PathAddress.pathAddress(hostElement, PathElement.pathElement("server-config", "server-one"));
@@ -209,7 +209,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             }
 
             //Now reload the master in normal mode
-            masterUtil.executeAwaitConnectionClosed(Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, "master")));
+            masterUtil.executeAwaitConnectionClosed(Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, "primary")));
             masterUtil.connect();
             masterUtil.awaitHostController(System.currentTimeMillis());
 
