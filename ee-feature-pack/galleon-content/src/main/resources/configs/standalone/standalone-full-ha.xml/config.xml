@@ -53,8 +53,6 @@
     <feature-group name="modcluster"/>
     <feature-group name="singleton"/>
     
-    <feature-group name="jsr77"/>
-    
     <feature spec="subsystem.ejb3">
         <feature spec="subsystem.ejb3.service.iiop">
             <param name="enable-by-default" value="false"/>
@@ -63,6 +61,4 @@
     </feature>
     <!-- Do we need a layer ? -->
     <feature-group name="messaging-activemq-ha"/>
-    <!-- Should we have a layer? -->
-    <feature-group name="microprofile-opentracing-jaeger"/>
 </config>

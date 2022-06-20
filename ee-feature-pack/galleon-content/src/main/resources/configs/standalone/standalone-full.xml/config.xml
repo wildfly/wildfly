@@ -39,8 +39,6 @@
     <!-- the module it depends on is forced to be provisioned by galleon, so we are fine: WFLY-16099  -->
     <feature-group name="infinispan-local-server"/>
     
-    <feature-group name="jsr77"/>
-    
     <feature spec="subsystem.ejb3">
         <feature spec="subsystem.ejb3.service.iiop">
             <param name="enable-by-default" value="false"/>

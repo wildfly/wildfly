@@ -56,8 +56,6 @@
     <feature-group name="modcluster"/>
     <feature-group name="singleton"/>
     
-    <feature-group name="jsr77"/>
-    
     <feature spec="subsystem.ejb3">
         <feature spec="subsystem.ejb3.service.iiop">
             <param name="enable-by-default" value="false"/>
