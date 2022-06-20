@@ -263,7 +263,7 @@ public class DomainAdjuster {
     private Collection<? extends ModelNode> reconfigureServers() {
         final List<ModelNode> list = new ArrayList<>();
         //Reconfigure master servers
-        final PathAddress masterHostAddress = PathAddress.pathAddress(HOST, "master");
+        final PathAddress masterHostAddress = PathAddress.pathAddress(HOST, "primary");
         list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), AUTO_START, true));
         list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.GROUP, "main-server-group"));
         list.add(Util.getUndefineAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET));

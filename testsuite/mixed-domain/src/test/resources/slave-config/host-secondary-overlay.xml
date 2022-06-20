@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:domain:16.0" name="slave">
+<host xmlns="urn:jboss:domain:16.0" name="secondary">
 
     <management>
         <security-realms>

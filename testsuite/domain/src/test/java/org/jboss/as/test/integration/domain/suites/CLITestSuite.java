@@ -102,11 +102,11 @@ public class CLITestSuite {
         initializedLocally = true;
         start(CLITestSuite.class.getSimpleName());
 
-        hostServers.put("master", new String[]{"main-one", "main-two", "other-one"});
-        hostServers.put("slave", new String[]{"main-three", "main-four", "other-two"});
+        hostServers.put("primary", new String[]{"main-one", "main-two", "other-one"});
+        hostServers.put("secondary", new String[]{"main-three", "main-four", "other-two"});
 
-        hostAddresses.put("master", DomainTestSupport.masterAddress);
-        hostAddresses.put("slave", DomainTestSupport.slaveAddress);
+        hostAddresses.put("primary", DomainTestSupport.masterAddress);
+        hostAddresses.put("secondary", DomainTestSupport.slaveAddress);
 
         serverGroups.put("main-server-group", new String[]{"main-one", "main-two", "main-three", "main-four"});
         serverGroups.put("other-server-group", new String[]{"other-one", "other-two"});

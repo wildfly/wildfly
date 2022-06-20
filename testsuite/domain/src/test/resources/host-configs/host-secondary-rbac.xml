@@ -23,7 +23,7 @@
 <host xmlns="urn:jboss:domain:20.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:domain:10.0 wildfly-config_10_0.xsd"
-      name="slave">
+      name="secondary">
 
     <paths>
         <path name="domainTestPath" path="/tmp" />

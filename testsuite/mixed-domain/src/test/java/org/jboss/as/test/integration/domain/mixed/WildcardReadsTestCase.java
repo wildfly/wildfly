@@ -78,8 +78,8 @@ import org.junit.Test;
 public class WildcardReadsTestCase {
 
     private static final PathElement HOST_WILD = PathElement.pathElement(HOST);
-    private static final PathElement HOST_MASTER = PathElement.pathElement(HOST, "master");
-    private static final PathElement HOST_SLAVE = PathElement.pathElement(HOST, "slave");
+    private static final PathElement HOST_MASTER = PathElement.pathElement(HOST, "primary");
+    private static final PathElement HOST_SLAVE = PathElement.pathElement(HOST, "secondary");
     private static final PathElement SERVER_WILD = PathElement.pathElement(RUNNING_SERVER);
     private static final PathElement SERVER_ONE = PathElement.pathElement(RUNNING_SERVER, "server-one");
     private static final PathElement INTERFACE_WILD = PathElement.pathElement(INTERFACE);
@@ -360,7 +360,7 @@ public class WildcardReadsTestCase {
         resp = executeForResult(op);
         assertEquals(resp.toString(), 1, resp.asInt());
         assertEquals(resp.toString(), 1, resp.get(0).get(RESULT).keys().size());
-        assertEquals(resp.toString(), "slave", resp.get(0).get(RESULT, NAME).asString());
+        assertEquals(resp.toString(), "secondary", resp.get(0).get(RESULT, NAME).asString());
     }
 
     @Test
@@ -370,7 +370,7 @@ public class WildcardReadsTestCase {
         ModelNode result = executeForResult(op, ModelType.OBJECT);
 
         assertTrue(result.toString(), result.hasDefined("host-state"));
-        assertEquals(result.toString(), "slave", result.get(NAME).asString());
+        assertEquals(result.toString(), "secondary", result.get(NAME).asString());
 
         // Now cause the filter to exclude the slave
         op.get(WHERE, MASTER).set(true);
@@ -382,7 +382,7 @@ public class WildcardReadsTestCase {
         result = executeForResult(op, ModelType.OBJECT);
 
         assertEquals(result.toString(), 1, result.keys().size());
-        assertEquals(result.toString(), "slave", result.get(NAME).asString());
+        assertEquals(result.toString(), "secondary", result.get(NAME).asString());
     }
 
     @Test
@@ -479,9 +479,9 @@ public class WildcardReadsTestCase {
             String expectedHost;
             if (isMasterItem(item, 2)) {
                 masterCount++;
-                expectedHost = "master";
+                expectedHost = "primary";
             } else {
-                expectedHost = "slave";
+                expectedHost = "secondary";
             }
             ModelNode result = item.get(RESULT);
             assertTrue(item.toString(), result.hasDefined("server-state"));

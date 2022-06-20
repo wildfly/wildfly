@@ -112,17 +112,17 @@ public class ReadEnvironmentVariablesTestCase {
                 IoUtils.safeClose(contents);
             }
 
-            Map<String, String> env = getEnvironmentVariables(client, "master", "main-one", "standard-sockets");
+            Map<String, String> env = getEnvironmentVariables(client, "primary", "main-one", "standard-sockets");
             checkEnvironmentVariable(env, "DOMAIN_TEST_MAIN_GROUP", "main_group");
             checkEnvironmentVariable(env, "DOMAIN_TEST_SERVER", "server");
             checkEnvironmentVariable(env, "DOMAIN_TEST_JVM", "jvm");
 
-            env = getEnvironmentVariables(client, "slave", "main-three", "standard-sockets");
+            env = getEnvironmentVariables(client, "secondary", "main-three", "standard-sockets");
             checkEnvironmentVariable(env, "DOMAIN_TEST_MAIN_GROUP", "main_group");
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_SERVER"));
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_JVM"));
 
-            env = getEnvironmentVariables(client, "slave", "other-two", "other-sockets");
+            env = getEnvironmentVariables(client, "secondary", "other-two", "other-sockets");
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_MAIN_GROUP"));
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_SERVER"));
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_JVM"));
