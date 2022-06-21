@@ -139,7 +139,6 @@
                 <configuration>
                     <failIfNoTests>false</failIfNoTests>
                     <!-- parallel>none</parallel -->
-                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
 
                     <!-- System properties to forked surefire JVM which runs clients. -->
                     <argLine>${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.jacoco.args}</argLine>
