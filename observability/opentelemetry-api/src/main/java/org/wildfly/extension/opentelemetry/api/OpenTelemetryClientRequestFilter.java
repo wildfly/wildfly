@@ -31,8 +31,7 @@ import io.opentelemetry.context.Context;
 public class OpenTelemetryClientRequestFilter implements ClientRequestFilter {
     @Override
     public void filter(ClientRequestContext requestContext) {
-        CDI.current()
-                .select(OpenTelemetry.class).get()
+        CDI.current().getBeanManager().createInstance().select(OpenTelemetry.class).get()
                 .getPropagators()
                 .getTextMapPropagator()
                 .inject(Context.current(), requestContext,
