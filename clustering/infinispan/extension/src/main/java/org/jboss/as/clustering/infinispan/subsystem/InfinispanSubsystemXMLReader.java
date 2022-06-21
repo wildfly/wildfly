@@ -1090,7 +1090,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case PREFIX: {
-                    ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
+                    readAttribute(reader, i, operation, StringTableResourceDefinition.Attribute.PREFIX);
                     break;
                 }
                 default: {
