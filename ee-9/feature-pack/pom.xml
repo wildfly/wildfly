@@ -523,6 +523,7 @@
                                 <exclude>io.smallrye:smallrye-open-api-core</exclude>
                                 <exclude>io.smallrye:smallrye-open-api-jaxrs</exclude>
                                 <exclude>io.undertow:undertow-servlet\z</exclude>
+                                <exclude>net.bytebuddy:byte-buddy\z</exclude>
                                 <exclude>org.opensaml:opensaml-core\z</exclude>
                                 <exclude>org.opensaml:opensaml-security-impl\z</exclude>
                                 <exclude>org.opensaml:opensaml-soap-api\z</exclude>
