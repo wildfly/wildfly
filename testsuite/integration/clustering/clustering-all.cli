@@ -57,6 +57,10 @@ embed-server --server-config=standalone-ha.xml
 # UDP stack configuration
 /subsystem=jgroups/stack=udp:remove
 
+# Logging configuration
+# Prepend node name to console log messages
+/subsystem=logging/pattern-formatter=COLOR-PATTERN:write-attribute(name=pattern,value="${jboss.node.name} %K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n")
+
 stop-embedded-server
 
 
@@ -96,5 +100,9 @@ embed-server --server-config=standalone-full-ha.xml
 
 # UDP stack configuration
 /subsystem=jgroups/stack=udp:remove
+
+# Logging configuration
+# Prepend node name to console log messages
+/subsystem=logging/pattern-formatter=COLOR-PATTERN:write-attribute(name=pattern,value="${jboss.node.name} %K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n")
 
 stop-embedded-server
