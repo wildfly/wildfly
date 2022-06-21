@@ -598,6 +598,8 @@
                                      in the near future.
                                   -->
                                 <exclude>org.jboss.logmanager:log4j-jboss-logmanager\z</exclude>
+                                <exclude>org.jboss.openjdk-orb:openjdk-orb\z</exclude>
+								<!-- See what happens when we exclude the orb -->
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
