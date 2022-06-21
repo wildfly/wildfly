@@ -621,7 +621,7 @@
         <xs:complexContent>
             <xs:extension base="tns:store">
                 <xs:sequence>
-                    <xs:element name="table" type="tns:table" minOccurs="0">
+                    <xs:element name="table" type="tns:string-table" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>
                                 Defines the table used to store cache entries.
@@ -637,6 +637,18 @@
                 <xs:attribute name="dialect" type="tns:dialect" use="optional">
                     <xs:annotation>
                         <xs:documentation>Defines the JDBC dialect.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="string-table">
+        <xs:complexContent>
+            <xs:extension base="tns:table">
+                <xs:attribute name="prefix" type="xs:string" default="ispn_entry">
+                    <xs:annotation>
+                        <xs:documentation>Defines the prefix prepended to the cache name used when composing the name of the cache entry table.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
