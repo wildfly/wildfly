@@ -493,6 +493,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.jboss.openjdk-orb</groupId>
+      <artifactId>openjdk-orb-jakarta</artifactId>
+      <licenses>
+        <license>
+          <name>GNU General Public License v2.0 only, with Classpath exception</name>
+          <url>https://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.spec.javax.annotation</groupId>
       <artifactId>jboss-annotations-api_1.3_spec</artifactId>
       <licenses>

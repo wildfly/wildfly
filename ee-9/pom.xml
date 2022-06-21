@@ -2462,6 +2462,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.openjdk-orb</groupId>
+                <artifactId>openjdk-orb-jakarta</artifactId>
+                <version>${version.org.jboss.openjdk-orb}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>jakarta.transaction</groupId>
+                        <artifactId>jakarta.transaction-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.spec.jakarta.el</groupId>
                 <artifactId>jboss-el-api_5.0_spec</artifactId>
                 <version>${preview.version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec}</version>
