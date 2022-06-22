@@ -80,7 +80,10 @@ public class LayersTestCase {
         "org.jboss.mod_cluster.core",
         "org.jboss.mod_cluster.load.spi",
         "org.wildfly.extension.clustering.singleton",
-        "org.wildfly.extension.mod_cluster"
+        "org.wildfly.extension.mod_cluster",
+        // End workaround
+        // Workaround for  https://issues.redhat.com/browse/WFLY-13798
+        "org.jboss.xnio.netty.netty-xnio-transport"
         // End workaround
     };
     // Packages that are not referenced from the module graph but needed.
@@ -175,6 +178,8 @@ public class LayersTestCase {
     public static String eeRoot;
     public static String eeHaRoot;
     public static String haRoot;
+    public static String eeFullRoot;
+    public static String fullRoot;
 
     @BeforeClass
     public static void setUp() {
@@ -183,6 +188,8 @@ public class LayersTestCase {
         eeRoot = System.getProperty("ee.layers.install.root");
         eeHaRoot = System.getProperty("ee.ha.layers.install.root");
         haRoot = System.getProperty("ha.layers.install.root");
+        eeFullRoot = System.getProperty("ee.full.layers.install.root");
+        fullRoot = System.getProperty("full.layers.install.root");
     }
 
     @AfterClass
@@ -213,6 +220,18 @@ public class LayersTestCase {
             }
             if (haRoot != null && haRoot.length() > 0) {
                 installations = new File(haRoot).listFiles(File::isDirectory);
+                for (File f : installations) {
+                    LayersTest.recursiveDelete(f.toPath());
+                }
+            }
+            if (eeFullRoot != null && eeFullRoot.length() > 0) {
+                installations = new File(eeFullRoot).listFiles(File::isDirectory);
+                for (File f : installations) {
+                    LayersTest.recursiveDelete(f.toPath());
+                }
+            }
+            if (fullRoot != null && fullRoot.length() > 0) {
+                installations = new File(fullRoot).listFiles(File::isDirectory);
                 for (File f : installations) {
                     LayersTest.recursiveDelete(f.toPath());
                 }
@@ -248,6 +267,19 @@ public class LayersTestCase {
     }
 
     @Test
+    public void testEEFull() throws Exception {
+        org.junit.Assume.assumeTrue("EE Full testing disabled", eeFullRoot != null && eeFullRoot.length() > 0);
+        LayersTest.test(eeFullRoot, new HashSet<>(EE_NOT_REFERENCED_LIST),
+                new HashSet<>(Arrays.asList(NOT_USED)));
+    }
+
+    @Test
+    public void testFull() throws Exception {
+        LayersTest.test(fullRoot, new HashSet<>(FULL_NOT_REFERENCED_LIST),
+                new HashSet<>(Arrays.asList(NOT_USED)));
+    }
+
+    @Test
     public void test() throws Exception {
        LayersTest.test(root, new HashSet<>(FULL_NOT_REFERENCED_LIST),
        new HashSet<>(Arrays.asList(NOT_USED)));
@@ -271,6 +303,14 @@ public class LayersTestCase {
         }
         if (haRoot != null && haRoot.length() > 0) {
             HashMap<String, String> eeResults = LayersTest.checkBannedModules(haRoot, BANNED_MODULES_CONF);
+            results.putAll(eeResults);
+        }
+        if (eeFullRoot != null && eeFullRoot.length() > 0) {
+            HashMap<String, String> eeResults = LayersTest.checkBannedModules(eeFullRoot, BANNED_MODULES_CONF);
+            results.putAll(eeResults);
+        }
+        if (fullRoot != null && fullRoot.length() > 0) {
+            HashMap<String, String> eeResults = LayersTest.checkBannedModules(fullRoot, BANNED_MODULES_CONF);
             results.putAll(eeResults);
         }
         Assert.assertTrue("The following banned modules were provisioned " + results.toString(), results.isEmpty());
