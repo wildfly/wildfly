@@ -499,6 +499,7 @@
                                 <exclude>com.github.fge:json-patch\z</exclude>
                                 <exclude>com.github.fge:msg-simple\z</exclude>
                                 <exclude>com.google.guava:guava\z</exclude>
+                                <exclude>com.google.protobuf:protobuf-java-util\z</exclude>
                                 <exclude>com.squareup.okhttp3:okhttp\z</exclude>
                                 <exclude>com.squareup.okio:okio\z</exclude>
                                 <exclude>io.grpc:grpc-api\z</exclude>
@@ -523,6 +524,7 @@
                                 <exclude>io.smallrye:smallrye-open-api-core</exclude>
                                 <exclude>io.smallrye:smallrye-open-api-jaxrs</exclude>
                                 <exclude>io.undertow:undertow-servlet\z</exclude>
+                                <exclude>net.bytebuddy:byte-buddy\z</exclude>
                                 <exclude>org.opensaml:opensaml-core\z</exclude>
                                 <exclude>org.opensaml:opensaml-security-impl\z</exclude>
                                 <exclude>org.opensaml:opensaml-soap-api\z</exclude>
