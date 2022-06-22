@@ -76,6 +76,7 @@ import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.xml.BeansXmlParser;
+import org.wildfly.common.iteration.CompositeIterable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -175,6 +176,8 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             if (module == null) {
                 return;
             }
+            Iterable<ModuleServicesProvider> providers = new CompositeIterable<>(moduleServicesProviders, module.loadService(ModuleServicesProvider.class));
+
             for (DependencySpec dep : module.getDependencies()) {
                 if (!(dep instanceof ModuleDependencySpec)) {
                     continue;
@@ -242,7 +245,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
 
                         // Add module services to external bean deployment archive
                         for (Entry<Class<? extends Service>, Service> moduleService : ServiceLoaders
-                                .loadModuleServices(moduleServicesProviders, deploymentUnit, deployment, module, null).entrySet()) {
+                                .loadModuleServices(providers, deploymentUnit, deployment, module, null).entrySet()) {
                             bda.getServices().add(moduleService.getKey(), Reflections.cast(moduleService.getValue()));
                         }
 
