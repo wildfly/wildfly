@@ -180,6 +180,8 @@ public class LayersTestCase {
     public static String haRoot;
     public static String eeFullRoot;
     public static String fullRoot;
+    public static String eeFullHaRoot;
+    public static String fullHaRoot;
 
     @BeforeClass
     public static void setUp() {
@@ -190,6 +192,8 @@ public class LayersTestCase {
         haRoot = System.getProperty("ha.layers.install.root");
         eeFullRoot = System.getProperty("ee.full.layers.install.root");
         fullRoot = System.getProperty("full.layers.install.root");
+        eeFullHaRoot = System.getProperty("ee.full.ha.layers.install.root");
+        fullHaRoot = System.getProperty("full.ha.layers.install.root");
     }
 
     @AfterClass
@@ -232,6 +236,18 @@ public class LayersTestCase {
             }
             if (fullRoot != null && fullRoot.length() > 0) {
                 installations = new File(fullRoot).listFiles(File::isDirectory);
+                for (File f : installations) {
+                    LayersTest.recursiveDelete(f.toPath());
+                }
+            }
+            if (eeFullHaRoot != null && eeFullHaRoot.length() > 0) {
+                installations = new File(eeFullHaRoot).listFiles(File::isDirectory);
+                for (File f : installations) {
+                    LayersTest.recursiveDelete(f.toPath());
+                }
+            }
+            if (fullHaRoot != null && fullHaRoot.length() > 0) {
+                installations = new File(fullHaRoot).listFiles(File::isDirectory);
                 for (File f : installations) {
                     LayersTest.recursiveDelete(f.toPath());
                 }
@@ -280,6 +296,19 @@ public class LayersTestCase {
     }
 
     @Test
+    public void testEEFullHA() throws Exception {
+        org.junit.Assume.assumeTrue("EE Full HA testing disabled", eeFullHaRoot != null && eeFullHaRoot.length() > 0);
+        LayersTest.test(eeFullHaRoot, new HashSet<>(EE_NOT_REFERENCED_LIST),
+                new HashSet<>(Arrays.asList(NOT_USED)));
+    }
+
+    @Test
+    public void testFullHA() throws Exception {
+        LayersTest.test(fullHaRoot, new HashSet<>(FULL_NOT_REFERENCED_LIST),
+                new HashSet<>(Arrays.asList(NOT_USED)));
+    }
+
+    @Test
     public void test() throws Exception {
        LayersTest.test(root, new HashSet<>(FULL_NOT_REFERENCED_LIST),
        new HashSet<>(Arrays.asList(NOT_USED)));
@@ -311,6 +340,14 @@ public class LayersTestCase {
         }
         if (fullRoot != null && fullRoot.length() > 0) {
             HashMap<String, String> eeResults = LayersTest.checkBannedModules(fullRoot, BANNED_MODULES_CONF);
+            results.putAll(eeResults);
+        }
+        if (eeFullHaRoot != null && eeFullHaRoot.length() > 0) {
+            HashMap<String, String> eeResults = LayersTest.checkBannedModules(eeFullHaRoot, BANNED_MODULES_CONF);
+            results.putAll(eeResults);
+        }
+        if (fullHaRoot != null && fullHaRoot.length() > 0) {
+            HashMap<String, String> eeResults = LayersTest.checkBannedModules(fullHaRoot, BANNED_MODULES_CONF);
             results.putAll(eeResults);
         }
         Assert.assertTrue("The following banned modules were provisioned " + results.toString(), results.isEmpty());
