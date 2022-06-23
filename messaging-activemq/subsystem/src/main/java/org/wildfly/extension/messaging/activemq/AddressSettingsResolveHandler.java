@@ -29,6 +29,7 @@ import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_CREATE_QUEUES;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_DELETE_ADDRESSES;
+import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_DELETE_CREATED_QUEUES;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_DELETE_QUEUES;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.EXPIRY_DELAY;
@@ -139,6 +140,7 @@ public class AddressSettingsResolveHandler extends AbstractRuntimeOnlyHandler {
         result.get(AUTO_DELETE_ADDRESSES.getName()).set(settings.isAutoDeleteAddresses());
         result.get(AUTO_CREATE_QUEUES.getName()).set(settings.isAutoCreateQueues());
         result.get(AUTO_DELETE_QUEUES.getName()).set(settings.isAutoDeleteQueues());
+        result.get(AUTO_DELETE_CREATED_QUEUES.getName()).set(settings.isAutoDeleteCreatedQueues());
     }
 
     public static void registerOperationHandler(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {

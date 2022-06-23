@@ -149,6 +149,10 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         ResourceTransformationDescriptionBuilder colocatedReplication = server.addChildResource(REPLICATION_COLOCATED_PATH);
         colocatedReplication.addChildRedirection(CONFIGURATION_PRIMARY_PATH, CONFIGURATION_MASTER_PATH);
         colocatedReplication.addChildRedirection(CONFIGURATION_SECONDARY_PATH, CONFIGURATION_SLAVE_PATH);
+
+        ResourceTransformationDescriptionBuilder addressSetting = server.addChildResource(MessagingExtension.ADDRESS_SETTING_PATH);
+        rejectDefinedAttributeWithDefaultValue(addressSetting,
+                AddressSettingDefinition.AUTO_DELETE_CREATED_QUEUES);
     }
 
     private static void registerTransformers_WF_26_1(ResourceTransformationDescriptionBuilder subsystem) {

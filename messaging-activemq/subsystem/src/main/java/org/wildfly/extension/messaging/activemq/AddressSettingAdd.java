@@ -92,6 +92,7 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         settings.setAutoDeleteQueues(AddressSettingDefinition.AUTO_DELETE_QUEUES.resolveModelAttribute(context, config).asBoolean());
         settings.setAutoCreateAddresses(AddressSettingDefinition.AUTO_CREATE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
         settings.setAutoDeleteAddresses(AddressSettingDefinition.AUTO_DELETE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
+        settings.setAutoDeleteCreatedQueues(AddressSettingDefinition.AUTO_DELETE_CREATED_QUEUES.resolveModelAttribute(context, config).asBoolean());
         if (config.hasDefined(DEAD_LETTER_ADDRESS.getName())) {
             settings.setDeadLetterAddress(asSimpleString(DEAD_LETTER_ADDRESS.resolveModelAttribute(context, config), null));
         }
