@@ -533,7 +533,7 @@
         <preview.version.jakarta.batch.jakarta.batch-api>2.1.1</preview.version.jakarta.batch.jakarta.batch-api>
         <preview.version.jakarta.ejb.jakarta-ejb-api>4.0.1</preview.version.jakarta.ejb.jakarta-ejb-api>
         <preview.version.jakarta.el.jakarta-el-api>5.0.0</preview.version.jakarta.el.jakarta-el-api>
-        <preview.version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</preview.version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
+        <preview.version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.0.0</preview.version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <preview.version.jakarta.enterprise>4.0.0</preview.version.jakarta.enterprise>
         <preview.version.jakarta.faces.jakarta-faces-api>4.0.1</preview.version.jakarta.faces.jakarta-faces-api>
         <preview.version.jakarta.inject.jakarta.inject-api>2.0.1</preview.version.jakarta.inject.jakarta.inject-api>
@@ -594,7 +594,7 @@
         <preview.version.org.eclipselink.version>3.0.2</preview.version.org.eclipselink.version>
         <preview.version.org.glassfish.expressly>5.0.0-M2</preview.version.org.glassfish.expressly>
         <preview.version.org.glassfish.jakarta.el>5.0.0-M1</preview.version.org.glassfish.jakarta.el>
-        <preview.version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</preview.version.org.glassfish.jakarta.enterprise.concurrent>
+        <preview.version.org.glassfish.jakarta.enterprise.concurrent>3.0.0</preview.version.org.glassfish.jakarta.enterprise.concurrent>
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
          pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
         <preview.version.org.glassfish.jaxb>4.0.0</preview.version.org.glassfish.jaxb>
