@@ -22,21 +22,23 @@
 
 package org.wildfly.clustering.ee.infinispan.scheduler;
 
+import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.infinispan.distribution.Locality;
 
 /**
  * A task scheduler.
  * @author Paul Ferraro
  */
-public interface Scheduler<I, M> extends org.wildfly.clustering.ee.Scheduler<I, M> {
+public interface CacheEntryScheduler<I, M> extends Scheduler<I, M> {
     /**
-     * Schedules an object with the specified identifier.
+     * Schedules a cache entry with the specified identifier.
+     * This method will generally delegate to {@link #schedule(Object, Object)} after performing a cache lookup.
      * @param id the identifier of the object to be scheduled
      */
     void schedule(I id);
 
     /**
-     * Cancels any previous scheduled tasks for session which are no longer local to the current node
+     * Cancels any previous scheduled tasks for entries which are no longer local to the current node
      * @param location the cache locality
      */
     void cancel(Locality locality);

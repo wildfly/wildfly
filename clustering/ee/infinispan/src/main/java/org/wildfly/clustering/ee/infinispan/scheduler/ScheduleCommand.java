@@ -28,7 +28,7 @@ import org.wildfly.clustering.dispatcher.Command;
  * Command that scheduled an element.
  * @author Paul Ferraro
  */
-public interface ScheduleCommand<I, M> extends Command<Void, Scheduler<I, M>> {
+public interface ScheduleCommand<I, M> extends Command<Void, CacheEntryScheduler<I, M>> {
 
     /**
      * Returns the identifier of the element to be scheduled.
@@ -43,7 +43,7 @@ public interface ScheduleCommand<I, M> extends Command<Void, Scheduler<I, M>> {
     M getMetaData();
 
     @Override
-    default Void execute(Scheduler<I, M> scheduler) throws Exception {
+    default Void execute(CacheEntryScheduler<I, M> scheduler) throws Exception {
         I id = this.getId();
         M metaData = this.getMetaData();
         if (metaData != null) {

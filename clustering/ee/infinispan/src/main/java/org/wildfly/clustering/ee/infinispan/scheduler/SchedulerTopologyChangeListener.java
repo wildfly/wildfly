@@ -61,7 +61,7 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
     private final Consumer<Locality> cancelTask;
     private final BiConsumer<Locality, Locality> scheduleTask;
 
-    public SchedulerTopologyChangeListener(Cache<K, V> cache, Scheduler<I, ?> scheduler, BiConsumer<Locality, Locality> scheduleTask) {
+    public SchedulerTopologyChangeListener(Cache<K, V> cache, CacheEntryScheduler<I, ?> scheduler, BiConsumer<Locality, Locality> scheduleTask) {
         this(cache, scheduler::cancel, scheduleTask);
     }
 
