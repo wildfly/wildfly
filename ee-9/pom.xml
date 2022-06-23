@@ -2797,6 +2797,102 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.ws.cxf</groupId>
+                <artifactId>jbossws-cxf-client</artifactId>
+                <version>${preview.version.org.jboss.ws.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws.cxf</groupId>
+                <artifactId>jbossws-cxf-factories</artifactId>
+                <version>${preview.version.org.jboss.ws.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws.cxf</groupId>
+                <artifactId>jbossws-cxf-jaspi</artifactId>
+                <version>${preview.version.org.jboss.ws.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws.cxf</groupId>
+                <artifactId>jbossws-cxf-resources</artifactId>
+                <version>${preview.version.org.jboss.ws.cxf}</version>
+                <classifier>wildfly2700</classifier>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws.cxf</groupId>
+                <artifactId>jbossws-cxf-server</artifactId>
+                <version>${preview.version.org.jboss.ws.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws.cxf</groupId>
+                <artifactId>jbossws-cxf-transports-udp</artifactId>
+                <version>${preview.version.org.jboss.ws.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws.cxf</groupId>
+                <artifactId>jbossws-cxf-transports-undertow</artifactId>
+                <version>${preview.version.org.jboss.ws.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws.projects</groupId>
+                <artifactId>jaxws-undertow-httpspi</artifactId>
+                <version>${preview.version.org.jboss.ws.jaxws-undertow-httpspi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-spi</artifactId>
                 <version>${preview.version.org.jboss.ws.spi}</version>
