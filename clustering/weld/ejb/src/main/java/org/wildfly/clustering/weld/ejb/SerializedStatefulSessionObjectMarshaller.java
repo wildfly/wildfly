@@ -32,7 +32,6 @@ import java.util.Map;
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.as.weld.ejb.SerializedStatefulSessionObject;
 import org.jboss.ejb.client.SessionID;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -54,15 +53,15 @@ public class SerializedStatefulSessionObjectMarshaller implements ProtoStreamMar
 
     @Override
     public SerializedStatefulSessionObject readFrom(ProtoStreamReader reader) throws IOException {
-        ServiceName componentServiceName = null;
+        String componentServiceName = null;
         SessionID id = null;
         List<Class<?>> viewClasses = new LinkedList<>();
-        List<ServiceName> viewServiceNames = new LinkedList<>();
+        List<String> viewServiceNames = new LinkedList<>();
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
                 case COMPONENT_SERVICE_NAME_INDEX:
-                    componentServiceName = ServiceName.parse(reader.readString());
+                    componentServiceName = reader.readString();
                     break;
                 case SESSION_ID_INDEX:
                     id = reader.readObject(SessionID.class);
@@ -71,15 +70,15 @@ public class SerializedStatefulSessionObjectMarshaller implements ProtoStreamMar
                     viewClasses.add(reader.readObject(Class.class));
                     break;
                 case VIEW_SERVICE_NAME_INDEX:
-                    viewServiceNames.add(ServiceName.parse(reader.readString()));
+                    viewServiceNames.add(reader.readString());
                     break;
                 default:
                     reader.skipField(tag);
             }
         }
-        Map<Class<?>, ServiceName> views = new HashMap<>();
+        Map<Class<?>, String> views = new HashMap<>();
         Iterator<Class<?>> classes = viewClasses.iterator();
-        Iterator<ServiceName> names = viewServiceNames.iterator();
+        Iterator<String> names = viewServiceNames.iterator();
         while (classes.hasNext() && names.hasNext()) {
             views.put(classes.next(), names.next());
         }
@@ -88,18 +87,18 @@ public class SerializedStatefulSessionObjectMarshaller implements ProtoStreamMar
 
     @Override
     public void writeTo(ProtoStreamWriter writer, SerializedStatefulSessionObject object) throws IOException {
-        ServiceName componentServiceName = object.getComponentServiceName();
+        String componentServiceName = object.getComponentServiceName();
         if (componentServiceName != null) {
-            writer.writeString(COMPONENT_SERVICE_NAME_INDEX, componentServiceName.getCanonicalName());
+            writer.writeString(COMPONENT_SERVICE_NAME_INDEX, componentServiceName);
         }
         SessionID id = object.getSessionID();
         if (id != null) {
             writer.writeObject(SESSION_ID_INDEX, id);
         }
-        Map<Class<?>, ServiceName> views = object.getServiceNames();
-        for (Map.Entry<Class<?>, ServiceName> entry : views.entrySet()) {
+        Map<Class<?>, String> views = object.getServiceNames();
+        for (Map.Entry<Class<?>, String> entry : views.entrySet()) {
             writer.writeObject(VIEW_CLASS_INDEX, entry.getKey());
-            writer.writeString(VIEW_SERVICE_NAME_INDEX, entry.getValue().getCanonicalName());
+            writer.writeString(VIEW_SERVICE_NAME_INDEX, entry.getValue());
         }
     }
 }
