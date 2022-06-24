@@ -34,7 +34,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -72,7 +71,7 @@ public class ExtensionTestCase extends AbstractModuleTest {
         JavaArchive jar = ShrinkWrap
                 .create(JavaArchive.class, "test.jar")
                 .addClasses(Clown.class, ExtensionTestCase.class, AbstractModuleTest.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: cidExtensionModule services\n"),
                         "MANIFEST.MF");
 

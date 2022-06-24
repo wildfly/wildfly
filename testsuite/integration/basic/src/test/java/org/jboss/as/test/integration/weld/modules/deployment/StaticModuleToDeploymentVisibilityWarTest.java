@@ -68,7 +68,7 @@ public class StaticModuleToDeploymentVisibilityWarTest {
         doSetup();
         return ShrinkWrap.create(WebArchive.class)
                 .addClasses(StaticModuleToDeploymentVisibilityWarTest.class, FooImpl1.class, TestModule.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME + " meta-inf\n"), "MANIFEST.MF");
     }
 

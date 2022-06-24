@@ -70,13 +70,13 @@ public class StaticModuleToDeploymentVisibilityEarTest {
         doSetup();
         WebArchive war1 = ShrinkWrap.create(WebArchive.class)
                 .addClasses(StaticModuleToDeploymentVisibilityEarTest.class, FooImpl1.class, TestModule.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         WebArchive war2 = ShrinkWrap.create(WebArchive.class)
                 .addClasses(FooImpl2.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         JavaArchive library = ShrinkWrap.create(JavaArchive.class)
                 .addClass(FooImpl3.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         return ShrinkWrap.create(EnterpriseArchive.class)
                 .addAsModules(war1, war2)
                 .addAsLibrary(library)

@@ -48,7 +48,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,7 +79,7 @@ public class BeanValidationCdiIntegrationTestCase {
         war.addPackage(BeanValidationCdiIntegrationTestCase.class.getPackage());
         war.addAsWebResource(BeanValidationCdiIntegrationTestCase.class.getPackage(), "register.xhtml", "register.xhtml");
         war.addAsWebResource(BeanValidationCdiIntegrationTestCase.class.getPackage(), "confirmation.xhtml", "confirmation.xhtml");
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         war.addAsWebInfResource(BeanValidationCdiIntegrationTestCase.class.getPackage(), "faces-config.xml","faces-config.xml");
         return war;
     }
