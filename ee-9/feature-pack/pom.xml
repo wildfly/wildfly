@@ -558,6 +558,7 @@
                                 <exclude>org.hibernate.orm:hibernate-core\z</exclude>
                                 <exclude>org.hibernate.orm:hibernate-envers\z</exclude>
                                 <exclude>org.hibernate.search:hibernate-search-mapper-orm-orm6\z</exclude>
+                                <exclude>org.jboss.narayana.xts:jbossxts-jakarta\z</exclude>
 
                                 <!-- Uses JSON only for formatting and uses an internal JSON generator -->
                                 <exlude>org.jboss.logmanager:jboss-logmanager\z</exlude>
