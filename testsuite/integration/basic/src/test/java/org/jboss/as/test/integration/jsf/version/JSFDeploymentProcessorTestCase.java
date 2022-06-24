@@ -62,6 +62,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
@@ -75,6 +76,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 @RunWith(Arquillian.class)
 @ServerSetup({JSFDeploymentProcessorTestCase.TestLogHandlerSetup.class})
 @RunAsClient
+@Ignore("WFLY-16528")
 public class JSFDeploymentProcessorTestCase {
 
     private static final String WEB_BUNDLED_JSF = "bundled-jsf";

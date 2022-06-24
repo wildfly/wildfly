@@ -38,8 +38,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+//import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,9 +52,10 @@ import java.net.URL;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-16527")
 public class ForbiddenUrlTestCase {
-    private static final String ALLOWED_URL = "faces/javax.faces.resource/lala.js?con=lala";
-    private static final String FORBIDDEN_URL = "faces/javax.faces.resource/lala.js?con=lala/../lala";
+    private static final String ALLOWED_URL = "faces/jakarta.faces.resource/lala.js?con=lala";
+    private static final String FORBIDDEN_URL = "faces/jakarta.faces.resource/lala.js?con=lala/../lala";
     private static final int ALLOWED_STATUS_CODE = 200;
     private static final int FORBIDDEN_STATUS_CODE = 404;
 
@@ -64,6 +67,7 @@ public class ForbiddenUrlTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "jsf-resources.war");
         war.addAsWebInfResource(ForbiddenUrlTestCase.class.getPackage(), "web.xml", "web.xml");
+        //war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         war.addAsWebResource(ForbiddenUrlTestCase.class.getPackage(), "index.xhtml", "index.xhtml");
         war.addAsWebResource(ForbiddenUrlTestCase.class.getPackage(), "lala.jsp", "lala.jsp");
         war.addAsWebResource(ForbiddenUrlTestCase.class.getPackage(), "lala.js", "contracts/lala/lala.js");
