@@ -73,7 +73,7 @@ public class LoggingProfileSharedTestCase extends AbstractConfigTestCase {
 
     // This should be deployed last to ensure that WAR_DEPLOYMENT_2 does register a log context
     @Deployment(name = WAR_DEPLOYMENT_1, order = 3)
-    @OverProtocol("Servlet 3.0")
+    @OverProtocol("Servlet 5.0")
     public static WebArchive createWar1() {
         return ShrinkWrap.create(WebArchive.class, WAR_DEPLOYMENT_1_NAME)
                 .addAsManifestResource(createJBossDeploymentStructure(), "jboss-deployment-structure.xml")
