@@ -21,19 +21,31 @@
 */
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.model.test.ModelTestControllerVersion;
+import org.jboss.as.model.test.SingleClassFilter;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
 
@@ -180,9 +192,61 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         services.executeForResult(composite);
     }
 
+    /** WFLY-16478. Test transformation of undefined elytron-enabled */
+    @Test
+    public void testEAP74Transformation() throws Exception {
+        ModelTestControllerVersion eap74ControllerVersion = ModelTestControllerVersion.EAP_7_4_0;
+        ModelVersion eap74ModelVersion = ModelVersion.create(5, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXmlResource("jca-default-elytron.xml");
+        KernelServices mainServices = initialKernelServices(builder, eap74ControllerVersion, eap74ModelVersion);
+
+        ModelNode legacyModel = checkSubsystemModelTransformation(mainServices, eap74ModelVersion);
+        assertTrue(legacyModel.toString(), legacyModel.get("subsystem", "jca", "workmanager", "default", "elytron-enabled").asBoolean(false));
+        assertTrue(legacyModel.toString(), legacyModel.get("subsystem", "jca", "workmanager", "anotherWm", "elytron-enabled").asBoolean(false));
+        assertTrue(legacyModel.toString(), legacyModel.get("subsystem", "jca", "distributed-workmanager", "MyDWM", "elytron-enabled").asBoolean(false));
+        mainServices.shutdown();
+    }
+
+    /** WFLY-16478 Test legacy parser sets old default value for elytron-enabled */
+    @Test
+    public void testLegacyDefaultElytronEnabled() throws Exception {
+        Set<ModelNode> required = new HashSet<>();
+        PathAddress subsystem = PathAddress.pathAddress("subsystem", "jca");
+        required.add(subsystem.append("workmanager", "default").toModelNode());
+        required.add(subsystem.append("workmanager", "anotherWm").toModelNode());
+        required.add(subsystem.append("distributed-workmanager", "MyDWM").toModelNode());
+
+        for (ModelNode op : parse(getSubsystemXml("jca_5_0.xml"))) {
+            if (ADD.equals(op.get(OP).asString()) && required.remove(op.get(ModelDescriptionConstants.OP_ADDR))) {
+                assertFalse(op.toString() + "\n did not correctly define elytron-enabled", op.get("elytron-enabled").asBoolean(true));
+            }
+        }
+
+        assertTrue("Not all expected ops were found\n" + required.toString(), required.isEmpty());
+    }
+
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, original, marshalled, true);
+    }
+
+    private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
+        LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion);
+        String mavenGroupId = controllerVersion.getMavenGroupId();
+        String artifactId = "wildfly-connector";
+        initializer.addMavenResourceURL(mavenGroupId + ":" + artifactId + ":" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-api:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-spi:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.wildfly.core:wildfly-threads:" + controllerVersion.getCoreVersion())
+                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        Assert.assertNotNull(legacyServices);
+        return mainServices;
     }
 
 

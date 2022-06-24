@@ -324,8 +324,8 @@ public class JcaExtension implements Extension {
             final EnumSet<Element> requiredElement = EnumSet.of(Element.DEFAULT_WORKMANAGER);
             boolean ccmAdded = false;
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
+                Namespace readerNs = Namespace.forUri(reader.getNamespaceURI());
+                switch (readerNs) {
                     case JCA_6_0:
                     case JCA_5_0:
                     case JCA_4_0:
@@ -347,7 +347,7 @@ public class JcaExtension implements Extension {
                                 break;
                             }
                             case DEFAULT_WORKMANAGER: {
-                                parseWorkManager(reader, address, list, subsystem, true);
+                                parseWorkManager(reader, address, list, true, readerNs);
                                 final ModelNode bootstrapContextOperation = new ModelNode();
                                 bootstrapContextOperation.get(OP).set(ADD);
                                 final ModelNode bootStrapCOntextAddress = address.clone();
@@ -369,13 +369,13 @@ public class JcaExtension implements Extension {
                                 break;
                             }
                             case WORKMANAGER: {
-                                parseWorkManager(reader, address, list, subsystem, false);
+                                parseWorkManager(reader, address, list, false, readerNs);
                                 // AS7-4434 Multiple work managers are allowed
                                 visited.remove(Element.WORKMANAGER);
                                 break;
                             }
                             case DISTRIBUTED_WORKMANAGER: {
-                                parseDistributedWorkManager(reader, address, list, subsystem, false);
+                                parseDistributedWorkManager(reader, address, list, readerNs);
                                 // AS7-4434 Multiple work managers are allowed
                                 visited.remove(Element.DISTRIBUTED_WORKMANAGER);
                                 break;
@@ -469,7 +469,7 @@ public class JcaExtension implements Extension {
         }
 
         private void parseWorkManager(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
-                                      final List<ModelNode> list, final ModelNode node, boolean defaultWm) throws XMLStreamException {
+                                      final List<ModelNode> list, boolean defaultWm, Namespace elementNs) throws XMLStreamException {
 
             final ModelNode workManagerOperation = new ModelNode();
             workManagerOperation.get(OP).set(ADD);
@@ -528,17 +528,10 @@ public class JcaExtension implements Extension {
                     }
                     case ELYTRON_ENABLED: {
                         switch (readerNS) {
+                            case JCA_5_0:
                             case JCA_6_0: {
                                 String value = rawElementText(reader);
                                 JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().parseAndSetParameter(value, workManagerOperation, reader);
-                                break;
-                            }
-                            case JCA_5_0: {
-                                String value = rawElementText(reader);
-                                JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().parseAndSetParameter(value, workManagerOperation, reader);
-                                if (!workManagerOperation.hasDefined(JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().getName())) {
-                                    workManagerOperation.get(JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().getName()).set(new ModelNode(false));
-                                }
                                 break;
                             }
                             default: {
@@ -554,10 +547,12 @@ public class JcaExtension implements Extension {
 
             }
 
+            // For older versions set 'elytron-enabled' to 'false' if not explicitly set, as that was the default in those xsds
+            handleLegacyWorkManagerSecurity(workManagerOperation, JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute(), elementNs);
         }
 
         private void parseDistributedWorkManager(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
-                                                 final List<ModelNode> list, final ModelNode node, boolean defaultWm) throws XMLStreamException {
+                                                 final List<ModelNode> list, Namespace elementNS) throws XMLStreamException {
 
             final ModelNode distributedWorkManagerOperation = new ModelNode();
             distributedWorkManagerOperation.get(OP).set(ADD);
@@ -644,19 +639,11 @@ public class JcaExtension implements Extension {
                     }
                     case ELYTRON_ENABLED: {
                         switch (readerNS) {
+                            case JCA_5_0:
                             case JCA_6_0:
                             {
                                 String value = rawElementText(reader);
                                 ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute()).parseAndSetParameter(value, distributedWorkManagerOperation, reader);
-                                break;
-                            }
-                            case JCA_5_0:
-                            {
-                                String value = rawElementText(reader);
-                                ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute()).parseAndSetParameter(value, distributedWorkManagerOperation, reader);
-                                if (!distributedWorkManagerOperation.hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute().getName())) {
-                                    distributedWorkManagerOperation.get(JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute().getName()).set(new ModelNode(false));
-                                }
                                 break;
                             }
                             default: {
@@ -672,6 +659,8 @@ public class JcaExtension implements Extension {
 
             }
 
+            // For older versions set 'elytron-enabled' to 'false' if not explicitly set, as that was the default in those xsds
+            handleLegacyWorkManagerSecurity(distributedWorkManagerOperation, JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute(), elementNS);
         }
 
 
@@ -940,6 +929,26 @@ public class JcaExtension implements Extension {
             writer.writeAttribute("name", name);
             writer.writeCharacters(value);
             writer.writeEndElement();
+
+        }
+
+        private static void handleLegacyWorkManagerSecurity(ModelNode addOp, AttributeDefinition ad, Namespace ns) {
+
+            if (!addOp.hasDefined(ad.getName())) {
+                switch (ns) {
+                    case JCA_1_1:
+                    case JCA_2_0:
+                    case JCA_3_0:
+                    case JCA_4_0:
+                    case JCA_5_0:
+                        // set the old default value from these xsd versions
+                        addOp.get(ad.getName()).set(false);
+                        break;
+                    default:
+                        // unconfigured value in later namespaces matches current AttributeDefinition default
+                        break;
+                }
+            }
 
         }
     }

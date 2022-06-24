@@ -29,10 +29,12 @@ import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_R
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
 import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Security;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -174,6 +176,10 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
         }
 
         private SimpleAttributeDefinition attribute;
+
+        static AttributeDefinition[] getAttributes() {
+            return Arrays.stream(WmParameters.values()).map(WmParameters::getAttribute).toArray(AttributeDefinition[]::new);
+        }
     }
 
 }

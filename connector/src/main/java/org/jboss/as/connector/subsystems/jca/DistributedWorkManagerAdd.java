@@ -67,11 +67,8 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
 
     public static final DistributedWorkManagerAdd INSTANCE = new DistributedWorkManagerAdd();
 
-    @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (JcaDistributedWorkManagerDefinition.DWmParameters parameter : JcaDistributedWorkManagerDefinition.DWmParameters.values()) {
-            parameter.getAttribute().validateAndSet(operation, model);
-        }
+    private DistributedWorkManagerAdd() {
+        super(JcaDistributedWorkManagerDefinition.DWmParameters.getAttributes());
     }
 
     @Override

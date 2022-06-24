@@ -53,12 +53,8 @@ public class WorkManagerAdd extends AbstractAddStepHandler {
 
     public static final WorkManagerAdd INSTANCE = new WorkManagerAdd();
 
-
-    @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (JcaWorkManagerDefinition.WmParameters parameter : JcaWorkManagerDefinition.WmParameters.values()) {
-            parameter.getAttribute().validateAndSet(operation, model);
-        }
+    private WorkManagerAdd() {
+        super(JcaWorkManagerDefinition.WmParameters.getAttributes());
     }
 
     @Override
