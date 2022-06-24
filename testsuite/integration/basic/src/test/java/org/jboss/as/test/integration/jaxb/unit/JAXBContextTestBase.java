@@ -54,17 +54,18 @@ public abstract class JAXBContextTestBase {
     protected static final String WEB_APP_INTERNAL_CONTEXT = "jaxb-internal-webapp";
     protected static final String WEB_APP_CUSTOM_CONTEXT = "jaxb-custom-webapp";
 
-    protected static final String JAXB_FACTORY_PROP_NAME = JAXBContextFactory.class.getName();
-    protected static final String JAKARTA_FACTORY_PROP_NAME = JAXBContextFactory.class.getName().replaceFirst("javax.", "jakarta.");
-    protected static final String DEFAULT_JAXB_FACTORY_CLASS = "com.sun.xml.bind.v2.JAXBContextFactory";
+    protected static final String JAKARTA_FACTORY_PROP_NAME = JAXBContextFactory.class.getName();
+    protected static final String JAVAX_FACTORY_PROP_NAME = JAXBContextFactory.class.getName().replaceFirst("jakarta.", "javax.");
+    protected static final String JAVAX_JAXB_FACTORY_CLASS = "com.sun.xml.bind.v2.JAXBContextFactory";
     protected static final String JAKARTA_JAXB_FACTORY_CLASS = "org.glassfish.jaxb.runtime.v2.JAXBContextFactory";
     protected static final String CUSTOM_JAXB_FACTORY_CLASS = FakeJAXBContextFactory.class.getName();
     protected static final String JAXB_PROPERTIES_FILE = "WEB-INF/classes/org/jboss/as/test/integration/jaxb/bindings/jaxb.properties";
-    protected static final String SERVICES_FILE = "META-INF/services/" + JAXB_FACTORY_PROP_NAME;
+    protected static final String SERVICES_FILE = "META-INF/services/" + JAKARTA_FACTORY_PROP_NAME;
     protected static final String PERMISSIONS_FILE = "META-INF/permissions.xml";
 
     @ArquillianResource
     protected URL url;
+
 
     public static WebArchive createInternalDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEB_APP_INTERNAL_CONTEXT + ".war");

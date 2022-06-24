@@ -23,6 +23,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,7 +42,7 @@ public class JAXBContextUsingPropertiesTestCase extends JAXBContextTestBase {
         final WebArchive war = JAXBContextTestBase.createInternalDeployment();
         String nl = System.getProperty("line.separator");
         war.add(new StringAsset(
-                JAXB_FACTORY_PROP_NAME + "=" + DEFAULT_JAXB_FACTORY_CLASS + nl
+                JAVAX_FACTORY_PROP_NAME + "=" + JAVAX_JAXB_FACTORY_CLASS + nl
                 + JAKARTA_FACTORY_PROP_NAME + "=" + JAKARTA_JAXB_FACTORY_CLASS),
                 JAXB_PROPERTIES_FILE);
         return war;
@@ -52,7 +53,7 @@ public class JAXBContextUsingPropertiesTestCase extends JAXBContextTestBase {
         final WebArchive war = JAXBContextTestBase.createCustomDeployment();
         String nl = System.getProperty("line.separator");
         war.add(new StringAsset(
-                JAXB_FACTORY_PROP_NAME + "=" + CUSTOM_JAXB_FACTORY_CLASS + nl
+                JAVAX_FACTORY_PROP_NAME + "=" + CUSTOM_JAXB_FACTORY_CLASS + nl
                 + JAKARTA_FACTORY_PROP_NAME + "=" + CUSTOM_JAXB_FACTORY_CLASS),
                 JAXB_PROPERTIES_FILE);
         return war;
@@ -66,6 +67,7 @@ public class JAXBContextUsingPropertiesTestCase extends JAXBContextTestBase {
 
     @OperateOnDeployment("app-custom")
     @Test
+    @Ignore("WFLY-16523")
     public void testCustom() throws Exception {
         testCustomImplementation(url);
     }
