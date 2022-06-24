@@ -2822,18 +2822,6 @@
 
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
-                <artifactId>jbossws-cxf-jaspi</artifactId>
-                <version>${preview.version.org.jboss.ws.cxf}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-resources</artifactId>
                 <version>${preview.version.org.jboss.ws.cxf}</version>
                 <classifier>wildfly2700</classifier>

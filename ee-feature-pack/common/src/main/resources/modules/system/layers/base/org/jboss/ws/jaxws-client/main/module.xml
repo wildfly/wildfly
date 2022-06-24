@@ -30,7 +30,6 @@
 
     <resources>
         <artifact name="${org.jboss.ws.cxf:jbossws-cxf-client}"/>
-        <artifact name="${org.jboss.ws.cxf:jbossws-cxf-jaspi}"/>
     </resources>
 
     <dependencies>
