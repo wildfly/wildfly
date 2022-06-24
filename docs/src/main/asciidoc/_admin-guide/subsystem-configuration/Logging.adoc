@@ -85,9 +85,6 @@ The following configuration files are allowed:
 
 * logging.properties
 * jboss-logging.properties
-* log4j.properties
-* log4j.xml
-* jboss-log4j.xml
 
 You can also disable this functionality by changing the
 `use-deployment-logging-config` attribute to `false`.
