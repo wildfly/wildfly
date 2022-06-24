@@ -22,11 +22,9 @@
 package org.wildfly.test.security.common.elytron;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 
 /**
@@ -93,7 +91,7 @@ public class SimpleTrustManager extends AbstractConfigurableElement implements T
         if (StringUtils.isNotBlank(algorithm)) {
             alg = algorithm;
         } else {
-            alg = SystemUtils.JAVA_VENDOR.toUpperCase(Locale.ENGLISH).contains("IBM") ? "IBMX509" : "SunX509";
+            alg = "SunX509";
         }
         cliLine.append(",algorithm=\"").append(alg).append("\"");
 
