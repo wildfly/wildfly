@@ -24,7 +24,7 @@ public class BridgeMethodTest {
     @Deployment
     public static Archive<?> deploy() {
         return ShrinkWrap.create(JavaArchive.class, "testBridgeMethods.jar")
-                .addAsManifestResource(new StringAsset("<beans><interceptors><class>" + SomeInterceptor.class.getName() + "</class></interceptors></beans>"), "beans.xml")
+                .addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"><interceptors><class>" + SomeInterceptor.class.getName() + "</class></interceptors></beans>"), "beans.xml")
                 .addPackage(BridgeMethodTest.class.getPackage());
     }
 
