@@ -40,7 +40,6 @@ import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION;
 import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER;
 import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
 
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -49,7 +48,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -77,20 +75,24 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
     super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(ELEMENT_VERTX_OPTION),
       VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME, ELEMENT_VERTX_OPTION))
       .setAddHandler(new VertxOptionAddHandler())
-      .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+      .setRemoveHandler(new VertxOptionRemoveHandler())
       .setCapabilities(VERTX_OPTIONS_CAPABILITY)
     );
-  }
-
-  @Override
-  public Collection<AttributeDefinition> getAttributes() {
-    return VertxOptionsAttributes.getVertxOptionsAttributes();
   }
 
   @Override
   public void registerOperations(ManagementResourceRegistration resourceRegistration) {
     super.registerOperations(resourceRegistration);
     resourceRegistration.registerOperationHandler(SHOW_VERTX_OPTIONS_INFO, new ShowInfoHandler());
+  }
+
+  @Override
+  public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    super.registerAttributes(resourceRegistration);
+    AttrWriteHandler handler = new AttrWriteHandler(VertxOptionsAttributes.getVertxOptionsAttributes());
+    for (AttributeDefinition attr : VertxOptionsAttributes.getVertxOptionsAttributes()) {
+      resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+    }
   }
 
   static class VertxOptionAddHandler extends AbstractAddStepHandler {

@@ -17,21 +17,20 @@
 package org.wildfly.extension.vertx;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.Service;
@@ -47,7 +46,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-class ClusterNodeMetadataResourceDefinition extends PersistentResourceDefinition implements VertxConstants {
+class ClusterNodeMetadataResourceDefinition extends SimpleResourceDefinition implements VertxConstants {
 
   static final RuntimeCapability<Void> VERTX_CLUSTER_NODE_METADATA_CAPABILITY =
     RuntimeCapability.Builder.of(VertxResourceDefinition.VERTX_CAPABILITY_NAME + ".options.cluster-node-meta", true, JsonObject.class)
@@ -58,7 +57,6 @@ class ClusterNodeMetadataResourceDefinition extends PersistentResourceDefinition
     .setAttributeParser(AttributeParser.PROPERTIES_PARSER)
     .setRequired(false)
     .setAllowExpression(false)
-    .setRestartAllServices()
     .build();
 
   private static final List<AttributeDefinition> CLUSTER_NODE_META_ATTRS = new ArrayList<>();
@@ -74,21 +72,36 @@ class ClusterNodeMetadataResourceDefinition extends PersistentResourceDefinition
   ClusterNodeMetadataResourceDefinition() {
     super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(ELEMENT_CLUSTER_NODE_METADATA),
       VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME, ELEMENT_CLUSTER_NODE_METADATA))
-      .setAddHandler(new ClusterNodeMetadataResourceDefinition.AddClusterNodeMetaHandler())
-      .setRemoveHandler(new ClusterNodeMetadataResourceDefinition.RemoveClusterNodeMetaHandler())
+      .setAddHandler(new AddClusterNodeMetaHandler())
+      .setRemoveHandler(new RemoveHandler())
       .setCapabilities(VERTX_CLUSTER_NODE_METADATA_CAPABILITY)
     );
   }
 
   @Override
-  public Collection<AttributeDefinition> getAttributes() {
-    return CLUSTER_NODE_META_ATTRS;
+  public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    super.registerAttributes(resourceRegistration);
+    AbstractVertxOptionsResourceDefinition.AttrWriteHandler handler = new AbstractVertxOptionsResourceDefinition.AttrWriteHandler(getClusterNodeMetaAttrs()) {
+      @Override
+      protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+        return AbstractVertxOptionsResourceDefinition.isCluseterNodeMetaUsed(context, context.getCurrentAddressValue());
+      }
+    };
+    for (AttributeDefinition attr : getClusterNodeMetaAttrs()) {
+      resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+    }
   }
 
-  private static class RemoveClusterNodeMetaHandler extends ReloadRequiredRemoveStepHandler {
+  private static class RemoveHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-      super.performRuntime(context, operation, model);
+      final String name = context.getCurrentAddressValue();
+      boolean needsReload = AbstractVertxOptionsResourceDefinition.isCluseterNodeMetaUsed(context, name);
+      ServiceName serviceName = VERTX_CLUSTER_NODE_METADATA_CAPABILITY.getCapabilityServiceName(name);
+      context.removeService(serviceName);
+      if (needsReload) {
+        context.reloadRequired();
+      }
     }
   }
 

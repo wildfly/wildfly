@@ -17,26 +17,25 @@
 package org.wildfly.extension.vertx;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.Service;
@@ -53,7 +52,7 @@ import io.vertx.core.dns.AddressResolverOptions;
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-class AddressResolverResourceDefinition extends PersistentResourceDefinition implements VertxConstants {
+class AddressResolverResourceDefinition extends SimpleResourceDefinition implements VertxConstants {
 
   static final RuntimeCapability<Void> VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY =
     RuntimeCapability.Builder.of(VertxResourceDefinition.VERTX_CAPABILITY_NAME + ".options.address.resolver", true, AddressResolverOptions.class)
@@ -63,18 +62,15 @@ class AddressResolverResourceDefinition extends PersistentResourceDefinition imp
   public static final SimpleAttributeDefinition ATTR_HOSTS_PATH = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_HOSTS_PATH, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_HOSTS_VALUE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_HOSTS_VALUE, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final StringListAttributeDefinition ATTR_SERVERS = new StringListAttributeDefinition.Builder(VertxConstants.ATTR_SERVERS)
     .setRequired(false)
-    .setRestartAllServices()
     .setElementValidator(new StringLengthValidator(1))
     .setAllowExpression(true)
     .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
@@ -84,48 +80,40 @@ class AddressResolverResourceDefinition extends PersistentResourceDefinition imp
   public static final SimpleAttributeDefinition ATTR_OPT_RES_ENABLED = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_OPT_RES_ENABLED, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_CACHE_MIN_TTL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_CACHE_MIN_TTL, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_MAX_TTL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_MAX_TTL, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_NEGATIVE_TTL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_NEGATIVE_TTL, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_QUERY_TIMEOUT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_QUERY_TIMEOUT, ModelType.LONG)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_MAX_QUERIES = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_MAX_QUERIES, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_RD_FLAG = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_RD_FLAG, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final StringListAttributeDefinition ATTR_SEARCH_DOMAIN = new StringListAttributeDefinition.Builder(VertxConstants.ATTR_SEARCH_DOMAIN)
     .setRequired(false)
-    .setRestartAllServices()
     .setElementValidator(new StringLengthValidator(1))
     .setAllowExpression(true)
     .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
@@ -135,19 +123,16 @@ class AddressResolverResourceDefinition extends PersistentResourceDefinition imp
   public static final SimpleAttributeDefinition ATTR_N_DOTS = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_N_DOTS, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_ROTATE_SERVERS = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_ROTATE_SERVERS, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_ROUND_ROBIN_INET_ADDRESS = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_ROUND_ROBIN_INET_ADDRESS, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   private static final List<AttributeDefinition> VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS = new ArrayList<>();
@@ -184,14 +169,29 @@ class AddressResolverResourceDefinition extends PersistentResourceDefinition imp
   }
 
   @Override
-  public Collection<AttributeDefinition> getAttributes() {
-    return VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS;
+  public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    super.registerAttributes(resourceRegistration);
+    AbstractVertxOptionsResourceDefinition.AttrWriteHandler handler = new AbstractVertxOptionsResourceDefinition.AttrWriteHandler(getVertxAddressResolverOptionsAttrs()) {
+      @Override
+      protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+        return AbstractVertxOptionsResourceDefinition.isAddressResolverUsed(context, context.getCurrentAddressValue());
+      }
+    };
+    for (AttributeDefinition attr : getVertxAddressResolverOptionsAttrs()) {
+      resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+    }
   }
 
-  private static class RemoveAddressResolverHandler extends ReloadRequiredRemoveStepHandler {
+  private static class RemoveAddressResolverHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-      super.performRuntime(context, operation, model);
+      final String name = context.getCurrentAddressValue();
+      boolean needsReload = AbstractVertxOptionsResourceDefinition.isAddressResolverUsed(context, name);
+      ServiceName serviceName = VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY.getCapabilityServiceName(name);
+      context.removeService(serviceName);
+      if (needsReload) {
+        context.reloadRequired();
+      }
     }
   }
 

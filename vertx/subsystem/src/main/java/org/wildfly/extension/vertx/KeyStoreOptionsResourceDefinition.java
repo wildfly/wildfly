@@ -18,22 +18,21 @@ package org.wildfly.extension.vertx;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.dmr.ModelNode;
@@ -60,49 +59,42 @@ import io.vertx.core.net.TrustOptions;
  *
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-class KeyStoreOptionsResourceDefinition extends PersistentResourceDefinition implements VertxConstants {
+class KeyStoreOptionsResourceDefinition extends SimpleResourceDefinition implements VertxConstants {
 
   // key-store-option
   public static final SimpleAttributeDefinition ATTR_KEYSTORE_PROVIDER = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_KEYSTORE_PROVIDER, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_KEYSTORE_TYPE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_KEYSTORE_TYPE, ModelType.STRING)
     .setRequired(true)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_KEYSTORE_PASSWORD = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_KEYSTORE_PASSWORD, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_KEYSTORE_PATH = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_KEYSTORE_PATH, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_KEYSTORE_VALUE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_KEYSTORE_VALUE, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_KEYSTORE_ALIAS = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_KEYSTORE_ALIAS, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_KEYSTORE_ALIAS_PASSWORD = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_KEYSTORE_ALIAS_PASSWORD, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   private static final List<AttributeDefinition> KEYSTORE_OPTIONS_ATTRS = new ArrayList<>();
@@ -132,14 +124,29 @@ class KeyStoreOptionsResourceDefinition extends PersistentResourceDefinition imp
   }
 
   @Override
-  public Collection<AttributeDefinition> getAttributes() {
-    return KEYSTORE_OPTIONS_ATTRS;
+  public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    super.registerAttributes(resourceRegistration);
+    AbstractVertxOptionsResourceDefinition.AttrWriteHandler handler = new AbstractVertxOptionsResourceDefinition.AttrWriteHandler(getKeyStoreOptionsAttrs()) {
+      @Override
+      protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+        return AbstractVertxOptionsResourceDefinition.isKeyCertOptionUsed(context, context.getCurrentAddressValue());
+      }
+    };
+    for (AttributeDefinition attr : getKeyStoreOptionsAttrs()) {
+      resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+    }
   }
 
-  private static class RemoveHandler extends ReloadRequiredRemoveStepHandler {
+  private static class RemoveHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-      super.performRuntime(context, operation, model);
+      final String name = context.getCurrentAddressValue();
+      boolean needsReload = AbstractVertxOptionsResourceDefinition.isKeyCertOptionUsed(context, name);
+      ServiceName serviceName = KEY_CERT_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
+      context.removeService(serviceName);
+      if (needsReload) {
+        context.reloadRequired();
+      }
     }
   }
 

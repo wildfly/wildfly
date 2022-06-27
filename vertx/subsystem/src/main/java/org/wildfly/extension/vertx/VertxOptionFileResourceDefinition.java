@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -37,8 +36,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.ServerEnvironment;
@@ -62,14 +61,18 @@ class VertxOptionFileResourceDefinition extends AbstractVertxOptionsResourceDefi
     super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(ELEMENT_VERTX_OPTIONS_FILE),
       VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME, ELEMENT_VERTX_OPTIONS_FILE))
       .setAddHandler(new VertxOptionFileAddHandler())
-      .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+      .setRemoveHandler(new VertxOptionRemoveHandler())
       .setCapabilities(VERTX_OPTIONS_CAPABILITY)
     );
   }
 
   @Override
-  public Collection<AttributeDefinition> getAttributes() {
-    return VertxOptionsAttributes.getVertxOptionsFileAttributes();
+  public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    super.registerAttributes(resourceRegistration);
+    AttrWriteHandler handler = new AttrWriteHandler(VertxOptionsAttributes.getVertxOptionsFileAttributes());
+    for (AttributeDefinition attr : VertxOptionsAttributes.getVertxOptionsFileAttributes()) {
+      resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+    }
   }
 
   static class VertxOptionFileAddHandler extends AbstractAddStepHandler {

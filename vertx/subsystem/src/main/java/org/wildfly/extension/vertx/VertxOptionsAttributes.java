@@ -36,7 +36,6 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
   public static final SimpleAttributeDefinition VERTX_OPTION_FILE_PATH = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_PATH, ModelType.STRING)
     .setRequired(true)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   private static final List<AttributeDefinition> VERTX_OPTIONS_FILE_ATTRS = new ArrayList<>();
@@ -55,120 +54,102 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
     .setRequired(false)
     .setAllowExpression(true)
     .setValidator(new IntRangeValidator(1,  true))
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_WORKER_POOL_SIZE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_WORKER_POOL_SIZE, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
     .setValidator(new IntRangeValidator(1,  true))
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_INTERNAL_BLOCKING_POOL_SIZE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_INTERNAL_BLOCKING_POOL_SIZE, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
     .setValidator(new IntRangeValidator(1,  true))
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_HA_ENABLED = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_HA_ENABLED, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_HA_GROUP = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_HA_GROUP, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_QUORUM_SIZE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_QUORUM_SIZE, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
     .setValidator(new IntRangeValidator(1,  true))
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_PREFER_NATIVE_TRANSPORT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_PREFER_NATIVE_TRANSPORT, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_DISABLE_TCCL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_DISABLE_TCCL, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_BLOCKED_THREAD_CHECK_INTERVAL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL, ModelType.LONG)
     .setRequired(false)
     .setAllowExpression(true)
     .setValidator(new LongRangeValidator(1,  true))
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setAllowedValues(TIME_UNITS)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_MAX_EVENTLOOP_EXECUTE_TIME = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME, ModelType.LONG)
     .setRequired(false)
     .setAllowExpression(true)
     .setValidator(new LongRangeValidator(1,  true))
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setAllowedValues(TIME_UNITS)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_MAX_WORKER_EXECUTE_TIME = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_MAX_WORKER_EXECUTE_TIME, ModelType.LONG)
     .setRequired(false)
     .setAllowExpression(true)
     .setValidator(new LongRangeValidator(1,  true))
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_MAX_WORKER_EXECUTE_TIME_UNIT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_MAX_WORKER_EXECUTE_TIME_UNIT, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setAllowedValues(TIME_UNITS)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_WARNING_EXECUTION_TIME = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_WARNING_EXECUTION_TIME, ModelType.LONG)
     .setRequired(false)
     .setAllowExpression(true)
     .setValidator(new LongRangeValidator(1,  true))
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_WARNING_EXECUTION_TIME_UNIT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_WARNING_EXECUTION_TIME_UNIT, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setAllowedValues(TIME_UNITS)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_FS_CLASS_PATH_RESOLVING_ENABLED = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_FS_CLASS_PATH_RESOLVING_ENABLED, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_FS_FILE_CACHE_ENABLED = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_FS_FILE_CACHE_ENABLED, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   // address-resolver-option
@@ -176,7 +157,6 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
     .setRequired(false)
     .setAllowExpression(true)
     .setCapabilityReference(VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY.getName())
-    .setRestartAllServices()
     .build();
 
   // eventbus-option
@@ -184,7 +164,6 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
     .setRequired(false)
     .setAllowExpression(true)
     .setCapabilityReference(EventBusResourceDefinition.VERTX_EVENT_BUS_OPTIONS_CAPABILITY.getName())
-    .setRestartAllServices()
     .build();
 
   private static final List<AttributeDefinition> VERTX_OPTIONS_ATTRS = new ArrayList<>();

@@ -21,7 +21,6 @@ import static org.jboss.as.controller.AttributeMarshallers.SIMPLE_ELEMENT;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -32,6 +31,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
@@ -39,8 +39,6 @@ import org.jboss.as.controller.AttributeParsers;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
@@ -48,6 +46,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.dmr.ModelNode;
@@ -69,12 +68,11 @@ import io.vertx.core.net.PemTrustOptions;
  *
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-class PemTrustOptionsResourceDefinition extends PersistentResourceDefinition implements VertxConstants {
+class PemTrustOptionsResourceDefinition extends SimpleResourceDefinition implements VertxConstants {
 
   // pem-trust-option
   public static final StringListAttributeDefinition ATTR_PEM_KEY_CERT_CERT_PATH = new StringListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_CERT_PATH)
     .setRequired(false)
-    .setRestartAllServices()
     .setElementValidator(new StringLengthValidator(1))
     .setAllowExpression(true)
     .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
@@ -86,7 +84,6 @@ class PemTrustOptionsResourceDefinition extends PersistentResourceDefinition imp
     .setAllowExpression(true)
     .setAttributeParser(AttributeParsers.SIMPLE_ELEMENT)
     .setAttributeMarshaller(SIMPLE_ELEMENT)
-    .setRestartAllServices()
     .build();
 
   static final AttributeParser PEM_VALUE_PARSER = new AttributeParser() {
@@ -142,7 +139,6 @@ class PemTrustOptionsResourceDefinition extends PersistentResourceDefinition imp
 
   public static final SimpleListAttributeDefinition ATTR_PEM_KEY_CERT_CERT_VALUE = new SimpleListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_CERT_VALUE, ATTR_PEM_VALUE)
     .setRequired(false)
-    .setRestartAllServices()
     .setAllowExpression(true)
     .setAttributeParser(PEM_VALUE_PARSER)
     .setAttributeMarshaller(PEM_VALUE_MARSHALLER)
@@ -170,14 +166,29 @@ class PemTrustOptionsResourceDefinition extends PersistentResourceDefinition imp
   }
 
   @Override
-  public Collection<AttributeDefinition> getAttributes() {
-    return PEM_TRUST_OPTIONS_ATTRS;
+  public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    super.registerAttributes(resourceRegistration);
+    AbstractVertxOptionsResourceDefinition.AttrWriteHandler handler = new AbstractVertxOptionsResourceDefinition.AttrWriteHandler(getPemTrustOptionsAttrs()) {
+      @Override
+      protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+        return AbstractVertxOptionsResourceDefinition.isTrustOptionUsed(context, context.getCurrentAddressValue());
+      }
+    };
+    for (AttributeDefinition attr : getPemTrustOptionsAttrs()) {
+      resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+    }
   }
 
-  private static class RemoveHandler extends ReloadRequiredRemoveStepHandler {
+  private static class RemoveHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-      super.performRuntime(context, operation, model);
+      final String name = context.getCurrentAddressValue();
+      boolean needsReload = AbstractVertxOptionsResourceDefinition.isTrustOptionUsed(context, name);
+      ServiceName serviceName = TRUST_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
+      context.removeService(serviceName);
+      if (needsReload) {
+        context.reloadRequired();
+      }
     }
   }
 

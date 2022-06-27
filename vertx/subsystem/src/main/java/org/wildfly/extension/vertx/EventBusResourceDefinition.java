@@ -16,22 +16,23 @@
  */
 package org.wildfly.extension.vertx;
 
+import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_MARSHALLER;
+import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_PARSER;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
@@ -39,6 +40,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.Service;
@@ -57,13 +59,10 @@ import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.OpenSSLEngineOptions;
 import io.vertx.core.net.TrustOptions;
 
-import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_MARSHALLER;
-import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_PARSER;
-
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-class EventBusResourceDefinition extends PersistentResourceDefinition implements VertxConstants {
+class EventBusResourceDefinition extends SimpleResourceDefinition implements VertxConstants {
 
   static final RuntimeCapability<Void> VERTX_EVENT_BUS_OPTIONS_CAPABILITY =
     RuntimeCapability.Builder.of(VertxResourceDefinition.VERTX_CAPABILITY_NAME + ".options.eventbus", true, EventBusOptions.class)
@@ -73,104 +72,87 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_SEND_BUFFER_SIZE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_SEND_BUFFER_SIZE, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_RECEIVE_BUFFER_SIZE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_RECEIVE_BUFFER_SIZE, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_TRAFFIC_CLASS = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_TRAFFIC_CLASS, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_REUSE_ADDRESS = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_REUSE_ADDRESS, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_LOG_ACTIVITY = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_LOG_ACTIVITY, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_REUSE_PORT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_REUSE_PORT, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_TCP_NO_DELAY = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_TCP_NO_DELAY, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_TCP_KEEP_ALIVE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_TCP_KEEP_ALIVE, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_SO_LINGER = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_SO_LINGER, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_IDLE_TIMEOUT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_IDLE_TIMEOUT, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_READ_IDLE_TIMEOUT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_READ_IDLE_TIMEOUT, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_WRITE_IDLE_TIMEOUT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_WRITE_IDLE_TIMEOUT, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_IDLE_TIMEOUT_UNIT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_IDLE_TIMEOUT_UNIT, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setAllowedValues(TIME_UNITS)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_SSL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_SSL, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_SSL_HAND_SHAKE_TIMEOUT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_SSL_HAND_SHAKE_TIMEOUT, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_SSL_HAND_SHAKE_TIMEOUT_UNIT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_SSL_HAND_SHAKE_TIMEOUT_UNIT, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setAllowedValues(TIME_UNITS)
-    .setRestartAllServices()
     .build();
 
   public static final StringListAttributeDefinition ATTR_EVENTBUS_ENABLED_CIPHER_SUITES = new StringListAttributeDefinition.Builder(VertxConstants.ATTR_EVENTBUS_ENABLED_CIPHER_SUITES)
     .setRequired(false)
-    .setRestartAllServices()
     .setElementValidator(new StringLengthValidator(1))
     .setAllowExpression(true)
     .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
@@ -179,7 +161,6 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
 
   public static final StringListAttributeDefinition ATTR_EVENTBUS_CRL_PATHS = new StringListAttributeDefinition.Builder(VertxConstants.ATTR_EVENTBUS_CRL_PATHS)
     .setRequired(false)
-    .setRestartAllServices()
     .setElementValidator(new StringLengthValidator(1))
     .setAllowExpression(true)
     .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
@@ -188,7 +169,6 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
 
   public static final SimpleListAttributeDefinition ATTR_EVENTBUS_CRL_VALUES = new SimpleListAttributeDefinition.Builder(VertxConstants.ATTR_EVENTBUS_CRL_VALUES, PemTrustOptionsResourceDefinition.ATTR_PEM_VALUE)
     .setRequired(false)
-    .setRestartAllServices()
     .setElementValidator(new StringLengthValidator(1))
     .setAllowExpression(true)
     .setAttributeParser(PEM_VALUE_PARSER)
@@ -198,12 +178,10 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_USE_ALPN = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_USE_ALPN, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final StringListAttributeDefinition ATTR_EVENTBUS_ENABLED_SECURE_TRANSPORT_PROTOCOLS = new StringListAttributeDefinition.Builder(VertxConstants.ATTR_EVENTBUS_ENABLED_SECURE_TRANSPORT_PROTOCOLS)
     .setRequired(false)
-    .setRestartAllServices()
     .setElementValidator(new StringLengthValidator(1))
     .setAllowExpression(true)
     .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
@@ -213,126 +191,106 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_TCP_FAST_OPEN = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_TCP_FAST_OPEN, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_TCP_CORK = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_TCP_CORK, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_TCP_QUICK_ACK = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_TCP_QUICK_ACK, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_SSL_ENGINE_TYPE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_SSL_ENGINE_TYPE, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setAllowedValues(SSL_ENGINE_TYPES)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_OPENSSL_SESSION_CACHE_ENABLED = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_OPENSSL_SESSION_CACHE_ENABLED, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_CLUSTER_PUBLIC_HOST = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_CLUSTER_PUBLIC_HOST, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_CLUSTER_PUBLIC_PORT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_CLUSTER_PUBLIC_PORT, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_CLUSTER_PING_INTERVAL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_CLUSTER_PING_INTERVAL, ModelType.LONG)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_CLUSTER_PING_REPLY_INTERVAL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_CLUSTER_PING_REPLY_INTERVAL, ModelType.LONG)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_HOST = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_HOST, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_PORT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_PORT, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_ACCEPT_BACKLOG = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_ACCEPT_BACKLOG, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_CLIENT_AUTH = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_CLIENT_AUTH, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setAllowedValues(CLIENT_AUTHS)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_RECONNECT_ATTEMPTS = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_RECONNECT_ATTEMPTS, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_RECONNECT_INTERVAL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_RECONNECT_INTERVAL, ModelType.LONG)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_CONNECT_TIMEOUT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_CONNECT_TIMEOUT, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_TRUST_ALL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_TRUST_ALL, ModelType.BOOLEAN)
     .setRequired(false)
     .setAllowExpression(true)
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_KEY_CERT_OPTION = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_KEY_CERT_OPTION, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setCapabilityReference(KeyStoreOptionsResourceDefinition.KEY_CERT_OPTIONS_CAPABILITY.getName())
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_TRUST_OPTION = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_TRUST_OPTION, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setCapabilityReference(KeyStoreOptionsResourceDefinition.TRUST_OPTIONS_CAPABILITY.getName())
-    .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_CLUSTER_NODE_METADATA = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_CLUSTER_NODE_METADATA, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setCapabilityReference(ClusterNodeMetadataResourceDefinition.VERTX_CLUSTER_NODE_METADATA_CAPABILITY.getName())
-    .setRestartAllServices()
     .build();
 
   private static final List<AttributeDefinition> VERTX_EVENTBUS_ATTRS = new ArrayList<>();
@@ -396,14 +354,29 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
   }
 
   @Override
-  public Collection<AttributeDefinition> getAttributes() {
-    return VERTX_EVENTBUS_ATTRS;
+  public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    super.registerAttributes(resourceRegistration);
+    AbstractVertxOptionsResourceDefinition.AttrWriteHandler handler = new AbstractVertxOptionsResourceDefinition.AttrWriteHandler(getVertxEventbusAttrs()) {
+      @Override
+      protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+        return AbstractVertxOptionsResourceDefinition.isEventBusUsed(context, context.getCurrentAddressValue());
+      }
+    };
+    for (AttributeDefinition attr : getVertxEventbusAttrs()) {
+      resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+    }
   }
 
-  private static class RemoveEventBusHandler extends ReloadRequiredRemoveStepHandler {
+  private static class RemoveEventBusHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-      super.performRuntime(context, operation, model);
+      final String name = context.getCurrentAddressValue();
+      boolean needsReload = AbstractVertxOptionsResourceDefinition.isEventBusUsed(context, name);
+      ServiceName serviceName = VERTX_EVENT_BUS_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
+      context.removeService(serviceName);
+      if (needsReload) {
+        context.reloadRequired();
+      }
     }
   }
 

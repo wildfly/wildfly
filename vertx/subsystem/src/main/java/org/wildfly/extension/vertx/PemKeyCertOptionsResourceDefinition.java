@@ -21,25 +21,24 @@ import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.dmr.ModelNode;
@@ -59,12 +58,11 @@ import io.vertx.core.net.PemKeyCertOptions;
  *
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition implements VertxConstants {
+class PemKeyCertOptionsResourceDefinition extends SimpleResourceDefinition implements VertxConstants {
 
   // pem-key-cert-option
   public static final StringListAttributeDefinition ATTR_PEM_KEY_CERT_KEY_PATH = new StringListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_KEY_PATH)
     .setRequired(false)
-    .setRestartAllServices()
     .setElementValidator(new StringLengthValidator(1))
     .setAllowExpression(true)
     .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
@@ -73,7 +71,6 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
 
   public static final SimpleListAttributeDefinition ATTR_PEM_KEY_CERT_KEY_VALUE = new SimpleListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_KEY_VALUE, PemTrustOptionsResourceDefinition.ATTR_PEM_VALUE)
     .setRequired(false)
-    .setRestartAllServices()
     .setAttributeParser(PEM_VALUE_PARSER)
     .setAttributeMarshaller(PEM_VALUE_MARSHALLER)
     .setAllowExpression(true)
@@ -81,7 +78,6 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
 
   public static final StringListAttributeDefinition ATTR_PEM_KEY_CERT_CERT_PATH = new StringListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_CERT_PATH)
     .setRequired(false)
-    .setRestartAllServices()
     .setElementValidator(new StringLengthValidator(1))
     .setAllowExpression(true)
     .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
@@ -90,7 +86,6 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
 
   public static final SimpleListAttributeDefinition ATTR_PEM_KEY_CERT_CERT_VALUE = new SimpleListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_CERT_VALUE, PemTrustOptionsResourceDefinition.ATTR_PEM_VALUE)
     .setRequired(false)
-    .setRestartAllServices()
     .setAttributeParser(PEM_VALUE_PARSER)
     .setAttributeMarshaller(PEM_VALUE_MARSHALLER)
     .setAllowExpression(true)
@@ -120,16 +115,29 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
   }
 
   @Override
-  public Collection<AttributeDefinition> getAttributes() {
-    return PEM_KEY_CERT_OPTIONS_ATTRS;
+  public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    super.registerAttributes(resourceRegistration);
+    AbstractVertxOptionsResourceDefinition.AttrWriteHandler handler = new AbstractVertxOptionsResourceDefinition.AttrWriteHandler(getPemKeyCertOptionsAttrs()) {
+      @Override
+      protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+        return AbstractVertxOptionsResourceDefinition.isKeyCertOptionUsed(context, context.getCurrentAddressValue());
+      }
+    };
+    for (AttributeDefinition attr : getPemKeyCertOptionsAttrs()) {
+      resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+    }
   }
 
-  private static class RemoveHandler extends ReloadRequiredRemoveStepHandler {
+  private static class RemoveHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
       final String name = context.getCurrentAddressValue();
-      VertxOptionsRegistry.getInstance().removePemKeyCertOptions(name);
-      super.performRuntime(context, operation, model);
+      boolean needsReload = AbstractVertxOptionsResourceDefinition.isKeyCertOptionUsed(context, name);
+      ServiceName serviceName = KEY_CERT_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
+      context.removeService(serviceName);
+      if (needsReload) {
+        context.reloadRequired();
+      }
     }
   }
 
