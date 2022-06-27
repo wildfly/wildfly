@@ -31,7 +31,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +52,7 @@ public class CDIApplicationPathIntegrationTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsapp.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(CDIApplicationPathIntegrationTestCase.class, CDIBean.class, CDIPathApplication.class, CDIResource.class);
-        war.add(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "WEB-INF/beans.xml");
+        war.add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
         return war;
     }
 

@@ -41,7 +41,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -49,7 +48,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.openapi.service.TestApplication;
-import org.wildfly.test.integration.microprofile.openapi.service.multimodule.TestEjb;
+import org.wildfly.test.integration.microprofile.openapi.service.multimodule.TestBean;
 import org.wildfly.test.integration.microprofile.openapi.service.multimodule.TestRequest;
 import org.wildfly.test.integration.microprofile.openapi.service.multimodule.TestResource;
 import org.wildfly.test.integration.microprofile.openapi.service.multimodule.TestResponse;
@@ -73,16 +72,13 @@ public class OpenAPIMultiModuleDeploymentIndexTestCase {
                                      .addAsResource(TestResource.class.getResource("beans.xml"), "WEB-INF/beans.xml")
                                      .addClasses(TestApplication.class, TestResource.class);
         JavaArchive core = ShrinkWrap.create(JavaArchive.class, "core.jar")
-                                     .addClasses(TestEjb.class, TestRequest.class)
-                                     .addAsResource(new StringAsset(
-                                                     "<ejb-jar version=\"3.0\" "
-                                                             + "metadata-complete=\"true\"></ejb-jar>"),
-                                             "META-INF/ejb-jar.xml");
+                                     .addClasses(TestBean.class, TestRequest.class)
+                                     .addAsResource(TestResource.class.getResource("beans.xml"), "WEB-INF/beans.xml");
         JavaArchive common = ShrinkWrap.create(JavaArchive.class, "common.jar").addClass(TestResponse.class);
         return ShrinkWrap.create(EnterpriseArchive.class, PARENT_DEPLOYMENT_NAME)
                          .addAsModules(jaxrs, core)
                          .addAsManifestResource(
-                                 TestEjb.class.getResource("application.xml"),
+                                 TestBean.class.getResource("application.xml"),
                                  "application.xml")
                          .addAsLibraries(common);
     }

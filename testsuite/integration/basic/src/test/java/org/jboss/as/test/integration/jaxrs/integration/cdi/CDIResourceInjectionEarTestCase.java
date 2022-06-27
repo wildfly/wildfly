@@ -32,7 +32,7 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -58,7 +58,7 @@ public class CDIResourceInjectionEarTestCase {
 
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
-        war.add(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "WEB-INF/beans.xml");
+        war.add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
         war.addClasses(CDIResourceInjectionEarTestCase.class, CDIResource.class, CDIBean.class);
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n" +

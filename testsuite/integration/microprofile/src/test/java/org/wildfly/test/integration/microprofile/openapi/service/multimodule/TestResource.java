@@ -43,7 +43,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 public class TestResource {
 
     @Inject
-    private TestEjb testEjb;
+    private TestBean testEjb;
 
     @POST
     @Operation(summary = "Test the indexing of multi module deployments")

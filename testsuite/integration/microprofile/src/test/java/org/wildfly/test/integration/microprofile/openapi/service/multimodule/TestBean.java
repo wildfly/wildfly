@@ -16,13 +16,13 @@
 
 package org.wildfly.test.integration.microprofile.openapi.service.multimodule;
 
-import jakarta.ejb.Stateless;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * @author Joachim Grimm
  */
-@Stateless
-public class TestEjb {
+@ApplicationScoped
+public class TestBean {
 
     public TestResponse hello(TestRequest request) {
         TestResponse testResponse = new TestResponse();

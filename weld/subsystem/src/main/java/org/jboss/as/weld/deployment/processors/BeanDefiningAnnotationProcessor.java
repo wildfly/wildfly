@@ -34,6 +34,10 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
 
     private static final DotName VIEW_SCOPED_NAME = DotName.createSimple("javax.faces.view.ViewScoped");
     private static final DotName FLOW_SCOPED_NAME = DotName.createSimple("javax.faces.flow.FlowScoped");
+    // Jakarta REST annotations
+    private static final DotName PROVIDER = DotName.createSimple("javax.ws.rs.ext.Provider");
+    private static final DotName APPLICATION_PATH = DotName.createSimple("javax.ws.rs.ApplicationPath");
+    private static final DotName PATH = DotName.createSimple("javax.ws.rs.Path");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -52,6 +56,15 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
         addAnnotation(deploymentUnit, new AnnotationType(TransactionScoped.class));
         addAnnotation(deploymentUnit, new AnnotationType(VIEW_SCOPED_NAME, true));
         addAnnotation(deploymentUnit, new AnnotationType(FLOW_SCOPED_NAME, true));
+        // Per section 11.2.3 of the Jakarta REST 3.1 specification:
+        // In a product that supports CDI, implementations MUST support the use of CDI-style Beans as root resource
+        // classes, providers and Application subclasses. Providers and Application subclasses MUST be singletons or
+        // use application scope.
+        // Currently, these are not specified as @Stereotype annotations with a default scope. In a later spec this may
+        // happen, in which case these can be removed.
+        addAnnotation(deploymentUnit, new AnnotationType(PROVIDER, false));
+        addAnnotation(deploymentUnit, new AnnotationType(APPLICATION_PATH, false));
+        addAnnotation(deploymentUnit, new AnnotationType(PATH, false));
 
         for (AnnotationType annotationType : CdiAnnotations.BEAN_DEFINING_META_ANNOTATIONS) {
             addAnnotations(deploymentUnit, getAnnotationsAnnotatedWith(index, annotationType.getName()));
