@@ -221,12 +221,10 @@ class PemTrustOptionsResourceDefinition extends SimpleResourceDefinition impleme
             certPaths.addAll(canonicalCertPaths);
           }
           consumer.accept(pemTrustOptions);
-          VertxOptionsRegistry.getInstance().addPemTrustOptions(name, pemTrustOptions);
         }
 
         @Override
         public void stop(StopContext stopContext) {
-          VertxOptionsRegistry.getInstance().removePemTrustOptions(name);
         }
       };
       serviceBuilder

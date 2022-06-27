@@ -122,12 +122,10 @@ class ClusterNodeMetadataResourceDefinition extends SimpleResourceDefinition imp
         @Override
         public void start(StartContext startContext) throws StartException {
           consumer.accept(clusterNodeMeta);
-          VertxOptionsRegistry.getInstance().addClusterNodeMeta(name, clusterNodeMeta);
         }
 
         @Override
         public void stop(StopContext stopContext) {
-          VertxOptionsRegistry.getInstance().removeClusterNodeMeta(name);
         }
       };
       serviceBuilder

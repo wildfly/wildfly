@@ -16,18 +16,11 @@
  */
 package org.wildfly.extension.vertx;
 
-import io.vertx.core.dns.AddressResolverOptions;
-import io.vertx.core.eventbus.EventBusOptions;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.KeyStoreOptionsBase;
-import io.vertx.core.net.PemKeyCertOptions;
-import io.vertx.core.net.PemTrustOptions;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A central place to register the defined VertxOptions and its sub configurations.
+ * A central place to register the defined VertxOptions.
  *
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
@@ -35,22 +28,10 @@ public final class VertxOptionsRegistry {
 
   // All cached NamedVertxOptions
   private final Map<String, NamedVertxOptions> namedVertxOptionsMap = new ConcurrentHashMap<>();
-  // All defined AddressResolverOptions
-  private final Map<String, AddressResolverOptions> addressResolverOptionsMap = new ConcurrentHashMap<>();
-  // All defined EventBusOptions
-  private final Map<String, EventBusOptions> eventBusOptionsMap = new ConcurrentHashMap<>();
-  // All defined cluster-node-metata in JsonObject
-  private final Map<String, JsonObject> clusterNodeMetaMap = new ConcurrentHashMap<>();
-  // All defined KeyStoreOptionsBase
-  private final Map<String, KeyStoreOptionsBase> keyStoreOptionsBaseMap = new ConcurrentHashMap<>();
-  // All defined PemKeyCertOptions
-  private final Map<String, PemKeyCertOptions> pemKeyCertOptionsMap = new ConcurrentHashMap<>();
-  // All defined PemTrustOptions
-  private final Map<String, PemTrustOptions> pemTrustOptionsMap = new ConcurrentHashMap<>();
 
   private VertxOptionsRegistry() {}
 
-  private static VertxOptionsRegistry INSTANCE = new VertxOptionsRegistry();
+  private static final VertxOptionsRegistry INSTANCE = new VertxOptionsRegistry();
   public static VertxOptionsRegistry getInstance() {
     return INSTANCE;
   }
@@ -81,78 +62,6 @@ public final class VertxOptionsRegistry {
    */
   public void removeVertxOptions(String name) {
     this.namedVertxOptionsMap.remove(name);
-  }
-
-  public AddressResolverOptions getAddressResolverOptions(String name) {
-    return this.addressResolverOptionsMap.get(name);
-  }
-
-  public void addAddressResolverOptions(String name, AddressResolverOptions addressOptions) {
-    this.addressResolverOptionsMap.put(name, addressOptions);
-  }
-
-  public void removeAddressResolverOptions(String name) {
-    this.addressResolverOptionsMap.remove(name);
-  }
-
-  public EventBusOptions getEventBusOptions(String name) {
-    return this.eventBusOptionsMap.get(name);
-  }
-
-  public void addEventBusOptions(String name, EventBusOptions eventBusOptions) {
-    this.eventBusOptionsMap.put(name, eventBusOptions);
-  }
-
-  public void removeEventBusOptions(String name) {
-    this.eventBusOptionsMap.remove(name);
-  }
-
-  public JsonObject getClusterNodeMeta(String name) {
-    return this.clusterNodeMetaMap.get(name);
-  }
-
-  public void addClusterNodeMeta(String name, JsonObject clusterNodeMeta) {
-    this.clusterNodeMetaMap.put(name, clusterNodeMeta);
-  }
-
-  public void removeClusterNodeMeta(String name) {
-    this.clusterNodeMetaMap.remove(name);
-  }
-
-  public KeyStoreOptionsBase getKeyStoreOptions(String name) {
-    return this.keyStoreOptionsBaseMap.get(name);
-  }
-
-  public void addKeyStoreOptions(String name, KeyStoreOptionsBase keyStoreOptionsBase) {
-    this.keyStoreOptionsBaseMap.put(name, keyStoreOptionsBase);
-  }
-
-  public void removeKeyStoreOptions(String name) {
-    this.keyStoreOptionsBaseMap.remove(name);
-  }
-
-  public PemKeyCertOptions getPemKeyCertOptions(String name) {
-    return this.pemKeyCertOptionsMap.get(name);
-  }
-
-  public void addPemKeyCertOptions(String name, PemKeyCertOptions pemKeyCertOptions) {
-    this.pemKeyCertOptionsMap.put(name, pemKeyCertOptions);
-  }
-
-  public void removePemKeyCertOptions(String name) {
-    this.pemKeyCertOptionsMap.remove(name);
-  }
-
-  public PemTrustOptions getPemTrustOptions(String name) {
-    return this.pemTrustOptionsMap.get(name);
-  }
-
-  public void addPemTrustOptions(String name, PemTrustOptions pemTrustOptions) {
-    this.pemTrustOptionsMap.put(name, pemTrustOptions);
-  }
-
-  public void removePemTrustOptions(String name) {
-    this.pemTrustOptionsMap.remove(name);
   }
 
 }

@@ -212,12 +212,10 @@ class AddressResolverResourceDefinition extends SimpleResourceDefinition impleme
         @Override
         public void start(StartContext startContext) throws StartException {
           consumer.accept(addressResolverOptions);
-          VertxOptionsRegistry.getInstance().addAddressResolverOptions(name, addressResolverOptions);
         }
 
         @Override
         public void stop(StopContext stopContext) {
-          VertxOptionsRegistry.getInstance().removeAddressResolverOptions(name);
         }
       };
 

@@ -179,12 +179,10 @@ class PemKeyCertOptionsResourceDefinition extends SimpleResourceDefinition imple
             pemKeyCertOptions.setCertPaths(canonicalCertPaths);
           }
           consumer.accept(pemKeyCertOptions);
-          VertxOptionsRegistry.getInstance().addPemKeyCertOptions(name, pemKeyCertOptions);
         }
 
         @Override
         public void stop(StopContext stopContext) {
-          VertxOptionsRegistry.getInstance().removePemKeyCertOptions(name);
         }
       };
       serviceBuilder

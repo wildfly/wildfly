@@ -173,14 +173,12 @@ class KeyStoreOptionsResourceDefinition extends SimpleResourceDefinition impleme
             final String filePath = Paths.get(path).isAbsolute() ? path : Paths.get(serverEnvSupplier.get().getServerConfigurationDir().getPath(), path).toString();
             keyStoreOptions.setPath(filePath);
           }
-          VertxOptionsRegistry.getInstance().addKeyStoreOptions(name, keyStoreOptions);
           trustOptionsConsumer.accept(keyStoreOptions);
           keyCertOptionsConsumer.accept(keyStoreOptions);
         }
 
         @Override
         public void stop(StopContext stopContext) {
-          VertxOptionsRegistry.getInstance().removeKeyStoreOptions(name);
         }
       };
       serviceBuilder

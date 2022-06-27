@@ -414,7 +414,6 @@ class EventBusResourceDefinition extends SimpleResourceDefinition implements Ver
 
         @Override
         public void start(StartContext startContext) throws StartException {
-          VertxOptionsRegistry.getInstance().addEventBusOptions(name, eventBusOptions);
           if (theClusterNodeMeta != null && theClusterNodeMeta.get() != null) {
             eventBusOptions.setClusterNodeMetadata(theClusterNodeMeta.get());
           }
@@ -432,7 +431,6 @@ class EventBusResourceDefinition extends SimpleResourceDefinition implements Ver
           eventBusOptions.setClusterNodeMetadata(null);
           eventBusOptions.setKeyCertOptions(null);
           eventBusOptions.setTrustOptions(null);
-          VertxOptionsRegistry.getInstance().removeEventBusOptions(name);
         }
       };
       builder.setInstance(eventBusOptionService)
