@@ -23,6 +23,8 @@ package org.wildfly.clustering.ee.cache.scheduler;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 /**
  * A collection of scheduled entries with a predictable iteration order.
@@ -53,7 +55,17 @@ public interface ScheduledEntries<K, V> extends Iterable<Map.Entry<K, V>> {
      * Returns, but does not remove, the first entry.
      */
     default Map.Entry<K, V> peek() {
-        Iterator<Map.Entry<K, V>> entries = this.iterator();
-        return entries.hasNext() ? entries.next() : null;
+        return this.stream().findFirst().orElse(null);
+    }
+
+    /**
+     * Returns a stream of scheduled entries.
+     * @return a stream of scheduled entries.
+     */
+    Stream<Map.Entry<K, V>> stream();
+
+    @Override
+    default Iterator<Entry<K, V>> iterator() {
+        return this.stream().iterator();
     }
 }

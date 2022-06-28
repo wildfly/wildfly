@@ -31,6 +31,7 @@ import java.util.Spliterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * {@link ScheduledEntries} implemented using a {@link ConcurrentSkipListSet}, where entries are sorted based on the entry value.
@@ -42,7 +43,7 @@ public class SortedScheduledEntries<K, V extends Comparable<? super V>> implemen
     private final Map<K, V> entries = new ConcurrentHashMap<>();
 
     static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> comparingByValue() {
-        return new Comparator<Map.Entry<K, V>>() {
+        return new Comparator<>() {
             @Override
             public int compare(Map.Entry<K, V> entry1, Map.Entry<K, V> entry2) {
                 int result = entry1.getValue().compareTo(entry2.getValue());
@@ -99,10 +100,15 @@ public class SortedScheduledEntries<K, V extends Comparable<? super V>> implemen
     }
 
     @Override
+    public Stream<Map.Entry<K, V>> stream() {
+        return this.sorted.stream();
+    }
+
+    @Override
     public Iterator<Map.Entry<K, V>> iterator() {
         Iterator<Map.Entry<K, V>> iterator = this.sorted.iterator();
         Map<K, V> entries = this.entries;
-        return new Iterator<Map.Entry<K, V>>() {
+        return new Iterator<>() {
             private K current = null;
 
             @Override
