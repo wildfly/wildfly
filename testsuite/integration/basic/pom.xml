@@ -41,6 +41,7 @@
         <bootable-jar-copy-module-files.phase>none</bootable-jar-copy-module-files.phase>
         <!-- Disable the default surefire test execution. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
+        <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/javax.crypto=ALL-UNNAMED --add-opens=java.base/sun.security.validator=ALL-UNNAMED</modular.jdk.testsuite.args>
     </properties>
 
     <dependencies>
