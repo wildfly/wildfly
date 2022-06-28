@@ -525,11 +525,16 @@
                                 <exclude>io.smallrye:smallrye-open-api-jaxrs</exclude>
                                 <exclude>io.undertow:undertow-servlet\z</exclude>
                                 <exclude>net.bytebuddy:byte-buddy\z</exclude>
+                                <exclude>net.shibboleth.utilities:java-support\z</exclude>
                                 <exclude>org.opensaml:opensaml-core\z</exclude>
+                                <exclude>org.opensaml:opensaml-profile-api\z</exclude>
                                 <exclude>org.opensaml:opensaml-security-impl\z</exclude>
                                 <exclude>org.opensaml:opensaml-soap-api\z</exclude>
                                 <exclude>org.opensaml:opensaml-saml-api\z</exclude>
+                                <exclude>org.opensaml:opensaml-saml-impl\z</exclude>
+                                <exclude>org.opensaml:opensaml-security-api\z</exclude>
                                 <exclude>org.opensaml:opensaml-xmlsec-api\z</exclude>
+                                <exclude>org.opensaml:opensaml-xmlsec-impl\z</exclude>
                                 <!-- end javax.annotations excludes -->
                                 <!-- Don't transform org.dom4j:dom4j as we don't use its package
                                      that uses jaxp -->
