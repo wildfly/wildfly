@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.eararchive;
 
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
 public interface Test3Home extends EJBHome {
 
-    Test3 create() throws java.rmi.RemoteException, javax.ejb.CreateException;
+    Test3 create() throws java.rmi.RemoteException, jakarta.ejb.CreateException;
 }

@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ee.lifecycle.servlet;
 
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.annotation.WebListener;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.ServletRequestListener;
+import jakarta.servlet.annotation.WebListener;
 
 @LifecycleCallbackBinding
 @WebListener

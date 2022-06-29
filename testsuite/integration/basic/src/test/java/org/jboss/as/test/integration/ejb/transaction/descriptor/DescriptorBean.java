@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.transaction.descriptor;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionManager;
 
 /**
  * @author Stuart Douglas

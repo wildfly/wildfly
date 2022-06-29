@@ -16,9 +16,9 @@
 
 package org.jboss.as.test.integration.jsf.injection;
 
-import static javax.faces.annotation.FacesConfig.Version;
+import static jakarta.faces.annotation.FacesConfig.Version;
 
-import javax.faces.annotation.FacesConfig;
+import jakarta.faces.annotation.FacesConfig;
 
 /**
  * Configuration bean to specify Jakarta Server Faces 2.3 version.

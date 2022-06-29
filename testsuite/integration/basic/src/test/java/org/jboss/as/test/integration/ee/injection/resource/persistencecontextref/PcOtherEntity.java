@@ -23,8 +23,8 @@ package org.jboss.as.test.integration.ee.injection.resource.persistencecontextre
 
 import java.io.Serializable;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>

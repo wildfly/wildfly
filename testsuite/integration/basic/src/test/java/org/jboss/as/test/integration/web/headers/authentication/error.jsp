@@ -11,7 +11,7 @@
   <% // =exception %>
 
   <%
-  out.println("message="+request.getAttribute("javax.servlet.error.message"));
+  out.println("message="+request.getAttribute("jakarta.servlet.error.message"));
   %>
 
 </body>

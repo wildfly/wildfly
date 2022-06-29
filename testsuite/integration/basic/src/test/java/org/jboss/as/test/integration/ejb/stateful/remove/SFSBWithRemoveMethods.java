@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.stateful.remove;
 
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
+import jakarta.ejb.Remove;
+import jakarta.ejb.Stateful;
 
 /**
  * User: jpai

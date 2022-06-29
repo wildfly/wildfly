@@ -23,10 +23,10 @@
 package org.jboss.as.test.integration.batch.common;
 
 import java.util.Properties;
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.JobExecution;
-import javax.inject.Singleton;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.inject.Singleton;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

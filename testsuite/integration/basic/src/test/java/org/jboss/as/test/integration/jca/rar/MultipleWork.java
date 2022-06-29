@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.jca.rar;
 
 import org.jboss.logging.Logger;
-import javax.resource.spi.work.Work;
+import jakarta.resource.spi.work.Work;
 
 public class MultipleWork implements Work {
 

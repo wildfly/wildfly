@@ -24,10 +24,10 @@ package org.jboss.as.test.integration.ejb.stateful.persistencecontext;
 
 import java.io.Serializable;
 
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.Remove;
+import jakarta.ejb.Stateful;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.jboss.ejb3.annotation.Cache;
 

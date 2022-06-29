@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.jpa.transaction.envers;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 import org.hibernate.envers.Audited;
 

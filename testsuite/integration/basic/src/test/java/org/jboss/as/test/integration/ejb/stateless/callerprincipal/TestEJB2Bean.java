@@ -1,8 +1,8 @@
 package org.jboss.as.test.integration.ejb.stateless.callerprincipal;
 
-import javax.ejb.CreateException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.SessionBean;
+import jakarta.ejb.SessionContext;
 import java.rmi.RemoteException;
 import java.util.logging.Logger;
 

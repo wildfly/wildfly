@@ -23,9 +23,9 @@ package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 
 import java.net.URL;
 
-import javax.annotation.Resource;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 /**
  * Let's see what we can do with resources of the URL breed.

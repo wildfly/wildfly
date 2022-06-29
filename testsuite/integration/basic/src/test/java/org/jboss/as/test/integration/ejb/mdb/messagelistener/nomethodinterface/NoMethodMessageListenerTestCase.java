@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ejb.mdb.messagelistener.nomethodinterface;
 
 import java.util.concurrent.TimeUnit;
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

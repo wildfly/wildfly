@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ejb.remote.requestdeserialization;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class HelloBean implements HelloRemote {

@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.management.deploy.runtime.ejb.stateless;
 
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 
 /**

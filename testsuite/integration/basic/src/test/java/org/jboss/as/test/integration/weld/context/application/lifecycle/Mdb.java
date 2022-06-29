@@ -24,12 +24,12 @@ package org.jboss.as.test.integration.weld.context.application.lifecycle;
 
 import org.jboss.logging.Logger;
 
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
-import javax.jms.JMSDestinationDefinition;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.TextMessage;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.MessageDriven;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
+import jakarta.jms.TextMessage;
 
 
 /**
@@ -37,12 +37,12 @@ import javax.jms.TextMessage;
  */
 @JMSDestinationDefinition(
         name = Mdb.JNDI_NAME,
-        interfaceName = "javax.jms.Queue",
+        interfaceName = "jakarta.jms.Queue",
         destinationName = "jmsQueue"
 )
 @MessageDriven(activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = Mdb.JNDI_NAME),
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue"),
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "auto-acknowledge")
 })
 public class Mdb implements MessageListener {

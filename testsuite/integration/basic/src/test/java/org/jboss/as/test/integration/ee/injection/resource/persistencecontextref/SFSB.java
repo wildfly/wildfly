@@ -1,8 +1,8 @@
 package org.jboss.as.test.integration.ee.injection.resource.persistencecontextref;
 
-import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.Stateful;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * SFSB

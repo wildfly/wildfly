@@ -21,13 +21,13 @@
  */
 package org.jboss.as.test.integration.ejb.transaction.bmt;
 
-import javax.annotation.Resource;
-import javax.ejb.EJBContext;
-import javax.ejb.Singleton;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.SystemException;
 
 /**
  *

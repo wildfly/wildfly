@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.home.localhome;
 
-import javax.ejb.EJBLocalObject;
+import jakarta.ejb.EJBLocalObject;
 
 /**
  * @author Stuart Douglas

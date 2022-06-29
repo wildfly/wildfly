@@ -25,8 +25,8 @@ package org.jboss.as.test.integration.ejb.timerservice.schedule;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.ejb.Schedule;
-import javax.ejb.Singleton;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Singleton;
 
 /**
  * User: jpai

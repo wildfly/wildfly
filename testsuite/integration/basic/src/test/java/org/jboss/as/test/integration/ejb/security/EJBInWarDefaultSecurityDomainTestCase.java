@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.security;
 
 import java.util.concurrent.Callable;
 
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

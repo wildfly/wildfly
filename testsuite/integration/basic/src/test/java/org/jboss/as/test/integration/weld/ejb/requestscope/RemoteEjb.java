@@ -1,7 +1,7 @@
 package org.jboss.as.test.integration.weld.ejb.requestscope;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 
 /**
  * @author Stuart Douglas

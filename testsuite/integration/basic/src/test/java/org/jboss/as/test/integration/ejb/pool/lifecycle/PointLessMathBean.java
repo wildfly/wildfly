@@ -22,11 +22,11 @@
 package org.jboss.as.test.integration.ejb.pool.lifecycle;
 
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.jms.JMSException;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.jms.JMSException;
 import javax.naming.NamingException;
 
 import org.jboss.logging.Logger;

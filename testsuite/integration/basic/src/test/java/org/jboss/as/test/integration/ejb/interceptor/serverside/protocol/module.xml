@@ -4,7 +4,7 @@
         <resource-root path="server-side-interceptor-protocol.jar"/>
     </resources>
     <dependencies>
-        <module name="javax.interceptor.api"/>
+        <module name="jakarta.interceptor.api"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 </module>

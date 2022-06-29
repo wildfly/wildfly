@@ -4,6 +4,6 @@
         <resource-root path="server-side-interceptor-secured.jar"/>
     </resources>
     <dependencies>
-        <module name="javax.interceptor.api"/>
+        <module name="jakarta.interceptor.api"/>
     </dependencies>
 </module>

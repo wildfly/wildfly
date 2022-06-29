@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.remove;
 
-import javax.annotation.PreDestroy;
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.Remove;
+import jakarta.ejb.Stateful;
 
 /**
  * stateful session bean

@@ -30,7 +30,7 @@
 
     <dependencies>
         <module name="javax.enterprise.api"/>
-        <module name="javax.inject.api"/>
+        <module name="jakarta.inject.api"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
     </dependencies>

@@ -22,11 +22,11 @@
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.InvalidPropertyException;
-import javax.resource.spi.ResourceAdapter;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.InvalidPropertyException;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import org.jboss.logging.Logger;
 

@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.weld.services;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 @WebService(targetNamespace = "http://www.jboss.org/jboss/as/test/TestWS")
 public interface TestWS {

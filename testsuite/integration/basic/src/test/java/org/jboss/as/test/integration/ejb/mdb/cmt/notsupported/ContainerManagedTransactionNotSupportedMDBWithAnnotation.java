@@ -22,15 +22,15 @@
 
 package org.jboss.as.test.integration.ejb.mdb.cmt.notsupported;
 
-import static javax.ejb.TransactionAttributeType.NOT_SUPPORTED;
-import static javax.ejb.TransactionManagementType.CONTAINER;
+import static jakarta.ejb.TransactionAttributeType.NOT_SUPPORTED;
+import static jakarta.ejb.TransactionManagementType.CONTAINER;
 import static org.jboss.as.test.integration.ejb.mdb.cmt.notsupported.ContainerManagedTransactionNotSupportedTestCase.QUEUE_JNDI_NAME_FOR_ANNOTATION;
 
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionManagement;
-import javax.jms.Message;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.MessageDriven;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionManagement;
+import jakarta.jms.Message;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.

@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.basic;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.EJBContext;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBContext;
 
 /**
  * User: jpai

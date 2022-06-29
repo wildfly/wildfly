@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.ejb.injectiontarget;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 
 @Singleton
 public class Bus {

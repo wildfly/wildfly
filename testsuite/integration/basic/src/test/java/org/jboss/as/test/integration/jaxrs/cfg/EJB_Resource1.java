@@ -20,8 +20,8 @@
  */
 package org.jboss.as.test.integration.jaxrs.cfg;
 
-import javax.ejb.Stateless;
-import javax.ws.rs.Path;
+import jakarta.ejb.Stateless;
+import jakarta.ws.rs.Path;
 
 @Stateless
 @Path("/")

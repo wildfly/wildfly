@@ -2,13 +2,13 @@ package org.jboss.as.test.integration.ejb.timerservice.count;
 
 import org.jboss.logging.Logger;
 
-import javax.annotation.Resource;
-import javax.ejb.LocalBean;
-import javax.ejb.Schedule;
-import javax.ejb.Stateless;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
+import jakarta.annotation.Resource;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.TimerService;
 import java.util.Date;
 
 /**

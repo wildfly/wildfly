@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.transaction.cmt.lifecycle;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateless;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class StatelessRequiredLifecycleBean extends LifecycleSuperClass {

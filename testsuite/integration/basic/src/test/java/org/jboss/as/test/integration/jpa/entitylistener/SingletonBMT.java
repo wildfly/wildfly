@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.jpa.entitylistener;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Singleton;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 /**
  * @author Jaikiran Pai

@@ -23,8 +23,8 @@ package org.jboss.as.test.integration.weld.servlet;
 
 import java.io.IOException;
 
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
+import jakarta.servlet.AsyncEvent;
+import jakarta.servlet.AsyncListener;
 
 public class NonCdiCompliantAsyncListener implements AsyncListener {
 

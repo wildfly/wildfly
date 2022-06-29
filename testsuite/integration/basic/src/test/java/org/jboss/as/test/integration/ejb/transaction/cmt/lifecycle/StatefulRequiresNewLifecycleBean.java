@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.transaction.cmt.lifecycle;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 @Stateful
 public class StatefulRequiresNewLifecycleBean extends LifecycleSuperClass {

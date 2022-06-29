@@ -16,7 +16,7 @@
 
 package org.jboss.as.test.integration.jsf.unsupportedwar;
 
-import javax.faces.annotation.FacesConfig;
+import jakarta.faces.annotation.FacesConfig;
 
 /**
  *

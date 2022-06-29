@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.serverside.multiple;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * Simple interceptor imitating forbidden EJB access

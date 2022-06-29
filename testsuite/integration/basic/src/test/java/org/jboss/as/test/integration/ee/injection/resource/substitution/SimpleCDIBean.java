@@ -20,9 +20,9 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.substitution;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.enterprise.context.RequestScoped;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.context.RequestScoped;
 
 @RequestScoped
 public class SimpleCDIBean {

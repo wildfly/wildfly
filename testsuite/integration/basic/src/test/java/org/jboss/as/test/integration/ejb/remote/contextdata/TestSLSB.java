@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.remote.contextdata;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
 
 @Stateless
 @Interceptors(EjbInterceptor.class)

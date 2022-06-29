@@ -23,13 +23,13 @@
 package org.jboss.as.test.integration.ee.concurrent;
 
 import java.security.Principal;
-import javax.ejb.EJBContext;
-import javax.ejb.SessionContext;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.SessionContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
 /**
  * @author Eduardo Martins

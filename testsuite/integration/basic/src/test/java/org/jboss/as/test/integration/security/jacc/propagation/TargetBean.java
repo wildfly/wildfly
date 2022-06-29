@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.security.jacc.propagation;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Stateless;
 
 /**
  * An implementation of {@link Manage} interface which has protected {@link #admin()} and {@link #manage()} methods.

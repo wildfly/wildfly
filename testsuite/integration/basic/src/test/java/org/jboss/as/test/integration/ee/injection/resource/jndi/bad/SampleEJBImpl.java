@@ -1,9 +1,9 @@
 package org.jboss.as.test.integration.ee.injection.resource.jndi.bad;
 
-import javax.annotation.Resource;
-import javax.annotation.Resources;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.annotation.Resources;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 @Resources({@Resource(
         name = Constants.JNDI_NAME_BAD,

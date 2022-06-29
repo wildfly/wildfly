@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.ee.injection.support.jpa.beanmanager;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class Bar {

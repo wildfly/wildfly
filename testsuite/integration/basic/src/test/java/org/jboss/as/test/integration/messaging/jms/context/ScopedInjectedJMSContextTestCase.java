@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.messaging.jms.context;
 
-import static javax.jms.DeliveryMode.NON_PERSISTENT;
+import static jakarta.jms.DeliveryMode.NON_PERSISTENT;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -31,13 +31,13 @@ import static org.junit.Assert.fail;
 import java.util.PropertyPermission;
 import java.util.UUID;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSConsumer;
-import javax.jms.JMSContext;
-import javax.jms.Queue;
-import javax.jms.TemporaryQueue;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSConsumer;
+import jakarta.jms.JMSContext;
+import jakarta.jms.Queue;
+import jakarta.jms.TemporaryQueue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.weld.packaging;
 
-import javax.enterprise.context.Dependent;
+import jakarta.enterprise.context.Dependent;
 
 /**
  * @author Stuart Douglas

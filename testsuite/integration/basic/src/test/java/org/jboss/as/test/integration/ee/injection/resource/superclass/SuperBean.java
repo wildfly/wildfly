@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.superclass;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * @author Stuart Douglas

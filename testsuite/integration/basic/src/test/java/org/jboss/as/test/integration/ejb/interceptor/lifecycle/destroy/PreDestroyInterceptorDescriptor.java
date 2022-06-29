@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.lifecycle.destroy;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author Ondrej Chaloupka

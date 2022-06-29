@@ -31,11 +31,11 @@
             <ejb-class>org.jboss.as.test.integration.ejb.mdb.ejb2x.EJB2xMDB</ejb-class>
             <transaction-type>Container</transaction-type>
             <message-driven-destination>
-                <destination-type>javax.jms.Topic</destination-type>
+                <destination-type>jakarta.jms.Topic</destination-type>
             </message-driven-destination>
             <resource-env-ref>
                 <resource-env-ref-name>jms/replyQueue</resource-env-ref-name>
-                <resource-env-ref-type>javax.jms.Queue</resource-env-ref-type>
+                <resource-env-ref-type>jakarta.jms.Queue</resource-env-ref-type>
             </resource-env-ref>
         </message-driven>
         <message-driven>
@@ -43,11 +43,11 @@
             <ejb-class>org.jboss.as.test.integration.ejb.mdb.ejb2x.EJB2xMDB</ejb-class>
             <transaction-type>Container</transaction-type>
             <message-driven-destination>
-                <destination-type>javax.jms.Topic</destination-type>
+                <destination-type>jakarta.jms.Topic</destination-type>
             </message-driven-destination>
             <resource-env-ref>
                 <resource-env-ref-name>jms/replyQueue</resource-env-ref-name>
-                <resource-env-ref-type>javax.jms.Queue</resource-env-ref-type>
+                <resource-env-ref-type>jakarta.jms.Queue</resource-env-ref-type>
             </resource-env-ref>
         </message-driven>
     </enterprise-beans>

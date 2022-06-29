@@ -1,7 +1,7 @@
 package org.jboss.as.test.integration.ejb.remote.contextdata;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 public class EjbInterceptor {
 

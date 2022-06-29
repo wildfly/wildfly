@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.naming.remote.ejb;
 /**
  * @author James Livingston
  */
-@javax.ejb.Remote
+@jakarta.ejb.Remote
 public interface BinderRemote extends Remote {
     void bind();
     void rebind();

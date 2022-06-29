@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager.rar;
 
-import javax.resource.spi.ConnectionManager;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.LazyAssociatableConnectionManager;
+import jakarta.resource.spi.ConnectionManager;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.LazyAssociatableConnectionManager;
 
 import org.jboss.logging.Logger;
 

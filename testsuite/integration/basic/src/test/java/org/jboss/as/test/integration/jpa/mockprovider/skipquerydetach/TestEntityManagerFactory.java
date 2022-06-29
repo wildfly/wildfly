@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * TestEntityManagerFactory
@@ -65,12 +65,12 @@ public class TestEntityManagerFactory implements InvocationHandler {
         } else if(method.getName().equals("createEntityManager")) {
             TestEntityManager testEntityManager =
                     new TestEntityManager(properties);
-            Class[] targetInterfaces = javax.persistence.EntityManager.class.getInterfaces();
+            Class[] targetInterfaces = jakarta.persistence.EntityManager.class.getInterfaces();
             Class[] proxyInterfaces = new Class[targetInterfaces.length + 1];  // include extra element for extensionClass
             boolean alreadyHasInterfaceClass = false;
             for (int interfaceIndex = 0; interfaceIndex < targetInterfaces.length; interfaceIndex++) {
                 Class interfaceClass = targetInterfaces[interfaceIndex];
-                if (interfaceClass.equals(javax.persistence.EntityManager.class)) {
+                if (interfaceClass.equals(jakarta.persistence.EntityManager.class)) {
                     proxyInterfaces = targetInterfaces;                     // targetInterfaces already has all interfaces
                     alreadyHasInterfaceClass = true;
                     break;
@@ -78,7 +78,7 @@ public class TestEntityManagerFactory implements InvocationHandler {
                 proxyInterfaces[1 + interfaceIndex] = interfaceClass;
             }
             if (!alreadyHasInterfaceClass) {
-                proxyInterfaces[0] = javax.persistence.EntityManager.class;
+                proxyInterfaces[0] = jakarta.persistence.EntityManager.class;
             }
 
             EntityManager proxyEntityManager = (EntityManager) Proxy.newProxyInstance(

@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.interceptor.annotation;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.jboss.ejb.client.annotation.ClientInterceptors;
 

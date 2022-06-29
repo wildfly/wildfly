@@ -2,7 +2,7 @@ package org.jboss.as.test.integration.ejb.async;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author Ondrej Chaloupka

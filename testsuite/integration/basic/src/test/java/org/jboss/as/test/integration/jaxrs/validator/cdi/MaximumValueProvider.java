@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jaxrs.validator.cdi;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * A test Jakarta Contexts and Dependency Injection bean.

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.lifecycle;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateful;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Stateful;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

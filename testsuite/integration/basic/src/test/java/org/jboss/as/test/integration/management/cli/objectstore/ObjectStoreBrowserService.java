@@ -23,10 +23,10 @@ package org.jboss.as.test.integration.management.cli.objectstore;
 
 import com.arjuna.ats.arjuna.tools.osb.api.mbeans.RecoveryStoreBean;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 /**
  * Instantiates RecoveryStoreBean on JMX.

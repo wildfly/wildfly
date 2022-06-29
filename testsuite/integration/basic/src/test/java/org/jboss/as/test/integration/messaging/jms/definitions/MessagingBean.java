@@ -22,22 +22,22 @@
 
 package org.jboss.as.test.integration.messaging.jms.definitions;
 
-import static javax.jms.JMSContext.AUTO_ACKNOWLEDGE;
+import static jakarta.jms.JMSContext.AUTO_ACKNOWLEDGE;
 import static org.junit.Assert.assertNotNull;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSConnectionFactoryDefinition;
-import javax.jms.JMSConnectionFactoryDefinitions;
-import javax.jms.JMSConsumer;
-import javax.jms.JMSContext;
-import javax.jms.JMSDestinationDefinition;
-import javax.jms.JMSDestinationDefinitions;
-import javax.jms.Queue;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.Topic;
-import javax.jms.TopicConnectionFactory;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSConnectionFactoryDefinition;
+import jakarta.jms.JMSConnectionFactoryDefinitions;
+import jakarta.jms.JMSConsumer;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.JMSDestinationDefinitions;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueConnectionFactory;
+import jakarta.jms.Topic;
+import jakarta.jms.TopicConnectionFactory;
 
 
 /**
@@ -45,25 +45,25 @@ import javax.jms.TopicConnectionFactory;
  */
 @JMSDestinationDefinition(
         name="java:comp/env/myQueue4",
-        interfaceName="javax.jms.Queue"
+        interfaceName="jakarta.jms.Queue"
 )
 @JMSDestinationDefinitions(
         value =  {
                 @JMSDestinationDefinition(
                         name="java:module/env/myQueue1",
-                        interfaceName="javax.jms.Queue",
+                        interfaceName="jakarta.jms.Queue",
                         destinationName="myQueue1"
                 ),
                 @JMSDestinationDefinition(
                         name="java:module/env/myTopic1",
-                        interfaceName="javax.jms.Topic",
+                        interfaceName="jakarta.jms.Topic",
                         destinationName="myTopic1"
                 ),
                 @JMSDestinationDefinition(
                         // explicitly mention a resourceAdapter corresponding to a pooled-connection-factory resource
                         resourceAdapter = "activemq-ra",
                         name="java:global/env/myQueue2",
-                        interfaceName="javax.jms.Queue",
+                        interfaceName="jakarta.jms.Queue",
                         destinationName="myQueue2",
                         properties = {
                                 "durable=false",
@@ -91,7 +91,7 @@ import javax.jms.TopicConnectionFactory;
                 ),
                 @JMSConnectionFactoryDefinition(
                         name="java:comp/env/myFactory5",
-                        interfaceName = "javax.jms.QueueConnectionFactory",
+                        interfaceName = "jakarta.jms.QueueConnectionFactory",
                         user = "${test.userName}",
                         password = "${test.password}"
                 )
@@ -101,7 +101,7 @@ import javax.jms.TopicConnectionFactory;
         // explicitly mention a resourceAdapter corresponding to a pooled-connection-factory resource
         resourceAdapter = "activemq-ra",
         name="java:global/myFactory3",
-        interfaceName = "javax.jms.QueueConnectionFactory",
+        interfaceName = "jakarta.jms.QueueConnectionFactory",
         properties = {
                 "connector=http-connector",
                 "initial-connect-attempts=5"

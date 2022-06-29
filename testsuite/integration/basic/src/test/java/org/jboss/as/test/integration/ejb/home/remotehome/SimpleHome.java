@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.ejb.home.remotehome;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 
 /**
  * Simple local home interface

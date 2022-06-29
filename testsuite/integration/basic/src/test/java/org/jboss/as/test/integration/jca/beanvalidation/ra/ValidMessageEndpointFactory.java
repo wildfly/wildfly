@@ -23,8 +23,8 @@
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 import java.lang.reflect.Method;
-import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
+import jakarta.resource.spi.endpoint.MessageEndpoint;
+import jakarta.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
 
 /**

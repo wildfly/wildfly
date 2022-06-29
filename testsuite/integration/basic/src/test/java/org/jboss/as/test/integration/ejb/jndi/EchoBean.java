@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.jndi;
 
-import javax.ejb.Local;
-import javax.ejb.LocalBean;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.Local;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 /**
  * User: jpai

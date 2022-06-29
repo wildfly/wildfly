@@ -31,7 +31,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 
 import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.ContainerController;

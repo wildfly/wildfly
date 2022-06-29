@@ -33,6 +33,6 @@
         <module name="test.charlie"/>
 
         <module name="javax.enterprise.api"/>
-        <module name="javax.inject.api"/>
+        <module name="jakarta.inject.api"/>
     </dependencies>
 </module>

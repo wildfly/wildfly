@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.interceptor.method;
 
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
 
 /**
  * @author Ondrej Chaloupka

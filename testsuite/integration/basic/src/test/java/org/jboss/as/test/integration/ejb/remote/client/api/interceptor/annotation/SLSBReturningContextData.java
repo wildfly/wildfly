@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.interceptor.annotation;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Jan Martiska

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.register;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class TestSLSB implements TestRemote {

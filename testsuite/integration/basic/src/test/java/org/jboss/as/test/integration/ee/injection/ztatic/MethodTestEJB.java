@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ee.injection.ztatic;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
 
 /**
  * An EJB that "asks" for the forbidden static method injection.

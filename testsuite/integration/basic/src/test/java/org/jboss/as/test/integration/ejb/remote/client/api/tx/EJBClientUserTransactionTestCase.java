@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

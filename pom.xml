@@ -108,6 +108,7 @@
         <module>rts</module>
         <module>testsuite/shared</module>
         <module>testsuite/test-feature-pack</module>
+        <module>testsuite/test-feature-pack-preview</module>
         <module>testsuite</module>
     </modules>
 
@@ -3431,96 +3432,6 @@
                 <artifactId>java-hamcrest</artifactId>
                 <version>${version.org.hamcrest.java-hamcrest}</version>
                 <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-entitymanager</artifactId>
-                <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-envers</artifactId>
-                <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-java8</artifactId>
-                <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <!-- Legacy dependency, useful for Hibernate Search 5 only -->
-                <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-search-backend-jms</artifactId>
-                <version>${version.org.hibernate.search}</version>
-            </dependency>
-
-            <dependency>
-                <!-- Legacy dependency, useful for Hibernate Search 5 only -->
-                <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-search-orm</artifactId>
-                <version>${version.org.hibernate.search}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-search-analyzers</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-search-engine</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.tika</groupId>
-                        <artifactId>tika-parsers</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate.javax.persistence</groupId>
-                        <artifactId>hibernate-jpa-2.1-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

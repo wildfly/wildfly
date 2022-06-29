@@ -24,10 +24,10 @@ package org.jboss.as.test.integration.messaging.jms.context.notclosinginjectedco
 
 import org.jboss.logging.Logger;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.jms.JMSContext;
-import javax.jms.Queue;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import jakarta.jms.JMSContext;
+import jakarta.jms.Queue;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.as.test.shared.TimeoutUtil;

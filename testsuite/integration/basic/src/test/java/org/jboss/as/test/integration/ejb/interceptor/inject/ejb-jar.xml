@@ -58,7 +58,7 @@
             <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.inject.SimpleInterceptor</interceptor-class>
             <resource-env-ref>
                 <resource-env-ref-name>someOtherENCName</resource-env-ref-name>
-                <resource-env-ref-type>javax.ejb.EJBContext</resource-env-ref-type>
+                <resource-env-ref-type>jakarta.ejb.EJBContext</resource-env-ref-type>
                 <injection-target>
                     <injection-target-class>org.jboss.as.test.integration.ejb.interceptor.inject.SimpleInterceptor</injection-target-class>
                     <injection-target-name>ejbContextInjectedThroughEjbJarXml</injection-target-name>

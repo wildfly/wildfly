@@ -22,16 +22,16 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
-import javax.ejb.Schedule;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.jms.JMSDestinationDefinition;
-import javax.jms.Message;
-import javax.jms.MessageListener;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.MessageDriven;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 
@@ -42,10 +42,10 @@ import org.jboss.ejb3.annotation.SecurityDomain;
  */
 @JMSDestinationDefinition(
         name="java:/queue/ManagedMDB-queue",
-        interfaceName = "javax.jms.Queue"
+        interfaceName = "jakarta.jms.Queue"
 )
 @MessageDriven(activationConfig = {
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue"),
         @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:/queue/ManagedMDB-queue")
 })
 @SecurityDomain("other")

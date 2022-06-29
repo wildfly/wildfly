@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
-import javax.ejb.EJBException;
-import javax.ejb.EJBLocalObject;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.EJBLocalObject;
 
 /**
  * @author Ondrej Chaloupka

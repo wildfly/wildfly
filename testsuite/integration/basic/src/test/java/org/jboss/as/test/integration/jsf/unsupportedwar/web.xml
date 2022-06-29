@@ -20,11 +20,11 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd">
 
     <context-param>
-        <param-name>javax.faces.DEFAULT_SUFFIX</param-name>
+        <param-name>jakarta.faces.DEFAULT_SUFFIX</param-name>
         <param-value>.jsf</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.FACELETS_VIEW_MAPPINGS</param-name>
+        <param-name>jakarta.faces.FACELETS_VIEW_MAPPINGS</param-name>
         <param-value>*.jsf</param-value>
     </context-param>
 

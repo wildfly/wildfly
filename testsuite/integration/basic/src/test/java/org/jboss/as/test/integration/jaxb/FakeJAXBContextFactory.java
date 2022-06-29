@@ -18,12 +18,12 @@
 package org.jboss.as.test.integration.jaxb;
 
 import java.util.Map;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBContextFactory;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.Validator;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBContextFactory;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 
 /**
  * <p>Fake JAXB context factory for testing.</p>
@@ -41,11 +41,6 @@ public class FakeJAXBContextFactory implements JAXBContextFactory {
 
         @Override
         public Marshaller createMarshaller() throws JAXBException {
-            throw new UnsupportedOperationException("Fake JAXB context, method not implemented!");
-        }
-
-        @Override
-        public Validator createValidator() throws JAXBException {
             throw new UnsupportedOperationException("Fake JAXB context, method not implemented!");
         }
 

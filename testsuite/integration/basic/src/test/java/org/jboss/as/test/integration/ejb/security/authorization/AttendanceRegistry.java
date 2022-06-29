@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.security.authorization;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author Jaikiran Pai

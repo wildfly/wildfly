@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ejb.remote.invocationtimeout;
 
 import java.util.concurrent.TimeUnit;
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Jan Martiska

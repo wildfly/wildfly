@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.batch.analyzer.transactiontimeout;
 
-import javax.batch.api.chunk.AbstractItemReader;
-import javax.inject.Named;
+import jakarta.batch.api.chunk.AbstractItemReader;
+import jakarta.inject.Named;
 
 @Named
 public class TestReader extends AbstractItemReader {

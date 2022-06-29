@@ -48,6 +48,9 @@
         <ts.skipTests>${skipTests}</ts.skipTests>
 
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
+
+        <!-- Artifact id of the wildfly-testsuite-shared variant to use. Override to use the jakarta variant -->
+        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared</wildfly-testsuite-shared.artifactId>
     </properties>
 
     <profiles>
@@ -304,7 +307,7 @@
                 <surefire.default-test.phase>test</surefire.default-test.phase>
             </properties>
             <modules>
-                <module>basic</module>
+                <!--<module>basic</module>-->
                 <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
@@ -321,7 +324,7 @@
                 </property>
             </activation>
             <modules>
-                <module>basic</module>
+                <!--<module>basic</module>-->
                 <module>ws</module>
                 <module>clustering</module>
                 <module>microprofile</module>
@@ -468,7 +471,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
+            <artifactId>${wildfly-testsuite-shared.artifactId}</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>

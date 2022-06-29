@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.jca.basic;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

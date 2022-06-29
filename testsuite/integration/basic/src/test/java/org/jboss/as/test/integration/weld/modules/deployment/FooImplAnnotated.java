@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.modules.deployment;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class FooImplAnnotated implements Foo {

@@ -19,7 +19,7 @@
             </activation-config>
             <resource-env-ref>
                 <resource-env-ref-name>jms/replyQueue</resource-env-ref-name>
-                <resource-env-ref-type>javax.jms.Queue</resource-env-ref-type>
+                <resource-env-ref-type>jakarta.jms.Queue</resource-env-ref-type>
                 <mapped-name>java:jboss/ejb2x/replyQueueA</mapped-name>
             </resource-env-ref>
         </message-driven>
@@ -34,7 +34,7 @@
             </activation-config>
             <resource-env-ref>
                 <resource-env-ref-name>jms/replyQueue</resource-env-ref-name>
-                <resource-env-ref-type>javax.jms.Queue</resource-env-ref-type>
+                <resource-env-ref-type>jakarta.jms.Queue</resource-env-ref-type>
                 <mapped-name>java:jboss/ejb2x/replyQueueB</mapped-name>
             </resource-env-ref>
         </message-driven>

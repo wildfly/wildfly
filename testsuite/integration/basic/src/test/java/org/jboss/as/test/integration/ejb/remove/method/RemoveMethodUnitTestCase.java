@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.ejb.remove.method;
 
 import java.rmi.NoSuchObjectException;
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
 

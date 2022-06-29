@@ -1,7 +1,7 @@
 package org.jboss.as.test.integration.ejb.transaction.cmt.lifecycle;
 
-import javax.annotation.Resource;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.annotation.Resource;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 /**
  * @author Stuart Douglas

@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.basic;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author carlo

@@ -24,9 +24,9 @@ package org.jboss.as.test.integration.jpa.hibernate;
 
 import java.util.HashSet;
 import java.util.Set;
-import javax.ejb.Stateful;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
+import jakarta.ejb.Stateful;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContextType;
 
 import org.hibernate.Session;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Company;

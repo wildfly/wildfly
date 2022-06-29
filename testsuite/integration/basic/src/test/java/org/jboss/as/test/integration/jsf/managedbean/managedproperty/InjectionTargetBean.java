@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.jsf.managedbean.managedproperty;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.RequestScoped;
-import javax.faces.annotation.ManagedProperty;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.annotation.ManagedProperty;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * A CDI bean that injects various beans provided by Jakarta Faces

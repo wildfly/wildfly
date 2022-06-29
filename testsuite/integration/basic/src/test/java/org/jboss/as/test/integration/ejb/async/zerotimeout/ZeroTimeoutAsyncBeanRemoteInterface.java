@@ -1,7 +1,7 @@
 package org.jboss.as.test.integration.ejb.async.zerotimeout;
 
-import javax.ejb.Asynchronous;
-import javax.ejb.Remote;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.Remote;
 import java.util.concurrent.Future;
 
 /**

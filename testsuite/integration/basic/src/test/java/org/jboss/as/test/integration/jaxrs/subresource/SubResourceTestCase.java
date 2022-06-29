@@ -57,7 +57,7 @@ public class SubResourceTestCase {
         war.add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
         war.addClasses(SubResourceTestCase.class, PeopleResource.class, PersonResource.class);
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/api/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
                 "\n"),"web.xml");

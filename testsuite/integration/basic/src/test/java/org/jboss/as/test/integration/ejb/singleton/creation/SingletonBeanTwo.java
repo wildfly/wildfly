@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.singleton.creation;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Singleton;
 
 import org.jboss.logging.Logger;
 

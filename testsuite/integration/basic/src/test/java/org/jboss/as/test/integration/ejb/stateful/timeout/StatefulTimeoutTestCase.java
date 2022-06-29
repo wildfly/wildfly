@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.stateful.timeout;
 
-import javax.ejb.NoSuchEJBException;
+import jakarta.ejb.NoSuchEJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

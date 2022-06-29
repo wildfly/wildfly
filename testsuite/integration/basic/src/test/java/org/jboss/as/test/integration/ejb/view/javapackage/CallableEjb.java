@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.view.javapackage;
 
 import java.util.concurrent.Callable;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Stuart Douglas

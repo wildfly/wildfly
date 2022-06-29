@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * Interface for the bean used as the entry point to verify EJB3 security behaviour.

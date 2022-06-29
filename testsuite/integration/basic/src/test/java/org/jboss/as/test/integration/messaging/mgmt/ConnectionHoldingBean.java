@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.integration.messaging.mgmt;
 
-import javax.annotation.Resource;
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSContext;
-import javax.jms.JMSException;
-import javax.jms.TemporaryQueue;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSException;
+import jakarta.jms.TemporaryQueue;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2016 Red Hat inc.

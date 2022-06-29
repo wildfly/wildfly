@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.modules;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 
 @Stateless
 public class PortableExtensionSubdeploymentLookup implements PortableExtensionLookup {

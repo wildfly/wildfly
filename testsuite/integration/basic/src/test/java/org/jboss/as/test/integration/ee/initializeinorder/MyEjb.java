@@ -1,8 +1,8 @@
 package org.jboss.as.test.integration.ee.initializeinorder;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 /**
  * @author Stuart Douglas

@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.web.security.runas;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.servlet.annotation.WebServlet;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.servlet.annotation.WebServlet;
 
 /**
  * RunAs annotated servlet which calls protected EJB method {@link Hello#sayHello()}. Role used in RunAs in not correct role for

@@ -21,8 +21,8 @@
 */
 package org.jboss.as.test.integration.jpa.dsrestart;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

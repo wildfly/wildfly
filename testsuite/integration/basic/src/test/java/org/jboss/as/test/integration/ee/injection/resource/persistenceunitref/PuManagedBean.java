@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.persistenceunitref;
 
-import javax.annotation.ManagedBean;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
+import jakarta.annotation.ManagedBean;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnit;
 
 /**
  * Managed bean with persistence unit definitions.

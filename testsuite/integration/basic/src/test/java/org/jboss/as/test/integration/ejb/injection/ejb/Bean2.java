@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.injection.ejb;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Stuart Douglas

@@ -30,11 +30,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.websocket.ClientEndpoint;
-import javax.websocket.ContainerProvider;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
+import jakarta.websocket.ClientEndpoint;
+import jakarta.websocket.ContainerProvider;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.Session;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -56,7 +56,7 @@ public class WebsocketApplicationScopedTestCase {
         return ShrinkWrap.create(WebArchive.class, CLIENT_STANDALONE + ".war")
                 .addClasses(ChatWebsocketResource.class)
                 .addAsManifestResource(new StringAsset("io.undertow.websockets.jsr.UndertowContainerProvider"),
-                        "services/javax.websocket.ContainerProvider");
+                        "services/jakarta.websocket.ContainerProvider");
     }
 
     @Test

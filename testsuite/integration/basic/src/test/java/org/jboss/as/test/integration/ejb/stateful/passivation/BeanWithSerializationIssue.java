@@ -25,9 +25,9 @@ package org.jboss.as.test.integration.ejb.stateful.passivation;
 
 import java.io.Serializable;
 
-import javax.ejb.EJB;
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
 
 import org.jboss.ejb3.annotation.Cache;
 

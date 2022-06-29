@@ -45,7 +45,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.enterprise.concurrent.ManagedExecutorService;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
 import javax.naming.InitialContext;
 import java.io.FilePermission;
 import java.io.IOException;

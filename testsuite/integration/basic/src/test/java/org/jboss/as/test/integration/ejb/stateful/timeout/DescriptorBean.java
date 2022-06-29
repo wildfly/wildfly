@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.stateful.timeout;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 /**
  * stateful session bean

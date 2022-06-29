@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
-import javax.ejb.Local;
-import javax.persistence.EntityManager;
+import jakarta.ejb.Local;
+import jakarta.persistence.EntityManager;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>

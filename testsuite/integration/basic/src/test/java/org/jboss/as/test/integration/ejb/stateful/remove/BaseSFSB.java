@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.stateful.remove;
 
-import javax.ejb.Remove;
+import jakarta.ejb.Remove;
 
 /**
  * @author Jaikiran Pai

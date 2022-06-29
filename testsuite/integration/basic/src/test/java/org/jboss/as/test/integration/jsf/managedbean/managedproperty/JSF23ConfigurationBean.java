@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.jsf.managedbean.managedproperty;
 
-import static javax.faces.annotation.FacesConfig.Version;
+import static jakarta.faces.annotation.FacesConfig.Version;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.faces.annotation.FacesConfig;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.faces.annotation.FacesConfig;
 
 /**
  * TODO remove once standard WildFly moves to Faces 4

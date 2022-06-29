@@ -1,7 +1,7 @@
 package org.jboss.as.test.integration.weld.implicitcomponents;
 
-import javax.annotation.ManagedBean;
-import javax.inject.Inject;
+import jakarta.annotation.ManagedBean;
+import jakarta.inject.Inject;
 
 /**
  * @author Stuart Douglas

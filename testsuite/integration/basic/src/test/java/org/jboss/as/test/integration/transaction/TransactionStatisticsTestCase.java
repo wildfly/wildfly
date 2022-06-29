@@ -43,10 +43,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.annotation.Resource;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.RollbackException;
-import javax.transaction.TransactionManager;
+import jakarta.annotation.Resource;
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 import java.io.FilePermission;
 import java.util.PropertyPermission;

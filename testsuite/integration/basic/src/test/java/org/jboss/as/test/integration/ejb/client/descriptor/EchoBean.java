@@ -23,8 +23,8 @@
 package org.jboss.as.test.integration.ejb.client.descriptor;
 
 import java.util.Hashtable;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 import javax.naming.Context;
 
 /**

@@ -20,11 +20,11 @@
  */
 package org.jboss.as.test.integration.ejb.security.runasprincipal.transitive;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Remote;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.WhoAmI;
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.junit.Assert;

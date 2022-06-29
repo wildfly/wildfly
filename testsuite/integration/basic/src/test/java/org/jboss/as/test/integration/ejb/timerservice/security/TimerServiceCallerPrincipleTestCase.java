@@ -34,7 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that {@link javax.ejb.EJBContext#getCallerPrincipal()} returns the unauthenticated identity in a timeout method.
+ * Tests that {@link jakarta.ejb.EJBContext#getCallerPrincipal()} returns the unauthenticated identity in a timeout method.
  *
  * AS7-3154
  *

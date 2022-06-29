@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.enterprise.inject.Instance;
+import jakarta.enterprise.inject.Instance;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -82,7 +82,7 @@ public class CrossModuleAccessibilityTestCase {
         JavaArchive jar = testModule.addResource(moduleName + ".jar");
         jar.addClass(beanType);
         jar.addClass(lookupType);
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         testModules.add(testModule);
         testModule.create(true);
     }
@@ -97,12 +97,12 @@ public class CrossModuleAccessibilityTestCase {
     @Deployment
     public static Archive<?> getDeployment() throws Exception {
         doSetup();
-        WebArchive war = ShrinkWrap.create(WebArchive.class)
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "CrossModuleAccessibilityTestCase.war")
                 .addClass(CrossModuleAccessibilityTestCase.class)
                 .addClass(TestModule.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test.alpha meta-inf, test.bravo meta-inf, test.charlie meta-inf, test.delta meta-inf\n"), "MANIFEST.MF");
-        return ShrinkWrap.create(EnterpriseArchive.class).addAsModule(war);
+        return ShrinkWrap.create(EnterpriseArchive.class, "CrossModuleAccessibilityTestCase.ear").addAsModule(war);
     }
 
     @Test

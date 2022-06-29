@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.jpa.basic.multiplepersistenceunittest;
 
 import java.util.Map;
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -85,7 +85,7 @@ public class MultiplePuTestCase {
     }
 
     /**
-     * test that javax.persistence.PersistenceContexts binds two persistence contexts (pu1 + pu2) to
+     * test that jakarta.persistence.PersistenceContexts binds two persistence contexts (pu1 + pu2) to
      * the SLSBBothPUs class, which we lookup from JNDI and use to get the persistence unit properties.
      * Get the "PersistenceUnitName" property that we added in persistence.xml to verify that the expected
      * persistence unit is used.
@@ -102,7 +102,7 @@ public class MultiplePuTestCase {
     }
 
     /**
-     * test that javax.persistence.PersistenceUnits binds two persistence units (pu1 + pu2) to
+     * test that jakarta.persistence.PersistenceUnits binds two persistence units (pu1 + pu2) to
      * the SLSBBothPUs class, which we lookup from JNDI and use to get the persistence unit properties.
      * Get the "PersistenceUnitName" property that we added in persistence.xml to verify that the expected
      * persistence unit is used.

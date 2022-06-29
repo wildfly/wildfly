@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.batch.analyzer.transactiontimeout;
 
-import javax.batch.api.partition.PartitionAnalyzer;
-import javax.batch.runtime.BatchStatus;
-import javax.inject.Named;
+import jakarta.batch.api.partition.PartitionAnalyzer;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.inject.Named;
 import java.io.Serializable;
 
 @Named

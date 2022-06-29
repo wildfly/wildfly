@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.rar;
 
-import javax.resource.cci.ResourceAdapterMetaData;
+import jakarta.resource.cci.ResourceAdapterMetaData;
 
 /**
  * MultipleRaMetaData

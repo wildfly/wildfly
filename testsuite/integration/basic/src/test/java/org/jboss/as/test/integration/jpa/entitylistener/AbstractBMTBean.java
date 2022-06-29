@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.jpa.entitylistener;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.PersistenceContext;
-import javax.transaction.UserTransaction;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.UserTransaction;
 
 /**
  * @author Jaikiran Pai

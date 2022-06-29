@@ -23,9 +23,9 @@ package org.jboss.as.test.integration.ejb.transaction.cmt.timeout;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.transaction.TransactionManager;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.wildfly.transaction.client.LocalTransaction;

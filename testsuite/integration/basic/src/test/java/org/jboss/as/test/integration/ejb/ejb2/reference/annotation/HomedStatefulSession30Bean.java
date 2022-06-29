@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.annotation;
 
-import javax.annotation.PreDestroy;
-import javax.ejb.Init;
-import javax.ejb.Local;
-import javax.ejb.LocalHome;
-import javax.ejb.RemoteHome;
-import javax.ejb.Stateful;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.Init;
+import jakarta.ejb.Local;
+import jakarta.ejb.LocalHome;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.Stateful;
 import javax.naming.InitialContext;
 
 import org.jboss.logging.Logger;

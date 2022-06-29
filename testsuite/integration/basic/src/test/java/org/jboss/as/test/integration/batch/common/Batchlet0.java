@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.batch.common;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Named;
 
 @Named
 public class Batchlet0 extends BatchletNoNamed {

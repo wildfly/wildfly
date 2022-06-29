@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.servlet;
 
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>

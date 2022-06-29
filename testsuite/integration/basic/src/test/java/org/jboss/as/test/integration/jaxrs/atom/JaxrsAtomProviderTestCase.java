@@ -52,7 +52,7 @@ public class JaxrsAtomProviderTestCase {
         war.addPackage(HttpRequest.class.getPackage());
         war.addPackage(JaxrsAtomProviderTestCase.class.getPackage());
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
                 "\n"), "web.xml");

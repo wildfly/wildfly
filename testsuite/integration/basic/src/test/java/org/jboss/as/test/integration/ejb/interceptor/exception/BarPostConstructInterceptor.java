@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.exception;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Priority;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Priority;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
 
 @BarBinding
 @Priority(1000)

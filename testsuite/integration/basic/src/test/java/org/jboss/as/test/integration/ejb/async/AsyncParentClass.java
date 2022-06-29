@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ejb.async;
 
-import javax.ejb.Asynchronous;
+import jakarta.ejb.Asynchronous;
 
 /**
  * @author Ondrej Chaloupka

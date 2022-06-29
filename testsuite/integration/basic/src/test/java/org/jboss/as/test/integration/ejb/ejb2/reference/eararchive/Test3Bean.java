@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.eararchive;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBs;
-import javax.ejb.Remote;
-import javax.ejb.RemoteHome;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBs;
+import jakarta.ejb.Remote;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.Stateless;
 import javax.naming.InitialContext;
 
 import org.jboss.logging.Logger;

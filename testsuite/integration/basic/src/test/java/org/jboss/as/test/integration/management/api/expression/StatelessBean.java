@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.management.api.expression;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;

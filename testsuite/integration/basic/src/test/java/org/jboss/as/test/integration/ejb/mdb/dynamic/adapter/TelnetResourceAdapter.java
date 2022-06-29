@@ -18,14 +18,14 @@ package org.jboss.as.test.integration.ejb.mdb.dynamic.adapter;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.api.TelnetListener;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TelnetServer;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ResourceAdapterInternalException;
-import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkManager;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.BootstrapContext;
+import jakarta.resource.spi.ResourceAdapterInternalException;
+import jakarta.resource.spi.endpoint.MessageEndpoint;
+import jakarta.resource.spi.endpoint.MessageEndpointFactory;
+import jakarta.resource.spi.work.Work;
+import jakarta.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
 import java.io.IOException;
 import java.util.HashMap;
@@ -34,7 +34,7 @@ import java.util.Map;
 /**
  * @version $Revision$ $Date$
  */
-public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter {
+public class TelnetResourceAdapter implements jakarta.resource.spi.ResourceAdapter {
 
     private final Map<Integer, TelnetServer> activated = new HashMap<Integer, TelnetServer>();
     private WorkManager workManager;

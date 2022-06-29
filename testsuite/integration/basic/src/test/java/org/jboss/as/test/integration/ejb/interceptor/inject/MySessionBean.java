@@ -23,8 +23,8 @@
 package org.jboss.as.test.integration.ejb.interceptor.inject;
 
 import java.util.ArrayList;
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
 
 /**
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>

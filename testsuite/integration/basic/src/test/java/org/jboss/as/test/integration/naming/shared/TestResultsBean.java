@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.naming.shared;
 
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 

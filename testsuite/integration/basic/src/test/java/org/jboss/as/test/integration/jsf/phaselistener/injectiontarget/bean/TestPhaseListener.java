@@ -23,11 +23,11 @@ package org.jboss.as.test.integration.jsf.phaselistener.injectiontarget.bean;
 
 import java.io.IOException;
 
-import javax.faces.event.PhaseEvent;
-import javax.faces.event.PhaseId;
-import javax.faces.event.PhaseListener;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.faces.event.PhaseEvent;
+import jakarta.faces.event.PhaseId;
+import jakarta.faces.event.PhaseListener;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class TestPhaseListener implements PhaseListener{
 

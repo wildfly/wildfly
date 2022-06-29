@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.jpa.ormxml;
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
 
 /**
  * Employee entity class

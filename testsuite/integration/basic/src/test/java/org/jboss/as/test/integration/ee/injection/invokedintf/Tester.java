@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ee.injection.invokedintf;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>

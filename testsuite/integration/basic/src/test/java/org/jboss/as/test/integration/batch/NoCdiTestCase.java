@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.batch;
 
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.runtime.BatchRuntime;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

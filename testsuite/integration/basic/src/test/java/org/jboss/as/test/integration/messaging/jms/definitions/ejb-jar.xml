@@ -30,7 +30,7 @@
             <ejb-class>org.jboss.as.test.integration.messaging.jms.definitions.MessagingBean</ejb-class>
             <jms-connection-factory>
                 <name>java:app/myFactory4</name>
-                <interface-name>javax.jms.TopicConnectionFactory</interface-name>
+                <interface-name>jakarta.jms.TopicConnectionFactory</interface-name>
                 <user>guest</user>
                 <password>guest</password>
                 <client-id>myClientID4</client-id>
@@ -53,7 +53,7 @@
             <jms-destination>
                 <description></description>
                 <name>java:app/env/myQueue3</name>
-                <interface-name>javax.jms.Queue</interface-name>
+                <interface-name>jakarta.jms.Queue</interface-name>
                 <destination-name>myQueue3</destination-name>
                 <property>
                     <name>durable</name>
@@ -67,7 +67,7 @@
             <jms-destination>
                 <description></description>
                 <name>java:app/env/myTopic2</name>
-                <interface-name>javax.jms.Topic</interface-name>
+                <interface-name>jakarta.jms.Topic</interface-name>
                 <destination-name>myTopic2</destination-name>
             </jms-destination>
         </session>

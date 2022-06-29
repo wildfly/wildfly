@@ -27,7 +27,7 @@ import java.rmi.RemoteException;
 /**
  * @author $Author: wolfc
  */
-public interface Session21 extends javax.ejb.EJBObject {
+public interface Session21 extends jakarta.ejb.EJBObject {
     String access() throws RemoteException;
 
     String access30() throws RemoteException;

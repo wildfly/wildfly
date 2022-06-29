@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.packaging.multimodule;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 /**
  * @author Stuart Douglas

@@ -22,11 +22,11 @@
 package org.jboss.as.test.integration.jca.rar;
 
 import org.jboss.logging.Logger;
-import javax.resource.ResourceException;
-import javax.resource.cci.ConnectionMetaData;
-import javax.resource.cci.Interaction;
-import javax.resource.cci.LocalTransaction;
-import javax.resource.cci.ResultSetInfo;
+import jakarta.resource.ResourceException;
+import jakarta.resource.cci.ConnectionMetaData;
+import jakarta.resource.cci.Interaction;
+import jakarta.resource.cci.LocalTransaction;
+import jakarta.resource.cci.ResultSetInfo;
 
 /**
  * MultipleConnection1Impl

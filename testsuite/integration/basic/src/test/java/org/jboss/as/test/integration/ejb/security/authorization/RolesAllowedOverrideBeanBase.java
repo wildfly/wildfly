@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.security.authorization;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 
 /**
  * @author wangchao

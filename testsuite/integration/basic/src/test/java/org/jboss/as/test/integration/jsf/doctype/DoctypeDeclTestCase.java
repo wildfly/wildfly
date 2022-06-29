@@ -73,7 +73,7 @@ public class DoctypeDeclTestCase {
     @ArquillianResource
     private ManagementClient managementClient;
 
-    private final Pattern viewStatePattern = Pattern.compile("id=\".*javax.faces.ViewState.*\" value=\"([^\"]*)\"");
+    private final Pattern viewStatePattern = Pattern.compile("id=\".*jakarta.faces.ViewState.*\" value=\"([^\"]*)\"");
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
@@ -125,7 +125,7 @@ public class DoctypeDeclTestCase {
             // Create and execute a POST request with the given name
             HttpPost post = new HttpPost(requestUrl);
             List<NameValuePair> list = new ArrayList<NameValuePair>();
-            list.add(new BasicNameValuePair("javax.faces.ViewState", jsfViewState));
+            list.add(new BasicNameValuePair("jakarta.faces.ViewState", jsfViewState));
             list.add(new BasicNameValuePair("register", "register"));
             list.add(new BasicNameValuePair("register:inputName", name));
             list.add(new BasicNameValuePair("register:registerButton", "Register"));

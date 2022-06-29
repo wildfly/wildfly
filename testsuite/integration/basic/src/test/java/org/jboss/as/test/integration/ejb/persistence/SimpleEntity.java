@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.persistence;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 /**
  * User: jpai

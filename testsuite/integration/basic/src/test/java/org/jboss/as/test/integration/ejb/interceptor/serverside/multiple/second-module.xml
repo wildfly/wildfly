@@ -4,6 +4,6 @@
         <resource-root path="second-interceptor.jar"/>
     </resources>
     <dependencies>
-        <module name="javax.interceptor.api"/>
+        <module name="jakarta.interceptor.api"/>
     </dependencies>
 </module>

@@ -23,11 +23,11 @@
 
 package org.jboss.as.test.integration.messaging.jms.context.notclosinginjectedcontext.auxiliary;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.inject.Inject;
 import java.util.concurrent.ScheduledFuture;
 
 /**

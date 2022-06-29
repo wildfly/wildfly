@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.interceptor.method;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author OndrejChaloupka

@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.ejb.remove.method;
 
 import java.rmi.RemoteException;
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 
 /**
  * @author carlo

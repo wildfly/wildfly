@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.jpa.epcpropagation.shallow;
 
 import static org.junit.Assert.assertNotNull;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -98,7 +98,7 @@ public class ShallowExtendedPersistenceContextInheritanceTestCase {
 
         Throwable error = null;
         // excepted error will be something like:
-        //  javax.ejb.EJBException: WFLYJPA0030:
+        //  jakarta.ejb.EJBException: WFLYJPA0030:
         //  Found extended persistence context in SFSB invocation call stack but that cannot be used
         //  because the transaction already has a transactional context associated with it...
         try {

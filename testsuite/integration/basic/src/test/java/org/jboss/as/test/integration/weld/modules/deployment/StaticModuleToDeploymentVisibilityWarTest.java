@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.modules.deployment;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -68,7 +68,7 @@ public class StaticModuleToDeploymentVisibilityWarTest {
         doSetup();
         return ShrinkWrap.create(WebArchive.class)
                 .addClasses(StaticModuleToDeploymentVisibilityWarTest.class, FooImpl1.class, TestModule.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME + " meta-inf\n"), "MANIFEST.MF");
     }
 

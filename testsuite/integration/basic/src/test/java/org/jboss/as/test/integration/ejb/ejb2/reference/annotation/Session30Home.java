@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.annotation;
 
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 
 import org.jboss.as.test.integration.ejb.ejb2.reference.global.Session30;
 
@@ -32,5 +32,5 @@ import org.jboss.as.test.integration.ejb.ejb2.reference.global.Session30;
  */
 public interface Session30Home extends EJBHome {
 
-    Session30 create() throws java.rmi.RemoteException, javax.ejb.CreateException;
+    Session30 create() throws java.rmi.RemoteException, jakarta.ejb.CreateException;
 }

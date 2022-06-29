@@ -1,7 +1,7 @@
 package org.jboss.as.test.integration.naming;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
 import javax.naming.ldap.LdapContext;
 
 /**

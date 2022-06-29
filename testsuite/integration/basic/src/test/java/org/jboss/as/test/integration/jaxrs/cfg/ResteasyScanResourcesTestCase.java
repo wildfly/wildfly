@@ -106,7 +106,7 @@ public class ResteasyScanResourcesTestCase {
     }
 
     private static StringAsset webXmlWithMapping(final String paramName, final String paramValue) {
-        return WebXml.get("<servlet-mapping>\n" + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
+        return WebXml.get("<servlet-mapping>\n" + "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n"
                 + "        <url-pattern>/myjaxrs/*</url-pattern>\n" + "</servlet-mapping>\n"
                 + getCfgString(paramName, paramValue));
     }
