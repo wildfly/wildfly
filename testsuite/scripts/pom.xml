@@ -143,12 +143,6 @@
                                     <goal>provision</goal>
                                 </goals>
                                 <phase>generate-resources</phase>
-                                <configuration>
-                                    <plugin-options combine.self="append">
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
-                                    </plugin-options>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -162,7 +156,7 @@
                                 <phase>test</phase>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
