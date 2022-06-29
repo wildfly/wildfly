@@ -26,8 +26,8 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -75,30 +75,47 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
     @ArquillianResource
     private URL url;
 
-    @Deployment(testable = false)
-    public static Archive<?> deploy() {
+    private boolean securedApplication;
+
+    AbstractJmxAccessFromDeploymentWithRbacTest() {
+        this(true);
+    }
+
+    AbstractJmxAccessFromDeploymentWithRbacTest(boolean securedApplication) {
+        this.securedApplication = securedApplication;
+    }
+
+    // Subclasses will need to call this method from their @Deployment annotated methods.
+    static Archive<?> deploy(boolean securedApplication) {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jmx-access-rbac.war");
         war.addPackage(JmxResource.class.getPackage());
         war.addAsManifestResource(AbstractJmxAccessFromDeploymentWithRbacTest.class.getResource("jboss-deployment-structure.xml"), "jboss-deployment-structure.xml");
-        war.addAsWebInfResource(AbstractJmxAccessFromDeploymentWithRbacTest.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
-        war.addAsWebInfResource(AbstractJmxAccessFromDeploymentWithRbacTest.class.getPackage(), "web.xml", "web.xml");
+        if (securedApplication) {
+            war.addAsWebInfResource(AbstractJmxAccessFromDeploymentWithRbacTest.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+            war.addAsWebInfResource(AbstractJmxAccessFromDeploymentWithRbacTest.class.getPackage(), "web.xml", "web.xml");
+        }
         return war;
     }
 
     private String performCall(String urlPattern) throws Exception {
-        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(new AuthScope(url.getHost(), url.getPort()),
-                new UsernamePasswordCredentials("kabir", "kabir"));
-        try (CloseableHttpClient httpclient = HttpClients.custom()
-                .setDefaultCredentialsProvider(credentialsProvider)
-                .build()) {
-
+        try (CloseableHttpClient httpclient = createHttpClient()) {
             HttpGet httpget = new HttpGet(url.toExternalForm() + urlPattern);
             HttpResponse response = httpclient.execute(httpget);
             assertNotNull("Response is 'null', we expected non-null response!", response);
             assertEquals(200, response.getStatusLine().getStatusCode());
             return Utils.getContent(response);
         }
+    }
+
+    private CloseableHttpClient createHttpClient() {
+        HttpClientBuilder builder = HttpClients.custom();
+        if (securedApplication) {
+            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(new AuthScope(url.getHost(), url.getPort()),
+                    new UsernamePasswordCredentials("kabir", "kabir"));
+            builder.setDefaultCredentialsProvider(credentialsProvider);
+        }
+        return builder.build();
     }
 
     @Test
@@ -132,10 +149,12 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
                 MGMT_USERS_PROPERTIES};
 
         private final boolean useIdentityRoles;
+        private boolean securedApplication;
         private final Set<String> skippedFiles = new HashSet<>();
 
-        EnableRbacSetupTask(boolean useIdentityRoles) {
+        EnableRbacSetupTask(boolean useIdentityRoles, boolean securedApplication) {
             this.useIdentityRoles = useIdentityRoles;
+            this.securedApplication = securedApplication;
             if (!useIdentityRoles) {
                 skippedFiles.add(MGMT_GROUPS_PROPERTIES);
             }
@@ -161,15 +180,13 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
                 addr = PathAddress.pathAddress(CORE_SERVICE, MANAGEMENT).append(ACCESS, AUTHORIZATION);
                 operations.add(Util.getWriteAttributeOperation(addr, USE_IDENTITY_ROLES, true));
             } else {
-                // /core-service=management/access=authorization/role-mapping=SuperUser/include=user-kabir:add(name=kabir,type=USER)
-                addr = PathAddress.pathAddress(CORE_SERVICE, MANAGEMENT)
-                        .append(ACCESS, AUTHORIZATION)
-                        .append(ROLE_MAPPING, "SuperUser")
-                        .append(INCLUDE, "user-kabir");
-                ModelNode addSuperUserInclude = Util.createAddOperation(addr);
-                addSuperUserInclude.get(NAME, "kabir");
-                addSuperUserInclude.get(TYPE, "USER");
-                operations.add(addSuperUserInclude);
+                if (securedApplication) {
+                    // /core-service=management/access=authorization/role-mapping=SuperUser/include=user-kabir:add(name=kabir,type=USER)
+                    operations.add(createSuperUserRoleMapping("kabir"));
+                } else {
+                    // /core-service=management/access=authorization/role-mapping=SuperUser/include=user-anonymous:add(name=anonymous,type=USER)
+                    operations.add(createSuperUserRoleMapping("anonymous"));
+                }
             }
 
             // /core-service=management/access=identity:add(security-domain=ManagementDomain)
@@ -197,13 +214,30 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
             ServerReload.executeReloadAndWaitForCompletion(managementClient, TimeoutUtil.adjust(10000));
         }
 
+        private ModelNode createSuperUserRoleMapping(String userName) {
+            PathAddress addr = PathAddress.pathAddress(CORE_SERVICE, MANAGEMENT)
+                    .append(ACCESS, AUTHORIZATION)
+                    .append(ROLE_MAPPING, "SuperUser")
+                    .append(INCLUDE, "user-" + userName);
+            ModelNode addSuperUserInclude = Util.createAddOperation(addr);
+            addSuperUserInclude.get(NAME, userName);
+            addSuperUserInclude.get(TYPE, "USER");
+            return addSuperUserInclude;
+        }
+
         @Override
         protected void nonManagementCleanUp() throws Exception {
+            if (!securedApplication) {
+                return;
+            }
             backupOrRestoreConfigDirPropertyFiles(false);
             super.nonManagementCleanUp();
         }
 
         private void backupOrRestoreConfigDirPropertyFiles(boolean setup) throws Exception {
+            if (!securedApplication) {
+                return;
+            }
             Path target = Paths.get("target/wildfly/standalone/configuration");
             Assert.assertTrue(Files.exists(target));
             for (String fileName : ALL_PROPERTIES) {
@@ -234,7 +268,9 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
         }
 
         private void copyPropertiesToConfigFolder() throws Exception {
-
+            if (!securedApplication) {
+                return;
+            }
             Path target = Paths.get("target/wildfly/standalone/configuration");
             for (String fileName : ALL_PROPERTIES) {
                 if (skippedFiles.contains(fileName)) {

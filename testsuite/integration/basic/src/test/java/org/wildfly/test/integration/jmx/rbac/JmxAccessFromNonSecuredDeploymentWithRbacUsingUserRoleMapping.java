@@ -19,19 +19,30 @@
 
 package org.wildfly.test.integration.jmx.rbac;
 
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.shrinkwrap.api.Archive;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({JmxAccessFromDeploymentWithRbacUsingUserRoleMapping.RbacWithUseIdenityRolesSetup.class})
-public class JmxAccessFromDeploymentWithRbacUsingUserRoleMapping extends AbstractJmxAccessFromDeploymentWithRbacTest {
+@ServerSetup({JmxAccessFromNonSecuredDeploymentWithRbacUsingUserRoleMapping.RbacWithUseIdenityRolesSetup.class})
+public class JmxAccessFromNonSecuredDeploymentWithRbacUsingUserRoleMapping extends AbstractJmxAccessFromDeploymentWithRbacTest {
+
+    @Deployment(testable = false)
+    public static Archive<?> deploy() {
+        return AbstractJmxAccessFromDeploymentWithRbacTest.deploy(false);
+    }
+
+    public JmxAccessFromNonSecuredDeploymentWithRbacUsingUserRoleMapping() {
+        super(false);
+    }
 
     static class RbacWithUseIdenityRolesSetup extends EnableRbacSetupTask {
         public RbacWithUseIdenityRolesSetup() {
-            super(false);
+            super(false, false);
         }
     }
 }
