@@ -53,6 +53,10 @@
             <artifactId>jakarta.ejb-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ee-jakarta</artifactId>
+        </dependency>
+        <dependency>
 	    <groupId>${project.groupId}</groupId>
 	    <artifactId>wildfly-ejb3-jakarta</artifactId>
         </dependency>
@@ -78,7 +82,7 @@
         </dependency>
 	<dependency>
 	    <groupId>${project.groupId}</groupId>
-	    <artifactId>wildfly-webservices-server-integration</artifactId>
+	    <artifactId>wildfly-webservices-server-integration-jakarta</artifactId>
 	</dependency>
         <dependency>
             <groupId>jakarta.xml.ws</groupId>
@@ -96,6 +100,10 @@
 	    <groupId>org.jboss</groupId>
 	    <artifactId>staxmapper</artifactId>
 	</dependency>
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-web</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
@@ -146,6 +154,10 @@
         <dependency>
             <groupId>org.jboss.narayana.txframework</groupId>
             <artifactId>txframework-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-spi</artifactId>
         </dependency>
 
         <dependency>
