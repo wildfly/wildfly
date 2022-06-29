@@ -131,8 +131,7 @@ public class DistributableEjbSubsystemTestCase extends ClusteringSubsystemTest<D
         final ModelNode distributableEjbSubsystem = ks.readWholeModel().get("subsystem", getMainSubsystemName());
         final ModelNode localClientMappingsRegistryProvider = distributableEjbSubsystem.get("client-mappings-registry", "local");
         final ModelNode infinispanClientMappingsRegistryProvider = distributableEjbSubsystem.get("client-mappings-registry", "infinispan");
-        System.out.println("local = " + localClientMappingsRegistryProvider);
-        System.out.println("infinispan = " + infinispanClientMappingsRegistryProvider);
+
         assertEquals(localClientMappingsRegistryProvider.toString(), false, localClientMappingsRegistryProvider.isDefined());
         assertEquals(infinispanClientMappingsRegistryProvider.toString(), true, infinispanClientMappingsRegistryProvider.isDefined());
     }
