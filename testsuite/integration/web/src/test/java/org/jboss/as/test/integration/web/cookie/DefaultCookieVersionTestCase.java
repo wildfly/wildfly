@@ -53,7 +53,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -91,20 +90,8 @@ public class DefaultCookieVersionTestCase {
     }
 
     @Test
-    @Ignore(value = "[WFLY-16441] Investigate HTTP Cookies regression after Undertow upgrade")
-    public void testDefaultCookieVersion1() throws Exception {
-        commonDefaultCookieVersion(1);
-    }
-
-    @Test
     public void testSendCookieVersion0() throws Exception {
         commonSendCookieVersion(0);
-    }
-
-    @Test
-    @Ignore(value = "[WFLY-16441] Investigate HTTP Cookies regression after Undertow upgrade")
-    public void testSendCookieVersion1() throws Exception {
-        commonSendCookieVersion(1);
     }
 
     private void commonDefaultCookieVersion(int cookieVersion) throws IOException, URISyntaxException {
@@ -122,13 +109,7 @@ public class DefaultCookieVersionTestCase {
 
             for (Header i : cookies) {
                 String value = i.getValue();
-                if (cookieVersion >= 1) {
-                    Assert.assertTrue(value + Arrays.toString(cookies), value.toLowerCase(Locale.ENGLISH).contains
-                            ("version=" + cookieVersion));
-                } else {
-                    Assert.assertFalse(value + Arrays.toString(cookies), value.toLowerCase(Locale.ENGLISH).contains
-                            ("version"));
-                }
+                Assert.assertFalse(value + Arrays.toString(cookies), value.toLowerCase(Locale.ENGLISH).contains("version"));
             }
         }
     }

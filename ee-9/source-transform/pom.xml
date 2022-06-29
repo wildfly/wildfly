@@ -75,6 +75,7 @@
         <module>weld/spi</module>
         <module>weld/subsystem</module>
         <module>weld/transactions</module>
+        <module>weld/webservices</module>
         <module>observability/opentelemetry-api</module>
         <module>observability/opentelemetry</module>
         <module>undertow</module>
