@@ -5300,7 +5300,6 @@
                 <!-- No separate web dist -->
                 <wildfly.web.build.output.dir>${wildfly.build.output.dir}</wildfly.web.build.output.dir>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
-                <wildfly.transformed.repo.dir>${jbossas.project.dir}/ee-9/feature-pack/target/jakarta-transform-maven-repo</wildfly.transformed.repo.dir>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>
@@ -5321,7 +5320,6 @@
             </activation>
             <properties>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
-                <wildfly.transformed.repo.dir>${jbossas.project.dir}/ee-9/feature-pack/target/jakarta-transform-maven-repo</wildfly.transformed.repo.dir>
                 <!-- Disable the default surefire test execution for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>

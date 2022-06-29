@@ -951,7 +951,7 @@
             </dependencies>
             <properties>
                 <bootable-jar-cloud-profile-packaging.phase>process-test-resources</bootable-jar-cloud-profile-packaging.phase>
-                <extra.server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</extra.server.jvm.args>
+                <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
             <build>
                 <plugins>
@@ -998,7 +998,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -1067,7 +1066,6 @@
                                 <configuration>
                                     <plugin-options combine.self="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -1083,7 +1081,7 @@
                                 <phase>test</phase>
                                 <configuration>
                                      <systemPropertyVariables>
-                                        <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
+                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
                                     </systemPropertyVariables>
                                     <excludes>
                                         <!-- Requires messaging -->

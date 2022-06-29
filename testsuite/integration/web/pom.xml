@@ -1161,7 +1161,7 @@
                 <bootable-jar-undertow-https-packaging.phase>process-test-classes</bootable-jar-undertow-https-packaging.phase>
                 <bootable-jar-jaxrs-packaging.phase>process-test-classes</bootable-jar-jaxrs-packaging.phase>
                 <bootable-jar-cloud-packaging.phase>process-test-classes</bootable-jar-cloud-packaging.phase>
-                <extra.server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</extra.server.jvm.args>
+                <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
             <build>
                 <plugins>
@@ -1212,7 +1212,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -1223,7 +1222,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -1234,7 +1232,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -1245,7 +1242,6 @@
                                 <configuration>
                                     <plugin-options>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
