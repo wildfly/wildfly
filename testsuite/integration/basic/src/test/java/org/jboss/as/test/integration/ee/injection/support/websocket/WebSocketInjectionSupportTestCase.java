@@ -35,11 +35,13 @@ import org.jboss.as.test.integration.ee.injection.support.Bravo;
 import org.jboss.as.test.integration.ee.injection.support.ComponentInterceptor;
 import org.jboss.as.test.integration.ee.injection.support.ComponentInterceptorBinding;
 import org.jboss.as.test.integration.ee.injection.support.InjectionSupportTestCase;
+import org.jboss.as.test.shared.AssumeTestGroupUtil;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,6 +52,12 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
  */
 @RunWith(Arquillian.class)
 public class WebSocketInjectionSupportTestCase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        // TODO WFLY-16551
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
+    }
 
     @Deployment
     public static WebArchive deploy() {
