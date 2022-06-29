@@ -19,7 +19,6 @@
 package org.jboss.as.weld;
 
 import java.util.function.Supplier;
-
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 
@@ -101,6 +100,12 @@ public interface WeldCapability {
      * or is a top level deployment that contains sub-deployments that are weld deployments.
      */
     boolean isWeldDeployment(DeploymentUnit unit);
+
+    /**
+     * Registers a deployment as a Weld deployment, even in the absence of spec-compliant configuration files or annotations. After
+     * a call to this method, calls to {@code isWeldDeployment(DeploymentUnit unit)} will return true.
+     */
+    void markAsWeldDeployment(DeploymentUnit unit);
 
     /**
      * Some Maven artifacts come with a precalculated Jandex index file. This is problematic when running in EE9

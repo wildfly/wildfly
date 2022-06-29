@@ -2,7 +2,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jsf">
     <dependencies>
         <layer name="web-server"/>
-        <layer name="cdi" optional="true"/>
+        <layer name="cdi"/>
         <layer name="bean-validation" optional="true"/>
     </dependencies>
     <feature spec="subsystem.jsf"/>
