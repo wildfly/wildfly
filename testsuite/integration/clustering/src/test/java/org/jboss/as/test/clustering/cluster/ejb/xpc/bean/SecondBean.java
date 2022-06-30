@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.xpc.bean;
 
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContextType;
 
 /**
  * test bean that uses the same extended persistence context as StatefulBean and therefor should always be able to
@@ -35,7 +35,7 @@ import javax.persistence.PersistenceContextType;
  *
  * @author Scott Marlow
  */
-@javax.ejb.Stateful
+@jakarta.ejb.Stateful
 public class SecondBean {
     @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
     EntityManager em;

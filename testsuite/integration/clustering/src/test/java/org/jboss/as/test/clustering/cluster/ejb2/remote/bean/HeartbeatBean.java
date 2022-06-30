@@ -1,9 +1,9 @@
 package org.jboss.as.test.clustering.cluster.ejb2.remote.bean;
 
-import javax.ejb.Remote;
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionBean;
-import javax.ejb.Stateless;
+import jakarta.ejb.Remote;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.SessionBean;
+import jakarta.ejb.Stateless;
 
 @Stateless
 @Remote(HeartbeatRemote.class)

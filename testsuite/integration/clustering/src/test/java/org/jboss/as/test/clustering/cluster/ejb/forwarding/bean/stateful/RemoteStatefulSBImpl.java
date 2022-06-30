@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful;
 
-import javax.ejb.Stateful;
+import jakarta.ejb.Stateful;
 
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common.CommonStatefulSBImpl;
 

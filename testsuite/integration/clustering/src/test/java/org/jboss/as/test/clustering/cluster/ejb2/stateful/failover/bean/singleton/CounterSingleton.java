@@ -24,8 +24,8 @@ package org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.singlet
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 import org.jboss.logging.Logger;
 

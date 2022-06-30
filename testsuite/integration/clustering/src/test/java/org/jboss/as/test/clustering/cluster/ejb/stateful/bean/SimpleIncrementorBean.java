@@ -23,11 +23,11 @@ package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Resource;
-import javax.ejb.PostActivate;
-import javax.ejb.PrePassivate;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateful;
+import jakarta.annotation.Resource;
+import jakarta.ejb.PostActivate;
+import jakarta.ejb.PrePassivate;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateful;
 
 @Stateful
 public class SimpleIncrementorBean implements Incrementor {

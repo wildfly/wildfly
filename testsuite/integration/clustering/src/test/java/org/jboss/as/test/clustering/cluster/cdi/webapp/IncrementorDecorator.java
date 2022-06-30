@@ -22,11 +22,11 @@
 package org.jboss.as.test.clustering.cluster.cdi.webapp;
 
 import java.io.Serializable;
-import javax.annotation.Priority;
-import javax.decorator.Decorator;
-import javax.decorator.Delegate;
-import javax.inject.Inject;
-import javax.interceptor.Interceptor;
+import jakarta.annotation.Priority;
+import jakarta.decorator.Decorator;
+import jakarta.decorator.Delegate;
+import jakarta.inject.Inject;
+import jakarta.interceptor.Interceptor;
 
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 

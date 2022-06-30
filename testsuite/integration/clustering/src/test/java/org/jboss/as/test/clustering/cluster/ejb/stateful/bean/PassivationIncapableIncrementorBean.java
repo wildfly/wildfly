@@ -23,9 +23,9 @@ package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.ejb.PostActivate;
-import javax.ejb.PrePassivate;
-import javax.ejb.Stateful;
+import jakarta.ejb.PostActivate;
+import jakarta.ejb.PrePassivate;
+import jakarta.ejb.Stateful;
 
 @Stateful(passivationCapable = false)
 public class PassivationIncapableIncrementorBean implements Incrementor {

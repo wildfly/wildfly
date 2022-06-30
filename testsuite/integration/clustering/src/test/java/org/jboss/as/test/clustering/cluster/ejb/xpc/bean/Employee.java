@@ -24,9 +24,9 @@ package org.jboss.as.test.clustering.cluster.ejb.xpc.bean;
 
 import java.io.Serializable;
 
-import javax.persistence.Cacheable;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Cacheable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 /**
  * Employee entity class

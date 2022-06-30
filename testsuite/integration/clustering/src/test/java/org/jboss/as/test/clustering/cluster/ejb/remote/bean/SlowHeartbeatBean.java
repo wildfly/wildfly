@@ -2,8 +2,8 @@ package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 import java.util.Date;
 
 @Stateless
