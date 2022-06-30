@@ -99,7 +99,7 @@ public class XTSDependenciesDeploymentProcessor implements DeploymentUnitProcess
             if (target instanceof ClassInfo) {
                 final ClassInfo classInfo = (ClassInfo) target;
 
-                if (classInfo.annotations().get(DotName.createSimple(WebService.class.getName())) != null) {
+                if (classInfo.annotationsMap().get(DotName.createSimple(WebService.class.getName())) != null) {
                     return true;
                 }
             }
