@@ -126,7 +126,7 @@ public class EeLegacySubsystemTestCase extends AbstractSubsystemBaseTest {
         assertEquals("org.jboss.logging", globalModules.require(0).require(NAME).asString());
         assertEquals("main", globalModules.require(0).require(SLOT).asString());
 
-        assertEquals("org.apache.log4j", globalModules.require(1).require(NAME).asString());
+        assertEquals("org.apache.logging.log4j.api", globalModules.require(1).require(NAME).asString());
         assertTrue(globalModules.require(1).require(ANNOTATIONS).asBoolean());
         assertTrue(globalModules.require(1).require(META_INF).asBoolean());
         assertFalse(globalModules.require(1).require(SERVICES).asBoolean());

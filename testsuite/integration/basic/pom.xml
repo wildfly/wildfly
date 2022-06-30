@@ -113,12 +113,6 @@
             <artifactId>jakarta.validation-api</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Required for artemis-commons, just needs to be on the class path -->
-        <dependency>
-            <groupId>org.jboss.logmanager</groupId>
-            <artifactId>log4j-jboss-logmanager</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
