@@ -532,11 +532,6 @@
             <artifactId>jipijapa-spi-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- This is not desired, however the Jakarta Connectors tests seem to require this -->
         <dependency>
             <groupId>${project.groupId}</groupId>
