@@ -57,6 +57,8 @@
         <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
         <version.org.wildfly.arquillian>5.0.0.Alpha1</version.org.wildfly.arquillian>
         <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
+
+        <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/javax.crypto=ALL-UNNAMED --add-opens=java.base/sun.security.validator=ALL-UNNAMED</modular.jdk.testsuite.args>
     </properties>
 
     <dependencies>

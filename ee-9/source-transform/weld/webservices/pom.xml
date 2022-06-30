@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+      <groupId>org.wildfly</groupId>
+      <artifactId>wildfly-ee-9-source-transform-parent</artifactId>
+      <!--
+      Maintain separation between the artifact id and the version to help prevent
+      merge conflicts between commits changing the GA and those changing the V.
+      -->
+      <version>27.0.0.Alpha2-SNAPSHOT</version>
+      <relativePath>../../pom.xml</relativePath>
+   </parent>
+
+   <artifactId>wildfly-weld-webservices-jakarta</artifactId>
+   <name>WildFly: Weld Webservices (Jakarta Namespace)</name>
+
+   <packaging>jar</packaging>
+
+   <properties>
+      <transformer-input-dir>${project.basedir}/../../../../weld/webservices</transformer-input-dir>
+   </properties>
+
+   <dependencies>
+
+      <!-- Jakarta-namespace specific deps -->
+
+      <dependency>
+         <groupId>jakarta.enterprise</groupId>
+         <artifactId>jakarta.enterprise.cdi-api</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
+         <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>wildfly-ee-jakarta</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>wildfly-naming</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>wildfly-webservices-server-integration-jakarta</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>wildfly-weld-spi-jakarta</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>wildfly-weld-common-jakarta</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss</groupId>
+         <artifactId>jandex</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.weld</groupId>
+         <artifactId>weld-core-impl</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.weld</groupId>
+         <artifactId>weld-spi</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.ws</groupId>
+         <artifactId>jbossws-common</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.wildfly.core</groupId>
+         <artifactId>wildfly-server</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-annotations</artifactId>
+         <scope>provided</scope>
+      </dependency>
+
+   </dependencies>
+
+</project>

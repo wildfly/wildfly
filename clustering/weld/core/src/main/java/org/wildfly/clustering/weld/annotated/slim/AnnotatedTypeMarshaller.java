@@ -71,7 +71,6 @@ public class AnnotatedTypeMarshaller<X, T extends SlimAnnotatedType<X>> implemen
 
     @SuppressWarnings("unchecked")
     protected T getAnnotatedType(AnnotatedTypeIdentifier identifier, BeanManagerImpl manager) {
-        System.out.println("getAnnotatedType(" + identifier + ", " + manager + ")");
         return (T) ClassTransformer.instance(manager).getSlimAnnotatedTypeById(identifier);
     }
 

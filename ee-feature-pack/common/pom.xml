@@ -476,17 +476,6 @@
 
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
-            <artifactId>jbossws-cxf-jaspi</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ws.cxf</groupId>
             <artifactId>jbossws-cxf-factories</artifactId>
         </dependency>
 
