@@ -34,7 +34,6 @@
 
     <dependencies>
         <module name="gnu.getopt"/>
-        <module name="org.apache.log4j"/>
         <module name="org.jboss.as.webservices.server.integration" services="import">
           <imports>
             <include path="META-INF"/>
