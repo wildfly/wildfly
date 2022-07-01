@@ -1,0 +1,7 @@
+package org.jboss.weld.contexts.beanstore;
+
+/**
+ * @TypeId(445)
+ */
+message LockStore {
+}

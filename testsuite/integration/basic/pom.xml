@@ -41,6 +41,7 @@
         <bootable-jar-copy-module-files.phase>none</bootable-jar-copy-module-files.phase>
         <!-- Disable the default surefire test execution. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
+        <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/javax.crypto=ALL-UNNAMED --add-opens=java.base/sun.security.validator=ALL-UNNAMED</modular.jdk.testsuite.args>
     </properties>
 
     <dependencies>
@@ -110,12 +111,6 @@
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- Required for artemis-commons, just needs to be on the class path -->
-        <dependency>
-            <groupId>org.jboss.logmanager</groupId>
-            <artifactId>log4j-jboss-logmanager</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -935,7 +930,6 @@
                             <environmentVariables>
                                 <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
                             </environmentVariables>
-                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <includes>
                                 <include>org/jboss/as/test/integration/beanvalidation/**/*TestCase.java</include>
                                 <include>org/jboss/as/test/integration/beanvalidation/**/*Test.java</include>
@@ -1175,7 +1169,6 @@
                                         <include>org/jboss/as/test/integration/ee/naming/defaultbindings/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</include>
                                         <include>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</include>
                                     </includes>
 
@@ -1235,7 +1228,6 @@
                                         <exclude>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jaxrs/cfg/**/ResteasyAttributeTestCase.java</exclude>
                                     </excludes>
@@ -1266,7 +1258,6 @@
                                 </goals>
                                 <configuration>
                                     <skipTests>${ts.skipTests}</skipTests>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <enableAssertions>true</enableAssertions>
                                     <includes>
                                         <include>org/jboss/as/test/integration/**/*SecondTestCase.java</include>
@@ -1343,7 +1334,6 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
-                                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
                                     <systemPropertyVariables combine.children="append">
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                         <!-- EJB client library hack, see WFLY-4973-->
@@ -1402,49 +1392,6 @@
                             </executions>
                         </plugin>
                     </plugins>
-            </build>
-        </profile>
-
-        <!-- IIOP/CORBA stub generation - manual stub generation for IBM JDK -->
-        <profile>
-            <id>ibmjdk.profile</id>
-            <activation>
-                <property>
-                    <name>java.vendor</name>
-                    <value>IBM Corporation</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <executions>
-                            <!-- There is no similar option as -Dcom.sun.CORBA.ORBUseDynamicStub=true for IBM JDK
-                            we need to create stub do it manually with rmic tools -->
-                            <execution>
-                                <id>ibmjdk.iiop.stub-creation</id>
-                                <phase>test-compile</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>rmic</executable>
-                                    <workingDirectory>target/test-classes</workingDirectory>
-                                    <arguments>
-                                        <argument>-iiop</argument>
-                                        <argument>-classpath</argument>
-                                        <argument>${jboss.dist}/bin/client/jboss-client.jar:.</argument>
-                                        <argument>org.jboss.as.test.integration.ejb.iiop.naming.IIOPNamingHome
-                                        </argument>
-                                        <argument>org.jboss.as.test.integration.ejb.iiop.naming.IIOPStatefulNamingHome
-                                        </argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
             </build>
         </profile>
 
@@ -1520,22 +1467,6 @@
             </properties>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${version.exec.plugin}</version>
-                        <executions>
-                            <!-- See the default execution on the ibmjdk.profile, this execution should be activated selectively
-                                 for any provisioning under this profile that requires the manual IIOP/CORBA stub generation -->
-                            <execution>
-                                <id>ibmjdk.iiop.stub-creation</id>
-                                <phase>none</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <!-- Disable the standard copy-based provisioning -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -2418,7 +2349,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-batch</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/batch/**/*TestCase.java</include>
                                     </includes>
@@ -2449,7 +2379,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-jsf</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/jsf/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/jsf/**/*Test.java</include>
@@ -2482,7 +2411,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-jsf-ejb-lite</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/jsf/phaselistener/injectiontarget/InjectionToPhaseListenerTest.java</include>
                                         <include>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</include>
@@ -2510,7 +2438,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-jdr</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/jdr/mgmt/*TestCase.java</include>
                                     </includes>
@@ -2537,7 +2464,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-jsonp</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/json/*TestCase.java</include>
                                     </includes>
@@ -2567,7 +2493,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-jsonb</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/json/*TestCase.java</include>
                                     </includes>
@@ -2596,7 +2521,6 @@
                                         <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
                                         <TEST_PROP>JMXPropertyEditorsTestCase-WFLY-12899</TEST_PROP>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/wildfly/test/integration/microprofile/**/*TestCase.java</include>
                                     </includes>
@@ -2652,7 +2576,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-legacy-sar</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <!-- SarResourceInjectionTestCase needs mail -->
                                         <include>org/jboss/as/test/integration/sar/**/*TestCase.java</include>
@@ -2685,7 +2608,6 @@
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/ejb/annotationprocessing/ResourceAnnotationsProcessingTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/bridgemethods/EjbBridgeMethodsTestCase.java</include>
@@ -2798,7 +2720,6 @@
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/ejb/**/*TestCase.java</include>
                                     </includes>
@@ -2861,7 +2782,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-jpa</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/weld/jpa/*TestCase.java</include>
                                         <!-- NonTransactionalEmTestCase is currently the only test that does not need EJB -->
@@ -2891,7 +2811,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-ejb-embedded-broker</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
@@ -2920,7 +2839,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-ejb-remote-broker</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
@@ -2967,7 +2885,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-mail</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/mail/annotation/*TestCase.java</include>
                                     </includes>
@@ -2998,7 +2915,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-mail-ejb</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/mail/annotation/MailSessionDefinitionAnnotationTest.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/mail/*TestCase.java</include>
@@ -3026,7 +2942,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-pojo</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/pojo/**/*TestCase.java</include>
                                     </includes>
@@ -3053,7 +2968,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-web-console</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <!-- notice HttpManagementConstantHeadersTestCase#testHeadersOverrideNonManagementEndpoint will be ignored because the provisioning don't configure metrics -->
                                         <include>org/jboss/as/test/integration/management/console/*TestCase.java</include>
@@ -3081,7 +2995,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-web-console-cloud</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/management/console/*TestCase.java</include>
                                     </includes>
@@ -3192,7 +3105,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-cloud-profile.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
@@ -3221,7 +3133,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-jpa.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/weld/jpa/*TestCase.java</include>
                                         <!-- NonTransactionalEmTestCase is currently the only test that does not need EJB -->
@@ -3361,7 +3272,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-cloud-profile.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
@@ -3397,7 +3307,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-jpa.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/weld/jpa/*TestCase.java</include>
                                         <!-- NonTransactionalEmTestCase is currently the only test that does not need EJB -->
@@ -3452,21 +3361,15 @@
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/mdb/timeout/MessageDriven*TimeoutTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase.java</exclude><!-- TODO be more precise about what is excluded -->
-                                        <!-- Requires JSR77 -->
-                                        <exclude>org/jboss/as/test/integration/jsr77/*TestCase.java</exclude>
                                         <!-- TODO figure out the problem -->
                                         <exclude>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</exclude><!-- probably mdb -->
                                         <exclude>org/jboss/as/test/integration/ejb/pool/lifecycle/PooledEJBLifecycleTestCase.java</exclude><!-- probably mdb -->
-                                        <exclude>org/jboss/as/test/integration/jmx/full/JMXFilterTestCase.java</exclude><!-- Uses jsr77 subsystem as test subject -->
                                         <exclude>org/jboss/as/test/integration/management/cli/DeploymentOverlayCLITestCase.java</exclude><!-- use of unmanaged (exploded) deployments?? -->
                                         <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude><!-- Problem is probably MDB use -->
                                         <!-- EE 8 vs EE 9 differences beyond javax->jakarta -->
                                         <exclude>org/jboss/as/test/integration/ejb/security/LifecycleTestCase.java</exclude><!-- EJBContext.getCallerIdentity was removed -->
                                         <!-- Requires the Arquillian Servlet 3.0 protocol to be overridden to Servlet 5.0 -->
                                         <exclude>org/jboss/as/test/integration/logging/config/LoggingProfileSharedTestCase.java</exclude>
-
-                                        <!-- Excluded because Hibernate doesn't conform to CDI 4 deprecated method removals -->
-                                        <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/EntityListenerInjectionSupportTestCase.java</exclude>
 
                                         <!-- With EE9, we use Hibernate Search 6 instead of 5,
                                              and Hibernate Search 6 exposes a different (backwards-incompatible) API,
@@ -3475,6 +3378,9 @@
                                              adapted to rely on Hibernate Search 6 APIs,
                                              so we still test Hibernate Search with EE9. -->
                                         <exclude>org/jboss/as/test/integration/hibernate/search/**</exclude>
+                                        <!-- Differences in the API changes for EE 8/9 and EE 10. -->
+                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingPropertiesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingServicesTestCase.java</exclude>
 
                                     </excludes>
                                 </configuration>
@@ -3514,7 +3420,6 @@
                                         <exclude>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jaxrs/cfg/**/ResteasyAttributeTestCase.java</exclude>
 
@@ -3535,6 +3440,9 @@
                                         <exclude>org/jboss/as/test/integration/deployment/moduleslisting/DeploymentModulesListTestCase.java</exclude>
                                         <!-- Requires the Arquillian Servlet 3.0 protocol to be overridden to Servlet 5.0 -->
                                         <exclude>org/jboss/as/test/integration/logging/config/LoggingProfileSharedTestCase.java</exclude>
+                                        <!-- Assumes the Faces spec version in the server and on the client-side classpath are the same
+                                             and that the Faces spec jar includes the spec version in its manifest -->
+                                        <exclude>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</exclude>
                                         <!-- TODO figure out the problem -->
                                         <exclude>org/jboss/as/test/integration/batch/repository/JdbcRepositoryTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/appclient/basic/SimpleApplicationClientTestCase.java</exclude>
@@ -3543,19 +3451,10 @@
                                         <exclude>org/jboss/as/test/integration/jsf/beanvalidation/cdi/BeanValidationCdiIntegrationTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/doctype/DoctypeDeclTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/jsf23/JSF23SanityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/managedbean/gc/GCPreDestroyTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/testurl/ForbiddenUrlTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/deploy/runtime/JaxrsRuntimeNameTestCase.java</exclude><!-- test expects javax strings in mgmt api responses -->
                                         <exclude>org/jboss/as/test/integration/weld/ejb/SessionObjectReferenceTestCase.java</exclude>
                                         <exclude>org/wildfly/test/integration/web/annotationsmodule/EarModuleDeploymentTestCase.java</exclude>
-
-                                        <!-- Excluded because Hibernate doesn't conform to CDI 4 deprecated method removals -->
-                                        <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/EntityListenerInjectionSupportTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/phaselistener/injectiontarget/InjectionToPhaseListenerTest.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jpa/initializeinorder/InitializeInOrderTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jpa/entitylistener/EntityListenersTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/beanmanager/EntityListenerBeanManagerInjectionTestCase.java</exclude>
 
                                         <!-- With EE9, we use Hibernate Search 6 instead of 5,
                                              and Hibernate Search 6 exposes a different (backwards-incompatible) API,
@@ -3564,6 +3463,9 @@
                                              adapted to rely on Hibernate Search 6 APIs,
                                              so we still test Hibernate Search with EE9. -->
                                         <exclude>org/jboss/as/test/integration/hibernate/search/**</exclude>
+                                        <!-- Differences in the API changes for EE 8/9 and EE 10. -->
+                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingPropertiesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingServicesTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>

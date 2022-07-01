@@ -22,9 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.function.UnaryOperator;
-
-import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
@@ -65,28 +62,6 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
-    @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        BATCH_SIZE("batch-size", ModelType.INT, new ModelNode(100), InfinispanModel.VERSION_6_0_0),
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setDefaultValue(defaultValue)
-                    .setDeprecated(deprecation.getVersion())
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
         }
@@ -140,18 +115,6 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
-    private static final AttributeTranslation BATCH_SIZE_TRANSLATION = new AttributeTranslation() {
-        @Override
-        public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
-            return StoreResourceDefinition.Attribute.MAX_BATCH_SIZE;
-        }
-
-        @Override
-        public UnaryOperator<PathAddress> getPathAddressTransformation() {
-            return PathAddress::getParent;
-        }
-    };
-
     private final org.jboss.as.clustering.controller.Attribute prefixAttribute;
 
     TableResourceDefinition(PathElement path, org.jboss.as.clustering.controller.Attribute prefixAttribute) {
@@ -167,7 +130,6 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
                 .addAttributes(this.prefixAttribute)
                 .addAttributes(Attribute.class)
                 .addAttributes(ColumnAttribute.class)
-                .addAttributeTranslation(DeprecatedAttribute.BATCH_SIZE, BATCH_SIZE_TRANSLATION)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
         new SimpleResourceRegistration(descriptor, handler).register(registration);

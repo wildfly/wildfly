@@ -47,7 +47,7 @@ public abstract class BuildConfigurationTestBase {
     static final File CONFIG_DIR = new File("target/wildfly/domain/configuration/");
 
     static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
-        return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "master", masterAddress, 9990);
+        return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "primary", masterAddress, 9990);
     }
 
     static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName,
@@ -58,7 +58,7 @@ public abstract class BuildConfigurationTestBase {
         configuration.setHostControllerManagementAddress(hostAddress);
         configuration.setHostControllerManagementPort(hostPort);
         configuration.setHostControllerManagementProtocol("remote+http");
-        configuration.setHostCommandLineProperties("-Djboss.domain.master.address=" + masterAddress +
+        configuration.setHostCommandLineProperties("-Djboss.domain.primary.address=" + masterAddress +
                 " -Djboss.management.http.port=" + hostPort);
         configuration.setDomainConfigFile(hackFixDomainConfig(new File(CONFIG_DIR, domainXmlName)).getAbsolutePath());
         configuration.setHostConfigFile(hackFixHostConfig(new File(CONFIG_DIR, hostXmlName), hostName, hostAddress).getAbsolutePath());

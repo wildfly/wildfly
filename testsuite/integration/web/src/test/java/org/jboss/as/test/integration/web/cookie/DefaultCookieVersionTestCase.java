@@ -90,18 +90,8 @@ public class DefaultCookieVersionTestCase {
     }
 
     @Test
-    public void testDefaultCookieVersion1() throws Exception {
-        commonDefaultCookieVersion(1);
-    }
-
-    @Test
     public void testSendCookieVersion0() throws Exception {
         commonSendCookieVersion(0);
-    }
-
-    @Test
-    public void testSendCookieVersion1() throws Exception {
-        commonSendCookieVersion(1);
     }
 
     private void commonDefaultCookieVersion(int cookieVersion) throws IOException, URISyntaxException {
@@ -119,13 +109,7 @@ public class DefaultCookieVersionTestCase {
 
             for (Header i : cookies) {
                 String value = i.getValue();
-                if (cookieVersion >= 1) {
-                    Assert.assertTrue(value + Arrays.toString(cookies), value.toLowerCase(Locale.ENGLISH).contains
-                            ("version=" + cookieVersion));
-                } else {
-                    Assert.assertFalse(value + Arrays.toString(cookies), value.toLowerCase(Locale.ENGLISH).contains
-                            ("version"));
-                }
+                Assert.assertFalse(value + Arrays.toString(cookies), value.toLowerCase(Locale.ENGLISH).contains("version"));
             }
         }
     }

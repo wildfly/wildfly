@@ -158,13 +158,6 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
             Class<? extends LoadMetric> loadMetricClass = null;
             if (node.hasDefined(LoadMetricResourceDefinition.Attribute.TYPE.getName())) {
                 String type = LoadMetricResourceDefinition.Attribute.TYPE.resolveModelAttribute(context, node).asString();
-
-                // MODCLUSTER-288 Metric "mem" has been dropped, keep it in the model for versions prior to 8.0
-                if (type.equals("mem")) {
-                    ROOT_LOGGER.unsupportedMetric(type);
-                    continue;
-                }
-
                 LoadMetricEnum metric = LoadMetricEnum.forType(type);
                 loadMetricClass = (metric != null) ? metric.getLoadMetricClass() : null;
             } else {

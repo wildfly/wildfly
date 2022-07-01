@@ -26,14 +26,18 @@ package org.wildfly.extension.messaging.activemq.ha;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONFIGURATION;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LIVE_ONLY;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.MASTER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.PRIMARY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_COLOCATED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_MASTER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_PRIMARY;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_SECONDARY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_SLAVE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SECONDARY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_COLOCATED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_MASTER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_PRIMARY;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_SECONDARY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_SLAVE;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.SLAVE;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.ALLOW_FAILBACK;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.BACKUP_PORT_OFFSET;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.BACKUP_REQUEST_RETRIES;
@@ -94,24 +98,28 @@ public class HAPolicyConfigurationBuilder {
                 haPolicyConfiguration = buildLiveOnlyConfiguration(context, haPolicy);
                 break;
             }
-            case REPLICATION_MASTER: {
-                haPolicyConfiguration = buildReplicationMasterConfiguration(context, haPolicy);
+            case REPLICATION_MASTER:
+            case REPLICATION_PRIMARY: {
+                haPolicyConfiguration = buildReplicationPrimaryConfiguration(context, haPolicy);
                 break;
             }
-            case REPLICATION_SLAVE: {
-                haPolicyConfiguration = buildReplicationSlaveConfiguration(context, haPolicy);
+            case REPLICATION_SLAVE:
+            case REPLICATION_SECONDARY: {
+                haPolicyConfiguration = buildReplicationSecondaryConfiguration(context, haPolicy);
                 break;
             }
             case REPLICATION_COLOCATED: {
                 haPolicyConfiguration = buildReplicationColocatedConfiguration(context, haPolicy);
                 break;
             }
-            case SHARED_STORE_MASTER: {
-                haPolicyConfiguration = buildSharedStoreMasterConfiguration(context, haPolicy);
+            case SHARED_STORE_MASTER:
+            case SHARED_STORE_PRIMARY: {
+                haPolicyConfiguration = buildSharedStorePrimaryConfiguration(context, haPolicy);
                 break;
             }
-            case SHARED_STORE_SLAVE: {
-                haPolicyConfiguration = buildSharedStoreSlaveConfiguration(context, haPolicy);
+            case SHARED_STORE_SLAVE:
+            case SHARED_STORE_SECONDARY: {
+                haPolicyConfiguration = buildSharedStoreSecondaryConfiguration(context, haPolicy);
                 break;
             }
             case SHARED_STORE_COLOCATED: {
@@ -130,7 +138,7 @@ public class HAPolicyConfigurationBuilder {
         return new LiveOnlyPolicyConfiguration(scaleDownConfiguration);
     }
 
-    private HAPolicyConfiguration buildReplicationMasterConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
+    private HAPolicyConfiguration buildReplicationPrimaryConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         ReplicatedPolicyConfiguration haPolicyConfiguration = new ReplicatedPolicyConfiguration();
         haPolicyConfiguration.setCheckForLiveServer(CHECK_FOR_LIVE_SERVER.resolveModelAttribute(context, model).asBoolean())
                 .setInitialReplicationSyncTimeout(INITIAL_REPLICATION_SYNC_TIMEOUT.resolveModelAttribute(context, model).asLong());
@@ -145,7 +153,7 @@ public class HAPolicyConfigurationBuilder {
         return haPolicyConfiguration;
     }
 
-    private HAPolicyConfiguration buildReplicationSlaveConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
+    private HAPolicyConfiguration buildReplicationSecondaryConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         ReplicaPolicyConfiguration haPolicyConfiguration = new ReplicaPolicyConfiguration()
                 .setAllowFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean())
                 .setInitialReplicationSyncTimeout(INITIAL_REPLICATION_SYNC_TIMEOUT.resolveModelAttribute(context, model).asLong())
@@ -174,21 +182,21 @@ public class HAPolicyConfigurationBuilder {
         if (!connectors.isEmpty()) {
             haPolicyConfiguration.setExcludedConnectors(connectors);
         }
-        ModelNode masterConfigurationModel = model.get(CONFIGURATION, MASTER);
-        HAPolicyConfiguration masterConfiguration = buildReplicationMasterConfiguration(context, masterConfigurationModel);
+        ModelNode masterConfigurationModel = model.get(CONFIGURATION, PRIMARY);
+        HAPolicyConfiguration masterConfiguration = buildReplicationPrimaryConfiguration(context, masterConfigurationModel);
         haPolicyConfiguration.setLiveConfig(masterConfiguration);
-        ModelNode slaveConfigurationModel = model.get(CONFIGURATION, SLAVE);
-        HAPolicyConfiguration slaveConfiguration = buildReplicationSlaveConfiguration(context, slaveConfigurationModel);
+        ModelNode slaveConfigurationModel = model.get(CONFIGURATION, SECONDARY);
+        HAPolicyConfiguration slaveConfiguration = buildReplicationSecondaryConfiguration(context, slaveConfigurationModel);
         haPolicyConfiguration.setBackupConfig(slaveConfiguration);
         return haPolicyConfiguration;
     }
 
-    private HAPolicyConfiguration buildSharedStoreMasterConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
+    private HAPolicyConfiguration buildSharedStorePrimaryConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         return new SharedStoreMasterPolicyConfiguration()
                 .setFailoverOnServerShutdown(FAILOVER_ON_SERVER_SHUTDOWN.resolveModelAttribute(context, model).asBoolean());
     }
 
-    private HAPolicyConfiguration buildSharedStoreSlaveConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
+    private HAPolicyConfiguration buildSharedStoreSecondaryConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         return new SharedStoreSlavePolicyConfiguration()
                 .setAllowFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean())
                 .setFailoverOnServerShutdown(FAILOVER_ON_SERVER_SHUTDOWN.resolveModelAttribute(context, model).asBoolean())
@@ -204,12 +212,12 @@ public class HAPolicyConfigurationBuilder {
                 .setMaxBackups(MAX_BACKUPS.resolveModelAttribute(context, model).asInt())
                 .setBackupPortOffset(BACKUP_PORT_OFFSET.resolveModelAttribute(context, model).asInt());
 
-        ModelNode masterConfigurationModel = model.get(CONFIGURATION, MASTER);
-        HAPolicyConfiguration masterConfiguration = buildSharedStoreMasterConfiguration(context, masterConfigurationModel);
+        ModelNode masterConfigurationModel = model.get(CONFIGURATION, PRIMARY);
+        HAPolicyConfiguration masterConfiguration = buildSharedStorePrimaryConfiguration(context, masterConfigurationModel);
         haPolicyConfiguration.setLiveConfig(masterConfiguration);
 
-        ModelNode slaveConfigurationModel = model.get(CONFIGURATION, SLAVE);
-        HAPolicyConfiguration slaveConfiguration = buildSharedStoreSlaveConfiguration(context, slaveConfigurationModel);
+        ModelNode slaveConfigurationModel = model.get(CONFIGURATION, SECONDARY);
+        HAPolicyConfiguration slaveConfiguration = buildSharedStoreSecondaryConfiguration(context, slaveConfigurationModel);
         haPolicyConfiguration.setBackupConfig(slaveConfiguration);
 
         return haPolicyConfiguration;

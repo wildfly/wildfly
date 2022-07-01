@@ -35,7 +35,7 @@ import org.wildfly.common.function.ExceptionSupplier;
  * @author Paul Ferraro
  * @deprecated To be removed without replacement
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class StampedLockServiceExecutor implements ServiceExecutor {
 
     private final StampedLock lock = new StampedLock();

@@ -31,6 +31,10 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.NONE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NO_TX;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.XA_TX;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE;
 
 import java.util.ArrayList;
@@ -70,6 +74,23 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
     protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
         super.populateModel(context, operation, resource);
         handleCredentialReferenceUpdate(context, resource.getModel());
+    }
+
+    @Override
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        for (AttributeDefinition attr : attributes) {
+            if (DESERIALIZATION_BLACKLIST.equals(attr)) {
+                if (operation.hasDefined(DESERIALIZATION_BLACKLIST.getName())) {
+                    DESERIALIZATION_BLOCKLIST.validateAndSet(operation, model);
+                }
+            } else if (DESERIALIZATION_WHITELIST.equals(attr)) {
+                if (operation.hasDefined(DESERIALIZATION_WHITELIST.getName())) {
+                    DESERIALIZATION_ALLOWLIST.validateAndSet(operation, model);
+                }
+            } else {
+                attr.validateAndSet(operation, model);
+            }
+        }
     }
 
     @Override
@@ -175,10 +196,10 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             if (node.isDefined()) {
                 String attributeName = definition.getName();
                 final String value;
-                if (attributeName.equals(Common.DESERIALIZATION_BLACKLIST.getName())) {
-                    value = String.join(",", Common.DESERIALIZATION_BLACKLIST.unwrap(context, model));
-                } else if (attributeName.equals(Common.DESERIALIZATION_WHITELIST.getName())) {
-                    value = String.join(",", Common.DESERIALIZATION_WHITELIST.unwrap(context, model));
+                if (attributeName.equals(Common.DESERIALIZATION_BLOCKLIST.getName())) {
+                    value = String.join(",", Common.DESERIALIZATION_BLOCKLIST.unwrap(context, model));
+                } else if (attributeName.equals(Common.DESERIALIZATION_ALLOWLIST.getName())) {
+                    value = String.join(",", Common.DESERIALIZATION_ALLOWLIST.unwrap(context, model));
                 } else {
                     value = node.asString();
                 }

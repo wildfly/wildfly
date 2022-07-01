@@ -80,7 +80,7 @@ public class JPADefinition extends SimpleResourceDefinition {
     private static Parameters getParameters(boolean feature) {
         Parameters result = new Parameters(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME),
                 JPAExtension.getResourceDescriptionResolver())
-                .setFeature(feature);
+                .setFeature(feature).setRuntime(!feature);
         if (feature) {
             result = result.setCapabilities(JPA_CAPABILITY);
         }

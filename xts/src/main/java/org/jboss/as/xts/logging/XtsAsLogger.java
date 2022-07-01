@@ -32,7 +32,6 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
-import javax.xml.ws.handler.MessageContext;
 
 /**
  * Date: 05.11.2011
@@ -116,6 +115,6 @@ public interface XtsAsLogger extends BasicLogger {
 
     @LogMessage(level = ERROR)
     @Message(id = 10, value = "Cannot get transaction status on handling context %s")
-    void cannotGetTransactionStatus(MessageContext ctx, @Cause Throwable cause);
+    void cannotGetTransactionStatus(javax.xml.ws.handler.MessageContext ctx, @Cause Throwable cause);
 
 }

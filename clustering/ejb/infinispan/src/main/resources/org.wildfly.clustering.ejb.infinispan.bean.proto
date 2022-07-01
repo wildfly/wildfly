@@ -9,14 +9,14 @@ import "org.jboss.ejb.client.proto";
  * @TypeId(310)
  */
 message InfinispanBeanKey {
-	required	bytes	encoded	= 1;
+	required	org.jboss.ejb.client.SessionID	id	 = 1;
 }
 
 /**
  * @TypeId(311)
  */
 message InfinispanBeanEntry {
-	required	string	name	= 1;
-	required	org.jboss.ejb.client.SessionID	group	= 2;
-	required	java.time.Instant	lastAccessed	= 3;
+	required	string	name	 = 1;
+	required	org.jboss.ejb.client.SessionID	group	 = 2;
+	required	java.time.Instant	lastAccessed	 = 3;
 }

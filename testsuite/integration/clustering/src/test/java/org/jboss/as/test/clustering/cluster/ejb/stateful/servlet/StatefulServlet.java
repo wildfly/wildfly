@@ -22,28 +22,25 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.stateful.servlet;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import javax.ejb.NoSuchEJBException;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 import org.jboss.as.test.clustering.ejb.LocalEJBDirectory;
 
 /**
+ * Test servlet that stores a SFSB reference within the HttpSession.
  * @author Paul Ferraro
  */
 @WebServlet(urlPatterns = { StatefulServlet.SERVLET_PATH })
-public class StatefulServlet extends HttpServlet {
+public class StatefulServlet extends AbstractStatefulServlet {
     private static final long serialVersionUID = -592774116315946908L;
     private static final String SERVLET_NAME = "count";
     static final String SERVLET_PATH = "/" + SERVLET_NAME;
@@ -60,26 +57,23 @@ public class StatefulServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String module = getRequiredParameter(req, MODULE);
-        String bean = getRequiredParameter(req, BEAN);
-        HttpSession session = req.getSession(true);
-        Incrementor incrementor = (Incrementor) session.getAttribute(BEAN);
+    public Incrementor apply(HttpServletRequest request) throws ServletException {
+        Incrementor incrementor = (Incrementor) request.getSession().getAttribute(BEAN);
         if (incrementor == null) {
+            String module = getRequiredParameter(request, MODULE);
+            String bean = getRequiredParameter(request, BEAN);
             try (LocalEJBDirectory directory = new LocalEJBDirectory(module)) {
                 incrementor = directory.lookupStateful(bean, Incrementor.class);
             } catch (NamingException e) {
                 throw new ServletException(e);
             }
         }
-        try {
-            resp.setHeader(COUNT, String.valueOf(incrementor.increment()));
-            session.setAttribute(BEAN, incrementor);
-        } catch (NoSuchEJBException e) {
-            resp.setHeader(COUNT, String.valueOf(0));
-            session.removeAttribute(BEAN);
-        }
-        resp.getWriter().write("Success");
+        return incrementor;
+    }
+
+    @Override
+    public void accept(HttpSession session, Incrementor incrementor) {
+        session.setAttribute(BEAN, incrementor);
     }
 
     private static String getRequiredParameter(HttpServletRequest req, String name) throws ServletException {

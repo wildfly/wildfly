@@ -43,6 +43,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.web.service.WebProviderRequirement;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**
  * {@link DeploymentUnitProcessor} that establishes the requisite {@link DistributableSessionManagementProvider} dependency
@@ -67,7 +68,7 @@ public class DistributableWebDeploymentDependencyProcessor implements Deployment
             DistributableWebDeploymentConfiguration config = unit.getAttachment(CONFIGURATION_KEY);
 
             String name = (config != null) ? config.getSessionManagementName() : null;
-            DistributableSessionManagementProvider management = (name == null) && (config != null) ? config.getSessionManagement() : null;
+            DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> management = (name == null) && (config != null) ? config.getSessionManagement() : null;
             List<String> immutableClasses = (config != null) ? config.getImmutableClasses() : Collections.emptyList();
             for (String immutableClass : immutableClasses) {
                 unit.addToAttachmentList(DistributableSessionManagementProvider.IMMUTABILITY_ATTACHMENT_KEY, immutableClass);
@@ -81,7 +82,7 @@ public class DistributableWebDeploymentDependencyProcessor implements Deployment
                 ServiceName serviceName = WebProviderRequirement.SESSION_MANAGEMENT_PROVIDER.getServiceName(support, deploymentName);
 
                 ServiceBuilder<?> builder = target.addService(serviceName);
-                Consumer<DistributableSessionManagementProvider> injector = builder.provides(serviceName);
+                Consumer<DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>>> injector = builder.provides(serviceName);
                 Service service = Service.newInstance(injector, management);
                 builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 

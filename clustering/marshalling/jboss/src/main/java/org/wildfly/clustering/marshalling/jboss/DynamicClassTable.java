@@ -41,11 +41,15 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class DynamicClassTable extends SimpleClassTable {
 
-    public DynamicClassTable(ClassLoader... loaders) {
+    public DynamicClassTable(ClassLoader loader) {
+        this(List.of(loader));
+    }
+
+    public DynamicClassTable(List<ClassLoader> loaders) {
         super(findClasses(loaders));
     }
 
-    private static List<Class<?>> findClasses(ClassLoader... loaders) {
+    private static List<Class<?>> findClasses(List<ClassLoader> loaders) {
         List<Class<?>> knownClasses = WildFlySecurityManager.doUnchecked(new PrivilegedAction<List<Class<?>>>() {
             @Override
             public List<Class<?>> run() {

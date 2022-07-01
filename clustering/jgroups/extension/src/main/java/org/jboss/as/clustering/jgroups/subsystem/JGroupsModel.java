@@ -32,16 +32,19 @@ public enum JGroupsModel implements Model {
 /*  Unsupported model versions - for reference only
     VERSION_1_3_0(1, 3, 0), // EAP 6.4
     VERSION_2_0_0(2, 0, 0), // WildFly 8
-*/
     VERSION_3_0_0(3, 0, 0), // WildFly 9
     VERSION_4_0_0(4, 0, 0), // WildFly 10, EAP 7.0
     VERSION_4_1_0(4, 1, 0), // WildFly 10.1
+*/  // We will continue to support generic protocol resource definition overrides
     VERSION_5_0_0(5, 0, 0), // WildFly 11, EAP 7.1
+/*
     VERSION_6_0_0(6, 0, 0), // WildFly 12-16, EAP 7.2
-    VERSION_7_0_0(7, 0, 0), // WildFly 17, EAP 7.3
-    VERSION_8_0_0(8, 0, 0), // WildFly 20-present, EAP 7.4-present
+    VERSION_7_0_0(7, 0, 0), // WildFly 17-19, EAP 7.3
+*/
+    VERSION_8_0_0(8, 0, 0), // WildFly 20-26, EAP 7.4
+    VERSION_9_0_0(9, 0, 0), // WildFly 27-present
     ;
-    static final JGroupsModel CURRENT = VERSION_8_0_0;
+    static final JGroupsModel CURRENT = VERSION_9_0_0;
 
     private final ModelVersion version;
 

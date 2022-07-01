@@ -56,6 +56,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
      * Add dependencies for modules required for weld deployments, if managed weld configurations are attached to the deployment
      *
      */
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);

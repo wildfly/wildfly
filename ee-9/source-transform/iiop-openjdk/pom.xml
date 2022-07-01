@@ -73,7 +73,7 @@
 
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>
-            <artifactId>openjdk-orb</artifactId>
+            <artifactId>openjdk-orb-jakarta</artifactId>
         </dependency>
 
         <dependency>

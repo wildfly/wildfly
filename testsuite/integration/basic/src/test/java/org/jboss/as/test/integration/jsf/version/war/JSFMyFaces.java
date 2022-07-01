@@ -16,14 +16,16 @@
  */
 package org.jboss.as.test.integration.jsf.version.war;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
+import javax.faces.annotation.FacesConfig;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 
 import java.io.Serializable;
 
-@ManagedBean(name="jsfmyfacesversion")
+@Named("jsfmyfacesversion")
 @SessionScoped
+@FacesConfig
 public class JSFMyFaces implements Serializable {
 
     /** Default value included to remove warning. **/

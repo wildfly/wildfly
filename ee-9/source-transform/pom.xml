@@ -56,6 +56,8 @@
         <module>jaxrs</module>
         <module>iiop-openjdk</module>
         <module>transactions</module>
+        <module>xts</module>
+        <module>rts</module>
         <module>jpa/spi</module>
         <module>jpa/eclipselink</module>
         <module>jpa/subsystem</module>
@@ -65,6 +67,7 @@
         <module>mod_cluster/undertow</module>
         <module>shared</module>
         <module>web-common</module>
+        <module>webservices</module>
         <module>weld/bean-validation</module>
         <module>weld/common</module>
         <module>weld/ejb</module>
@@ -72,6 +75,7 @@
         <module>weld/spi</module>
         <module>weld/subsystem</module>
         <module>weld/transactions</module>
+        <module>weld/webservices</module>
         <module>observability/opentelemetry-api</module>
         <module>observability/opentelemetry</module>
         <module>undertow</module>

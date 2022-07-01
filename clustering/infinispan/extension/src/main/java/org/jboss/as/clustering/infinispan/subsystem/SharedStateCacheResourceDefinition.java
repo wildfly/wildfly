@@ -45,10 +45,9 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
             this.configurator = configurator;
         }
 
-        @SuppressWarnings("deprecation")
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return this.configurator.apply(descriptor).addRequiredChildren(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupForResourceDefinition.PATH, BackupsResourceDefinition.PATH);
+            return this.configurator.apply(descriptor).addRequiredChildren(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupsResourceDefinition.PATH);
         }
     }
 
@@ -59,8 +58,6 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
         this.executors = executors;
     }
 
-
-    @SuppressWarnings("deprecation")
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = super.register(parent);
@@ -68,7 +65,6 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
         new PartitionHandlingResourceDefinition().register(registration);
         new StateTransferResourceDefinition().register(registration);
         new BackupsResourceDefinition(this.executors).register(registration);
-        new BackupForResourceDefinition().register(registration);
 
         return registration;
     }

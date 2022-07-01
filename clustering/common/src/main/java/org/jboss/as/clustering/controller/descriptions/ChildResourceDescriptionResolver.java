@@ -24,6 +24,8 @@ package org.jboss.as.clustering.controller.descriptions;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.PathElement;
@@ -54,169 +56,295 @@ public class ChildResourceDescriptionResolver implements ResourceDescriptionReso
 
     @Override
     public String getResourceAttributeDescription(String attributeName, Locale locale, ResourceBundle bundle) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
             String key = this.getBundleKey(path, attributeName);
-            if (bundle.containsKey(key)) {
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getResourceAttributeDescription(attributeName, locale, bundle);
+        try {
+            return this.parent.getResourceAttributeDescription(attributeName, locale, bundle);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getResourceAttributeValueTypeDescription(String attributeName, Locale locale, ResourceBundle bundle, String... suffixes) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
             String key = this.getBundleKey(path, attributeName, suffixes);
-            if (bundle.containsKey(key)) {
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getResourceAttributeValueTypeDescription(attributeName, locale, bundle, suffixes);
+        try {
+            return this.parent.getResourceAttributeValueTypeDescription(attributeName, locale, bundle, suffixes);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getOperationDescription(String operationName, Locale locale, ResourceBundle bundle) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
             String key = this.getBundleKey(path, operationName);
-            if (bundle.containsKey(key)) {
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getOperationDescription(operationName, locale, bundle);
+        try {
+            return this.parent.getOperationDescription(operationName, locale, bundle);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getOperationParameterDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
-            String key = this.getBundleKey(path, operationName.equals(ModelDescriptionConstants.ADD) ? new String[] { paramName } : new String[] { operationName, paramName });
-            if (bundle.containsKey(key)) {
+            String key = this.getBundleKey(path, operationName.equals(ModelDescriptionConstants.ADD) ? List.of(paramName) : List.of(operationName, paramName));
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getOperationParameterDescription(operationName, paramName, locale, bundle);
+        try {
+            return this.parent.getOperationParameterDescription(operationName, paramName, locale, bundle);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getOperationParameterValueTypeDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle, String... suffixes) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
-            String key = this.getBundleKey(path, operationName.equals(ModelDescriptionConstants.ADD) ? new String[] { paramName } : new String[] { operationName, paramName }, suffixes);
-            if (bundle.containsKey(key)) {
+            String key = this.getBundleKey(path, operationName.equals(ModelDescriptionConstants.ADD) ? List.of(paramName) : List.of(operationName, paramName), suffixes);
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getOperationParameterValueTypeDescription(operationName, paramName, locale, bundle, suffixes);
+        try {
+            return this.parent.getOperationParameterValueTypeDescription(operationName, paramName, locale, bundle, suffixes);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getOperationReplyDescription(String operationName, Locale locale, ResourceBundle bundle) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
-            String key = this.getBundleKey(path, new String[] { operationName, StandardResourceDescriptionResolver.REPLY });
-            if (bundle.containsKey(key)) {
+            String key = this.getBundleKey(path, List.of(operationName, StandardResourceDescriptionResolver.REPLY));
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getOperationReplyDescription(operationName, locale, bundle);
+        try {
+            return this.parent.getOperationReplyDescription(operationName, locale, bundle);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getOperationReplyValueTypeDescription(String operationName, Locale locale, ResourceBundle bundle, String... suffixes) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
-            String key = this.getBundleKey(path, new String[] { operationName, StandardResourceDescriptionResolver.REPLY }, suffixes);
-            if (bundle.containsKey(key)) {
+            String key = this.getBundleKey(path, List.of(operationName, StandardResourceDescriptionResolver.REPLY), suffixes);
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getOperationReplyValueTypeDescription(operationName, locale, bundle, suffixes);
+        try {
+            return this.parent.getOperationReplyValueTypeDescription(operationName, locale, bundle, suffixes);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getNotificationDescription(String notificationType, Locale locale, ResourceBundle bundle) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
             String key = this.getBundleKey(path, notificationType);
-            if (bundle.containsKey(key)) {
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getNotificationDescription(notificationType, locale, bundle);
+        try {
+            return this.parent.getNotificationDescription(notificationType, locale, bundle);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getChildTypeDescription(String childType, Locale locale, ResourceBundle bundle) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
             String key = this.getBundleKey(path, childType);
-            if (bundle.containsKey(key)) {
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getChildTypeDescription(childType, locale, bundle);
+        try {
+            return this.parent.getChildTypeDescription(childType, locale, bundle);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getResourceDescription(Locale locale, ResourceBundle bundle) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
             String key = this.getBundleKey(path);
-            if (bundle.containsKey(key)) {
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getResourceDescription(locale, bundle);
+        try {
+            return this.parent.getResourceDescription(locale, bundle);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getResourceDeprecatedDescription(Locale locale, ResourceBundle bundle) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
             String key = this.getBundleKey(path, ModelDescriptionConstants.DEPRECATED);
-            if (bundle.containsKey(key)) {
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getResourceDeprecatedDescription(locale, bundle);
+        try {
+            return this.parent.getResourceDeprecatedDescription(locale, bundle);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getResourceAttributeDeprecatedDescription(String attributeName, Locale locale, ResourceBundle bundle) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
             String key = this.getBundleKey(path, attributeName, ModelDescriptionConstants.DEPRECATED);
-            if (bundle.containsKey(key)) {
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getResourceAttributeDeprecatedDescription(attributeName, locale, bundle);
+        try {
+            return this.parent.getResourceAttributeDeprecatedDescription(attributeName, locale, bundle);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getOperationDeprecatedDescription(String operationName, Locale locale, ResourceBundle bundle) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
             String key = this.getBundleKey(path, operationName, ModelDescriptionConstants.DEPRECATED);
-            if (bundle.containsKey(key)) {
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getOperationDeprecatedDescription(operationName, locale, bundle);
+        try {
+            return this.parent.getOperationDeprecatedDescription(operationName, locale, bundle);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     @Override
     public String getOperationParameterDeprecatedDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle) {
+        Optional<MissingResourceException> exception = Optional.empty();
         for (PathElement path : this.paths) {
-            String key = this.getBundleKey(path, operationName.equals(ModelDescriptionConstants.ADD) ? new String[] { paramName } : new String[] { operationName, paramName }, ModelDescriptionConstants.DEPRECATED);
-            if (bundle.containsKey(key)) {
+            String key = this.getBundleKey(path, operationName.equals(ModelDescriptionConstants.ADD) ? List.of(paramName) : List.of(operationName, paramName), ModelDescriptionConstants.DEPRECATED);
+            try {
                 return bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if (exception.isEmpty()) {
+                    exception = Optional.of(e);
+                }
             }
         }
-        return this.parent.getOperationParameterDeprecatedDescription(operationName, paramName, locale, bundle);
+        try {
+            return this.parent.getOperationParameterDeprecatedDescription(operationName, paramName, locale, bundle);
+        } catch (MissingResourceException e) {
+            throw exception.orElse(e);
+        }
     }
 
     private String getBundleKey(PathElement path) {
-        return this.getBundleKey(path, new String[0]);
+        return this.getBundleKey(path, List.of());
     }
 
     private String getBundleKey(PathElement path, String key, String... suffixes) {
-        return this.getBundleKey(path, new String[] { key }, suffixes);
+        return this.getBundleKey(path, List.of(key), suffixes);
     }
 
-    private String getBundleKey(PathElement path, String[] keys, String... suffixes) {
+    private String getBundleKey(PathElement path, List<String> keys, String... suffixes) {
         StringBuilder builder = new StringBuilder(this.prefix);
-        for (String value : path.isWildcard() ? new String[] { path.getKey() } : path.getKeyValuePair()) {
+        for (String value : path.isWildcard() ? List.of(path.getKey()) : List.of(path.getKey(), path.getValue())) {
             builder.append('.').append(value);
         }
         for (String key : keys) {

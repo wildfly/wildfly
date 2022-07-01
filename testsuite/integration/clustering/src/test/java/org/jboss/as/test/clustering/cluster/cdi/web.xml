@@ -28,11 +28,11 @@
 
     <!-- Use mapping in the web.xml to override /simple servlet URL mapping defined in the @WebServlet annotation -->
     <servlet>
-        <servlet-name>org.jboss.as.test.clustering.cluster.cdi.CdiServlet</servlet-name>
-        <servlet-class>org.jboss.as.test.clustering.cluster.cdi.CdiServlet</servlet-class>
+        <servlet-name>org.jboss.as.test.clustering.cluster.cdi.webapp.CDIServlet</servlet-name>
+        <servlet-class>org.jboss.as.test.clustering.cluster.cdi.webapp.CDIServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>org.jboss.as.test.clustering.cluster.cdi.CdiServlet</servlet-name>
+        <servlet-name>org.jboss.as.test.clustering.cluster.cdi.webapp.CDIServlet</servlet-name>
         <url-pattern>/simple</url-pattern>
     </servlet-mapping>
 

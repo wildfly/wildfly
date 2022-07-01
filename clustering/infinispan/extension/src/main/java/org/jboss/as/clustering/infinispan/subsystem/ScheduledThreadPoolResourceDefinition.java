@@ -68,13 +68,11 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinitionP
 
     private final PathElement path;
     private final Attribute minThreads;
-    private final Attribute maxThreads;
     private final Attribute keepAliveTime;
 
     ScheduledThreadPoolResourceDefinition(String name, int defaultMinThreads, long defaultKeepaliveTime) {
         this.path = pathElement(name);
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0), null).build());
-        this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, null, new IntRangeValidatorBuilder().min(0), InfinispanModel.VERSION_12_0_0).build());
         this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepaliveTime), new LongRangeValidatorBuilder().min(0), null).build());
     }
 
@@ -96,7 +94,6 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinitionP
         ManagementResourceRegistration registration = parent.registerSubModel(definition);
         ResourceDescriptor descriptor = new ResourceDescriptor(resolver)
                 .addAttributes(this.minThreads, this.keepAliveTime)
-                .addAlias(this.maxThreads, this.minThreads)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
         new SimpleResourceRegistration(descriptor, handler).register(registration);

@@ -1,0 +1,10 @@
+package org.jboss.weld.module.ejb;
+
+/**
+ * @TypeId(490)
+ */
+message EnterpriseBeanProxyMethodHandler {
+	optional	bytes	beanManager	 = 1;
+	optional	bytes	identifier	 = 2;
+	optional	bytes	reference	 = 3;
+}

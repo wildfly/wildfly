@@ -21,8 +21,10 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
@@ -30,7 +32,9 @@ import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerR
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.server.ServerEnvironment;
@@ -146,9 +150,45 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         KernelServices services = this.buildKernelServices(readResource(subsystemXmlResource), controller, version, dependencies);
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(services, version, null, false);
+        checkSubsystemModelTransformation(services, version, createModelFixer(version), false);
     }
 
+    private static ModelFixer createModelFixer(ModelVersion version) {
+        return model -> {
+            if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+                Map<String, List<PathElement>> containers = Map.ofEntries(Map.entry("minimal", List.of(DistributedCacheResourceDefinition.pathElement("dist"))),
+                        Map.entry("maximal", List.of(DistributedCacheResourceDefinition.pathElement("dist"), LocalCacheResourceDefinition.pathElement("local"), ReplicatedCacheResourceDefinition.pathElement("cache-with-jdbc-store"), ScatteredCacheResourceDefinition.pathElement("scattered"))));
+                for (Map.Entry<String, List<PathElement>> entry : containers.entrySet()) {
+                    PathElement containerPath = CacheContainerResourceDefinition.pathElement(entry.getKey());
+                    ModelNode containerModel = model.get(containerPath.getKeyValuePair());
+                    containerModel.get("module").set(new ModelNode());
+                    for (PathElement cachePath : entry.getValue()) {
+                        ModelNode cacheModel = containerModel.get(cachePath.getKey()).get(cachePath.getValue());
+                        cacheModel.get("module").set(new ModelNode());
+                        if (cacheModel.hasDefined(HeapMemoryResourceDefinition.PATH.getKeyValuePair())) {
+                            ModelNode memoryModel = cacheModel.get(HeapMemoryResourceDefinition.PATH.getKeyValuePair());
+                            memoryModel.get("max-entries").set(new ModelNode());
+                        }
+                        if (cacheModel.hasDefined(JDBCStoreResourceDefinition.PATH.getKeyValuePair())) {
+                            ModelNode storeModel = cacheModel.get(JDBCStoreResourceDefinition.PATH.getKeyValuePair());
+                            storeModel.get("datasource").set(new ModelNode());
+                            if (storeModel.hasDefined(StringTableResourceDefinition.PATH.getKeyValuePair())) {
+                                ModelNode tableModel = storeModel.get(StringTableResourceDefinition.PATH.getKeyValuePair());
+                                tableModel.get("batch-size").set(new ModelNode());
+                            }
+                        }
+                    }
+                    for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
+                        if (containerModel.hasDefined(pool.getPathElement().getKeyValuePair())) {
+                            ModelNode poolModel = containerModel.get(pool.getPathElement().getKeyValuePair());
+                            poolModel.get("max-threads").set(new ModelNode());
+                        }
+                    }
+                }
+            }
+            return model;
+        };
+    }
     @Test
     public void testRejectionsEAP740() throws Exception {
         testRejections(ModelTestControllerVersion.EAP_7_4_0);

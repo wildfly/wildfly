@@ -60,6 +60,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
     private static final String CACHE_CONTAINER = "cache-container";
     private static final String CACHE = "cache";
     private static final String GRANULARITY = "granularity";
+    private static final String MARSHALLER = "marshaller";
     private static final String NO_AFFINITY = "no-affinity";
     private static final String LOCAL_AFFINITY = "local-affinity";
     private static final String PRIMARY_OWNER_AFFINITY = "primary-owner-affinity";
@@ -107,7 +108,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
             }
             case INFINISPAN_SESSION_MANAGEMENT: {
                 MutableInfinispanSessionManagementConfiguration config = new MutableInfinispanSessionManagementConfiguration(configuration);
-                RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> factory = this.readInfinispanSessionManagement(reader, config, configuration);
+                RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration<DeploymentUnit>> factory = this.readInfinispanSessionManagement(reader, config, configuration);
                 configuration.setSessionManagement(new InfinispanSessionManagementProvider(config, factory));
                 break;
             }
@@ -154,13 +155,21 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
                 }
                 break;
             }
+            case MARSHALLER: {
+                try {
+                    configuration.setMarshallerFactory(value);
+                } catch (IllegalArgumentException e) {
+                    throw ParseUtils.invalidAttributeValue(reader, index);
+                }
+                break;
+            }
             default: {
                 throw ParseUtils.unexpectedAttribute(reader, index);
             }
         }
     }
 
-    private RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> readInfinispanSessionManagement(XMLExtendedStreamReader reader, MutableInfinispanSessionManagementConfiguration configuration, Consumer<String> accumulator) throws XMLStreamException {
+    private RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration<DeploymentUnit>> readInfinispanSessionManagement(XMLExtendedStreamReader reader, MutableInfinispanSessionManagementConfiguration configuration, Consumer<String> accumulator) throws XMLStreamException {
 
         Set<String> required = new TreeSet<>(Arrays.asList(CACHE_CONTAINER, GRANULARITY));
 
@@ -188,21 +197,21 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
             ParseUtils.requireAttributes(reader, required.toArray(new String[required.size()]));
         }
 
-        RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> affinityFactory = this.readInfinispanAffinity(reader);
+        RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration<DeploymentUnit>> affinityFactory = this.readInfinispanAffinity(reader);
 
         this.readImmutability(reader, accumulator);
 
         return affinityFactory;
     }
 
-    private RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> readInfinispanAffinity(XMLExtendedStreamReader reader) throws XMLStreamException {
+    private RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration<DeploymentUnit>> readInfinispanAffinity(XMLExtendedStreamReader reader) throws XMLStreamException {
         if (!reader.hasNext() || reader.nextTag() == XMLStreamConstants.END_ELEMENT) {
             throw ParseUtils.missingRequiredElement(reader, new TreeSet<>(Arrays.asList(NO_AFFINITY, LOCAL_AFFINITY, PRIMARY_OWNER_AFFINITY)));
         }
         switch (reader.getLocalName()) {
             case PRIMARY_OWNER_AFFINITY: {
                 ParseUtils.requireNoContent(reader);
-                return new PrimaryOwnerRouteLocatorServiceConfiguratorFactory();
+                return new PrimaryOwnerRouteLocatorServiceConfiguratorFactory<>();
             }
             case RANKED_AFFINITY: {
                 if (this.schema.since(DistributableWebDeploymentSchema.VERSION_2_0)) {
@@ -225,7 +234,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
                         }
                     }
                     ParseUtils.requireNoContent(reader);
-                    return new RankedRouteLocatorServiceConfiguratorFactory(config);
+                    return new RankedRouteLocatorServiceConfiguratorFactory<>(config);
                 }
             }
             default: {
@@ -234,7 +243,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
         }
     }
 
-    private RouteLocatorServiceConfiguratorFactory<DistributableSessionManagementConfiguration> readHotRodSessionManagement(XMLExtendedStreamReader reader, MutableHotRodSessionManagementConfiguration configuration) throws XMLStreamException {
+    private RouteLocatorServiceConfiguratorFactory<DistributableSessionManagementConfiguration<DeploymentUnit>> readHotRodSessionManagement(XMLExtendedStreamReader reader, MutableHotRodSessionManagementConfiguration configuration) throws XMLStreamException {
 
         Set<String> required = new TreeSet<>(Arrays.asList(REMOTE_CACHE_CONTAINER, GRANULARITY));
 
@@ -270,7 +279,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
     }
 
     @SuppressWarnings("static-method")
-    private <C extends DistributableSessionManagementConfiguration> RouteLocatorServiceConfiguratorFactory<C> readAffinity(XMLExtendedStreamReader reader) throws XMLStreamException {
+    private <C> RouteLocatorServiceConfiguratorFactory<C> readAffinity(XMLExtendedStreamReader reader) throws XMLStreamException {
 
         switch (reader.getLocalName()) {
             case NO_AFFINITY: {

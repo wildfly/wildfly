@@ -34,6 +34,7 @@ import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -42,7 +43,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceConfigurator;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
@@ -65,16 +66,16 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, LC>  extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>> {
+public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, LC>  extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSessionManagerFactoryConfiguration<S, SC, AL, LC>, Supplier<SessionManagerFactory<SC, LC, TransactionBatch>> {
 
-    private final HotRodSessionManagementConfiguration configuration;
-    private final SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> factoryConfiguration;
+    private final HotRodSessionManagementConfiguration<DeploymentUnit> configuration;
+    private final SessionManagerFactoryConfiguration<S, SC, AL, LC> factoryConfiguration;
 
     private volatile ServiceConfigurator cacheConfigurator;
     @SuppressWarnings("rawtypes")
     private volatile SupplierDependency<RemoteCache> cache;
 
-    public HotRodSessionManagerFactoryServiceConfigurator(HotRodSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> factoryConfiguration) {
+    public HotRodSessionManagerFactoryServiceConfigurator(HotRodSessionManagementConfiguration<DeploymentUnit> configuration, SessionManagerFactoryConfiguration<S, SC, AL, LC> factoryConfiguration) {
         super(ServiceName.JBOSS.append("clustering", "web", factoryConfiguration.getDeploymentName()));
         this.configuration = configuration;
         this.factoryConfiguration = factoryConfiguration;
@@ -113,17 +114,17 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, LC>  
 
     @Override
     public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
-        return this.configuration.getAttributePersistenceStrategy();
+        return this.factoryConfiguration.getAttributePersistenceStrategy();
+    }
+
+    @Override
+    public ByteBufferMarshaller getMarshaller() {
+        return this.factoryConfiguration.getMarshaller();
     }
 
     @Override
     public Integer getMaxActiveSessions() {
         return this.factoryConfiguration.getMaxActiveSessions();
-    }
-
-    @Override
-    public MarshalledValueFactory<MC> getMarshalledValueFactory() {
-        return this.factoryConfiguration.getMarshalledValueFactory();
     }
 
     @Override

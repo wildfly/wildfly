@@ -38,7 +38,6 @@ import org.jboss.dmr.ModelType;
  */
 public class CustomStoreResourceDefinition extends StoreResourceDefinition {
 
-    static final PathElement LEGACY_PATH = PathElement.pathElement("store", "STORE");
     static final PathElement PATH = pathElement("custom");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
@@ -61,7 +60,7 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     CustomStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
     }
 
     @Override

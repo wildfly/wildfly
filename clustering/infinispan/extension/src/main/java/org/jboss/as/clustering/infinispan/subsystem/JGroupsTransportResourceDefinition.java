@@ -29,7 +29,6 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -37,7 +36,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jgroups.JChannel;
@@ -54,7 +52,6 @@ import org.wildfly.clustering.service.UnaryRequirement;
  */
 public class JGroupsTransportResourceDefinition extends TransportResourceDefinition {
 
-    static final PathElement LEGACY_PATH = pathElement("TRANSPORT");
     static final PathElement PATH = pathElement("jgroups");
 
     enum Requirement implements UnaryRequirement {
@@ -132,57 +129,10 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         }
     }
 
-    @Deprecated
-    enum ExecutorAttribute implements org.jboss.as.clustering.controller.Attribute {
-        TRANSPORT("executor"),
-        ;
-        private final AttributeDefinition definition;
-
-        ExecutorAttribute(String name) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setAllowExpression(false)
-                    .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
-    @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        CLUSTER("cluster", ModelType.STRING, null, InfinispanModel.VERSION_3_0_0),
-        STACK("stack", ModelType.STRING, null, InfinispanModel.VERSION_3_0_0),
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setDefaultValue(defaultValue)
-                    .setDeprecated(deprecation.getVersion())
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return descriptor.addAttributes(Attribute.class)
-                    .addIgnoredAttributes(ExecutorAttribute.class)
-                    .addIgnoredAttributes(DeprecatedAttribute.class)
                     .addCapabilities(Capability.class)
                     .addResourceCapabilityReference(new ResourceCapabilityReference(Capability.TRANSPORT_CHANNEL, JGroupsDefaultRequirement.CHANNEL_FACTORY))
                     ;
@@ -191,14 +141,5 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
 
     JGroupsTransportResourceDefinition() {
         super(PATH, new ResourceDescriptorConfigurator(), new JGroupsTransportServiceHandler());
-    }
-
-    @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = super.register(parent);
-
-        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
-
-        return registration;
     }
 }

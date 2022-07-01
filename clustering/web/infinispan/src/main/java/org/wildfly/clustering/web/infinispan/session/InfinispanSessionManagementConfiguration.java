@@ -29,5 +29,5 @@ import org.wildfly.clustering.web.session.DistributableSessionManagementConfigur
  * Configuration of an Infinispan session management provider.
  * @author Paul Ferraro
  */
-public interface InfinispanSessionManagementConfiguration extends DistributableSessionManagementConfiguration, InfinispanCacheConfiguration {
+public interface InfinispanSessionManagementConfiguration<M> extends DistributableSessionManagementConfiguration<M>, InfinispanCacheConfiguration {
 }

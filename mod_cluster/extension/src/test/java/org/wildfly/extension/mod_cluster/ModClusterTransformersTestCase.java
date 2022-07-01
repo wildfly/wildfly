@@ -28,11 +28,13 @@ import java.util.Set;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -113,8 +115,19 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
             Assert.assertTrue(mainServices.isSuccessfulBoot());
             Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-            checkSubsystemModelTransformation(mainServices, modelVersion, null, false);
+            checkSubsystemModelTransformation(mainServices, modelVersion, createModelFixer(modelVersion), false);
         }
+    }
+
+    private static ModelFixer createModelFixer(ModelVersion version) {
+        return model -> {
+            if (ModClusterModel.VERSION_8_0_0.requiresTransformation(version)) {
+                Set.of("default", "with-floating-decay-load-provider").forEach(
+                        proxy -> model.get(ProxyConfigurationResourceDefinition.pathElement(proxy).getKeyValuePair()).get("connector").set(new ModelNode())
+                );
+            }
+            return model;
+        };
     }
 
     @Test

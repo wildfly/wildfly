@@ -18,6 +18,10 @@ package org.wildfly.extension.messaging.activemq.jms;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,6 +58,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX;
 
 import org.apache.activemq.artemis.jms.server.config.ConnectionFactoryConfiguration;
+import org.jboss.as.controller.AttributeDefinition;
 
 /**
  * Update adding a connection factory to the subsystem. The
@@ -158,4 +163,20 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
         return null;
     }
 
+    @Override
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        for (AttributeDefinition attr : attributes) {
+            if (DESERIALIZATION_BLACKLIST.equals(attr)) {
+                if (operation.hasDefined(DESERIALIZATION_BLACKLIST.getName())) {
+                    DESERIALIZATION_BLOCKLIST.validateAndSet(operation, model);
+                }
+            } else if (DESERIALIZATION_WHITELIST.equals(attr)) {
+                if (operation.hasDefined(DESERIALIZATION_WHITELIST.getName())) {
+                    DESERIALIZATION_ALLOWLIST.validateAndSet(operation, model);
+                }
+            } else {
+                attr.validateAndSet(operation, model);
+            }
+        }
+    }
 }

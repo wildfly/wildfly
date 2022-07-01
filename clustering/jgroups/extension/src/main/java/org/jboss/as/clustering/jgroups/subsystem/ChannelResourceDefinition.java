@@ -37,9 +37,6 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -130,42 +127,6 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
         }
     }
 
-    public enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        STATS_ENABLED("stats-enabled", ModelType.BOOLEAN, JGroupsModel.VERSION_4_1_0),
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setDeprecated(deprecation.getVersion()).setStorageRuntime().build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
-    static class AddOperationTransformation implements UnaryOperator<OperationStepHandler> {
-        @Override
-        public OperationStepHandler apply(OperationStepHandler handler) {
-            return new OperationStepHandler() {
-                @SuppressWarnings("deprecation")
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    // Handle recipe for version < 4.0 where stack was not required and the stack attribute would use default-stack for a default value
-                    if (!operation.hasDefined(Attribute.STACK.getName())) {
-                        ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent(), false).getModel();
-                        // If default-stack is not defined either, then recipe must be for version >= 4.0 and so this really is an invalid operation
-                        if (parentModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName())) {
-                            operation.get(Attribute.STACK.getName()).set(parentModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName()));
-                        }
-                    }
-                    handler.execute(context, operation);
-                }
-            };
-        }
-    }
-
     ChannelResourceDefinition() {
         super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
@@ -179,8 +140,6 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 .addCapabilities(EnumSet.allOf(ClusteringRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
-                .addAlias(DeprecatedAttribute.STATS_ENABLED, Attribute.STATISTICS_ENABLED)
-                .setAddOperationTransformation(new AddOperationTransformation())
                 .addRuntimeResourceRegistration(new ChannelRuntimeResourceRegistration(executors))
                 ;
         ResourceServiceHandler handler = new ChannelServiceHandler(executors);

@@ -47,15 +47,15 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.wildfly.clustering.marshalling.protostream.DecoratorMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilderFieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
-import org.wildfly.clustering.marshalling.protostream.SynchronizedDecoratorMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
+import org.wildfly.clustering.marshalling.protostream.reflect.DecoratorMarshaller;
+import org.wildfly.clustering.marshalling.protostream.reflect.SynchronizedDecoratorMarshaller;
 import org.wildfly.common.function.Functions;
 
 /**

@@ -136,10 +136,6 @@ public class MessagingActiveMQSubsystem_13_1_TestCase extends AbstractSubsystemB
     // Transformers test //
     ///////////////////////
     @Test
-    public void testTransformersWildfly261() throws Exception {
-        testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_13_1_0);
-    }
-    @Test
     public void testTransformersWildfly25() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_13_0_0);
     }

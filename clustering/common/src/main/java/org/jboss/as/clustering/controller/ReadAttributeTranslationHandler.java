@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.logging.ControllerLogger;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -49,7 +50,7 @@ public class ReadAttributeTranslationHandler implements OperationStepHandler {
         PathAddress currentAddress = context.getCurrentAddress();
         PathAddress targetAddress = this.translation.getPathAddressTransformation().apply(currentAddress);
         Attribute targetAttribute = this.translation.getTargetAttribute();
-        ModelNode targetOperation = Operations.createReadAttributeOperation(targetAddress, targetAttribute);
+        ModelNode targetOperation = Util.getReadAttributeOperation(targetAddress, targetAttribute.getName());
         if (operation.hasDefined(ModelDescriptionConstants.INCLUDE_DEFAULTS)) {
             targetOperation.get(ModelDescriptionConstants.INCLUDE_DEFAULTS).set(operation.get(ModelDescriptionConstants.INCLUDE_DEFAULTS));
         }
@@ -97,7 +98,7 @@ public class ReadAttributeTranslationHandler implements OperationStepHandler {
                     ModelNode result = context.getResult();
                     if (model.hasDefined(this.targetAttribute.getName())) {
                         result.set(model.get(this.targetAttribute.getName()));
-                    } else if (Operations.isIncludeDefaults(operation)) {
+                    } else if (operation.get(ModelDescriptionConstants.INCLUDE_DEFAULTS).asBoolean(true)) {
                         ModelNode defaultValue = this.targetAttribute.getDefinition().getDefaultValue();
                         if (defaultValue != null) {
                             result.set(defaultValue);

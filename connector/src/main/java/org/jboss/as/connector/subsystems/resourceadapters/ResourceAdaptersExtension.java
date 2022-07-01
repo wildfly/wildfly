@@ -78,7 +78,8 @@ public class ResourceAdaptersExtension implements Extension {
                     new SimpleResourceDefinition.Parameters(SUBSYSTEM_PATH,
                             new StandardResourceDescriptionResolver(Constants.STATISTICS_NAME,
                                     CommonAttributes.RESOURCE_NAME, CommonAttributes.class.getClassLoader()))
-                            .setFeature(false)));
+                            .setFeature(false)
+                            .setRuntime()));
             deployments.registerSubModel(new IronJacamarResourceDefinition());
         }
     }

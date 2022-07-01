@@ -23,8 +23,9 @@
 package org.wildfly.clustering.web.cache.session;
 
 import org.wildfly.clustering.ee.Immutability;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
@@ -37,23 +38,21 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
  * @param <SC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
  * @param <V> the attributes value type
- * @param <MC> the marshalling context type
  * @param <LC> the local context type
  */
-public abstract class MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, MC, LC> implements SessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, MC>> {
+public abstract class MarshalledValueSessionAttributesFactoryConfiguration<S, SC, AL, V, LC> implements SessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, ByteBufferMarshaller>> {
     private final Immutability immutability;
-    private final Marshaller<V, MarshalledValue<V, MC>> marshaller;
+    private final Marshaller<V, MarshalledValue<V, ByteBufferMarshaller>> marshaller;
     private final HttpSessionActivationListenerProvider<S, SC, AL> provider;
 
-    protected MarshalledValueSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, SC, AL, MC, LC> configuration) {
-        MarshalledValueFactory<MC> factory = configuration.getMarshalledValueFactory();
+    protected MarshalledValueSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, SC, AL, LC> configuration) {
         this.immutability = configuration.getImmutability();
-        this.marshaller = new MarshalledValueMarshaller<>(factory);
+        this.marshaller = new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(configuration.getMarshaller()));
         this.provider = configuration.getSpecificationProvider();
     }
 
     @Override
-    public Marshaller<V, MarshalledValue<V, MC>> getMarshaller() {
+    public Marshaller<V, MarshalledValue<V, ByteBufferMarshaller>> getMarshaller() {
         return this.marshaller;
     }
 

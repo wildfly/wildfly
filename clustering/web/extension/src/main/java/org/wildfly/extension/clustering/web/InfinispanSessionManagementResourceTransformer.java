@@ -30,7 +30,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 /**
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagementResourceTransformer implements Consumer<ModelVersion> {
+public class InfinispanSessionManagementResourceTransformer extends SessionManagementResourceTransformer implements Consumer<ModelVersion> {
 
     private final ResourceTransformationDescriptionBuilder parent;
 
@@ -41,6 +41,8 @@ public class InfinispanSessionManagementResourceTransformer implements Consumer<
     @Override
     public void accept(ModelVersion version) {
         ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH);
+
+        this.accept(version, builder);
 
         new RankedAffinityResourceTransformer(builder).accept(version);
     }

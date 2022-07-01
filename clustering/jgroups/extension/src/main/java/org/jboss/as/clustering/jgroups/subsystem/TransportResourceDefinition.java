@@ -22,37 +22,21 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
-import org.jboss.as.clustering.controller.WriteAttributeStepHandler;
-import org.jboss.as.clustering.controller.WriteAttributeStepHandlerDescriptor;
-import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -63,7 +47,6 @@ import org.jboss.dmr.ModelType;
  */
 public class TransportResourceDefinition extends AbstractProtocolResourceDefinition {
 
-    static final PathElement LEGACY_PATH = pathElement("TRANSPORT");
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     public static PathElement pathElement(String name) {
@@ -86,14 +69,6 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        @Deprecated SHARED("shared", ModelType.BOOLEAN) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(ModelNode.FALSE)
-                        .setDeprecated(JGroupsModel.VERSION_4_0_0.getVersion())
-                        ;
-            }
-        },
         SOCKET_BINDING("socket-binding", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -136,43 +111,6 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
         }
     }
 
-    @Deprecated
-    enum ThreadingAttribute implements org.jboss.as.clustering.controller.Attribute {
-        DEFAULT_EXECUTOR("default-executor"),
-        OOB_EXECUTOR("oob-executor"),
-        TIMER_EXECUTOR("timer-executor"),
-        THREAD_FACTORY("thread-factory"),
-        ;
-        private final AttributeDefinition definition;
-
-        ThreadingAttribute(String name) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
-                    .setAllowExpression(false)
-                    .setRequired(false)
-                    .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
-    @Deprecated
-    static class WriteThreadingAttributeStepHandlerDescriptor implements WriteAttributeStepHandlerDescriptor {
-        @Override
-        public Collection<AttributeDefinition> getAttributes() {
-            Set<ThreadingAttribute> attributes = EnumSet.allOf(ThreadingAttribute.class);
-            List<AttributeDefinition> result = new ArrayList<>(attributes.size());
-            for (ThreadingAttribute attribute : attributes) {
-                result.add(attribute.getDefinition());
-            }
-            return result;
-        }
-    }
-
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         private final UnaryOperator<ResourceDescriptor> configurator;
 
@@ -185,7 +123,6 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
             return this.configurator.apply(descriptor)
                     .addAttributes(Attribute.class)
                     .addCapabilities(Capability.class)
-                    .addExtraParameters(ThreadingAttribute.class)
                     .addRequiredChildren(ThreadPoolResourceDefinition.class)
                     ;
         }
@@ -211,77 +148,10 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = super.register(parent);
 
-        new WriteAttributeStepHandler(new WriteThreadingAttributeStepHandlerDescriptor()) {
-            @Override
-            protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
-                // Add a new step to validate instead of doing it directly in this method.
-                // This allows a composite op to change both attributes and then the
-                // validation occurs after both have done their work.
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModelNode conf = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-                        // TODO doesn't cover the admin-only modes
-                        if (context.getProcessType().isServer()) {
-                            for (ThreadingAttribute attribute : EnumSet.allOf(ThreadingAttribute.class)) {
-                                if (conf.hasDefined(attribute.getName())) {
-                                    // That is not supported.
-                                    throw new OperationFailedException(JGroupsLogger.ROOT_LOGGER.threadsAttributesUsedInRuntime());
-                                }
-                            }
-                        }
-                    }
-                }, OperationContext.Stage.MODEL);
-            }
-        }.register(registration);
-
         if (registration.getPathAddress().getLastElement().isWildcard()) {
             for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
                 pool.register(registration);
             }
-
-            parent.registerAlias(LEGACY_PATH, new AliasEntry(registration) {
-                @Override
-                public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
-                    PathAddress target = this.getTargetAddress();
-                    List<PathElement> result = new ArrayList<>(aliasAddress.size());
-                    for (int i = 0; i < aliasAddress.size(); ++i) {
-                        PathElement element = aliasAddress.getElement(i);
-                        if (i == target.size() - 1) {
-                            final ModelNode operation = aliasContext.getOperation();
-                            final String stackName;
-                            if (ModelDescriptionConstants.ADD.equals(Operations.getName(operation)) && operation.hasDefined("type")) {
-                                stackName = operation.get("type").asString();
-                            } else {
-                                Resource root = null;
-                                try {
-                                    root = aliasContext.readResourceFromRoot(PathAddress.pathAddress(result));
-                                } catch (Resource.NoSuchResourceException ignored) {
-                                }
-                                if (root == null) {
-                                    stackName = "*";
-                                } else {
-                                    Set<String> names = root.getChildrenNames("transport");
-                                    if (names.size() > 1) {
-                                        throw new AssertionError("There should be at most one child");
-                                    } else if (names.size() == 0) {
-                                        stackName = "*";
-                                    } else {
-                                        stackName = names.iterator().next();
-                                    }
-                                }
-                            }
-                            result.add(PathElement.pathElement("transport", stackName));
-                        } else if (i < target.size()) {
-                            PathElement targetElement = target.getElement(i);
-                            result.add(targetElement.isWildcard() ? PathElement.pathElement(targetElement.getKey(), element.getValue()) : targetElement);
-                        } else {
-                            result.add(element);
-                        }
-                    }
-                    return PathAddress.pathAddress(result);
-                }
-            });
         }
 
         return registration;

@@ -48,7 +48,8 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
         super(new Parameters(PATH_SUBSYSTEM, DataSourcesExtension.getResourceDescriptionResolver())
                 .setAddHandler(deployed ? null : DataSourcesSubsystemAdd.INSTANCE)
                 .setRemoveHandler(deployed ? null : ReloadRequiredRemoveStepHandler.INSTANCE)
-                .setFeature(!deployed));
+                .setFeature(!deployed)
+                .setRuntime(deployed));
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.deployed = deployed;
     }

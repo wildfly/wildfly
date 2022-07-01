@@ -197,14 +197,14 @@ standard variants:
 
 [cols=",",options="header"]
 |=======================================================================
-|host-master.xml |A configuration that specifies the Host Controller
-should become the master, aka the Domain Controller. No servers will be
-started by this Host Controller, which is a recommended setup for a
-production master.
+|host-primary.xml |A configuration that specifies the Host Controller
+should become the primary Host Controller, aka the Domain Controller.
+No servers will be started by this Host Controller, which is a recommended
+setup for a production Domain Controller.
 
-|host-slave.xml |A configuration that specifies the Host Controller
-should not become master and instead should register with a remote
-master and be controlled by it. This configuration launches servers,
+|host-secondary.xml |A configuration that specifies the Host Controller
+should not become the primary Host Controller and instead should register with a remote
+primary Host Controller and be controlled by it. This configuration launches servers,
 although a user will likely wish to modify how many servers are launched
 and what server groups they belong to.
 
@@ -219,7 +219,7 @@ the _ _--host-config__ command line argument:
 
 [source,options="nowrap"]
 ----
-$ bin/domain.sh --host-config=host-master.xml
+$ bin/domain.sh --host-config=host-primary.xml
 ----
 
 [[domain-wide-configuration-domain.xml]]

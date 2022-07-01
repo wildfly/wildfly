@@ -30,7 +30,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @param <T> the type of value provided by services built by this builder
  * @deprecated Replaced by {@link ServiceConfigurator}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public interface Builder<T> extends ServiceConfigurator {
     /**
      * Builds a service into the specified target.

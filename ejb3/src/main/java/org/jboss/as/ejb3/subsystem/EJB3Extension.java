@@ -90,7 +90,7 @@ public class EJB3Extension implements Extension {
 
         if (registerRuntimeOnly) {
             ResourceDefinition deploymentsDef = new SimpleResourceDefinition(new Parameters(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
-                    getResourceDescriptionResolver("deployed")).setFeature(false));
+                    getResourceDescriptionResolver("deployed")).setFeature(false).setRuntime());
             final ManagementResourceRegistration deploymentsRegistration = subsystem.registerDeploymentModel(deploymentsDef);
             deploymentsRegistration.registerSubModel(MessageDrivenBeanResourceDefinition.INSTANCE);
             deploymentsRegistration.registerSubModel(SingletonBeanDeploymentResourceDefinition.INSTANCE);

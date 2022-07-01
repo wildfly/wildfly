@@ -68,7 +68,7 @@ public class DeserializationBlockListTestCase {
             } else {
                 attributes.get("connectors").add("in-vm");
             }
-            attributes.get("deserialization-black-list").add(new ModelNode("*"));
+            attributes.get("deserialization-block-list").add(new ModelNode("*"));
             ops.addJmsConnectionFactory(CF_NAME, BLACK_LIST_REGULAR_CF_LOOKUP, attributes);
         }
 

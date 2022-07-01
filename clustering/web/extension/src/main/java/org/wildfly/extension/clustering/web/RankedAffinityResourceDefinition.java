@@ -59,5 +59,4 @@ public class RankedAffinityResourceDefinition extends AffinityResourceDefinition
     RankedAffinityResourceDefinition() {
         super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), RankedAffinityServiceConfigurator::new);
     }
-
 }

@@ -30,7 +30,7 @@ import org.wildfly.clustering.service.SupplierDependency;
  * @param <T> the dependency type
  * @deprecated Replaced by {@link SupplierDependency}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public interface ValueDependency<T> extends Value<T>, SupplierDependency<T> {
 
     @Override

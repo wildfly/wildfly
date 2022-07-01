@@ -36,6 +36,7 @@ public enum DistributableWebDeploymentSchema implements Schema<DistributableWebD
 
     VERSION_1_0(1, 0),
     VERSION_2_0(2, 0),
+    VERSION_3_0(3, 0),
     ;
     private static final String ROOT = "distributable-web";
 

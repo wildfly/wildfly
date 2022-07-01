@@ -51,7 +51,7 @@ public class DistributableSessionIdentifierCodecServiceConfigurator extends Simp
     private final CapabilityServiceConfigurator configurator;
     private final RoutingSupport routing = new SimpleRoutingSupport();
 
-    public DistributableSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration, DistributableSessionManagementProvider provider) {
+    public DistributableSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration, DistributableSessionManagementProvider<?> provider) {
         super(name);
         this.configurator = provider.getRouteLocatorServiceConfigurator(configuration);
     }

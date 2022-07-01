@@ -22,14 +22,13 @@
 package org.jboss.as.test.integration.ejb.stateless.callerprincipal;
 
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -50,20 +49,16 @@ public class Ejb2GetCallerPrincipalServerSetupTask extends SnapshotRestoreSetupT
 
     @Override
     public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
-        List<ModelNode> operations = new ArrayList<>();
-
         // /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
         ModelNode addEjbDomain = createOpNode("subsystem=ejb3/application-security-domain=other", ADD);
         addEjbDomain.get("security-domain").set("ApplicationDomain");
-        operations.add(addEjbDomain);
 
         // /subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
         ModelNode updateRemotingConnector = createOpNode("subsystem=remoting/http-connector=http-remoting-connector", WRITE_ATTRIBUTE_OPERATION);
         updateRemotingConnector.get(ClientConstants.NAME).set("sasl-authentication-factory");
         updateRemotingConnector.get(ClientConstants.VALUE).set("application-sasl-authentication");
-        operations.add(updateRemotingConnector);
 
-        ModelNode updateOp = Operations.createCompositeOperation(operations);
+        ModelNode updateOp = Util.createCompositeOperation(List.of(addEjbDomain, updateRemotingConnector));
         updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());

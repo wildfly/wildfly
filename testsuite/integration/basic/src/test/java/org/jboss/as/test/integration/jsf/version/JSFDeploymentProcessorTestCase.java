@@ -60,6 +60,7 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -87,7 +88,8 @@ public class JSFDeploymentProcessorTestCase {
     @ArquillianResource
     protected static Deployer deployer;
 
-    @ArquillianResource
+    // [WFLY-16450] TODO No MyFaces implementation of Faces 4 available, so injection and tests that use it are disabled
+    //@ArquillianResource
     private URL bundledJsf;
 
     @ArquillianResource
@@ -166,6 +168,7 @@ public class JSFDeploymentProcessorTestCase {
     @Test
     @InSequence(1)
     public void deployBundledJsf() {
+        Assume.assumeFalse("[WFLY-16450] No MyFaces implementation of Faces 4 available", true);
         // in order to use @ArquillianResource URL from the unmanaged deployment we need to deploy the test archive first
         deployer.deploy(WEB_BUNDLED_JSF);
     }
@@ -179,6 +182,7 @@ public class JSFDeploymentProcessorTestCase {
     @InSequence(2)
     @OperateOnDeployment(WEB_BUNDLED_JSF)
     public void bundledJsf() throws Exception {
+        Assume.assumeFalse("[WFLY-16450] No MyFaces implementation of Faces 4 available", true);
         try {
             HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
             try (CloseableHttpClient client = httpClientBuilder.build()) {

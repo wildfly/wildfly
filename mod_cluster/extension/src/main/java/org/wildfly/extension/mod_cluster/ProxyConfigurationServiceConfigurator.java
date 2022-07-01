@@ -36,7 +36,6 @@ import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefini
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.NODE_TIMEOUT;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.PING;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.PROXIES;
-import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.PROXY_LIST;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.PROXY_URL;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.SESSION_DRAINING_STRATEGY;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.SMAX;
@@ -49,12 +48,9 @@ import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefini
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.TTL;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.WORKER_TIMEOUT;
 
-import javax.net.ssl.SSLContext;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,6 +63,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import javax.net.ssl.SSLContext;
 
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
@@ -78,14 +75,10 @@ import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modcluster.ModClusterService;
-import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.config.ModClusterConfiguration;
 import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.config.builder.ModClusterConfigurationBuilder;
-import org.jboss.modcluster.config.impl.ModClusterConfig;
 import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
-import org.jboss.modcluster.mcmp.impl.JSSESocketFactory;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -101,7 +94,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 /**
  * @author Radoslav Husar
  */
- public class ProxyConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<ModClusterConfiguration>, Consumer<ModClusterConfiguration> {
+public class ProxyConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<ModClusterConfiguration>, Consumer<ModClusterConfiguration> {
 
     private volatile SupplierDependency<SocketBinding> advertiseSocketDependency = null;
     private final List<SupplierDependency<OutboundSocketBinding>> outboundSocketBindings = new LinkedList<>();
@@ -118,7 +111,6 @@ import org.wildfly.clustering.service.SupplierDependency;
         return super.getServiceName().append("configuration");
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
 
@@ -196,21 +188,38 @@ import org.wildfly.clustering.service.SupplierDependency;
                 .setStickySession(STICKY_SESSION.resolveModelAttribute(context, model).asBoolean())
                 .setStickySessionRemove(STICKY_SESSION_REMOVE.resolveModelAttribute(context, model).asBoolean())
                 .setStickySessionForce(STICKY_SESSION_FORCE.resolveModelAttribute(context, model).asBoolean())
-                .setWorkerTimeout(WORKER_TIMEOUT.resolveModelAttribute(context, model).asInt())
                 .setMaxAttempts(MAX_ATTEMPTS.resolveModelAttribute(context, model).asInt())
         ;
+
+        ModelNode node = WORKER_TIMEOUT.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.balancer().setWorkerTimeout(node.asInt());
+        }
 
         // Node
 
         builder.node()
                 .setFlushPackets(FLUSH_PACKETS.resolveModelAttribute(context, model).asBoolean())
-                .setFlushWait(FLUSH_WAIT.resolveModelAttribute(context, model).asInt())
                 .setPing(PING.resolveModelAttribute(context, model).asInt())
-                .setSmax(SMAX.resolveModelAttribute(context, model).asInt())
-                .setTtl(TTL.resolveModelAttribute(context, model).asInt())
-                .setNodeTimeout(NODE_TIMEOUT.resolveModelAttribute(context, model).asInt())
         ;
-        ModelNode node = BALANCER.resolveModelAttribute(context, model);
+
+        node = FLUSH_WAIT.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.node().setFlushWait(node.asInt());
+        }
+        node = SMAX.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.node().setSmax(node.asInt());
+        }
+        node = TTL.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.node().setTtl(node.asInt());
+        }
+        node = NODE_TIMEOUT.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.node().setNodeTimeout(node.asInt());
+        }
+        node = BALANCER.resolveModelAttribute(context, model);
         if (node.isDefined()) {
             builder.node().setBalancer(node.asString());
         }
@@ -226,85 +235,11 @@ import org.wildfly.clustering.service.SupplierDependency;
             }
         }
 
-        String proxyList = PROXY_LIST.resolveModelAttribute(context, model).asStringOrNull();
-        if (proxyList != null && proxyList.length() != 0) {
-            Collection<ProxyConfiguration> proxyConfigurations;
-
-            String[] tokens = proxyList.split(",");
-            proxyConfigurations = new ArrayList<>(tokens.length);
-
-            for (String token : tokens) {
-                try {
-                    final InetSocketAddress remoteAddress = Utils.parseSocketAddress(token.trim(), ModClusterService.DEFAULT_PORT);
-                    proxyConfigurations.add(new ProxyConfiguration() {
-                        @Override
-                        public InetSocketAddress getRemoteAddress() {
-                            return remoteAddress;
-                        }
-
-                        @Override
-                        public InetSocketAddress getLocalAddress() {
-                            return null;
-                        }
-                    });
-                } catch (UnknownHostException e) {
-                    throw new IllegalArgumentException(e);
-                }
-            }
-
-            builder.mcmp().setProxyConfigurations(proxyConfigurations);
-        }
-
-
         // Elytron-based security support
 
         node = SSL_CONTEXT.resolveModelAttribute(context, model);
         if (node.isDefined()) {
             this.sslContextDependency = new ServiceSupplierDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, node.asString()));
-        }
-
-        // Legacy security support
-
-        if (model.get(SSLResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
-            if (node.isDefined()) {
-                throw ROOT_LOGGER.bothElytronAndLegacySslContextDefined();
-            }
-            ModelNode sslModel = model.get(SSLResourceDefinition.PATH.getKeyValuePair());
-
-            ModClusterConfig sslConfiguration = new ModClusterConfig();
-
-            node = SSLResourceDefinition.Attribute.KEY_ALIAS.resolveModelAttribute(context, sslModel);
-            if (node.isDefined()) {
-                sslConfiguration.setSslKeyAlias(node.asString());
-            }
-            node = SSLResourceDefinition.Attribute.PASSWORD.resolveModelAttribute(context, sslModel);
-            if (node.isDefined()) {
-                String password = node.asString();
-                sslConfiguration.setSslTrustStorePassword(password);
-                sslConfiguration.setSslKeyStorePassword(password);
-            }
-            node = SSLResourceDefinition.Attribute.CERTIFICATE_KEY_FILE.resolveModelAttribute(context, sslModel);
-            if (node.isDefined()) {
-                sslConfiguration.setSslKeyStore(node.asString());
-            }
-            node = SSLResourceDefinition.Attribute.CIPHER_SUITE.resolveModelAttribute(context, sslModel);
-            if (node.isDefined()) {
-                sslConfiguration.setSslCiphers(node.asString());
-            }
-            node = SSLResourceDefinition.Attribute.PROTOCOL.resolveModelAttribute(context, sslModel);
-            if (node.isDefined()) {
-                sslConfiguration.setSslProtocol(node.asString());
-            }
-            node = SSLResourceDefinition.Attribute.CA_CERTIFICATE_FILE.resolveModelAttribute(context, sslModel);
-            if (node.isDefined()) {
-                sslConfiguration.setSslTrustStore(node.asString());
-            }
-            node = SSLResourceDefinition.Attribute.CA_REVOCATION_URL.resolveModelAttribute(context, sslModel);
-            if (node.isDefined()) {
-                sslConfiguration.setSslCrlFile(node.asString());
-            }
-
-            builder.mcmp().setSocketFactory(new JSSESocketFactory(sslConfiguration));
         }
 
         return this;

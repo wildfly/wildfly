@@ -1,7 +1,7 @@
 <subsystem xmlns="urn:jboss:domain:ee:5.0" >
     <global-modules>
         <module name="org.jboss.logging" slot="main"/>
-        <module name="org.apache.log4j" annotations="true" meta-inf="true" services="false"/>
+        <module name="org.apache.logging.log4j.api" annotations="true" meta-inf="true" services="false"/>
     </global-modules>
     <global-directories>
         <directory name="my-app-libs" path="me/app-libs" relative-to="jboss.server.base.dir" />

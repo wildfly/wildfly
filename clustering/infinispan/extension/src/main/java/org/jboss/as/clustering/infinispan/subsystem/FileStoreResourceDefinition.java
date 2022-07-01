@@ -47,7 +47,6 @@ import org.jboss.dmr.ModelType;
  */
 public class FileStoreResourceDefinition extends StoreResourceDefinition {
 
-    static final PathElement LEGACY_PATH = PathElement.pathElement("file-store", "FILE_STORE");
     static final PathElement PATH = pathElement("file");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
@@ -79,7 +78,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     FileStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
     }
 
     @Override

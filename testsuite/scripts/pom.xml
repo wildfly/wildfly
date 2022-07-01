@@ -105,7 +105,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <failIfNoTests>false</failIfNoTests>
-                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <reuseForks>true</reuseForks>
 
                     <systemPropertyVariables>

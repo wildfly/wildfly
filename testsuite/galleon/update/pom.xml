@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ts-galleon-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>27.0.0.Alpha2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>wildfly-ts-galleon-update</artifactId>
+    <packaging>pom</packaging>
+    <name>WildFly Test Suite: Galleon update tests</name>
+    <description>Install a base version and check that wildfly producers can get updated to the SNAPSHOT version.</description>
+    <profiles>
+        <profile>
+            <id>galleon.profile</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack-galleon-dist</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.jboss.galleon</groupId>
+                                            <artifactId>galleon-dist</artifactId>
+                                            <version>${version.org.jboss.galleon}</version>
+                                            <type>zip</type>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${basedir}/target/galleon</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <tasks>
+                                        <exec executable="./run-test.sh" failonerror="true">
+                                            <env key="GALLEON_VERSION" value="${version.org.jboss.galleon}"/>
+                                            <env key="BASE_DIR" value="${project.basedir}"/>
+                                            <env key="MAVEN_LOCAL_REPO" value="${settings.localRepository}"/>
+                                            <env key="WF_BASE_VERSION" value="${wildfly.test.galleon.update.base.version}"/>
+                                            <env key="WILDFLY_PRODUCER" value="wildfly-ee"/>
+                                            <env key="GALLEON_LAYERS" value="jaxrs-server"/>
+                                        </exec>
+                                        <exec executable="./run-test.sh" failonerror="true">
+                                            <env key="GALLEON_VERSION" value="${version.org.jboss.galleon}"/>
+                                            <env key="BASE_DIR" value="${project.basedir}"/>
+                                            <env key="MAVEN_LOCAL_REPO" value="${settings.localRepository}"/>
+                                            <env key="WF_BASE_VERSION" value="${wildfly.test.galleon.update.base.version}"/>
+                                            <env key="WILDFLY_PRODUCER" value="wildfly"/>
+                                            <env key="GALLEON_LAYERS" value="cloud-server"/>
+                                        </exec>
+                                        <exec executable="./run-test.sh" failonerror="true">
+                                            <env key="GALLEON_VERSION" value="${version.org.jboss.galleon}"/>
+                                            <env key="BASE_DIR" value="${project.basedir}"/>
+                                            <env key="MAVEN_LOCAL_REPO" value="${settings.localRepository}"/>
+                                            <env key="WF_BASE_VERSION" value="${wildfly.test.galleon.update.base.version}"/>
+                                            <env key="WILDFLY_PRODUCER" value="wildfly-preview"/>
+                                            <env key="GALLEON_LAYERS" value="cloud-server,microprofile-platform"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

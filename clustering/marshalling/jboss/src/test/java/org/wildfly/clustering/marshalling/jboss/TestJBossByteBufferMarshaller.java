@@ -43,7 +43,7 @@ public enum TestJBossByteBufferMarshaller implements MarshallingConfigurationRep
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         this.configuration = new MarshallingConfiguration();
         this.configuration.setClassTable(new DynamicClassTable(loader));
-        this.configuration.setObjectTable(new ExternalizerObjectTable(loader));
+        this.configuration.setObjectTable(new DynamicExternalizerObjectTable(loader));
         this.marshaller = new JBossByteBufferMarshaller(this, loader);
     }
 

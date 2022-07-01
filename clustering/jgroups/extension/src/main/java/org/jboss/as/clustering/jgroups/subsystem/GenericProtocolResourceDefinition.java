@@ -22,17 +22,11 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelType;
 import org.jgroups.Global;
 
 /**
@@ -42,39 +36,6 @@ public class GenericProtocolResourceDefinition extends ProtocolResourceDefinitio
 
     public static PathElement pathElement(String name) {
         return ProtocolResourceDefinition.pathElement(Global.PREFIX + name);
-    }
-
-    @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        SOCKET_BINDING("socket-binding", ModelType.STRING, JGroupsModel.VERSION_5_0_0), // socket-binding is now a required attribute of SocketBindingProtocolResourceDefinition
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setRequired(false)
-                    .setDeprecated(deprecation.getVersion())
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
-    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
-        private final UnaryOperator<ResourceDescriptor> configurator;
-
-        ResourceDescriptorConfigurator(UnaryOperator<ResourceDescriptor> configurator) {
-            this.configurator = configurator;
-        }
-
-        @Override
-        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return this.configurator.apply(descriptor).addExtraParameters(DeprecatedAttribute.class);
-        }
     }
 
     GenericProtocolResourceDefinition(UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
@@ -87,17 +48,6 @@ public class GenericProtocolResourceDefinition extends ProtocolResourceDefinitio
     }
 
     private GenericProtocolResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        super(path, new ResourceDescriptorConfigurator(configurator), ProtocolConfigurationServiceConfigurator::new, parentServiceConfiguratorFactory);
-    }
-
-    @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = super.register(parent);
-
-        for (org.jboss.as.clustering.controller.Attribute attribute : EnumSet.allOf(DeprecatedAttribute.class)) {
-            registration.registerReadOnlyAttribute(attribute.getDefinition(), null);
-        }
-
-        return registration;
+        super(path, configurator, ProtocolConfigurationServiceConfigurator::new, parentServiceConfiguratorFactory);
     }
 }

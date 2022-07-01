@@ -31,7 +31,7 @@ import org.wildfly.clustering.service.BinaryRequirement;
  * @author Paul Ferraro
  */
 public enum SingletonCacheRequirement implements DefaultableBinaryServiceNameFactoryProvider {
-    @Deprecated SINGLETON_SERVICE_BUILDER_FACTORY(org.wildfly.clustering.singleton.SingletonCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY),
+    @Deprecated(forRemoval = true) SINGLETON_SERVICE_BUILDER_FACTORY(org.wildfly.clustering.singleton.SingletonCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY),
     SINGLETON_SERVICE_CONFIGURATOR_FACTORY(org.wildfly.clustering.singleton.SingletonCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY, SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY),
     ;
     private final BinaryServiceNameFactory factory;

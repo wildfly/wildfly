@@ -31,6 +31,7 @@ import org.jgroups.stack.IpAddressUUID;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
+import org.wildfly.clustering.marshalling.protostream.SimpleDataOutput;
 
 /**
  * Marshaller for {@link IpAddressUUID} addresses.
@@ -69,13 +70,15 @@ public class IpAddressUUIDMarshaller implements ProtoStreamMarshaller<IpAddressU
     @Override
     public void writeTo(ProtoStreamWriter writer, IpAddressUUID address) throws IOException {
         IpAddressMarshaller.INSTANCE.writeFields(writer, IP_ADDRESS_INDEX, address);
-        UUIDCapturingDataOutput output = new UUIDCapturingDataOutput();
+        long[] longs = new long[1];
+        int[] ints = new int[1];
+        DataOutput output = new SimpleDataOutput.Builder().with(longs).with(ints).build();
         address.writeTo(output);
-        long low = output.getLow();
+        long low = longs[0];
         if (low != DEFAULT_LOW_BITS) {
             writer.writeSFixed64(LOW_INDEX, low);
         }
-        int high = output.getHigh();
+        int high = ints[0];
         if (high != DEFAULT_HIGH_BITS) {
             writer.writeSFixed32(HIGH_INDEX, high);
         }
@@ -90,81 +93,6 @@ public class IpAddressUUIDMarshaller implements ProtoStreamMarshaller<IpAddressU
 
         DefaultIpAddressUUID(IpAddress ipAddress, long low, int high) {
             super(ipAddress.getIpAddress(), ipAddress.getPort(), low, high);
-        }
-    }
-
-    /**
-     * IpAddressUUID does not expose its low and high values, except via its {@link IpAddressUUID#writeTo(DataOutput)} method,
-     * where these are the last long/int values written.  Obtaining these values in this convoluted way is faster than reflection.
-     */
-    static class UUIDCapturingDataOutput implements DataOutput {
-        private long low;
-        private int high;
-
-        long getLow() {
-            return this.low;
-        }
-
-        int getHigh() {
-            return this.high;
-        }
-
-        @Override
-        public void writeInt(int v) throws IOException {
-            this.high = v;
-        }
-
-        @Override
-        public void writeLong(long v) throws IOException {
-            this.low = v;
-        }
-
-        @Override
-        public void write(int b) throws IOException {
-        }
-
-        @Override
-        public void write(byte[] b) throws IOException {
-        }
-
-        @Override
-        public void write(byte[] b, int off, int len) throws IOException {
-        }
-
-        @Override
-        public void writeBoolean(boolean v) throws IOException {
-        }
-
-        @Override
-        public void writeByte(int v) throws IOException {
-        }
-
-        @Override
-        public void writeShort(int v) throws IOException {
-        }
-
-        @Override
-        public void writeChar(int v) throws IOException {
-        }
-
-        @Override
-        public void writeFloat(float v) throws IOException {
-        }
-
-        @Override
-        public void writeDouble(double v) throws IOException {
-        }
-
-        @Override
-        public void writeBytes(String s) throws IOException {
-        }
-
-        @Override
-        public void writeChars(String s) throws IOException {
-        }
-
-        @Override
-        public void writeUTF(String s) throws IOException {
         }
     }
 }
