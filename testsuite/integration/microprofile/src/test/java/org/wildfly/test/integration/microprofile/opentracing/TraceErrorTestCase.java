@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-import javax.inject.Inject;
+
+import jakarta.inject.Inject;
+
 import io.opentracing.Tracer;
 import io.smallrye.opentracing.contrib.resolver.TracerFactory;
 import io.opentracing.mock.MockTracer;

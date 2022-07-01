@@ -17,13 +17,14 @@ package org.wildfly.test.integration.microprofile.opentracing;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
-import java.io.IOException;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-import javax.inject.Inject;
+
+import jakarta.inject.Inject;
+
 import io.opentracing.Tracer;
-import io.opentracing.contrib.tracerresolver.TracerFactory;
+import io.smallrye.opentracing.contrib.resolver.TracerFactory;
 import io.opentracing.mock.MockTracer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -41,11 +42,12 @@ import org.wildfly.test.integration.microprofile.opentracing.application.MockTra
 import org.wildfly.test.integration.microprofile.opentracing.application.TracerIdentityApplication;
 
 /**
- * Tracer should have finished spans despite of fact an exception is thrown on a server side.
+ * Testing correct tracer behavior when path contains regular expressions.
+ * See https://github.com/opentracing-contrib/java-jaxrs/issues/114 for more details.
  * @author Sultan Zhantemirov (c) 2019 Red Hat, Inc.
  */
 @RunWith(Arquillian.class)
-public class TraceErrorTestCase {
+public class WildCardTestCase {
 
     @Inject
     Tracer tracer;
@@ -55,7 +57,7 @@ public class TraceErrorTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        return ShrinkWrap.create(WebArchive.class, "ServerTraceError.war")
+        return ShrinkWrap.create(WebArchive.class, "WildcardPath.war")
                 .addClass(TracerIdentityApplication.class)
                 .addClass(HttpRequest.class)
                 .addPackage(MockTracer.class.getPackage())
@@ -63,22 +65,18 @@ public class TraceErrorTestCase {
                 .addAsServiceProvider(TracerFactory.class, MockTracerFactory.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        // Required for the HttpRequest.get()
-                        new RuntimePermission("modifyThread"),
-                        // Required for the HttpRequest.get()
-                        new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")
+                    // Required for the HttpRequest.get()
+                    new RuntimePermission("modifyThread"),
+                    // Required for the HttpRequest.get()
+                    new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")
                 ), "permissions.xml");
     }
 
-
     @Test
-    public void traceError() throws Exception {
-        try {
-            HttpRequest.get(url + "service-endpoint/traceerror", 10, TimeUnit.SECONDS);
-        } catch (IOException ignored) {
-            // thrown by TraceErrorApplication
-        }
-        Assert.assertEquals("Tracer should have finished spans", 1, ((MockTracer) tracer).finishedSpans().size());
+    public void wildCardPath() throws Exception {
+        String result = HttpRequest.get(url + "service-endpoint/test/1/hello", 10, TimeUnit.SECONDS);
+        Assert.assertEquals("Path with regular expressions was not processed correctly","Hello from twoWildcard: 1, hello", result);
+        Assert.assertEquals("Tracer should have finished spans",1, ((MockTracer) tracer).finishedSpans().size());
     }
 
 }

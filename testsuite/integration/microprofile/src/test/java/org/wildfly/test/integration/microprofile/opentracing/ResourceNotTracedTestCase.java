@@ -10,8 +10,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.wildfly.test.integration.microprofile.opentracing.application.MockTracerFactory;
+import org.wildfly.test.integration.microprofile.opentracing.application.NotTracedEndpoint;
 import org.wildfly.test.integration.microprofile.opentracing.application.OpenTracingApplication;
-import org.wildfly.test.integration.microprofile.opentracing.application.TracedEndpoint;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -21,30 +21,25 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
-import javax.servlet.ServletContext;
-import java.net.SocketPermission;
+import jakarta.inject.Inject;
+
 import java.net.URL;
+import java.net.SocketPermission;
 import java.util.concurrent.TimeUnit;
-import org.jboss.as.arquillian.api.ServerSetup;
 
 @RunWith(Arquillian.class)
-@ServerSetup(ConfigHttpPathTask.class)
-public class ResourceTracedTestCase {
+public class ResourceNotTracedTestCase {
     @Inject
     Tracer tracer;
 
     @ArquillianResource
     private URL url;
 
-    @Inject
-    ServletContext servletContext;
-
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
-        war.addClass(ResourceTracedTestCase.class);
-        war.addClass(ConfigHttpPathTask.class);
+        war.addClass(ResourceNotTracedTestCase.class);
+
         war.addClass(MockTracerFactory.class);
         war.addPackage(MockTracer.class.getPackage());
         war.addAsServiceProvider(TracerFactory.class, MockTracerFactory.class);
@@ -52,7 +47,7 @@ public class ResourceTracedTestCase {
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
         war.addClass(OpenTracingApplication.class);
-        war.addClass(TracedEndpoint.class);
+        war.addClass(NotTracedEndpoint.class);
 
         war.addClass(HttpRequest.class);
 
@@ -67,25 +62,17 @@ public class ResourceTracedTestCase {
     }
 
     @Test
-    public void tracedEndpointYieldsSpan() throws Exception {
+    public void notTracedEndpointYieldsNoSpans() throws Exception {
         Assert.assertTrue(tracer instanceof MockTracer);
         MockTracer mockTracer = (MockTracer) tracer;
 
-        performCall("opentracing/traced");
+        performCall("opentracing/not-traced");
 
-        Assert.assertEquals(1, mockTracer.finishedSpans().size());
-        //Expected trace if the http-path configuration is not set
-        Assert.assertNotEquals("GET:org.wildfly.test.integration.microprofile.opentracing.application.TracedEndpoint.get",
-                mockTracer.finishedSpans().get(0).operationName());
-        Assert.assertEquals("GET:/traced/",
-                mockTracer.finishedSpans().get(0).operationName());
-        Assert.assertEquals(
-                (servletContext.getContextPath() + ".war").substring(1),
-                servletContext.getAttribute("smallrye.opentracing.serviceName")
-        );
+        Assert.assertEquals(0, mockTracer.finishedSpans().size());
     }
 
     private void performCall(String path) throws Exception {
         HttpRequest.get(url + path, 10, TimeUnit.SECONDS);
     }
+
 }

@@ -24,7 +24,7 @@ package org.wildfly.test.integration.microprofile.reactive.messaging.ported.chan
 
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
