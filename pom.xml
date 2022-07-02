@@ -558,7 +558,7 @@
         <preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
         <preview.version.jakarta.transaction.jakarta-transaction-api>2.0.0</preview.version.jakarta.transaction.jakarta-transaction-api>
         <preview.version.jakarta.validation.jakarta-validation-api>3.0.2</preview.version.jakarta.validation.jakarta-validation-api>
-        <preview.version.jakarta.websocket.jakarta-websocket-api>2.1.0</preview.version.jakarta.websocket.jakarta-websocket-api>
+        <preview.version.jakarta.websocket.jakarta-websocket-api>2.1.0-jbossorg-2</preview.version.jakarta.websocket.jakarta-websocket-api>
         <preview.version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</preview.version.jakarta.ws.rs.jakarta-ws-rs-api>
         <preview.version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.0</preview.version.jakarta.xml.bind.jakarta-xml-bind-api>
         <preview.version.net.shibboleth.utilities.java-support>8.0.0</preview.version.net.shibboleth.utilities.java-support>
