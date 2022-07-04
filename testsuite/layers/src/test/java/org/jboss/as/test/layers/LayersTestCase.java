@@ -95,8 +95,6 @@ public class LayersTestCase {
         "org.bouncycastle",
         // TODO WFLY-16583 -- cruft
         "javax.management.j2ee.api",
-        // TODO WFLY-16585 -- cruft
-        "io.jaegertracing",
         // TODO possible cruft? https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
         "org.jboss.resteasy.jose-jwt",
         "org.jboss.resteasy.resteasy-rxjava2",

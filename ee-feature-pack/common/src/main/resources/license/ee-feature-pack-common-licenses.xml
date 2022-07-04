@@ -555,26 +555,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>io.jaegertracing</groupId>
-      <artifactId>jaeger-core</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.jaegertracing</groupId>
-      <artifactId>jaeger-thrift</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-buffer</artifactId>
       <licenses>
