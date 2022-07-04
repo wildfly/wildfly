@@ -72,7 +72,7 @@
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.master.address}"/>
+            <inet-address value="${jboss.test.host.primary.address}"/>
         </interface>
     </interfaces>
 
@@ -93,7 +93,7 @@
         <server name="server-one" group="server-group-one">
             <interfaces>
                 <interface name="public">
-                    <inet-address value="${jboss.test.host.master.address}"/>
+                    <inet-address value="${jboss.test.host.primary.address}"/>
                 </interface>
             </interfaces>
             <jvm name="default"/>
@@ -101,7 +101,7 @@
         <server name="server-two" group="server-group-two">
             <interfaces>
                 <interface name="public">
-                    <inet-address value="${jboss.test.host.master.address}"/>
+                    <inet-address value="${jboss.test.host.primary.address}"/>
                 </interface>
             </interfaces>
             <!-- server-three avoids port conflicts by incrementing the ports in
@@ -112,7 +112,7 @@
         <server name="server-three" group="server-group-three">
             <interfaces>
                 <interface name="public">
-                    <inet-address value="${jboss.test.host.master.address}"/>
+                    <inet-address value="${jboss.test.host.primary.address}"/>
                 </interface>
             </interfaces>
             <socket-bindings port-offset="200"/>

@@ -154,7 +154,7 @@ public abstract class SimpleMixedDomainTest  {
      */
     @Test
     public void test00011_ExampleDSConnection() throws Exception{
-        PathAddress exampleDSAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, "slave"),
+        PathAddress exampleDSAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, "secondary"),
                 PathElement.pathElement(RUNNING_SERVER, "server-one"), PathElement.pathElement(SUBSYSTEM, "datasources"),
                 PathElement.pathElement("data-source", "ExampleDS"));
         DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
@@ -198,14 +198,14 @@ public abstract class SimpleMixedDomainTest  {
             DomainTestUtils.executeForFailure(clone, masterClient);
 
             //Ignore the new profile on the slave and reload
-            final PathAddress ignoredResourceAddress = PathAddress.pathAddress(HOST, "slave")
+            final PathAddress ignoredResourceAddress = PathAddress.pathAddress(HOST, "secondary")
                     .append(CORE_SERVICE, IGNORED_RESOURCES).append(IGNORED_RESOURCE_TYPE, PROFILE);
             final ModelNode ignoreNewProfile = Util.createAddOperation(ignoredResourceAddress);
             ignoreNewProfile.get(NAMES).add("new-profile");
             DomainTestUtils.executeForResult(ignoreNewProfile, slaveClient);
 
             //Reload slave so ignore takes effect
-            reloadHost(support.getDomainSlaveLifecycleUtil(), "slave");
+            reloadHost(support.getDomainSlaveLifecycleUtil(), "secondary");
 
             //Clone should work now that the new profile is ignored
             DomainTestUtils.executeForResult(clone, masterClient);
@@ -214,7 +214,7 @@ public abstract class SimpleMixedDomainTest  {
             DomainTestUtils.executeForFailure(Util.createAddOperation(PathAddress.pathAddress(PROFILE, "cloned").append(SUBSYSTEM, "jmx")), masterClient);
 
             //Reload slave
-            reloadHost(support.getDomainSlaveLifecycleUtil(), "slave");
+            reloadHost(support.getDomainSlaveLifecycleUtil(), "secondary");
 
             //Reloading should have brought over the cloned profile, so adding a subsystem should now work
             DomainTestUtils.executeForResult(Util.createAddOperation(PathAddress.pathAddress(PROFILE, "cloned").append(SUBSYSTEM, "jmx")), masterClient);

@@ -81,17 +81,17 @@
         <!-- Remote domain controller configuration with a host and port -->
         <remote security-realm="ManagementRealm">
             <discovery-options>
-                <static-discovery name="start-option" host="${jboss.test.host.master.address}" protocol="${jboss.domain.primary.protocol:remote+http}" port="${jboss.domain.primary.port:9990}" />
+                <static-discovery name="start-option" host="${jboss.test.host.primary.address}" protocol="${jboss.domain.primary.protocol:remote+http}" port="${jboss.domain.primary.port:9990}" />
             </discovery-options>
         </remote>
     </domain-controller>
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
         <interface name="public">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
     </interfaces>
 
@@ -120,7 +120,7 @@
                 Note we use the same values; this is just to check for obvious fatal errors -->
             <interfaces>
                 <interface name="public">
-                    <inet-address value="${jboss.test.host.slave.address}"/>
+                    <inet-address value="${jboss.test.host.secondary.address}"/>
                 </interface>
             </interfaces>
             <socket-bindings socket-binding-group="other-sockets" port-offset="550"/>

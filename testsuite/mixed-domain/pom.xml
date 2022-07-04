@@ -227,8 +227,8 @@
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <jboss.home>${jboss.home}</jboss.home>
                         <module.path>${jboss.home}/modules</module.path>
-                        <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
-                        <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
+                        <jboss.test.host.primary.address>${node0}</jboss.test.host.primary.address>
+                        <jboss.test.host.secondary.address>${node1}</jboss.test.host.secondary.address>
                         <jboss.default.multicast.address>${mcast}</jboss.default.multicast.address>
                         <jboss.modcluster.multicast.address>${mcast1}</jboss.modcluster.multicast.address>
                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.messaging.cluster.password=ILoveWildfly ${extra.server.jvm.args}</server.jvm.args>

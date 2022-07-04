@@ -83,10 +83,10 @@
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.master.address}"/>
+            <inet-address value="${jboss.test.host.primary.address}"/>
         </interface>
         <interface name="public">
-            <inet-address value="${jboss.test.host.master.address}"/>
+            <inet-address value="${jboss.test.host.primary.address}"/>
         </interface>
     </interfaces>
 
@@ -112,6 +112,6 @@
     </jvms>
 
     <servers>
-        <server name="master-a" group="server-group-a"/>
+        <server name="primary-a" group="server-group-a"/>
     </servers>
 </host>

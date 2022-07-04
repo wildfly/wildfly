@@ -55,7 +55,7 @@ import org.junit.Test;
 public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
     private static final Logger LOGGER = Logger.getLogger(DefaultConfigSmokeTestCase.class);
 
-    public static final String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
+    public static final String slaveAddress = System.getProperty("jboss.test.host.secondary.address", "127.0.0.1");
 
     @Test
     public void testStandardHost() throws Exception {

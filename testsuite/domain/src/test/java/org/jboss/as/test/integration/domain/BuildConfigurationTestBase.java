@@ -42,7 +42,7 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
  */
 public abstract class BuildConfigurationTestBase {
 
-    static final String PRIMARY_ADDRESS = System.getProperty("jboss.test.host.master.address", "localhost");
+    static final String PRIMARY_ADDRESS = System.getProperty("jboss.test.host.primary.address", "localhost");
     static final String PRIMARY_HOST_NAME = "primary";
     static final File CONFIG_DIR = new File("target/wildfly/domain/configuration/");
 

@@ -60,7 +60,7 @@
     </management>
 
     <domain-controller>
-       <remote host="${jboss.test.host.master.address}" port="${jboss.domain.primary.port:9999}" security-realm="ManagementRealm">
+       <remote host="${jboss.test.host.primary.address}" port="${jboss.domain.primary.port:9999}" security-realm="ManagementRealm">
            <!-- The DomainAdjustors used in the test setup delete all the invalid extensions
             <ignored-resources type="extension">
 
@@ -75,15 +75,15 @@
 
     <interfaces>
         <interface name="management">
-           <inet-address value="${jboss.test.host.slave.address}"/>
+           <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
         <interface name="public">
-           <inet-address value="${jboss.test.host.slave.address}"/>
+           <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
         <interface name="unsecure">
             <!-- Used for IIOP sockets in the standard configuration.
                  To secure JacORB you need to setup SSL -->
-             <inet-address value="${jboss.test.host.slave.address}"/>
+             <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
     </interfaces>
 
