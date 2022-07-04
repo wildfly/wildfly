@@ -115,8 +115,6 @@ public class LayersTestCase {
         "org.hibernate.search.backend.lucene",
         "org.apache.lucene",
         "org.apache.lucene.internal",
-        // TODO WFLY-16589 the core-tools layer should provision this but does not
-        "org.wildfly.security.elytron-tool",
         // TODO these implement SPIs from RESTEasy or JBoss WS but I don't know how they integrate
         // as there is no ref to them in any module.xml nor any in WF java code.
         // Perhaps via deployment descriptor? In any case, no layer provides them
