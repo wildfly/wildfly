@@ -47,10 +47,10 @@
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.master.address}"/>
+            <inet-address value="${jboss.test.host.primary.address}"/>
         </interface>
         <interface name="secure-management">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
     </interfaces>
     <jvms>

@@ -66,7 +66,7 @@
 
     <domain-controller>
         <!-- Remote domain controller configuration with a host and port -->
-        <remote host="${jboss.test.host.master.address}" protocol="${jboss.domain.primary.protocol:remote+http}" port="${jboss.domain.primary.port:9990}" authentication-context="slaveHostAContext">
+        <remote host="${jboss.test.host.primary.address}" protocol="${jboss.domain.primary.protocol:remote+http}" port="${jboss.domain.primary.port:9990}" authentication-context="slaveHostAContext">
             <ignored-resources type="extension">
                 <instance name="org.jboss.as.jsr77"/>
             </ignored-resources>
@@ -88,10 +88,10 @@
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
         <interface name="public">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
     </interfaces>
 
@@ -120,7 +120,7 @@
                 Note we use the same values; this is just to check for obvious fatal errors -->
             <interfaces>
                 <interface name="public">
-                    <inet-address value="${jboss.test.host.slave.address}"/>
+                    <inet-address value="${jboss.test.host.secondary.address}"/>
                 </interface>
             </interfaces>
             <socket-bindings socket-binding-group="other-sockets" port-offset="550"/>
@@ -140,7 +140,7 @@
                     <credential-reference clear-text="slave_us3r_password"/>
                 </authentication-configuration>
                 <authentication-context name="slaveHostAContext">
-                    <match-rule match-host="${jboss.test.host.master.address}" authentication-configuration="slaveHostAConfiguration"/>
+                    <match-rule match-host="${jboss.test.host.primary.address}" authentication-configuration="slaveHostAConfiguration"/>
                 </authentication-context>
             </authentication-client>
             <providers>

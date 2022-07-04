@@ -79,7 +79,7 @@ public abstract class DomainHostExcludesTest {
 
     public static final Set<String> EXTENSIONS_SET_7X = new HashSet<>(Arrays.asList(EXCLUDED_EXTENSIONS_7X));
 
-    private static final PathElement HOST = PathElement.pathElement("host", "slave");
+    private static final PathElement HOST = PathElement.pathElement("host", "secondary");
     private static final PathAddress HOST_EXCLUDE = PathAddress.pathAddress("host-exclude", "test");
     private static final PathElement SOCKET = PathElement.pathElement(SOCKET_BINDING, "http");
     private static final PathAddress CLONE_PROFILE = PathAddress.pathAddress(PROFILE, CLONE);

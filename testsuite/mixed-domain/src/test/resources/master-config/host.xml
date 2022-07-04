@@ -45,15 +45,15 @@
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.master.address}"/>
+            <inet-address value="${jboss.test.host.primary.address}"/>
         </interface>
         <interface name="public">
-           <inet-address value="${jboss.test.host.master.address}"/>
+           <inet-address value="${jboss.test.host.primary.address}"/>
         </interface>
         <interface name="unsecure">
             <!-- Used for IIOP sockets in the standard configuration.
                  To secure JacORB you need to setup SSL -->
-            <inet-address value="${jboss.test.host.master.address}"/>
+            <inet-address value="${jboss.test.host.primary.address}"/>
         </interface>
     </interfaces>
 

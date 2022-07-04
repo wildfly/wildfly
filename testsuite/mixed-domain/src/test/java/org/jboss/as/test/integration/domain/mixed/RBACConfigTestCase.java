@@ -66,7 +66,7 @@ public class RBACConfigTestCase {
 
     private static final PathAddress RBAC_BASE = PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, MANAGEMENT),
             PathElement.pathElement(ACCESS, AUTHORIZATION));
-    private static final PathAddress SERVER_ONE = PathAddress.pathAddress(PathElement.pathElement(HOST, "slave"),
+    private static final PathAddress SERVER_ONE = PathAddress.pathAddress(PathElement.pathElement(HOST, "secondary"),
             PathElement.pathElement(RUNNING_SERVER, "server-one"));
 
 
@@ -109,7 +109,7 @@ public class RBACConfigTestCase {
         ModelNode value = new ModelNode("Operator");
         ModelNode addOp = Util.createAddOperation(address);
         addOp.get(attribute).set(value);
-        addOp.get(HOSTS).add("slave");
+        addOp.get(HOSTS).add("secondary");
 
         addTest(address, attribute, value, addOp);
     }

@@ -79,7 +79,7 @@
 
     <domain-controller>
         <!-- Remote domain controller configuration with a host and port -->
-        <remote host="${jboss.test.host.master.address}" protocol="${jboss.domain.primary.protocol:remote+http}" port="${jboss.domain.primary.port:9990}" security-realm="ManagementRealm">
+        <remote host="${jboss.test.host.primary.address}" protocol="${jboss.domain.primary.protocol:remote+http}" port="${jboss.domain.primary.port:9990}" security-realm="ManagementRealm">
             <ignored-resources type="extension">
                 <instance name="org.jboss.as.jsr77"/>
             </ignored-resources>
@@ -97,10 +97,10 @@
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
         <interface name="public">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
     </interfaces>
 
@@ -114,16 +114,16 @@
     </jvms>
 
     <servers directory-grouping="by-type">
-        <server name="slave-a" group="server-group-a" auto-start="false">
+        <server name="secondary-a" group="server-group-a" auto-start="false">
             <socket-bindings socket-binding-group="sockets-a" port-offset="400"/>
         </server>
-        <server name="slave-b" group="server-group-b">
+        <server name="secondary-b" group="server-group-b">
             <socket-bindings socket-binding-group="sockets-b" port-offset="500"/>
         </server>
-        <server name="slave-c" group="server-group-c" auto-start="false">
+        <server name="secondary-c" group="server-group-c" auto-start="false">
             <socket-bindings socket-binding-group="sockets-shared" port-offset="600"/>
         </server>
-        <server name="slave-d" group="server-group-d" auto-start="false">
+        <server name="secondary-d" group="server-group-d" auto-start="false">
             <socket-bindings socket-binding-group="sockets-shared" port-offset="700"/>
         </server>
     </servers>

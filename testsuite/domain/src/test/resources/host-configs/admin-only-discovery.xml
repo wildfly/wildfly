@@ -58,17 +58,17 @@
         <!-- Remote domain controller configuration with a host and port -->
         <remote security-realm="ManagementRealm" ignore-unused-configuration="true" admin-only-policy="${jboss.test.admin-only-policy}">
             <discovery-options>
-                <static-discovery name="primary" host="${jboss.test.host.master.address}" port="9999"/>
+                <static-discovery name="primary" host="${jboss.test.host.primary.address}" port="9999"/>
             </discovery-options>
         </remote>
     </domain-controller>
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
         <interface name="public">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
     </interfaces>
 

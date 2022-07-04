@@ -52,7 +52,7 @@ import org.junit.Test;
  */
 public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
 
-    private static final String SECONDARY_ADDRESS = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
+    private static final String SECONDARY_ADDRESS = System.getProperty("jboss.test.host.secondary.address", "127.0.0.1");
     private static final String SECONDARY_HOST_NAME = "secondary";
     private static final int ADJUSTED_SECOND = TimeoutUtil.adjust(1000);
     private static final String TARGET_PROTOCOL = "pbcast.STABLE";
