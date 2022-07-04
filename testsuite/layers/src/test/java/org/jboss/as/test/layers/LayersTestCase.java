@@ -104,8 +104,6 @@ public class LayersTestCase {
         // TODO possible cruft? https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
         "org.jboss.resteasy.jose-jwt",
         "org.jboss.resteasy.resteasy-rxjava2",
-        // TODO WFLY-16582 -- cruft
-        "org.jboss.ejb.remote.protocol",
         // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
         "org.wildfly.reactive.dep.jts",
         // Used by Hibernate Search 6 TODO remove these entries as part of the big-bang, as they are used, just not in javax Hibernate Search
