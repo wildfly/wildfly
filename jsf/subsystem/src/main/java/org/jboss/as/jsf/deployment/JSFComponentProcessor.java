@@ -21,6 +21,18 @@
  */
 package org.jboss.as.jsf.deployment;
 
+import java.io.InputStream;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -46,21 +58,6 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamReader;
-import java.io.InputStream;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
-import org.jboss.as.weld.WeldCapability;
 
 /**
  * Sets up Jakarta Server Faces managed beans as components using information in the annotations and
@@ -240,7 +237,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         for (String managedBean : managedBeanClasses) {
             installManagedBeanComponent(managedBean, moduleDescription, module, deploymentUnit, applicationClassesDescription);
         }
-        // process all the other elements elegible for injection in the Jakarta Server Faces spec
+        // process all the other elements eligible for injection in the Jakarta Server Faces spec
         processJSFArtifactsForInjection(deploymentUnit, managedBeanClasses);
     }
 
@@ -254,9 +251,6 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
      * classes to use for injection.
      */
     private void processJSFArtifactsForInjection(final DeploymentUnit deploymentUnit, final Set<String> managedBeanClasses) {
-        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-        boolean isCDI = support.hasCapability(WELD_CAPABILITY_NAME) &&
-                support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get().isPartOfWeldDeployment(deploymentUnit);
         final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
@@ -294,7 +288,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
                                         if (child.getTag() == JsfTag.MANAGED_BEAN_CLASS) {
                                             installManagedBeanComponent(className, moduleDescription, module, deploymentUnit, applicationClassesDescription);
                                         } else {
-                                            installJsfArtifactComponent(child.getTag().getTagName(), className, isCDI, moduleDescription, module, deploymentUnit, applicationClassesDescription);
+                                            installJsfArtifactComponent(child.getTag().getTagName(), className, moduleDescription, module, deploymentUnit, applicationClassesDescription);
                                         }
                                     }
                                 } else if (child != null) {
@@ -406,21 +400,8 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         install(JsfTag.MANAGED_BEAN.getTagName(), className, moduleDescription, module, deploymentUnit, applicationClassesDescription);
     }
 
-    private void installJsfArtifactComponent(String type, String className, boolean isCDI, final EEModuleDescription moduleDescription,
+    private void installJsfArtifactComponent(String type, String className, final EEModuleDescription moduleDescription,
             final Module module, final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClassesDescription) {
-        try {
-            final Class<?> componentClass = module.getClassLoader().loadClass(className);
-            if (!isCDI) {
-                // if not Jakarta Contexts and Dependency Injection the default constructor is compulsory to inject the artifact
-                componentClass.getConstructor();
-            }
-        } catch (ClassNotFoundException e) {
-            JSFLogger.ROOT_LOGGER.managedBeanLoadFail(className);
-            return;
-        } catch (NoSuchMethodException e) {
-            JSFLogger.ROOT_LOGGER.jsfArtifactNoDefaultConstructor(type, className);
-            return;
-        }
         install(type, className, moduleDescription, module, deploymentUnit, applicationClassesDescription);
     }
 

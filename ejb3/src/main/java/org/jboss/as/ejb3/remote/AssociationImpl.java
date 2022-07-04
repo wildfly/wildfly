@@ -88,6 +88,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
+ * @author <a href="mailto:jbaesner@redhat.com">Joerg Baesner</a>
  */
 final class AssociationImpl implements Association, AutoCloseable {
 
@@ -642,6 +643,9 @@ final class AssociationImpl implements Association, AutoCloseable {
         for(String key : returnKeys) {
             if(interceptorContext.getContextData().containsKey(key)) {
                 contextDataHolder.put(key, interceptorContext.getContextData().get(key));
+            } else {
+                // need to remove the attachment, as the ContextData value for this key got removed
+                content.getAttachments().remove(key);
             }
         }
     }
