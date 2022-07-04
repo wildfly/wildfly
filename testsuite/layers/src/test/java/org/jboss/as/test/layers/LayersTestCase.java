@@ -91,8 +91,6 @@ public class LayersTestCase {
         // Appclient support is not provided by a layer
         "org.jboss.as.appclient",
         "org.jboss.metadata.appclient",
-        // TODO WFLY-16571 -- cruft
-        "com.github.spullara.mustache",
         // TODO WFLY-16576 -- cruft?
         "org.bouncycastle",
         // TODO WFLY-16583 -- cruft
