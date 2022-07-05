@@ -29,7 +29,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.net.ssl.SSLHandshakeException;
-import javax.servlet.http.HttpServletResponse;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;

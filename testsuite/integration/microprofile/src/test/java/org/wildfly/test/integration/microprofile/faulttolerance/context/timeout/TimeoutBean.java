@@ -22,7 +22,7 @@
 
 package org.wildfly.test.integration.microprofile.faulttolerance.context.timeout;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.faulttolerance.Timeout;
 
