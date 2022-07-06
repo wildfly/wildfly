@@ -769,5 +769,21 @@
         ]]></notes>
         <packageUrl regex="true">^pkg:maven/com\.squareup\.okhttp3/okhttp@.*$</packageUrl>
         <vulnerabilityName>CVE-2021-0341</vulnerabilityName>
-     </suppress>
+    </suppress>
+
+    <!-- Vulnerability fixed in commit https://github.com/PSI-Polska/wildfly-core/commit/610deff2d099586bba6c1ecd60cbc4de10d3181e -->
+    <suppress>
+        <notes><![CDATA[
+		file name: wildfly-core-13.0.3-10-PSI-SNAPSHOT.jar
+		]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-.*$</packageUrl>
+        <cve>CVE-2021-3717</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+		file name: wildfly-plugin-core-2.0.0.Final.jar
+		]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
+        <cve>CVE-2021-3717</cve>
+    </suppress>
 </suppressions>
