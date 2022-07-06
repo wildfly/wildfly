@@ -53,7 +53,7 @@ public class ConfigResolver extends AbstractCommonConfigResolver {
     public ConfigResolver(ClassInfo epClassInfo, JBossWebservicesMetaData jwmd, JBossWebMetaData jbwebmd, VirtualFile root, boolean isWar) {
         this.epClassInfo = epClassInfo;
         this.className = epClassInfo.name().toString();
-        List<AnnotationInstance> annotations = epClassInfo.annotations().get(
+        List<AnnotationInstance> annotations = epClassInfo.annotationsMap().get(
                 DotName.createSimple(EndpointConfig.class.getName()));
         if (annotations != null && !annotations.isEmpty()) {
             AnnotationInstance ann = annotations.get(0);
@@ -90,7 +90,7 @@ public class ConfigResolver extends AbstractCommonConfigResolver {
 
     @Override
     protected <T extends Annotation> boolean isEndpointClassAnnotated(Class<T> annotation) {
-        return epClassInfo.annotations().containsKey(DotName.createSimple(annotation.getName()));
+        return epClassInfo.annotationsMap().containsKey(DotName.createSimple(annotation.getName()));
     }
 
     @Override

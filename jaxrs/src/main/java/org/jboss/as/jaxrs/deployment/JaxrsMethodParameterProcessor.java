@@ -271,7 +271,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                 Object object = ctor.newInstance();
 
                 List<AnnotationInstance> lazyLoadAnnotations =classInfo
-                        .annotations().get(PARAM_CONVERTER_LAZY_DOTNAME);
+                        .annotationsMap().get(PARAM_CONVERTER_LAZY_DOTNAME);
 
                 if (object instanceof ParamConverterProvider) {
                     ParamConverterProvider pcpObj = (ParamConverterProvider) object;
@@ -349,7 +349,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                     ClassInfo classInfo = indexer.index(stream);
 
                     List<AnnotationInstance> defaultValuesList =
-                            classInfo.annotations().get(DEFAULT_VALUE_DOTNAME);
+                            classInfo.annotationsMap().get(DEFAULT_VALUE_DOTNAME);
 
                     if (!defaultValuesList.isEmpty()) {
                         classNameArr.add((classInfo).name().toString());
@@ -369,7 +369,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                 ClassInfo classInfo = index.getClassByName(DotName.createSimple(clazzName));
                 if (classInfo != null) {
                     Map<DotName, List<AnnotationInstance>> annotationsMap =
-                            classInfo.annotations();
+                            classInfo.annotationsMap();
 
                     if (annotationsMap != null && !annotationsMap.isEmpty()) {
                         List<AnnotationInstance> xInstance = annotationsMap.get(

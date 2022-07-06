@@ -184,7 +184,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
     }
 
     private boolean isAnnotationDeclared(ClassInfo classInfo, DotName requiredAnnotationName) {
-        List<AnnotationInstance> annotations = classInfo.annotations().get(requiredAnnotationName);
+        List<AnnotationInstance> annotations = classInfo.annotationsMap().get(requiredAnnotationName);
         if (annotations != null) {
             for (AnnotationInstance annotationInstance : annotations) {
                 if (annotationInstance.target().equals(classInfo)) {
@@ -196,7 +196,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
     }
 
     private boolean hasInjectConstructor() {
-        List<AnnotationInstance> annotationInstances = classInfo.annotations().get(DOT_NAME_INJECT);
+        List<AnnotationInstance> annotationInstances = classInfo.annotationsMap().get(DOT_NAME_INJECT);
         if (annotationInstances != null) {
             for (AnnotationInstance instance : annotationInstances) {
                 AnnotationTarget target = instance.target();
@@ -295,11 +295,11 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     private boolean containsAnnotation(ClassInfo classInfo, DotName requiredAnnotationName, Class<? extends Annotation> requiredAnnotation) {
         // Type and members
-        if (classInfo.annotations().containsKey(requiredAnnotationName)) {
+        if (classInfo.annotationsMap().containsKey(requiredAnnotationName)) {
             return true;
         }
         // Meta-annotations
-        for (DotName annotation : classInfo.annotations().keySet()) {
+        for (DotName annotation : classInfo.annotationsMap().keySet()) {
             if (annotationClassAnnotationsCache.getValue(annotation).contains(requiredAnnotationName.toString())) {
                 return true;
             }

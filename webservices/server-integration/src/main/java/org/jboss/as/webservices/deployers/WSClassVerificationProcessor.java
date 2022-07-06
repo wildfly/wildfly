@@ -127,7 +127,7 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
                     AnnotationTarget at = ai.target();
                     if (at instanceof ClassInfo) {
                         final ClassInfo clazz = (ClassInfo)ai.target();
-                        for (DotName dn : clazz.annotations().keySet()) {
+                        for (DotName dn : clazz.annotationsMap().keySet()) {
                             if (dn.toString().startsWith("org.apache.cxf")) {
                                 WSLogger.ROOT_LOGGER.missingModuleDependency(dn.toString(), clazz.name().toString(), "org.apache.cxf");
                             }
