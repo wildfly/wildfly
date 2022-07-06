@@ -1219,4 +1219,11 @@ public interface EeLogger extends BasicLogger {
             "specifications. The conflicting class is %s. Solutions include providing an alternate name for the component " +
             "or renaming the class.")
     void duplicateJndiBindingFound(String componentName, String jndiName, Class clazz);
+
+    @Message(id = 134, value = "Multiple uses of ContextServiceDefinition.ALL_REMAINING")
+    IllegalStateException multipleUsesOfAllRemaining();
+
+    @LogMessage(level = WARN)
+    @Message(id = 135, value = "Failed to resume transaction.")
+    void failedToResumeTransaction(@Cause Throwable cause);
 }
