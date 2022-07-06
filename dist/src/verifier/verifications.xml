@@ -30,8 +30,8 @@ limitations under the License.
        'verifier.product.release.version' property
     8) Schemas coming from a module distributed directly by the galleon-pack are copied to docs/schema
    10) Schemas coming from a module distributed by the transitive ee-galleon-pack are copied to docs/schema
-   11) Schemas coming from a module distributed by the transitive servlet-galleon-pack are copied to docs/schema
-   12) Schemas coming from a module distributed by the transitive core-galleon-pack are copied to docs/schema
+   11) Schemas coming from a module formerly distributed by the transitive servlet-galleon-pack are copied to docs/schema
+   12) Schemas coming from a module formerly distributed by the transitive core-galleon-pack are copied to docs/schema
 -->
   <files>
     <file>

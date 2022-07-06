@@ -41,19 +41,11 @@
     
     <properties>
         <layers.install.dir>${project.build.directory}/layers-results</layers.install.dir>
-        <!-- Put 'servlet' installations in the same dir as others. Set this to
-             a different dir if testing the servlet feature pack. -->
-        <servlet.layers.install.dir>${layers.install.dir}</servlet.layers.install.dir>
-        <!-- An empty layer for this will disable 'servlet dist' tests which are meant for testing
-             the servlet feature pack. -->
-        <servlet.layers.install.root>${project.build.directory}/servlet-layers-results</servlet.layers.install.root>
         <layers.delete.installations>true</layers.delete.installations>
         <jbossas.project.dir>${jbossas.ts.dir}/../..</jbossas.project.dir>
         
         <!-- GAVs to use for feature packs. Profiles can reset to trigger provisioning
              using alternative feature packs. -->
-        <servlet.feature.pack.groupId>${testsuite.ee.galleon.pack.groupId}</servlet.feature.pack.groupId>
-        <servlet.feature.pack.artifactId>${testsuite.ee.galleon.pack.artifactId}</servlet.feature.pack.artifactId>
         <ee.feature.pack.groupId>${testsuite.ee.galleon.pack.groupId}</ee.feature.pack.groupId>
         <ee.feature.pack.artifactId>${testsuite.ee.galleon.pack.artifactId}</ee.feature.pack.artifactId>
         <ee.feature.pack.version>${testsuite.ee.galleon.pack.version}</ee.feature.pack.version>
@@ -101,17 +93,12 @@
                 <provisioning.phase>compile</provisioning.phase>
                 <surefire.default-test.phase>test</surefire.default-test.phase>
                 <!-- Reset the feature pack GAV props to use wildfly-preview -->
-                <servlet.feature.pack.artifactId>wildfly-preview-feature-pack</servlet.feature.pack.artifactId>
                 <ee.feature.pack.groupId>${project.groupId}</ee.feature.pack.groupId>
                 <ee.feature.pack.artifactId>wildfly-preview-feature-pack</ee.feature.pack.artifactId>
                 <ee.feature.pack.version>${project.version}</ee.feature.pack.version>
                 <full.feature.pack.artifactId>wildfly-preview-feature-pack</full.feature.pack.artifactId>
                 <!-- Use the transformed artifact repo -->
                 <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
-                <!-- We don't use a 'servlet feature pack' so don't provision any servers in the dir the servlet test checks -->
-                <servlet.layers.install.dir>${layers.install.dir}</servlet.layers.install.dir>
-                <!-- An empty value for this will disable the servlet test -->
-                <servlet.layers.install.root></servlet.layers.install.root>
             </properties>
         </profile>
     </profiles>
@@ -721,24 +708,23 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-                            <!-- servlet layers. Most of these we now by default provision
+                            <!-- Former wildfly-servlet layers. We now by default provision
                                  from the wildfly-ee feature pack -->
                             <execution>
-                                <!-- Build the test-standalone-reference from the servlet feature pack.
+                                <!-- Build the test-standalone-reference from the wildfly-ee feature pack.
                                      This is not a layer test. It's a test of the standard standalone.xml
-                                      produced by a feature pack and we have another execution that
-                                      does the same for wildfly-ee. -->
+                                      produced by a feature pack. -->
                                 <id>test-standalone-reference-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
+                                <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.root}/test-standalone-reference</install-dir>
+                                    <install-dir>${layers.install.dir}/test-standalone-reference</install-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.maven.groupId}</groupId>
-                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <included-configs>
@@ -752,45 +738,17 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>ee-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/ee</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${servlet.feature.pack.groupId}</groupId>
-                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ee</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
                                 <id>undertow-https-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/undertow-https</install-dir>
+                                    <install-dir>${layers.install.dir}/undertow-https</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${servlet.feature.pack.groupId}</groupId>
-                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -814,11 +772,11 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/undertow-load-balancer</install-dir>
+                                    <install-dir>${layers.install.dir}/undertow-load-balancer</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${servlet.feature.pack.groupId}</groupId>
-                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -842,11 +800,11 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/naming</install-dir>
+                                    <install-dir>${layers.install.dir}/naming</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${servlet.feature.pack.groupId}</groupId>
-                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -858,34 +816,6 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>naming</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>undertow-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/undertow</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${servlet.feature.pack.groupId}</groupId>
-                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>undertow</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -898,11 +828,11 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/web-server</install-dir>
+                                    <install-dir>${layers.install.dir}/web-server</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${servlet.feature.pack.groupId}</groupId>
-                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -914,46 +844,6 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>web-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <!-- Build the test-all-layers from the servlet feature pack.
-                                 LayersTest.test expects to find this installation
-                                 We have another execution that does the same for wildfly-ee. -->
-                            <execution>
-                                <id>all-layers-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
-                                <configuration>
-                                    <install-dir>${servlet.layers.install.root}/test-all-layers</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${ee.maven.groupId}</groupId>
-                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                                            <version>${ee.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ee</layer>
-                                                <layer>undertow-load-balancer</layer>
-                                                <layer>naming</layer>
-                                                <layer>undertow</layer>
-                                                <layer>undertow-https</layer>
-                                                <layer>web-server</layer>
-                                                <!-- core-server, core-tools are from core, 
-                                                required to compare all layers with reference installation -->
-                                                <layer>core-server</layer>
-                                                <layer>core-tools</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -2262,7 +2152,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
+                                <phase>${provisioning.phase}</phase>
                                 <configuration>
                                     <install-dir>${layers.install.dir}/test-all-layers</install-dir>
                                     <feature-packs>
@@ -2346,6 +2236,10 @@
                                                 <layer>microprofile-metrics</layer>
                                                 <layer>microprofile-openapi</layer>
                                                 <layer>microprofile-opentracing</layer>
+                                                <layer>microprofile-reactive-streams-operators</layer>
+                                                <layer>microprofile-reactive-messaging</layer>
+                                                <layer>microprofile-reactive-messaging-kafka</layer>
+                                                <layer>microprofile-rest-client</layer>
                                                 <layer>microprofile-platform</layer>
                                             </layers>
                                         </config>
@@ -2522,7 +2416,6 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <!-- maven.local.repo is set in parent pom.xml, system property surefire.system.args -->
-                                <servlet.layers.install.root>${servlet.layers.install.root}</servlet.layers.install.root>
                                 <layers.install.root>${layers.install.dir}</layers.install.root>
                                 <jbossas.version>${project.parent.version}</jbossas.version>
                                 <cleanup.tmp>${cleanup.tmp}</cleanup.tmp>
