@@ -219,6 +219,8 @@
         <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=1024m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
         <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} ${surefire.non-modular.system.args}</surefire.system.args>
         <arquillian.servlet.protocol>Servlet 3.0</arquillian.servlet.protocol>
+        <testLogToFile>true</testLogToFile>
+        <maven.test.redirectTestOutputToFile>${testLogToFile}</maven.test.redirectTestOutputToFile>
 
         <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
              that *could* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
@@ -267,11 +269,11 @@
          -->
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.7</version.org.jacoco>
-        <version.org.jboss.galleon>5.0.1.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>5.0.3.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>6.0.0.Alpha5</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>6.0.0.Alpha6</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>7.0.0.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>2.0.1.Final</version.org.wildfly.plugin>
@@ -510,7 +512,7 @@
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>19.0.0.Beta12</version.org.wildfly.core>
+        <version.org.wildfly.core>19.0.0.Beta13</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.12.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.15.Final</version.org.wildfly.naming-client>
@@ -557,7 +559,7 @@
         <preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
         <preview.version.jakarta.transaction.jakarta-transaction-api>2.0.0</preview.version.jakarta.transaction.jakarta-transaction-api>
         <preview.version.jakarta.validation.jakarta-validation-api>3.0.2</preview.version.jakarta.validation.jakarta-validation-api>
-        <preview.version.jakarta.websocket.jakarta-websocket-api>2.1.0</preview.version.jakarta.websocket.jakarta-websocket-api>
+        <preview.version.jakarta.websocket.jakarta-websocket-api>2.1.0-jbossorg-2</preview.version.jakarta.websocket.jakarta-websocket-api>
         <preview.version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</preview.version.jakarta.ws.rs.jakarta-ws-rs-api>
         <preview.version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.0</preview.version.jakarta.xml.bind.jakarta-xml-bind-api>
         <preview.version.net.shibboleth.utilities.java-support>8.0.0</preview.version.net.shibboleth.utilities.java-support>
@@ -4801,7 +4803,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${version.surefire.plugin}</version>
                     <configuration>
-                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
                         <enableAssertions>true</enableAssertions>
                         <systemPropertyVariables>
                             <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>

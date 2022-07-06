@@ -132,6 +132,12 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.openjdk-orb</groupId>
+                    <artifactId>openjdk-orb</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

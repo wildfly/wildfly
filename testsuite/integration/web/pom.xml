@@ -149,7 +149,6 @@
                                 <!-- We need the modules from the complete dist, not just servlet dist used by the default-test execution -->
                                 <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                             </systemPropertyVariables>
-                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <excludes>
                                 <!-- requires legacy-security -->
                                 <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -806,7 +805,6 @@
                                         <!-- Override the standard module path that points at the shared module set from servlet-dist -->
                                         <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -840,7 +838,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-legacy-https</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</include>
                                         <!-- TODO this has special setup logic for -Delytron vs not; needs a variant for this test setup
@@ -866,7 +863,6 @@
                                         <!-- Override the standard module path that points at the shared module set from servlet-dist -->
                                         <module.path>${project.build.directory}/wildfly-jaxrs/modules${path.separator}${basedir}/target/modules</module.path>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -995,7 +991,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-web-profile.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -1027,7 +1022,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-web-legacy-security.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/web/security/**/*TestCase.java</include>
                                     </includes>
@@ -1055,7 +1049,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-undertow-https.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</include>
                                         <!-- TODO this has special setup logic for -Delytron vs not; needs a variant for this test setup
@@ -1083,7 +1076,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-jaxrs.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -1115,7 +1107,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-cloud.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -1272,7 +1263,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-web-profile.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -1307,7 +1297,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-undertow-https.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</include>
                                         <!-- TODO this has special setup logic for -Delytron vs not; needs a variant for this test setup
@@ -1335,7 +1324,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-jaxrs.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -1370,7 +1358,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-cloud.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>

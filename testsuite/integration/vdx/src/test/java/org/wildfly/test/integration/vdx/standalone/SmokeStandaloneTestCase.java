@@ -19,6 +19,7 @@ package org.wildfly.test.integration.vdx.standalone;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -70,6 +71,8 @@ public class SmokeStandaloneTestCase extends TestBase {
     @ServerConfig(configuration = "standalone-full-ha.xml", xmlTransformationGroovy = "AddNonExistentElementToMessagingSubsystem.groovy",
         subtreeName = "messaging", subsystemName = "messaging-activemq")
     public void addNonExistingElementToMessagingSubsystem() throws Exception {
+        // WildFly Preview doesn't configure a messaging broker
+        AssumeTestGroupUtil.assumeNotWildFlyPreview();
         container().tryStartAndWaitForFail();
         ensureNonExistingElementToMessagingSubsystem(container().getErrorMessageFromServerStart());
     }

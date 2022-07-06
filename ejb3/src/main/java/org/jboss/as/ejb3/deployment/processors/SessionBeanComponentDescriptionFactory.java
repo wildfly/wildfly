@@ -279,11 +279,11 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
         if (info == null) {
             return null;
         }
-        if(info.annotations().get(STATEFUL_ANNOTATION) != null) {
+        if(info.annotationsMap().get(STATEFUL_ANNOTATION) != null) {
             return SessionType.Stateful;
-        } else if(info.annotations().get(STATELESS_ANNOTATION) != null) {
+        } else if(info.annotationsMap().get(STATELESS_ANNOTATION) != null) {
             return SessionType.Stateless;
-        } else if(info.annotations().get(SINGLETON_ANNOTATION) != null) {
+        } else if(info.annotationsMap().get(SINGLETON_ANNOTATION) != null) {
             return SessionType.Singleton;
         }
         return null;
