@@ -472,7 +472,7 @@
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
             <artifactId>jbossws-cxf-resources</artifactId>
-            <classifier>wildfly2000</classifier>
+            <classifier>wildfly2600</classifier>
         </dependency>
 
         <dependency>
