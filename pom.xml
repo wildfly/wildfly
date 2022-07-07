@@ -545,7 +545,7 @@
         <preview.version.jakarta.xml.ws.jakarta.xml.ws-api>4.0.0</preview.version.jakarta.xml.ws.jakarta.xml.ws-api>
         <preview.version.jakarta.persistence>3.1.0</preview.version.jakarta.persistence>
         <preview.version.jakarta.resource.jakarta-resource-api>2.1.0</preview.version.jakarta.resource.jakarta-resource-api>
-        <preview.version.jakarta.security.enterprise>2.0.0</preview.version.jakarta.security.enterprise>
+        <preview.version.jakarta.security.enterprise>3.0.0</preview.version.jakarta.security.enterprise>
         <preview.version.jakarta.servlet.jakarta-servlet-api>6.0.0</preview.version.jakarta.servlet.jakarta-servlet-api>
         <preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.1.0</preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
         <preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
@@ -598,7 +598,7 @@
          pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
         <preview.version.org.glassfish.jaxb>4.0.0</preview.version.org.glassfish.jaxb>
         <preview.version.org.glassfish.jaxb.jaxb-xjc>${preview.version.org.glassfish.jaxb}</preview.version.org.glassfish.jaxb.jaxb-xjc>
-        <preview.version.org.glassfish.soteria>2.0.1</preview.version.org.glassfish.soteria>
+        <preview.version.org.glassfish.soteria>3.0.0</preview.version.org.glassfish.soteria>
         <preview.version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.0</preview.version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <preview.version.org.hibernate>6.0.2.Final</preview.version.org.hibernate>
         <preview.version.org.hibernate.commons.annotations>6.0.1.Final</preview.version.org.hibernate.commons.annotations>
