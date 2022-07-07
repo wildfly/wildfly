@@ -24,13 +24,14 @@ package org.jboss.as.jsf.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  *
@@ -55,7 +56,7 @@ public class JSFSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAttributes() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(null)
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(getSubsystemXml());
         KernelServices kernelServices = builder.build();
         ModelNode rootModel = kernelServices.readWholeModel();
