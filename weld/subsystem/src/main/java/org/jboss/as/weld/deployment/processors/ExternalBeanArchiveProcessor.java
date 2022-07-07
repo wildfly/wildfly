@@ -381,7 +381,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
     }
 
     private boolean hasBeanDefiningAnnotation(ClassInfo classInfo, Set<AnnotationType> beanDefiningAnnotations) {
-        Map<DotName, List<AnnotationInstance>> annotationsMap = classInfo.annotations();
+        Map<DotName, List<AnnotationInstance>> annotationsMap = classInfo.annotationsMap();
         for (AnnotationType beanDefiningAnnotation : beanDefiningAnnotations) {
             List<AnnotationInstance> annotations = annotationsMap.get(beanDefiningAnnotation.getName());
             if (annotations != null) {

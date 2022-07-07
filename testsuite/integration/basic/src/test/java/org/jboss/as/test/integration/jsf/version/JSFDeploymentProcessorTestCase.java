@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jsf.version;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.io.FilePermission;
 import java.io.IOException;
 import java.net.URL;
@@ -65,13 +67,12 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 
 /**
  * Tests different ways to add Jakarta Server Faces implementation in ear files
- * @author tmiyar
  *
+ * @author tmiyar
  */
 @RunWith(Arquillian.class)
 @ServerSetup({JSFDeploymentProcessorTestCase.TestLogHandlerSetup.class})
@@ -107,6 +108,7 @@ public class JSFDeploymentProcessorTestCase {
     /**
      * Creates a war with all the libraries needed in the war/lib folder, this sample does not call the
      * ejb as it is not necessary to test if the bundled Jakarta Server Faces is loaded
+     *
      * @return
      */
     @Deployment(name = WEB_BUNDLED_JSF, testable = false, managed = false)
@@ -145,6 +147,7 @@ public class JSFDeploymentProcessorTestCase {
 
     /**
      * Creates a war with only the faces-config to indicate it is using Jakarta Server Faces, that way it will load the one provided by Wildfly
+     *
      * @return
      */
     @Deployment(name = WEB_FACES_CONFIG_XML, testable = false)
@@ -178,6 +181,7 @@ public class JSFDeploymentProcessorTestCase {
     /**
      * Facing intermitent problem on myfaces 2.3 documented here https://issues.jboss.org/browse/WELD-1387
      * using myfaces 2.0 instead
+     *
      * @throws Exception
      */
     @Test
@@ -204,17 +208,20 @@ public class JSFDeploymentProcessorTestCase {
     @Test
     public void facesConfigXmlTest() throws Exception {
         HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-        try(CloseableHttpClient client = httpClientBuilder.build()) {
+        try (CloseableHttpClient client = httpClientBuilder.build()) {
 
             HttpUriRequest getVarRequest = new HttpGet(facesConfigXml.toExternalForm() + "jsfversion.xhtml");
             try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
                 String text = EntityUtils.toString(getVarResponse.getEntity());
-                String facesVersion = FacesContext.class.getPackage().getSpecificationTitle();
-                Assert.assertTrue("Text should contain ["+ facesVersion+ "] but it contains [" + text + "]", text.contains(facesVersion));
+                Package aPackage = FacesContext.class.getPackage();
+                System.err.println("***** package = " + aPackage);
+                String facesVersion = aPackage.getSpecificationTitle();
+                Assert.assertTrue("Text should contain [" + facesVersion + "] but it contains [" + text + "]", text.contains(facesVersion));
             }
         }
         Assert.assertFalse("Unexpected log message: " + LOG_MESSAGE, LoggingUtil.hasLogMessage(managementClient, TEST_HANDLER_NAME, LOG_MESSAGE));
     }
+
     private static final String TEST_HANDLER_NAME;
     private static final String TEST_LOG_FILE_NAME;
     private static final String LOG_MESSAGE;
@@ -240,10 +247,12 @@ public class JSFDeploymentProcessorTestCase {
         public String getLevel() {
             return "WARN";
         }
+
         @Override
         public String getHandlerName() {
             return TEST_HANDLER_NAME;
         }
+
         @Override
         public String getLogFileName() {
             return TEST_LOG_FILE_NAME;

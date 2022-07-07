@@ -84,11 +84,11 @@ public class InboundBridgeDeploymentProcessor implements DeploymentUnitProcessor
             if (target instanceof ClassInfo) {
                 final ClassInfo classInfo = (ClassInfo) target;
 
-                if (classInfo.annotations().get(TRANSACTIONAL_DOT_NAME) != null) {
+                if (classInfo.annotationsMap().get(TRANSACTIONAL_DOT_NAME) != null) {
                     return true;
                 }
-                if (classInfo.annotations().get(STATELESS_ATTRIBUTE_DOT_NAME) != null ||
-                    classInfo.annotations().get(STATEFUL_ATTRIBUTE_DOT_NAME) != null) {
+                if (classInfo.annotationsMap().get(STATELESS_ATTRIBUTE_DOT_NAME) != null ||
+                    classInfo.annotationsMap().get(STATEFUL_ATTRIBUTE_DOT_NAME) != null) {
                     return true;
                 }
             }

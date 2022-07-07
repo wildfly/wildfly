@@ -230,7 +230,6 @@
                 <configuration>
                     <failIfNoTests>false</failIfNoTests>
                     <!-- parallel>none</parallel -->
-                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
 
                     <!-- System properties to forked surefire JVM which runs clients. The log manager is required to
                          be defined when building with the IBM JDK. -->
@@ -278,7 +277,6 @@
                         <configuration>
                             <failIfNoTests>false</failIfNoTests>
                             <!-- parallel>none</parallel -->
-                            <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
 
                             <!-- System properties to forked surefire JVM which runs clients. -->
                             <argLine>${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.system.args}</argLine>

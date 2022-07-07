@@ -37,7 +37,6 @@
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
         <!-- These properties control what layers are provisioned if galleon slimmed provisioning occurs -->
         <ts.microprofile-tck-provisioning.base.layer>jaxrs-server</ts.microprofile-tck-provisioning.base.layer>
         <ts.microprofile-tck-provisioning.decorator.layer>observability</ts.microprofile-tck-provisioning.decorator.layer>
@@ -461,7 +460,7 @@
                         <dependency>org.eclipse.microprofile.rest.client:microprofile-rest-client-tck</dependency>
                     </dependenciesToScan>
                     <systemPropertyVariables>
-                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                        <!-- Override the standard module path that points at the shared module set from the dist -->
                         <module.path>${project.build.directory}/wildfly/modules</module.path>
                         <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
