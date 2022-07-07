@@ -21,12 +21,9 @@
  */
 package org.jboss.as.jsf.deployment;
 
-import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jsf.logging.JSFLogger;
@@ -38,7 +35,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.common.WarMetaData;
-import org.jboss.as.weld.WeldCapability;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
@@ -162,7 +158,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
                 .getClassLoader().getResource(JAVAX_FACES_EVENT_NAMEDEVENT_class) == null);
     }
 
-    // Add a flag to the sevlet context so that we know if we need to instantiate
+    // Add a flag to the servlet context so that we know if we need to instantiate
     // a Jakarta Contexts and Dependency Injection ViewHandler.
     private void addCDIFlag(WarMetaData warMetaData, DeploymentUnit deploymentUnit) {
         JBossWebMetaData webMetaData = warMetaData.getMergedJBossWebMetaData();
@@ -176,16 +172,9 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
             contextParams = new ArrayList<ParamValueMetaData>();
         }
 
-        boolean isCDI = false;
-        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
-            isCDI = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()
-                    .isPartOfWeldDeployment(deploymentUnit);
-        }
-
         ParamValueMetaData param = new ParamValueMetaData();
         param.setParamName(IS_CDI_PARAM);
-        param.setParamValue(Boolean.toString(isCDI));
+        param.setParamValue("true");
         contextParams.add(param);
 
         webMetaData.setContextParams(contextParams);

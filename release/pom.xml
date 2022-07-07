@@ -48,13 +48,6 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-servlet-dist</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 
     <profiles>
@@ -106,16 +99,6 @@
                                                 <include>wildfly-*.tar.gz</include>
                                                 <include>wildfly-*.zip</include>
                                             </includes>
-                                        </resource>
-                                        <resource>
-                                            <directory>../servlet-dist/target</directory>
-                                            <includes>
-                                                <include>wildfly-servlet-*.tar.gz</include>
-                                                <include>wildfly-servlet-*.zip</include>
-                                            </includes>
-                                            <excludes>
-                                                <exclude>*-src.*</exclude>
-                                            </excludes>
                                         </resource>
                                     </resources>
                                 </configuration>

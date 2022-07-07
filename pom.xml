@@ -98,9 +98,7 @@
         <module>spec-api</module>
         <module>transactions</module>
         <module>undertow</module>
-        <module>servlet-build</module>
         <module>web-common</module>
-        <module>servlet-dist</module>
         <module>servlet-feature-pack</module>
         <module>webservices</module>
         <module>weld</module>
@@ -139,9 +137,6 @@
         <ee.dist.product.release.version>${full.dist.product.release.version}</ee.dist.product.release.version>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
-        <servlet.dist.product.release.name>WildFly Servlet</servlet.dist.product.release.name>
-        <servlet.dist.product.slot>wildfly-web</servlet.dist.product.slot>
-        <servlet.dist.product.release.version>${ee.dist.product.release.version}</servlet.dist.product.release.version>
         <product.docs.server.version>27</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
         <verifier.product.release.version>27.0</verifier.product.release.version>
@@ -203,7 +198,6 @@
              Custom test jobs can override this using -D, e.g. -Dtestsuite.default.build.project.prefix=ee- -->
         <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
         <wildfly.build.output.dir>${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
-        <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${server.output.dir.version}</wildfly.web.build.output.dir>
 
         <!-- Protocol to use for communication with remote maven repositories.
              You can set to 'http' if you are using a maven proxy and 'https'
@@ -308,7 +302,6 @@
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
         <version.com.github.fge.msg-simple>1.1</version.com.github.fge.msg-simple>
         <version.com.github.tomakehurst.wiremock>2.27.2</version.com.github.tomakehurst.wiremock>
-        <version.com.github.spullara.mustache>0.9.10</version.com.github.spullara.mustache>
         <version.com.google.android.annotations>4.1.1.4</version.com.google.android.annotations>
         <version.com.google.api.grpc>2.0.1</version.com.google.api.grpc>
         <version.com.google.code.gson>2.8.9</version.com.google.code.gson>
@@ -449,7 +442,7 @@
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
-        <version.org.jboss.hal.console>3.6.0.Final</version.org.jboss.hal.console>
+        <version.org.jboss.hal.console>3.6.1.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.2.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.5.7.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
@@ -1702,27 +1695,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-dist</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-servlet-feature-pack-common</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
@@ -1773,20 +1745,6 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-servlet-feature-pack-galleon-legacy</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-galleon-pack</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
@@ -2004,12 +1962,6 @@
                 <groupId>com.sun.xml.bind.external</groupId>
                 <artifactId>relaxng-datatype</artifactId>
                 <version>${version.sun.jaxb}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.github.spullara.mustache.java</groupId>
-                <artifactId>compiler</artifactId>
-                <version>${version.com.github.spullara.mustache}</version>
             </dependency>
 
             <dependency>
@@ -5307,8 +5259,6 @@
             </activation>
             <properties>
                 <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
-                <!-- No separate web dist -->
-                <wildfly.web.build.output.dir>${wildfly.build.output.dir}</wildfly.web.build.output.dir>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->
