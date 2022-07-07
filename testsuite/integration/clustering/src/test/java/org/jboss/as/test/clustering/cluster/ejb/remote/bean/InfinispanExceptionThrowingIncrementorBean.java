@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
 
 import org.infinispan.commons.CacheException;
 import org.infinispan.util.concurrent.TimeoutException;

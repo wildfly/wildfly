@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.failover;
 
-import javax.ejb.EJBException;
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateful;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.SessionBean;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateful;
 
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterBaseBean;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterRemoteHome;

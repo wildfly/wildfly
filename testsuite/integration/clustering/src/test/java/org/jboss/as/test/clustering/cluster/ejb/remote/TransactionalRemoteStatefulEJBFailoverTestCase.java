@@ -24,8 +24,8 @@ package org.jboss.as.test.clustering.cluster.ejb.remote;
 
 import java.util.PropertyPermission;
 
-import javax.ejb.NoSuchEJBException;
-import javax.transaction.UserTransaction;
+import jakarta.ejb.NoSuchEJBException;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;

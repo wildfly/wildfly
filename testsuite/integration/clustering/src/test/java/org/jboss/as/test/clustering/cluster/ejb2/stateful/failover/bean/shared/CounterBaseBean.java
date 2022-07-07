@@ -23,7 +23,7 @@ package org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.CreateException;
+import jakarta.ejb.CreateException;
 
 import org.jboss.as.test.clustering.NodeNameGetter;
 

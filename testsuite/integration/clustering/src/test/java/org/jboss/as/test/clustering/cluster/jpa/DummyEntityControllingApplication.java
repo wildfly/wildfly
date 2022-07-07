@@ -22,7 +22,9 @@
 
 package org.jboss.as.test.clustering.cluster.jpa;
 
-import javax.ws.rs.ApplicationPath;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.core.Application;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,7 +32,7 @@ import java.util.Set;
  * @author Jan Martiska
  */
 @ApplicationPath("/")
-public class DummyEntityControllingApplication extends javax.ws.rs.core.Application {
+public class DummyEntityControllingApplication extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {

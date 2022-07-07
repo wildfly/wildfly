@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateful;
-import javax.interceptor.Interceptors;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateful;
+import jakarta.interceptor.Interceptors;
 
 /**
  * @author Paul Ferraro

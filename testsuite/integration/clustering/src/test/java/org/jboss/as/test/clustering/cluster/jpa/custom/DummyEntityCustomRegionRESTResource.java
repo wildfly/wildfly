@@ -27,20 +27,20 @@ import org.hibernate.stat.Statistics;
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 
-import javax.annotation.Resource;
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.persistence.CacheRetrieveMode;
-import javax.persistence.CacheStoreMode;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.UserTransaction;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.UserTransaction;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Response;
 
 /**
  * @author Tommaso Borgato
@@ -73,8 +73,8 @@ public class DummyEntityCustomRegionRESTResource {
     public void addToCacheByQuerying(@PathParam(value = "id") Long id) {
         em.createQuery("select b from DummyEntityCustomRegion b where b.id=:id", DummyEntityCustomRegion.class)
                 .setParameter("id", id)
-                .setHint("javax.persistence.cache.storeMode", CacheStoreMode.USE)
-                .setHint("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS)
+                .setHint("jakarta.persistence.cache.storeMode", CacheStoreMode.USE)
+                .setHint("jakarta.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS)
                 .getSingleResult();
     }
 

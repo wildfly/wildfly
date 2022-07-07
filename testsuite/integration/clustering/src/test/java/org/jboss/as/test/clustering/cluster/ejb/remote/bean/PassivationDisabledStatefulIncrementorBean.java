@@ -1,7 +1,7 @@
 package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
 
 /**
  * SFSB with passivation disabled, behaves as a singleton bean even if deployed on a clustered node

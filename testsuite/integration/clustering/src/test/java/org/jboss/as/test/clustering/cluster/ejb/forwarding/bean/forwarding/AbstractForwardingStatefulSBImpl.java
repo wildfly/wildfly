@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding;
 
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteStatefulSB;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;

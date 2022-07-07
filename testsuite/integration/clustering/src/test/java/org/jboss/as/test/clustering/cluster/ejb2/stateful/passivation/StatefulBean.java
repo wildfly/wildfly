@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.passivation;
 
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionBean;
-import javax.ejb.Stateful;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.SessionBean;
+import jakarta.ejb.Stateful;
 
 /**
  * @author Ondrej Chaloupka

@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
 
 import java.util.PropertyPermission;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;

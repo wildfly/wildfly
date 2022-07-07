@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.clustering.ejb;
 
-import javax.ejb.EJBHome;
-import javax.transaction.UserTransaction;
+import jakarta.ejb.EJBHome;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;

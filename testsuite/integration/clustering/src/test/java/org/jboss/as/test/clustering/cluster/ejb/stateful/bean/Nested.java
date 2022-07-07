@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @author Paul Ferraro

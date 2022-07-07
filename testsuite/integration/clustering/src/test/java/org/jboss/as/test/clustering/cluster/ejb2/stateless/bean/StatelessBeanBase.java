@@ -24,10 +24,10 @@ package org.jboss.as.test.clustering.cluster.ejb2.stateless.bean;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.logging.Logger;
