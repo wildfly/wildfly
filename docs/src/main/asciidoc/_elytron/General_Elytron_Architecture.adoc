@@ -45,7 +45,7 @@ based on the supplied name for authentication.
 
 * SecurityRealm
 
-One more named SecurityRealms are associated with a SecurityDomain.
+One or more named SecurityRealms are associated with a SecurityDomain.
 A SecurityRealm provides access to the underlying repository of
 identities. It is used for obtaining credentials to allow
 authentication mechanisms to perform verification, for validation of
@@ -89,7 +89,8 @@ SecurityDomains. The inflow process means that a SecurityIdentity
 inflowed into a second SecurityDomain has the mappings of the new
 SecurityDomain applied to it. So although a common identity may be
 calling different resources, each of those resources could have a very
-different view of the permissions associated with the identity.
+different view of the roles and permissions associated with the 
+identity.
 
 [[sasl-authentication]]
 == SASL Authentication
