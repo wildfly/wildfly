@@ -172,31 +172,6 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.gmaven</groupId>
-                <artifactId>groovy-maven-plugin</artifactId>
-                <version>2.1.1</version>
-                <executions>
-                    <execution>
-                        <id>delete-old-files</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <source>
-                                def toDelete = [
-                                        "org/jboss/as/jsf/deployment/FacesAnnotation.java",
-                                ]
-                                toDelete.forEach {
-                                    new File(project.build.getDirectory() + "/generated-sources/transformed/" + it)
-                                            .delete()
-                                }
-                            </source>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 

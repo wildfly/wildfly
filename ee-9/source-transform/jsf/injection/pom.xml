@@ -148,7 +148,6 @@
                         <configuration>
                             <source>
                                 def toDelete = [
-                                    "org/jboss/as/jsf/injection/AnnotationMap.java",
                                     "org/jboss/as/jsf/injection/weld/legacy/"
                                 ]
                                 toDelete.forEach {

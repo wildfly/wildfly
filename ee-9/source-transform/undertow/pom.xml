@@ -282,38 +282,4 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.gmaven</groupId>
-                <artifactId>groovy-maven-plugin</artifactId>
-                <version>2.1.1</version>
-                <executions>
-                    <execution>
-                        <id>delete-old-file</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <source>
-                                def toDelete = [
-                                    "org/wildfly/extension/undertow/deployment/JspPropertyGroupDescriptorImpl.java"
-                                ]
-                                toDelete.forEach {
-                                    def file = new File(project.build.getDirectory() + "/generated-sources/transformed/" + it)
-                                    if (file.isDirectory()) {
-                                        file.deleteDir()
-                                    } else {
-                                        file.delete()
-                                    }
-                                }
-                            </source>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>
