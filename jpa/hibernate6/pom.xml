@@ -26,7 +26,7 @@
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ee-9-parent</artifactId>
         <relativePath>../../ee-9/pom.xml</relativePath>
-        <version>27.0.0.Alpha2-SNAPSHOT</version>
+        <version>27.0.0.Alpha2</version>
     </parent>
 
     <artifactId>jipijapa-hibernate6</artifactId>
