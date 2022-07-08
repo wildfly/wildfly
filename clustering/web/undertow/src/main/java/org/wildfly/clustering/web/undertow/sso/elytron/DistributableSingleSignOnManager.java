@@ -41,40 +41,53 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
 
     private final SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch> manager;
 
-    public DistributableSingleSignOnManager(SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch> manager) {
+    public DistributableSingleSignOnManager(
+        final SSOManager< ElytronAuthentication, String, Map.Entry< String, URI >, LocalSSOContext, Batch > manager ) {
         this.manager = manager;
     }
 
     @Override
-    public SingleSignOn create(String mechanismName, SecurityIdentity identity) {
-        String id = this.manager.createIdentifier();
-        Batcher<Batch> batcher = this.manager.getBatcher();
+    public SingleSignOn create( final String mechanismName, final boolean programmatic,
+        final SecurityIdentity identity ) {
+        final String id = this.manager.createIdentifier();
+        final Batcher< Batch > batcher = this.manager.getBatcher();
         // Batch will be closed when SSO is closed
-        @SuppressWarnings("resource")
-        Batch batch = batcher.createBatch();
+        @SuppressWarnings( "resource" )
+        final Batch batch = batcher.createBatch();
         try {
-            SSO<ElytronAuthentication, String, Entry<String, URI>, LocalSSOContext> sso = this.manager.createSSO(id, new ElytronAuthentication(mechanismName, identity.getPrincipal().getName()));
+            final SSO< ElytronAuthentication, String, Entry< String, URI >, LocalSSOContext > sso =
+                this.manager.createSSO( id, new ElytronAuthentication( mechanismName, identity.getPrincipal()
+                    .getName() ) );
             sso.getLocalContext().setSecurityIdentity(identity);
             return new DistributableSingleSignOn(sso, batcher, batcher.suspendBatch());
-        } catch (RuntimeException | Error e) {
+        }
+        catch( final RuntimeException | Error e )
+        {
             batch.discard();
             batch.close();
             throw e;
         }
     }
 
+
     @Override
-    public SingleSignOn find(String id) {
-        Batcher<Batch> batcher = this.manager.getBatcher();
+    public SingleSignOn find( final String id ) {
+        final Batcher< Batch > batcher = this.manager.getBatcher();
         // Batch will be closed when SSO is closed
-        Batch batch = batcher.createBatch();
+        final Batch batch = batcher.createBatch();
         boolean close = true;
         try {
-            SSO<ElytronAuthentication, String, Entry<String, URI>, LocalSSOContext> sso = this.manager.findSSO(id);
-            if (sso == null) return null;
+            final SSO< ElytronAuthentication, String, Entry< String, URI >, LocalSSOContext > sso =
+                this.manager.findSSO( id );
+            if( sso == null )
+            {
+                return null;
+            }
             close = false;
             return new DistributableSingleSignOn(sso, batcher, batcher.suspendBatch());
-        } catch (RuntimeException | Error e) {
+        }
+        catch( final RuntimeException | Error e )
+        {
             batch.discard();
             throw e;
         } finally {

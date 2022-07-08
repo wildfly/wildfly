@@ -769,6 +769,29 @@
         ]]></notes>
         <packageUrl regex="true">^pkg:maven/com\.squareup\.okhttp3/okhttp@.*$</packageUrl>
         <vulnerabilityName>CVE-2021-0341</vulnerabilityName>
+     </suppress>
+
+    <!-- According to RedHat this is fixed in the current version https://issues.redhat.com/browse/WFLY-16229, see also: https://github.com/advisories/GHSA-57j2-w4cx-62h2, https://bugzilla.redhat.com/show_bug.cgi?id=2064698 -->
+    <!-- I've double checked with dependency tree and there is only com.fasterxml.jackson.core:jackson-databind:jar:2.12.6.1 used -->
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-elytron-1.19.0.Final.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.11.4)
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <cve>CVE-2020-36518</cve>
+    </suppress> 
+
+    <!-- The io.undertow system is vulnerable, but not org.wildfly.security.elytron-web:undertow-server which integrates Elytron with Undertow -->
+    <!-- The io.undertow is in version 2.2.17 which is higher then vulnerable prior to 2.2.11.Final -->
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-server-1.10.1.Final.jar, undertow-server-servlet-2.0.0.Beta1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server.*$</packageUrl>
+        <cve>CVE-2021-3629</cve>
+        <cve>CVE-2021-3597</cve>
+        <cve>CVE-2020-10687</cve>
+        <cve>CVE-2021-20220</cve>
     </suppress>
 
     <!-- Vulnerability fixed in commit https://github.com/PSI-Polska/wildfly-core/commit/610deff2d099586bba6c1ecd60cbc4de10d3181e -->

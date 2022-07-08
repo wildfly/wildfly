@@ -47,7 +47,9 @@ public class DistributableSingleSignOn implements SingleSignOn {
     private final Batch batch;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public DistributableSingleSignOn(SSO<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext> sso, Batcher<Batch> batcher, Batch batch) {
+    public DistributableSingleSignOn(
+        final SSO< ElytronAuthentication, String, Map.Entry< String, URI >, LocalSSOContext > sso,
+        final Batcher< Batch > batcher, final Batch batch ) {
         this.sso = sso;
         this.batcher = batcher;
         this.batch = batch;
@@ -60,31 +62,41 @@ public class DistributableSingleSignOn implements SingleSignOn {
 
     @Override
     public String getMechanism() {
-        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+        try (final BatchContext context = this.batcher.resumeBatch( this.batch ))
+        {
             return this.sso.getAuthentication().getMechanism();
         }
     }
 
     @Override
+    public boolean isProgrammatic() {
+        return false;
+    }
+
+    @Override
     public String getName() {
-        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+        try (final BatchContext context = this.batcher.resumeBatch( this.batch ))
+        {
             return this.sso.getAuthentication().getName();
         }
     }
 
     @Override
     public SecurityIdentity getIdentity() {
-        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+        try (final BatchContext context = this.batcher.resumeBatch( this.batch ))
+        {
             return this.sso.getLocalContext().getSecurityIdentity();
         }
     }
 
     @Override
     public Map<String, Map.Entry<String, URI>> getParticipants() {
-        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
-            Sessions<String, Map.Entry<String, URI>> sessions = this.sso.getSessions();
-            Map<String, Map.Entry<String, URI>> participants = new HashMap<>();
-            for (String deployment : sessions.getDeployments()) {
+        try (final BatchContext context = this.batcher.resumeBatch( this.batch ))
+        {
+            final Sessions< String, Map.Entry< String, URI > > sessions = this.sso.getSessions();
+            final Map< String, Map.Entry< String, URI > > participants = new HashMap<>();
+            for( final String deployment : sessions.getDeployments() )
+            {
                 participants.put(deployment, sessions.getSession(deployment));
             }
             return Collections.unmodifiableMap(participants);
@@ -92,22 +104,25 @@ public class DistributableSingleSignOn implements SingleSignOn {
     }
 
     @Override
-    public void setIdentity(SecurityIdentity identity) {
-        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+    public void setIdentity( final SecurityIdentity identity ) {
+        try (final BatchContext context = this.batcher.resumeBatch( this.batch ))
+        {
             this.sso.getLocalContext().setSecurityIdentity(identity);
         }
     }
 
     @Override
-    public boolean addParticipant(String applicationId, String sessionId, URI participant) {
-        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+    public boolean addParticipant( final String applicationId, final String sessionId, final URI participant ) {
+        try (final BatchContext context = this.batcher.resumeBatch( this.batch ))
+        {
             return this.sso.getSessions().addSession(applicationId, new AbstractMap.SimpleImmutableEntry<>(sessionId, participant));
         }
     }
 
     @Override
-    public Map.Entry<String, URI> removeParticipant(String applicationId) {
-        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+    public Map.Entry< String, URI > removeParticipant( final String applicationId ) {
+        try (final BatchContext context = this.batcher.resumeBatch( this.batch ))
+        {
             return this.sso.getSessions().removeSession(applicationId);
         }
     }
@@ -115,8 +130,11 @@ public class DistributableSingleSignOn implements SingleSignOn {
     @Override
     public void invalidate() {
         // The batch associated with this SSO might not be valid (e.g. in the case of logout).
-        try (BatchContext context = this.closed.compareAndSet(false, true) ? this.batcher.resumeBatch(this.batch) : null) {
-            try (Batch batch = (context != null) ? this.batch : this.batcher.createBatch()) {
+        try (final BatchContext context =
+            this.closed.compareAndSet( false, true ) ? this.batcher.resumeBatch( this.batch ) : null)
+        {
+            try (final Batch batch = (context != null) ? this.batch : this.batcher.createBatch())
+            {
                 this.sso.invalidate();
             }
         }
@@ -125,7 +143,8 @@ public class DistributableSingleSignOn implements SingleSignOn {
     @Override
     public void close() {
         if (this.closed.compareAndSet(false, true)) {
-            try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            try (final BatchContext context = this.batcher.resumeBatch( this.batch ))
+            {
                 this.batch.close();
             }
         }
