@@ -23,9 +23,12 @@
 /**
  * UnallowedUrlTestCase
  * For more information visit <a href="https://issues.redhat.com/browse/WFLY-13439">https://issues.redhat.com/browse/WFLY-13439</a>
+ *
  * @author Petr Adamec
  */
 package org.jboss.as.test.integration.jsf.testurl;
+
+import java.net.URL;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -36,6 +39,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 //import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -44,8 +48,6 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.net.URL;
 
 /**
  * Test if 404 is returned for url address which isn't allowed
@@ -77,18 +79,20 @@ public class ForbiddenUrlTestCase {
     /**
      * Test if 200 is returned for allowed url
      * <br /> For more information see https://issues.redhat.com/browse/WFLY-13439.
+     *
      * @throws Exception
      */
     @Test
     public void testAllowedUrl() throws Exception {
         HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 
-        try(CloseableHttpClient client = httpClientBuilder.build()) {
+        try (CloseableHttpClient client = httpClientBuilder.build()) {
 
-            HttpUriRequest getVarRequest = new HttpGet(url.toExternalForm() + ALLOWED_URL);
+            HttpUriRequest getVarRequest = new HttpGet(url.toExternalForm() + jakartafiUrl(ALLOWED_URL));
             try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
                 int statusCode = getVarResponse.getStatusLine().getStatusCode();
-                Assert.assertEquals("Status code should be " + ALLOWED_STATUS_CODE + ", but is " + statusCode + ". For more information see JBEAP-18842. ", ALLOWED_STATUS_CODE, statusCode);
+                Assert.assertEquals("Status code should be " + ALLOWED_STATUS_CODE + ", but is " + statusCode +
+                        ". For more information see JBEAP-18842. ", ALLOWED_STATUS_CODE, statusCode);
             }
         }
     }
@@ -96,19 +100,40 @@ public class ForbiddenUrlTestCase {
     /**
      * Test id 404 is returned fot forbidden url.
      * <br /> For more information see https://issues.redhat.com/browse/WFLY-13439
+     *
      * @throws Exception
      */
     @Test
     public void testForbiddenUrl() throws Exception {
         HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 
-        try(CloseableHttpClient client = httpClientBuilder.build()) {
+        try (CloseableHttpClient client = httpClientBuilder.build()) {
 
-            HttpUriRequest getVarRequest = new HttpGet(url.toExternalForm() + FORBIDDEN_URL);
+            HttpUriRequest getVarRequest = new HttpGet(url.toExternalForm() + jakartafiUrl(FORBIDDEN_URL));
             try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
                 int statusCode = getVarResponse.getStatusLine().getStatusCode();
-                Assert.assertEquals("Status code should be " + FORBIDDEN_STATUS_CODE + ", but is " + statusCode + ". For more information see JBEAP-18842. ", FORBIDDEN_STATUS_CODE, statusCode);
+                Assert.assertEquals("Status code should be " + FORBIDDEN_STATUS_CODE + ", but is " + statusCode +
+                        ". For more information see JBEAP-18842. ", FORBIDDEN_STATUS_CODE, statusCode);
             }
+        }
+    }
+
+    /**
+     * TODO: Temporary hack
+     * EE 9 changes the namespace from javax.* to jakarta.*. Running these tests under EE 9 or later, as WildFly Preview does, will
+     * cause the tests to fail, since they're using the old namespace in strings. This method will alter the URLs if it can detect
+     * that the tests are running under EE 9 or later. Once WildFly switches completely to EE 10, this hack can be removed, and the
+     * strings updated appropriately.
+     *
+     * @param url
+     * @return
+     */
+    @Deprecated
+    private String jakartafiUrl(String url) {
+        if (AssumeTestGroupUtil.isWildFlyPreview()) {
+            return url.replaceAll("javax", "jakarta");
+        } else {
+            return url;
         }
     }
 }

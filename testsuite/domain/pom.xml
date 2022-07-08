@@ -230,7 +230,6 @@
                 <configuration>
                     <failIfNoTests>false</failIfNoTests>
                     <!-- parallel>none</parallel -->
-                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
 
                     <!-- System properties to forked surefire JVM which runs clients. The log manager is required to
                          be defined when building with the IBM JDK. -->
@@ -278,7 +277,6 @@
                         <configuration>
                             <failIfNoTests>false</failIfNoTests>
                             <!-- parallel>none</parallel -->
-                            <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
 
                             <!-- System properties to forked surefire JVM which runs clients. -->
                             <argLine>${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.system.args}</argLine>
@@ -312,9 +310,6 @@
                     <name>ts.ee9</name>
                 </property>
             </activation>
-            <properties>
-                <maven.local.repo>${wildfly.transformed.repo.dir}</maven.local.repo>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -330,7 +325,7 @@
                                     <argLine>-Djava.util.logging.manager=org.jboss.logmanager.LogManager ${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.system.args}</argLine>
                                     
                                     <systemPropertyVariables>
-                                        <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
+                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
                                         
                                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                                         <jboss.home>${project.basedir}/target/wildfly</jboss.home>

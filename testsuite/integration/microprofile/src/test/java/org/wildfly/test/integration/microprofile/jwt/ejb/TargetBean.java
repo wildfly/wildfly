@@ -16,8 +16,8 @@
 
 package org.wildfly.test.integration.microprofile.jwt.ejb;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Stateless;
 
 /**
  *

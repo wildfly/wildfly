@@ -34,7 +34,7 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <!-- use the web build for tests -->
-        <jboss.dist>${jbossas.project.dir}/${wildfly.web.build.output.dir}</jboss.dist>
+        <jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
         <!-- properties to enable plugins shared by various bootable jar executions -->
@@ -149,7 +149,6 @@
                                 <!-- We need the modules from the complete dist, not just servlet dist used by the default-test execution -->
                                 <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                             </systemPropertyVariables>
-                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <excludes>
                                 <!-- requires legacy-security -->
                                 <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -453,11 +452,6 @@
                     <name>ts.standalone.microprofile</name>
                 </property>
             </activation>
-            <properties>
-                <!-- We don't want to use the default jboss.dist for this module, which is from the servlet-dist dir -->
-                <jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.dist>
-                <jboss.home>${jboss.dist}</jboss.home>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -803,10 +797,9 @@
                                     </environmentVariables>
                                     <systemPropertyVariables>
                                         <jboss.install.dir>${project.build.directory}/wildfly</jboss.install.dir>
-                                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                        <!-- Override the standard module path that points at the shared module set from the dist -->
                                         <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -834,13 +827,12 @@
                                         <jbossas.dist>${project.build.directory}/wildfly-legacy-https</jbossas.dist>
                                         <jboss.dist>${project.build.directory}/wildfly-legacy-https</jboss.dist>
                                         <jboss.install.dir>${project.build.directory}/wildfly-legacy-https</jboss.install.dir>
-                                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                        <!-- Override the standard module path that points at the shared module set from the dist -->
                                         <module.path>${project.build.directory}/wildfly-legacy-https/modules${path.separator}${basedir}/target/modules</module.path>
                                     </systemPropertyVariables>
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-legacy-https</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</include>
                                         <!-- TODO this has special setup logic for -Delytron vs not; needs a variant for this test setup
@@ -863,10 +855,9 @@
                                     </environmentVariables>
                                     <systemPropertyVariables>
                                         <jboss.install.dir>${project.build.directory}/wildfly-jaxrs</jboss.install.dir>
-                                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                        <!-- Override the standard module path that points at the shared module set from the dist -->
                                         <module.path>${project.build.directory}/wildfly-jaxrs/modules${path.separator}${basedir}/target/modules</module.path>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -895,7 +886,7 @@
                                     </environmentVariables>
                                     <systemPropertyVariables>
                                         <jboss.install.dir>${project.build.directory}/wildfly-cloud</jboss.install.dir>
-                                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                        <!-- Override the standard module path that points at the shared module set from the dist -->
                                         <module.path>${project.build.directory}/wildfly-cloud/modules${path.separator}${basedir}/target/modules</module.path>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
@@ -995,7 +986,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-web-profile.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -1027,7 +1017,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-web-legacy-security.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/web/security/**/*TestCase.java</include>
                                     </includes>
@@ -1055,7 +1044,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-undertow-https.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</include>
                                         <!-- TODO this has special setup logic for -Delytron vs not; needs a variant for this test setup
@@ -1083,7 +1071,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-jaxrs.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -1115,7 +1102,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-cloud.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -1161,7 +1147,7 @@
                 <bootable-jar-undertow-https-packaging.phase>process-test-classes</bootable-jar-undertow-https-packaging.phase>
                 <bootable-jar-jaxrs-packaging.phase>process-test-classes</bootable-jar-jaxrs-packaging.phase>
                 <bootable-jar-cloud-packaging.phase>process-test-classes</bootable-jar-cloud-packaging.phase>
-                <extra.server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</extra.server.jvm.args>
+                <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
             <build>
                 <plugins>
@@ -1212,7 +1198,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -1223,7 +1208,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -1234,7 +1218,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -1245,7 +1228,6 @@
                                 <configuration>
                                     <plugin-options>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -1276,7 +1258,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-web-profile.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -1311,7 +1292,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-undertow-https.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</include>
                                         <!-- TODO this has special setup logic for -Delytron vs not; needs a variant for this test setup
@@ -1339,7 +1319,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-jaxrs.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -1374,7 +1353,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-cloud.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>

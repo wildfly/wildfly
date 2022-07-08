@@ -30,7 +30,6 @@
 
     <resources>
         <artifact name="${org.jboss.ws.cxf:jbossws-cxf-client}"/>
-        <artifact name="${org.jboss.ws.cxf:jbossws-cxf-jaspi}"/>
     </resources>
 
     <dependencies>
@@ -66,7 +65,6 @@
             <include path="META-INF"/>
           </imports>
         </module>
-        <module name="org.apache.log4j" />
         <module name="org.apache.neethi" />
         <module name="org.apache.ws.security" />
         <module name="org.jboss.logging" />

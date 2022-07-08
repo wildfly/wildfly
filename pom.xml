@@ -98,9 +98,7 @@
         <module>spec-api</module>
         <module>transactions</module>
         <module>undertow</module>
-        <module>servlet-build</module>
         <module>web-common</module>
-        <module>servlet-dist</module>
         <module>servlet-feature-pack</module>
         <module>webservices</module>
         <module>weld</module>
@@ -139,9 +137,6 @@
         <ee.dist.product.release.version>${full.dist.product.release.version}</ee.dist.product.release.version>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
-        <servlet.dist.product.release.name>WildFly Servlet</servlet.dist.product.release.name>
-        <servlet.dist.product.slot>wildfly-web</servlet.dist.product.slot>
-        <servlet.dist.product.release.version>${ee.dist.product.release.version}</servlet.dist.product.release.version>
         <product.docs.server.version>27</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
         <verifier.product.release.version>27.0</verifier.product.release.version>
@@ -203,7 +198,6 @@
              Custom test jobs can override this using -D, e.g. -Dtestsuite.default.build.project.prefix=ee- -->
         <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
         <wildfly.build.output.dir>${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
-        <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${server.output.dir.version}</wildfly.web.build.output.dir>
 
         <!-- Protocol to use for communication with remote maven repositories.
              You can set to 'http' if you are using a maven proxy and 'https'
@@ -219,6 +213,8 @@
         <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=1024m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
         <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} ${surefire.non-modular.system.args}</surefire.system.args>
         <arquillian.servlet.protocol>Servlet 3.0</arquillian.servlet.protocol>
+        <testLogToFile>true</testLogToFile>
+        <maven.test.redirectTestOutputToFile>${testLogToFile}</maven.test.redirectTestOutputToFile>
 
         <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
              that *could* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
@@ -267,11 +263,11 @@
          -->
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.7</version.org.jacoco>
-        <version.org.jboss.galleon>5.0.1.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>5.0.3.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>6.0.0.Alpha5</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>6.0.0.Alpha6</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>7.0.0.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>2.0.1.Final</version.org.wildfly.plugin>
@@ -306,7 +302,6 @@
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
         <version.com.github.fge.msg-simple>1.1</version.com.github.fge.msg-simple>
         <version.com.github.tomakehurst.wiremock>2.27.2</version.com.github.tomakehurst.wiremock>
-        <version.com.github.spullara.mustache>0.9.10</version.com.github.spullara.mustache>
         <version.com.google.android.annotations>4.1.1.4</version.com.google.android.annotations>
         <version.com.google.api.grpc>2.0.1</version.com.google.api.grpc>
         <version.com.google.code.gson>2.8.9</version.com.google.code.gson>
@@ -355,7 +350,7 @@
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
         <version.io.smallrye.smallrye-common>1.12.0</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>2.10.1</version.io.smallrye.smallrye-config>
-        <version.io.smallrye.smallrye-fault-tolerance>5.4.0</version.io.smallrye.smallrye-fault-tolerance>
+        <version.io.smallrye.smallrye-fault-tolerance>5.4.1</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>3.2.1</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>3.1.1</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>3.0.4</version.io.smallrye.smallrye-metrics>
@@ -380,12 +375,12 @@
         <version.jsoup>1.14.2</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>7.3.0</version.net.shibboleth.utilities.java-support>
-        <version.org.apache.activemq.artemis>2.23.0</version.org.apache.activemq.artemis>
+        <version.org.apache.activemq.artemis>2.23.1</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>1.0.2</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.11.0</version.org.apache.avro>
         <version.org.apache.cxf>3.5.2</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.3.1</version.org.apache.cxf.xjcplugins>
-        <version.org.apache.ds>2.0.0-M24</version.org.apache.ds>
+        <version.org.apache.ds>2.0.0.AM26</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.7</version.org.apache.james.apache-mime4j>
         <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
@@ -447,7 +442,7 @@
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
-        <version.org.jboss.hal.console>3.6.0.Final</version.org.jboss.hal.console>
+        <version.org.jboss.hal.console>3.6.1.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.2.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.5.7.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
@@ -455,7 +450,7 @@
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <version.org.jboss.metadata>15.1.0.Alpha1</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>2.0.1.Final</version.org.jboss.mod_cluster>
-        <version.org.jboss.narayana>5.12.6.Final</version.org.jboss.narayana>
+        <version.org.jboss.narayana>5.12.7.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.9.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>4.7.4.Final</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.microprofile>${version.org.jboss.resteasy}</version.org.jboss.resteasy.microprofile>
@@ -510,7 +505,7 @@
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>19.0.0.Beta12</version.org.wildfly.core>
+        <version.org.wildfly.core>19.0.0.Beta13</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.12.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.15.Final</version.org.wildfly.naming-client>
@@ -530,12 +525,12 @@
         <preview.version.com.sun.xml.messaging.saaj>3.0.0-M2</preview.version.com.sun.xml.messaging.saaj>
         <preview.version.io.agroal>2.0</preview.version.io.agroal>
         <preview.version.io.undertow>2.3.0.Alpha1</preview.version.io.undertow>
-        <preview.version.io.undertow.jastow>2.2.0.Final</preview.version.io.undertow.jastow>
+        <preview.version.io.undertow.jastow>2.2.1.Final</preview.version.io.undertow.jastow>
         <preview.version.jakarta.activation.jakarta.activation-api>2.1.0</preview.version.jakarta.activation.jakarta.activation-api>
         <preview.version.jakarta.annotation.jakarta-annotation-api>2.1.1</preview.version.jakarta.annotation.jakarta-annotation-api>
         <preview.version.jakarta.authentication.jakarta-authentication-api>3.0.0</preview.version.jakarta.authentication.jakarta-authentication-api>
         <preview.version.jakarta.authorization.jakarta-authorization-api>2.1.0</preview.version.jakarta.authorization.jakarta-authorization-api>
-        <preview.version.jakarta.batch.jakarta.batch-api>2.1.0</preview.version.jakarta.batch.jakarta.batch-api>
+        <preview.version.jakarta.batch.jakarta.batch-api>2.1.1</preview.version.jakarta.batch.jakarta.batch-api>
         <preview.version.jakarta.ejb.jakarta-ejb-api>4.0.1</preview.version.jakarta.ejb.jakarta-ejb-api>
         <preview.version.jakarta.el.jakarta-el-api>5.0.0</preview.version.jakarta.el.jakarta-el-api>
         <preview.version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</preview.version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
@@ -557,7 +552,7 @@
         <preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
         <preview.version.jakarta.transaction.jakarta-transaction-api>2.0.0</preview.version.jakarta.transaction.jakarta-transaction-api>
         <preview.version.jakarta.validation.jakarta-validation-api>3.0.2</preview.version.jakarta.validation.jakarta-validation-api>
-        <preview.version.jakarta.websocket.jakarta-websocket-api>2.1.0</preview.version.jakarta.websocket.jakarta-websocket-api>
+        <preview.version.jakarta.websocket.jakarta-websocket-api>2.1.0-jbossorg-2</preview.version.jakarta.websocket.jakarta-websocket-api>
         <preview.version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</preview.version.jakarta.ws.rs.jakarta-ws-rs-api>
         <preview.version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.0</preview.version.jakarta.xml.bind.jakarta-xml-bind-api>
         <preview.version.net.shibboleth.utilities.java-support>8.0.0</preview.version.net.shibboleth.utilities.java-support>
@@ -595,7 +590,7 @@
         <preview.version.io.smallrye.smallrye-reactive-messaging>4.0.0.RC1</preview.version.io.smallrye.smallrye-reactive-messaging>
         <!-- MP5 - END -->
         <preview.version.jboss.jaxbintros>2.0.0</preview.version.jboss.jaxbintros>
-        <preview.version.org.eclipse.yasson>3.0.0-RC2</preview.version.org.eclipse.yasson>
+        <preview.version.org.eclipse.yasson>3.0.0</preview.version.org.eclipse.yasson>
         <preview.version.org.eclipselink.version>3.0.2</preview.version.org.eclipselink.version>
         <preview.version.org.glassfish.expressly>5.0.0-M2</preview.version.org.glassfish.expressly>
         <preview.version.org.glassfish.jakarta.el>5.0.0-M1</preview.version.org.glassfish.jakarta.el>
@@ -609,7 +604,7 @@
         <preview.version.org.hibernate>6.0.2.Final</preview.version.org.hibernate>
         <preview.version.org.hibernate.commons.annotations>6.0.1.Final</preview.version.org.hibernate.commons.annotations>
         <preview.version.org.hibernate.search>6.1.5.Final</preview.version.org.hibernate.search>
-        <preview.version.org.hibernate.validator>8.0.0.Alpha3</preview.version.org.hibernate.validator>
+        <preview.version.org.hibernate.validator>8.0.0.CR1</preview.version.org.hibernate.validator>
         <preview.version.org.jberet>2.1.0.Final</preview.version.org.jberet>
         <preview.version.org.jboss.invocation>1.7.0.Final</preview.version.org.jboss.invocation>
         <preview.version.org.jboss.resteasy>6.1.0.Beta2</preview.version.org.jboss.resteasy>
@@ -618,10 +613,12 @@
         <preview.version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.0.CR1</preview.version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
         <preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>1.0.0.Final</preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>
         <preview.version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>1.0.0.Final</preview.version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>
-        <preview.version.org.jboss.weld.weld>5.0.0.SP2</preview.version.org.jboss.weld.weld>
-        <preview.version.org.jboss.weld.weld-api>5.0.Final</preview.version.org.jboss.weld.weld-api>
+        <preview.version.org.jboss.weld.weld>5.0.1.Final</preview.version.org.jboss.weld.weld>
+        <preview.version.org.jboss.weld.weld-api>5.0.SP2</preview.version.org.jboss.weld.weld-api>
         <preview.version.org.jboss.ws.api>2.0.0.Final</preview.version.org.jboss.ws.api>
         <preview.version.org.jboss.ws.common>4.0.0.Final</preview.version.org.jboss.ws.common>
+        <preview.version.org.jboss.ws.cxf>6.0.0.Final</preview.version.org.jboss.ws.cxf>
+        <preview.version.org.jboss.ws.jaxws-undertow-httpspi>2.0.0.Final</preview.version.org.jboss.ws.jaxws-undertow-httpspi>
         <preview.version.org.jboss.ws.spi>4.1.0.Final</preview.version.org.jboss.ws.spi>
         <preview.version.org.opensaml.opensaml>4.2.0</preview.version.org.opensaml.opensaml>
         <preview.version.org.jvnet.staxex>2.0.1</preview.version.org.jvnet.staxex>
@@ -1698,27 +1695,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-dist</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-servlet-feature-pack-common</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
@@ -1769,20 +1745,6 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-servlet-feature-pack-galleon-legacy</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-galleon-pack</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
@@ -2000,12 +1962,6 @@
                 <groupId>com.sun.xml.bind.external</groupId>
                 <artifactId>relaxng-datatype</artifactId>
                 <version>${version.sun.jaxb}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.github.spullara.mustache.java</groupId>
-                <artifactId>compiler</artifactId>
-                <version>${version.com.github.spullara.mustache}</version>
             </dependency>
 
             <dependency>
@@ -4136,461 +4092,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.ws.cxf</groupId>
-                <artifactId>jbossws-cxf-client</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>asm</groupId>
-                        <artifactId>asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.fastinfoset</groupId>
-                        <artifactId>FastInfoset</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-xjc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.xml.stream</groupId>
-                        <artifactId>stax-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.ws.cxf</groupId>
-                        <artifactId>jbossws-cxf-transports-httpserver</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-bindings-soap</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-ws-mex</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-bindings-coloc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-http</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-http-hc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-local</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-ws-rm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-ws-policy</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-ws-security</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-java2ws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-databinding-jaxb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-frontend-jaxws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf.xjcplugins</groupId>
-                        <artifactId>cxf-xjc-boolean</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf.xjcplugins</groupId>
-                        <artifactId>cxf-xjc-bug671</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf.xjcplugins</groupId>
-                        <artifactId>cxf-xjc-dv</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf.xjcplugins</groupId>
-                        <artifactId>cxf-xjc-ts</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.santuario</groupId>
-                        <artifactId>xmlsec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>apache-velocity</groupId>
-                        <artifactId>velocity</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-collections</groupId>
-                        <artifactId>commons-collections</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-lang</groupId>
-                        <artifactId>commons-lang</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-lang3</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>wstx-lgpl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet</groupId>
-                        <artifactId>jboss-servlet-api_3.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.xml.stream.api</groupId>
-                        <artifactId>stax-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>stax</groupId>
-                        <artifactId>stax-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <!-- required yet banned, use org.jboss.slf4j:slf4j-jboss-logmanager -->
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws.cxf</groupId>
-                <artifactId>jbossws-cxf-factories</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws.cxf</groupId>
-                <artifactId>jbossws-cxf-jaspi</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-ws-security</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet</groupId>
-                        <artifactId>jboss-servlet-api_3.1_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws.cxf</groupId>
-                <artifactId>jbossws-cxf-resources</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
-                <classifier>wildfly2700</classifier>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws.cxf</groupId>
-                <artifactId>jbossws-cxf-server</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>asm</groupId>
-                        <artifactId>asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.fastinfoset</groupId>
-                        <artifactId>FastInfoset</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-xjc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.xml.stream</groupId>
-                        <artifactId>stax-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-ws-mex</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf.services.sts</groupId>
-                        <artifactId>cxf-services-sts-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-bindings-soap</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-bindings-coloc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-management</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-http</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-http-hc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-local</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-ws-rm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-ws-policy</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-ws-security</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-java2ws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-databinding-jaxb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-frontend-jaxws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf.xjcplugins</groupId>
-                        <artifactId>cxf-xjc-boolean</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf.xjcplugins</groupId>
-                        <artifactId>cxf-xjc-bug671</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf.xjcplugins</groupId>
-                        <artifactId>cxf-xjc-dv</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf.xjcplugins</groupId>
-                        <artifactId>cxf-xjc-ts</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.santuario</groupId>
-                        <artifactId>xmlsec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>apache-velocity</groupId>
-                        <artifactId>velocity</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-collections</groupId>
-                        <artifactId>commons-collections</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-lang</groupId>
-                        <artifactId>commons-lang</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-lang3</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>wstx-lgpl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.ejb</groupId>
-                        <artifactId>jboss-ejb-api_4.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <!-- superseded by org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec -->
-                        <groupId>org.jboss.spec.javax.jms</groupId>
-                        <artifactId>jboss-jms-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.xml.stream.api</groupId>
-                        <artifactId>stax-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>stax</groupId>
-                        <artifactId>stax-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet</groupId>
-                        <artifactId>jboss-servlet-api_3.1_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws.cxf</groupId>
-                <artifactId>jbossws-cxf-transports-udp</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.fasterxml.woodstox</groupId>
-                        <artifactId>woodstox-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.xml.stream</groupId>
-                        <artifactId>stax-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.annotation</groupId>
-                        <artifactId>jboss-annotations-api_1.2_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jboss-logging</groupId>
-                        <artifactId>org.jboss.logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws.cxf</groupId>
-                <artifactId>jbossws-cxf-transports-undertow</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.annotation</groupId>
-                        <artifactId>jboss-annotations-api_1.2_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.ws.projects</groupId>
-                        <artifactId>jaxws-undertow-httpspi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jboss-logging</groupId>
-                        <artifactId>org.jboss.logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.annotation</groupId>
-                        <artifactId>jboss-annotations-api_1.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws.projects</groupId>
-                <artifactId>jaxws-undertow-httpspi</artifactId>
-                <version>${version.org.jboss.ws.jaxws-undertow-httpspi}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.xml.ws</groupId>
-                        <artifactId>jboss-jaxws-api_2.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.xnio.netty</groupId>
                 <artifactId>netty-xnio-transport</artifactId>
                 <version>${version.org.jboss.xnio.netty.netty-xnio-transport}</version>
@@ -5038,7 +4539,14 @@
 
             <dependency>
                 <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-all</artifactId>
+                <artifactId>apacheds-test-framework</artifactId>
+                <version>${version.org.apache.ds}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.directory.server</groupId>
+                <artifactId>apacheds-interceptor-kerberos</artifactId>
                 <version>${version.org.apache.ds}</version>
                 <scope>test</scope>
             </dependency>
@@ -5247,7 +4755,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${version.surefire.plugin}</version>
                     <configuration>
-                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
                         <enableAssertions>true</enableAssertions>
                         <systemPropertyVariables>
                             <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
@@ -5321,6 +4829,7 @@
                                         <excludes>
                                             <exclude>args4j:args4j</exclude>
                                             <exclude>biz.aQute:bnd</exclude>
+                                            <exclude>ch.qos.reload4j:reload4j</exclude>
                                             <exclude>com.google.gwt.inject:gin</exclude>
                                             <exclude>com.google.inject:guice</exclude>
                                             <exclude>com.gwtplatform:gwtp-all</exclude>
@@ -5750,10 +5259,7 @@
             </activation>
             <properties>
                 <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
-                <!-- No separate web dist -->
-                <wildfly.web.build.output.dir>${wildfly.build.output.dir}</wildfly.web.build.output.dir>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
-                <wildfly.transformed.repo.dir>${jbossas.project.dir}/ee-9/feature-pack/target/jakarta-transform-maven-repo</wildfly.transformed.repo.dir>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>
@@ -5774,7 +5280,6 @@
             </activation>
             <properties>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
-                <wildfly.transformed.repo.dir>${jbossas.project.dir}/ee-9/feature-pack/target/jakarta-transform-maven-repo</wildfly.transformed.repo.dir>
                 <!-- Disable the default surefire test execution for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>

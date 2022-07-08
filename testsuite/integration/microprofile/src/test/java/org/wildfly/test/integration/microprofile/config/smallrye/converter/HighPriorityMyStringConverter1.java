@@ -21,7 +21,7 @@
  */
 package org.wildfly.test.integration.microprofile.config.smallrye.converter;
 
-import javax.annotation.Priority;
+import jakarta.annotation.Priority;
 
 import org.eclipse.microprofile.config.spi.Converter;
 

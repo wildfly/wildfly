@@ -19,6 +19,8 @@ package org.wildfly.test.integration.vdx.standalone;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -41,6 +43,12 @@ import org.wildfly.test.integration.vdx.utils.server.ServerConfig;
 @RunWith(Arquillian.class)
 @Category(StandaloneTests.class)
 public class MessagingTestCase extends TestBase {
+
+    @BeforeClass
+    public static void noPreview() {
+        // WildFly Preview doesn't configure a messaging broker
+        AssumeTestGroupUtil.assumeNotWildFlyPreview();
+    }
 
     /*
      * append invalid element to subsystem definition

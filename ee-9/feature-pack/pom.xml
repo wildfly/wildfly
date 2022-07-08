@@ -62,9 +62,6 @@
         <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
         <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
         <module.jms.suffix>jakarta</module.jms.suffix>
-
-        <!-- Miscellaneous properties -->
-        <jakarta.transform.verbose>false</jakarta.transform.verbose>
     </properties>
 
     <build>
@@ -438,7 +435,7 @@
                 <configuration>
                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                     <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|infinispan-hibernate-cache-v51|jboss-ejb-client-legacy|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-servlet-galleon-pack|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-elytron\z|wildfly-preview-feature-pack-ee-9-api|wildfly-preview-feature-pack-common|wildfly-preview-feature-pack-common-microprofile</excludedArtifacts>
+                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|infinispan-hibernate-cache-v51|jboss-ejb-client-legacy|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-elytron\z|wildfly-preview-feature-pack-ee-9-api|wildfly-preview-feature-pack-common|wildfly-preview-feature-pack-common-microprofile</excludedArtifacts>
                 </configuration>
                 <executions>
                     <execution>
@@ -478,136 +475,8 @@
                             <release-name>${preview.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <task-properties>
-                                <jakarta.transform.artifacts>true</jakarta.transform.artifacts>
-                                <jakarta.transform.modules>false</jakarta.transform.modules>
-                                <jakarta.transform.artifacts.suffix>-ee9</jakarta.transform.artifacts.suffix>
                                 <product.release.version>${preview.dist.product.release.version}</product.release.version>
                             </task-properties>
-                            <jakarta-transform>true</jakarta-transform>
-                            <!--<jakarta-transform-configs-dir>EXTERNAL_FOLDER</jakarta-transform-configs-dir>-->
-                            <jakarta-transform-verbose>${jakarta.transform.verbose}</jakarta-transform-verbose>
-                            <jakarta-transform-excluded-artifacts>
-                                <!-- Don't transform libs that use javax.servlet to provide side
-                                     functionality (e.g. consoles or similar) that we do not support. -->
-                                <exclude>com.h2database:h2\z</exclude>
-                                <exclude>org.apache.thrift:libthrift\z</exclude>
-                                <exclude>org.jasypt:jasypt\z</exclude>
-                                <!-- Don't transform libraries that use the javax.annotation package but
-                                     not the Jakarta Annotations APIs that share it with other APIs.
-                                     Generally (perhaps always), this is from use of JSR 305 annotations -->
-                                <exclude>com.github.fge:jackson-coreutils\z</exclude>
-                                <exclude>com.github.fge:json-patch\z</exclude>
-                                <exclude>com.github.fge:msg-simple\z</exclude>
-                                <exclude>com.google.guava:guava\z</exclude>
-                                <exclude>com.google.protobuf:protobuf-java-util\z</exclude>
-                                <exclude>com.squareup.okhttp3:okhttp\z</exclude>
-                                <exclude>com.squareup.okio:okio\z</exclude>
-                                <exclude>io.grpc:grpc-api\z</exclude>
-                                <exclude>io.grpc:grpc-context\z</exclude>
-                                <exclude>io.grpc:grpc-protobuf\z</exclude>
-                                <exclude>io.grpc:grpc-okhttp\z</exclude>
-                                <exclude>io.grpc:grpc-core\z</exclude>
-                                <exclude>io.grpc:grpc-protobuf-lite\z</exclude>
-                                <exclude>io.grpc:grpc-stub\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-api\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-context\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-exporter-jaeger\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-exporter-otlp-common\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-exporter-otlp-trace\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-sdk\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-sdk-common\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-sdk-logs\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-sdk-metrics\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-sdk-trace\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-semconv\z</exclude>
-                                <exclude>io.perfmark:perfmark-api\z</exclude>
-                                <exclude>io.smallrye:smallrye-open-api-core</exclude>
-                                <exclude>io.smallrye:smallrye-open-api-jaxrs</exclude>
-                                <exclude>io.undertow:undertow-servlet\z</exclude>
-                                <exclude>net.bytebuddy:byte-buddy\z</exclude>
-                                <exclude>org.opensaml:opensaml-core\z</exclude>
-                                <exclude>org.opensaml:opensaml-security-impl\z</exclude>
-                                <exclude>org.opensaml:opensaml-soap-api\z</exclude>
-                                <exclude>org.opensaml:opensaml-saml-api\z</exclude>
-                                <exclude>org.opensaml:opensaml-xmlsec-api\z</exclude>
-                                <!-- end javax.annotations excludes -->
-                                <!-- Don't transform org.dom4j:dom4j as we don't use its package
-                                     that uses jaxp -->
-                                <exclude>org.dom4j:dom4j\z</exclude>
-                                <!-- Don't transform artifacts only transformed due to data in a
-                                     module-info.class or OSGi attributes in a MANIFEST.MF.
-                                     These things are irrelevant to WildFly's use of artifacts.-->
-                                <exclude>com.fasterxml.jackson.jaxrs:jackson-jaxrs-base\z</exclude>
-                                <exclude>com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider\z</exclude>
-                                <exclude>com.fasterxml.jackson.module:jackson-module-jaxb-annotations\z</exclude>
-                                <!-- end JPMS or OSGi metadata excludes -->
-                                <!-- Only contains hard-coded strings that are either not used or both the javax and
-                                jakarta names are used or legacy text files like XSD's or XML configuration files -->
-                                <exclude>jakarta.xml.bind:jakarta.xml.bind-api\z</exclude>
-                                <exclude>org.apache.logging.log4j:log4j-api\z</exclude>
-                                <exclude>org.apache.cxf:cxf-core\z</exclude>
-                                <exclude>org.apache.cxf:cxf-rt-bindings-xml\z</exclude>
-                                <exclude>org.apache.cxf:cxf-rt-databinding-jaxb\z</exclude>
-                                <exclude>org.apache.cxf:cxf-rt-frontend-simple\z</exclude>
-                                <exclude>org.apache.cxf:cxf-rt-transports-jms\z</exclude>
-                                <exclude>org.apache.cxf:cxf-rt-transports-http\z</exclude>
-                                <exclude>org.apache.cxf:cxf-rt-ws-rm\z</exclude>
-                                <exclude>org.apache.cxf:cxf-tools-common\z</exclude>
-                                <exclude>org.apache.cxf:cxf-tools-java2ws\z</exclude>
-                                <exclude>org.glassfish.jaxb:jaxb-xjc\z</exclude>
-                                <exclude>org.hibernate.orm:hibernate-core\z</exclude>
-                                <exclude>org.hibernate.orm:hibernate-envers\z</exclude>
-                                <exclude>org.hibernate.search:hibernate-search-mapper-orm-orm6\z</exclude>
-
-                                <!-- Uses JSON only for formatting and uses an internal JSON generator -->
-                                <exlude>org.jboss.logmanager:jboss-logmanager\z</exlude>
-                                <!-- Uses javax JSON internally -->
-                                <exclude>org.wildfly.core:wildfly-event-logger\z</exclude>
-                                <!-- Don't transform Infinispan modules and its dependents -->
-                                <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec</exclude>
-                                <exclude>org.infinispan:.+\z</exclude>
-                                <exclude>org.wildfly:wildfly-clustering-ee-cache\z</exclude>
-                                <exclude>org.wildfly:wildfly-clustering-ee-infinispan\z</exclude>
-                                <exclude>org.wildfly:wildfly-clustering-ee-hotrod\z</exclude>
-                                <exclude>org.wildfly:wildfly-clustering-infinispan-client-.*\z</exclude>
-                                <exclude>org.wildfly:wildfly-clustering-infinispan-embedded-.+\z</exclude>
-                                <exclude>org.wildfly:wildfly-clustering-infinispan-extension\z</exclude>
-                                <exclude>org.wildfly:wildfly-clustering-web-infinispan\z</exclude>
-
-                                <exclude>org.hornetq:.+\z</exclude>
-                                <exclude>org.apache.activemq:artemis-jakarta-client\z</exclude>
-                                <exclude>org.apache.activemq:artemis-jakarta-ra\z</exclude>
-                                <exclude>org.apache.activemq:artemis-jakarta-server\z</exclude>
-                                <exclude>org.apache.activemq:artemis-jakarta-service-extensions\z</exclude>
-                                <exclude>org.apache.activemq:artemis-journal\z</exclude>
-                                <exclude>org.apache.activemq:artemis-jdbc-store\z</exclude>
-                                <exclude>org.apache.activemq:artemis-amqp-protocol\z</exclude>
-                                <exclude>org.apache.activemq:artemis-hornetq-protocol\z</exclude>
-                                <exclude>org.apache.activemq:artemis-stomp-protocol\z</exclude>
-                                <exclude>org.apache.activemq:artemis-hqclient-protocol\z</exclude>
-                                <exclude>org.apache.activemq:artemis-selector\z</exclude>
-                                <exclude>org.apache.activemq:artemis-cli\z</exclude>
-                                <exclude>org.apache.activemq:artemis-commons\z</exclude>
-                                <exclude>org.apache.activemq:artemis-core-client\z</exclude>
-                                <exclude>org.apache.activemq:artemis-dto\z</exclude>
-                                <exclude>org.apache.activemq:artemis-server\z</exclude>
-                                <exclude>org.glassfish:jakarta.json\z</exclude>
-                                <exclude>activemq-artemis-native\z</exclude>
-                                <exclude>org.jboss.activemq.artemis.integration:artemis-wildfly-jakarta-integration\z</exclude>
-
-                                <!-- Depends on javax.json API that it bundles.
-                                   Transformation bound to org.wildfly.security.auth.client.spi.WebServicesClientConfigProviderImpl
-                                   is meaningless, this class is not being used by CLI.
-                                -->
-                                <exclude>org.wildfly.core:wildfly-cli:client\z</exclude>
-
-                                <!-- Issue filed for removal of log4j 1.x, WFCORE-5781. Skipping this may break users
-                                     who use appenders like the SMTPAppender. However, most of the Jakarta EE appenders
-                                     do not work with WildFly. We should ignore the transformation as we'll be removing
-                                     in the near future.
-                                  -->
-                                <exclude>org.jboss.logmanager:log4j-jboss-logmanager\z</exclude>
-                            </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -932,6 +801,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-webservices-server-integration</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-weld-bean-validation</artifactId>
                 </exclusion>
                 <exclusion>
@@ -957,6 +830,10 @@
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-weld-transactions</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-weld-webservices</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>

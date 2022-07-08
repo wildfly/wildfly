@@ -198,7 +198,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                         if (cClazz.isAnnotationPresent(javax.ws.rs.Path.class)) {
                             final ClassInfo info = resourceMap.get(cClazz.getName());
                             if (info != null) {
-                                if (info.annotations().containsKey(DECORATOR)) {
+                                if (info.annotationsMap().containsKey(DECORATOR)) {
                                     //we do not add decorators as resources
                                     //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
                                     continue;
@@ -342,7 +342,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                     //see WFLY-9752
                     continue;
                 }
-                if(info.annotations().containsKey(DECORATOR)) {
+                if(info.annotationsMap().containsKey(DECORATOR)) {
                     //we do not add decorators as resources
                     //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
                     continue;
@@ -364,7 +364,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                         //see WFLY-9752
                         continue;
                     }
-                    if(info.annotations().containsKey(DECORATOR)) {
+                    if(info.annotationsMap().containsKey(DECORATOR)) {
                         //we do not add decorators as providers
                         //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
                         continue;
@@ -388,7 +388,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                     continue;
                 }
 
-                if(implementor.annotations().containsKey(DECORATOR)) {
+                if(implementor.annotationsMap().containsKey(DECORATOR)) {
                     //we do not add decorators as resources
                     //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
                     continue;

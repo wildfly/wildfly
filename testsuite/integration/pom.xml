@@ -308,8 +308,8 @@
             </properties>
             <modules>
                 <!--<module>basic</module>-->
-                <!--module>clustering</module-->
-                <module>microprofile</module>
+                <!--<module>clustering</module>-->
+                <!--<module>microprofile</module>-->
                 <module>microprofile-tck</module>
                 <module>elytron-oidc-client</module>
             </modules>
@@ -326,11 +326,12 @@
             <modules>
                 <!--<module>basic</module>-->
                 <module>ws</module>
-                <!--module>clustering</module-->
-                <module>microprofile</module>
+                <!--<module>clustering</module>-->
+                <!--<module>microprofile</module>-->
                 <module>microprofile-tck</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
+                <module>vdx</module>
             </modules>
         </profile>
 
@@ -387,8 +388,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skipTests>${ts.skipTests}</skipTests>
-                    <!-- Prevent test and server output appearing in console. -->
-                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
                  
                     <!-- Forked process timeout -->

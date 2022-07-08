@@ -65,6 +65,7 @@
         <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} ${extra.server.jvm.args}</server.jvm.args>
 
         <maven.local.repo>${settings.localRepository}</maven.local.repo>
+        <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED</modular.jdk.testsuite.args>
     </properties>
 
     <dependencies>
@@ -934,7 +935,7 @@
                 </property>
             </activation>
             <properties>
-                <maven.local.repo>${wildfly.transformed.repo.dir}</maven.local.repo>
+                <maven.local.repo>${settings.localRepository}</maven.local.repo>
             </properties>
             <build>
                 <plugins>
@@ -944,7 +945,7 @@
                         <version>${version.org.wildfly.plugin}</version>
                         <configuration>
                             <system-properties>
-                                <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
                             </system-properties>
                         </configuration>
                     </plugin>
@@ -977,7 +978,7 @@
                                 <phase>test</phase>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
+                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
                                     </systemPropertyVariables>
                                     <!-- These include a module to be used which currently uses javax and is not transformed -->
                                     <excludedGroups>org.jboss.as.test.shared.categories.RequiresTransformedClass</excludedGroups>
@@ -988,7 +989,7 @@
                                 <phase>test</phase>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir} -Djava.security.properties=${security.properties}</server.jvm.args>
+                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djava.security.properties=${security.properties}</server.jvm.args>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>

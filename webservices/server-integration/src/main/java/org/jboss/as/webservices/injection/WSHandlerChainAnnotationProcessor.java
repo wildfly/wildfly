@@ -138,12 +138,12 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
     }
 
     private static AnnotationInstance getHandlerChainAnnotationInstance(final ClassInfo classInfo) {
-        List<AnnotationInstance> list = classInfo.annotations().get(HANDLER_CHAIN_ANNOTATION);
+        List<AnnotationInstance> list = classInfo.annotationsMap().get(HANDLER_CHAIN_ANNOTATION);
         return list != null && !list.isEmpty() ? list.iterator().next() : null;
     }
 
     private static AnnotationInstance getEndpointInterfaceHandlerChainAnnotationInstance(final ClassInfo classInfo, final Index index) {
-        AnnotationValue av = classInfo.annotations().get(WEB_SERVICE_ANNOTATION).iterator().next().value("endpointInterface");
+        AnnotationValue av = classInfo.annotationsMap().get(WEB_SERVICE_ANNOTATION).iterator().next().value("endpointInterface");
         if (av != null) {
             String intf = av.asString();
             if (intf != null && !intf.isEmpty()) {
@@ -222,8 +222,8 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
         if (!Modifier.isPublic(flags)) return false;
         if (isJaxwsService(clazz, index)) return false;
         if (Modifier.isFinal(flags)) return false;
-        final boolean isWebService = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
-        final boolean isWebServiceProvider = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
+        final boolean isWebService = clazz.annotationsMap().containsKey(WEB_SERVICE_ANNOTATION);
+        final boolean isWebServiceProvider = clazz.annotationsMap().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
         return isWebService || isWebServiceProvider;
     }
 }

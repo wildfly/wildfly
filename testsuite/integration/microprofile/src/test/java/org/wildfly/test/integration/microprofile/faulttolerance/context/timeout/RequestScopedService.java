@@ -22,7 +22,7 @@
 
 package org.wildfly.test.integration.microprofile.faulttolerance.context.timeout;
 
-import javax.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.RequestScoped;
 
 /**
  * @author Radoslav Husar

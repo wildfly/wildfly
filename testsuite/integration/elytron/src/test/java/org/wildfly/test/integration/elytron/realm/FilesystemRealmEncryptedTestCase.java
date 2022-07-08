@@ -21,7 +21,6 @@
  */
 package org.wildfly.test.integration.elytron.realm;
 
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
@@ -42,8 +41,6 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -60,11 +57,6 @@ public class FilesystemRealmEncryptedTestCase {
     private static final String DEPLOYMENT_ENCRYPTED = "filesystemRealmEncrypted";
     private static final String USER = "plainUser";
     private static final String PASSWORD = "secretPassword";
-
-    @BeforeClass
-    public static void assumeNotBootable() {
-        Assume.assumeTrue("WFLY-16019", System.getProperty("ts.bootable") == null);
-    }
 
     @Deployment(name = DEPLOYMENT_ENCRYPTED)
     public static WebArchive deploymentWithCharsetAndEncoded() {
@@ -96,19 +88,6 @@ public class FilesystemRealmEncryptedTestCase {
     public void testEncryptionCredentialFail(@ArquillianResource URL webAppURL) throws Exception {
         URL url = prepareURL(webAppURL);
         Utils.makeCallWithBasicAuthn(url, USER+"123", PASSWORD, SC_UNAUTHORIZED);
-    }
-
-    /**
-     *
-     * Test Filesystem realm when choosing to encrypt it with a bad Secret Key.
-     */
-    @Test
-    @OperateOnDeployment(DEPLOYMENT_ENCRYPTED)
-    public void testEncryptionSecretKeyFail(@ArquillianResource URL webAppURL) throws Exception {
-        URL url = prepareURL(webAppURL);
-        SetUpTask.setUpBadCredentialStore(SetUpTask.REALM_NAME, SetUpTask.INVALID_CREDENTIAL_STORE);
-        Utils.makeCallWithBasicAuthn(url, USER, PASSWORD, SC_INTERNAL_SERVER_ERROR);
-        SetUpTask.tearDownBadCredentialStore(SetUpTask.REALM_NAME, SetUpTask.CREDENTIAL_STORE);
     }
 
     private URL prepareURL(URL url) throws MalformedURLException {
@@ -148,18 +127,9 @@ public class FilesystemRealmEncryptedTestCase {
                 cli.sendLine(String.format(
                         "/subsystem=undertow/application-security-domain=%s:add(security-domain=%s)",
                         deployment, domainName));
-
-                cli.sendLine(String.format("/subsystem=elytron/secret-key-credential-store=%1$s:add(path=%1$s.cs, relative-to=jboss.server.config.dir, create=true, populate=true)", invalidCredentialStore));
             }
         }
 
-        private static void setUpBadCredentialStore(String realmName, String credentialStore) throws Exception {
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:write-attribute(name=credential-store, value=%s)",
-                        realmName, credentialStore));
-            }
-            ServerReload.reloadIfRequired(managementClient);
-        }
 
         @Override
         public void tearDown(ManagementClient managementClient, java.lang.String s) throws Exception {
@@ -168,13 +138,6 @@ public class FilesystemRealmEncryptedTestCase {
             ServerReload.reloadIfRequired(managementClient);
         }
 
-        private static void tearDownBadCredentialStore(String realmName, String credentialStore) throws Exception {
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:write-attribute(name=credential-store, value=%s)",
-                        realmName, credentialStore));
-            }
-            ServerReload.reloadIfRequired(managementClient);
-        }
 
 
         private void tearDownDomain(String deployment, String domainName, String realmName, String username, String credentialStore, String invalidCredentialStore) throws Exception {

@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
  * Test case for https://issues.redhat.com/browse/WFLY-12982 which used to fail on legacy SR FT with:
  * <p>
  * UT005023: Exception handling request to /: org.jboss.weld.context.ContextNotActiveException:
- * WELD-001303: No active contexts for scope type javax.enterprise.context.RequestScoped
+ * WELD-001303: No active contexts for scope type jakarta.enterprise.context.RequestScoped
  *
  * @author Radoslav Husar
  */

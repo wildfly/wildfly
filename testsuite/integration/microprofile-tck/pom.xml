@@ -241,7 +241,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
-                                <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                <!-- Override the standard module path that points at the shared module set from the dist -->
                                 <module.path>${project.build.directory}/wildfly/modules</module.path>
                             </systemPropertyVariables>
                         </configuration>
@@ -291,7 +291,7 @@
             </activation>
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
-                <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
+                <maven.repo.local>${settings.localRepository}</maven.repo.local>
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
 
@@ -317,7 +317,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -328,7 +327,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
-                                <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                                <!-- Override the standard module path that points at the shared module set from the dist -->
                                 <module.path>${project.build.directory}/wildfly/modules</module.path>
                             </systemPropertyVariables>
                         </configuration>
@@ -454,7 +453,7 @@
             <properties>
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
-                <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
+                <maven.repo.local>${settings.localRepository}</maven.repo.local>
                 <!-- Use the WFP dependencyManagement set.
                      This is set in this profile in a parent module, but the explicit global override
                      in this module takes precedence. -->
@@ -472,7 +471,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>

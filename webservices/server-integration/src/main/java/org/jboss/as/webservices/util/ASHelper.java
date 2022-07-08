@@ -201,7 +201,7 @@ public final class ASHelper {
         final short flags = clazz.flags();
         if (!Modifier.isInterface(flags)) return false;
         if (!Modifier.isPublic(flags)) return false;
-        return clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
+        return clazz.annotationsMap().containsKey(WEB_SERVICE_ANNOTATION);
     }
 
     public static boolean hasClassesFromPackage(final Index index, final String pck) {
@@ -224,8 +224,8 @@ public final class ASHelper {
         if (Modifier.isAbstract(flags)) return false;
         if (!Modifier.isPublic(flags)) return false;
         if (isJaxwsService(clazz, index)) return false;
-        final boolean hasWebServiceAnnotation = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
-        final boolean hasWebServiceProviderAnnotation = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
+        final boolean hasWebServiceAnnotation = clazz.annotationsMap().containsKey(WEB_SERVICE_ANNOTATION);
+        final boolean hasWebServiceProviderAnnotation = clazz.annotationsMap().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
         if (!hasWebServiceAnnotation && !hasWebServiceProviderAnnotation) {
             return false;
         }

@@ -80,7 +80,6 @@
                                 <!-- We need the modules from the complete dist, not just servlet dist used by the default-test execution -->
                                 <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                             </systemPropertyVariables>
-                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <excludes>
                                 <!-- requires legacy-security -->
                                 <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -377,7 +376,7 @@
                 <bootable-jar-undertow-https-packaging.phase>process-test-classes</bootable-jar-undertow-https-packaging.phase>
                 <bootable-jar-jaxrs-packaging.phase>process-test-classes</bootable-jar-jaxrs-packaging.phase>
                 <bootable-jar-cloud-packaging.phase>process-test-classes</bootable-jar-cloud-packaging.phase>
-                <extra.server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</extra.server.jvm.args>
+                <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
             <build>
                 <plugins>
@@ -428,7 +427,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -439,7 +437,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -450,7 +447,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -461,7 +457,6 @@
                                 <configuration>
                                     <plugin-options>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -492,7 +487,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-web-profile.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -527,7 +521,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-undertow-https.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</include>
                                         <!-- TODO this has special setup logic for -Delytron vs not; needs a variant for this test setup
@@ -555,7 +548,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-jaxrs.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>
@@ -590,7 +582,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-cloud.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <excludes>
                                         <!-- requires legacy-security -->
                                         <exclude>org/jboss/as/test/integration/web/security/**/*TestCase.java</exclude>

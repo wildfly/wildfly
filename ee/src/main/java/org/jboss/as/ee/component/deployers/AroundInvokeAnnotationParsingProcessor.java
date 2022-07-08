@@ -74,7 +74,7 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final ClassInfo classInfo = methodInfo.declaringClass();
         final EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
-        final List<AnnotationInstance> classAroundInvokes = classInfo.annotations().get(AROUND_INVOKE_ANNOTATION_NAME);
+        final List<AnnotationInstance> classAroundInvokes = classInfo.annotationsMap().get(AROUND_INVOKE_ANNOTATION_NAME);
         if(classAroundInvokes.size() > 1) {
            throw EeLogger.ROOT_LOGGER.aroundInvokeAnnotationUsedTooManyTimes(classInfo.name(), classAroundInvokes.size());
         }
