@@ -26,7 +26,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.ejb.timer.AbstractTimerServiceTestCase;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.ClassRule;
 import org.junit.rules.TestRule;
@@ -56,18 +56,26 @@ public class HotRodPersistentTimerServiceTestCase extends AbstractTimerServiceTe
         return createArchive(HotRodPersistentTimerServiceTestCase.class).addAsWebInfResource(HotRodPersistentTimerServiceTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
     }
 
-    static class TimerManagementSetupTask extends CLIServerSetupTask {
+    static class TimerManagementSetupTask extends ManagementServerSetupTask {
         TimerManagementSetupTask() {
-            this.builder.node(THREE_NODES)
-                    .setup("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent:add")
-                    .setup("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/component=expiration:add(interval=0)")
-                    .setup("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/component=locking:add(isolation=REPEATABLE_READ)")
-                    .setup("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/component=transaction:add(mode=BATCH)")
-                    .setup("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/store=hotrod:add(remote-cache-container=ejb, cache-configuration=default, fetch-state=false, purge=false, passivation=false, shared=true)")
-                    .setup("/subsystem=distributable-ejb/infinispan-timer-management=hotrod:add(cache-container=ejb, cache=hotrod-persistent)")
-                    .teardown("/subsystem=distributable-ejb/infinispan-timer-management=hotrod:remove")
-                    .teardown("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent:remove")
-                    ;
+            super(NODE_1_2, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                        .startBatch()
+                            .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent:add")
+                            .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/component=expiration:add(interval=0)")
+                            .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/component=locking:add(isolation=REPEATABLE_READ)")
+                            .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/component=transaction:add(mode=BATCH)")
+                            .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/store=hotrod:add(remote-cache-container=ejb, cache-configuration=default, fetch-state=false, purge=false, passivation=false, shared=true)")
+                            .add("/subsystem=distributable-ejb/infinispan-timer-management=hotrod:add(cache-container=ejb, cache=hotrod-persistent)")
+                        .endBatch()
+                        .build())
+                    .tearDownScript(createScriptBuilder()
+                        .startBatch()
+                            .add("/subsystem=distributable-ejb/infinispan-timer-management=hotrod:remove")
+                            .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent:remove")
+                        .endBatch()
+                        .build())
+                    .build());
         }
     }
 }
