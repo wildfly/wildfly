@@ -67,7 +67,6 @@
         <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
         <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
         <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared-jakarta</wildfly-testsuite-shared.artifactId>
-        <wildfly.transformed.repo.dir>${jbossas.project.dir}/ee-9/feature-pack/target/jakarta-transform-maven-repo</wildfly.transformed.repo.dir>
         <!-- WildFly Arquillian Adapter with Jakarta EE Support -->
         <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
         <version.org.wildfly.arquillian>5.0.0.Alpha1</version.org.wildfly.arquillian>
@@ -391,7 +390,6 @@
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                 <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                             </plugin-options>
                             <cli-sessions>
                                 <cli-session>
@@ -432,7 +430,6 @@
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                 <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                             </plugin-options>
                             <cli-sessions>
                                 <cli-session>
@@ -476,7 +473,6 @@
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                 <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                             </plugin-options>
                             <cli-sessions>
                                 <cli-session>
@@ -518,7 +514,6 @@
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                 <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                             </plugin-options>
                             <cli-sessions>
                                 <cli-session>
@@ -576,7 +571,6 @@
                                     <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
-                                        <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
                                         <module.path>${jboss.dist}/modules</module.path>
                                     </system-properties>
                                 </configuration>
@@ -596,7 +590,6 @@
                                     <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
-                                        <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
                                         <module.path>${jboss.dist}/modules</module.path>
                                     </system-properties>
                                 </configuration>
@@ -1334,7 +1327,7 @@
             </activation>
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
-                <extra.server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</extra.server.jvm.args>
+                <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
             <build>
                 <plugins>
@@ -1374,7 +1367,6 @@
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1449,7 +1441,6 @@
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1521,7 +1512,6 @@
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1600,7 +1590,6 @@
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1665,7 +1654,6 @@
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1711,7 +1699,6 @@
                                     <stdout>${project.build.directory}/wildfly-ejb-xpc-plugin.log</stdout>
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
-                                        <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
                                         <module.path>${project.build.directory}/wildfly-clustering-ejb/modules</module.path>
                                     </system-properties>
                                 </configuration>
@@ -1731,7 +1718,6 @@
                                     <stdout>${project.build.directory}/wildfly-jpa-dist-plugin.log</stdout>
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
-                                        <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
                                         <module.path>${project.build.directory}/wildfly-jpa-dist/modules</module.path>
                                     </system-properties>
                                 </configuration>
@@ -1751,7 +1737,6 @@
                                     <stdout>${project.build.directory}/wildfly-clustering-jsf-plugin.log</stdout>
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
-                                        <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
                                         <module.path>${project.build.directory}/wildfly-clustering-jsf/modules</module.path>
                                     </system-properties>
                                 </configuration>
@@ -2154,7 +2139,7 @@
                 <bootable-jar-load-balancer-packaging.phase>process-test-resources</bootable-jar-load-balancer-packaging.phase>
                 <bootable-jar-web-passivation-packaging.phase>process-test-resources</bootable-jar-web-passivation-packaging.phase>
                 <bootable-jar-configure-windows-paths.phase>generate-test-sources</bootable-jar-configure-windows-paths.phase>
-                <extra.server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</extra.server.jvm.args>
+                <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
             <build>
                 <plugins>
