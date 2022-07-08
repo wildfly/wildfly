@@ -40,5 +40,6 @@
         <module name="javax.interceptor.api" />
         <module name="javax.annotation.api" />
         <module name="javax.inject.api" />
+        <module name="javax.json.api" />
     </dependencies>
 </module>
