@@ -227,37 +227,4 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.gmaven</groupId>
-                <artifactId>groovy-maven-plugin</artifactId>
-                <version>2.1.1</version>
-                <executions>
-                    <execution>
-                        <id>delete-old-file</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <properties>
-                            </properties>
-                            <source>
-                                def toDelete = [
-                                        "org/wildfly/extension/microprofile/opentracing/Constants.java"
-                                ]
-                                toDelete.forEach {
-                                    new File(project.build.getDirectory() +
-                                            "/generated-sources/transformed/" + it)
-                                            .delete()
-                                }
-                            </source>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>
