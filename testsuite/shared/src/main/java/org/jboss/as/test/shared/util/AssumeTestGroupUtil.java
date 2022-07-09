@@ -1,6 +1,5 @@
 package org.jboss.as.test.shared.util;
 
-import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import java.security.AccessController;
@@ -84,7 +83,21 @@ public class AssumeTestGroupUtil {
      * @throws AssumptionViolatedException if the security manager is enabled
      */
     public static void assumeSecurityManagerDisabled() {
-        assumeCondition("Tests failing if the security manager is enabled.", () -> System.getProperty("security.manager") == null);
+        assumeCondition("Tests failing if the security manager is enabled.", AssumeTestGroupUtil::isSecurityManagerDisabled);
+    }
+
+    /**
+     * Check if the JDK Security Manager is <strong>not</strong> enabled.
+     * <p>
+     * Note that this checks the {@code security.manager} system property and <strong>not</strong> that the
+     * {@link System#getSecurityManager()} is {@code null}. The property is checked so that the assumption check can be
+     * done in a {@link org.junit.Before @Before} or {@link org.junit.BeforeClass @BeforeClass} method.
+     * </p>
+     *
+     * @return {@code true} if the {@code security.manager} system property is null.
+     */
+    public static boolean isSecurityManagerDisabled() {
+        return System.getProperty("security.manager") == null;
     }
 
     /**
@@ -101,7 +114,7 @@ public class AssumeTestGroupUtil {
      */
     public static void assumeSecurityManagerDisabledOrAssumeJDKVersionBefore(int javaSpecificationVersion) {
         assumeCondition("Tests failing if the security manager is enabled and JDK in use is after " + javaSpecificationVersion + ".",
-                () -> (System.getProperty("security.manager") == null || getJavaSpecificationVersion() < javaSpecificationVersion));
+                () -> (isSecurityManagerDisabled() || isJDKVersionBefore(javaSpecificationVersion)));
     }
 
     /**
@@ -112,9 +125,9 @@ public class AssumeTestGroupUtil {
      * @throws AssumptionViolatedException if the JDK version is less than or equal to {@code javaSpecificationVersion}
      */
     public static void assumeJDKVersionAfter(int javaSpecificationVersion) {
-        assert javaSpecificationVersion >= 8; // we only support 8 or later so no reason to call this for 8
+        assert javaSpecificationVersion >= 11; // we only support 11 or later
         assumeCondition("Tests failing if the JDK in use is before " + javaSpecificationVersion + ".",
-                () -> getJavaSpecificationVersion() > javaSpecificationVersion);
+                () -> isJDKVersionAfter(javaSpecificationVersion));
     }
 
     /**
@@ -125,24 +138,28 @@ public class AssumeTestGroupUtil {
      * @throws AssumptionViolatedException if the JDK version is greater than or equal to {@code javaSpecificationVersion}
      */
     public static void assumeJDKVersionBefore(int javaSpecificationVersion) {
-        assert javaSpecificationVersion >= 9; // we only support 8 or later so no reason to call this for 8
+        assert javaSpecificationVersion > 11; // we only support 11 or later so no reason to call this for 11
         assumeCondition("Tests failing if the JDK in use is after " + javaSpecificationVersion + ".",
-                () -> getJavaSpecificationVersion() < javaSpecificationVersion);
+                () -> isJDKVersionBefore(javaSpecificationVersion));
     }
 
-    // BES 2020/05/18 I added this along with assumeJDKVersionAfter/assumeJDKVersionBefore but commented it
-    // out because using it seems like bad practice. If there's a legit need some day, well, here's the code...
-//    /**
-//     * Assume for tests that fail when the JVM version is something. This should be used sparingly and issues should
-//     * be filed for failing tests so a proper fix can be done, as it's inappropriate to limit a test to a single version.
-//     *
-//     * @param javaSpecificationVersion the JDK specification version. Use 8 for JDK 8. Must be 8 or higher.
-//     */
-//    public static void assumeJDKVersionEquals(int javaSpecificationVersion) {
-//        assert javaSpecificationVersion >= 8; // we only support 8 or later
-//        assumeCondition("Tests failing if the JDK in use is other than " + javaSpecificationVersion + ".",
-//                () -> getJavaSpecificationVersion() == javaSpecificationVersion);
-//    }
+    /**
+     * Check if the current JDK specification version is greater than the given value.
+     *
+     * @param javaSpecificationVersion the JDK specification version. Use 8 for JDK 8.
+     */
+    public static boolean isJDKVersionAfter(int javaSpecificationVersion) {
+        return getJavaSpecificationVersion() > javaSpecificationVersion;
+    }
+
+    /**
+     * Check if the current JDK specification version is less than the given value.
+     *
+     * @param javaSpecificationVersion the JDK specification version. Use 8 for JDK 8.
+     */
+    public static boolean isJDKVersionBefore(int javaSpecificationVersion) {
+        return getJavaSpecificationVersion() < javaSpecificationVersion;
+    }
 
     /**
      * Assume for test failures when running against a full distribution.
@@ -154,7 +171,20 @@ public class AssumeTestGroupUtil {
      * @throws AssumptionViolatedException if property {@code testsuite.default.build.project.prefix} is set to a non-empty value
      */
     public static void assumeFullDistribution() {
-        assumeCondition("Tests requiring full distribution are disabled", () -> System.getProperty("testsuite.default.build.project.prefix", "").equals(""));
+        assumeCondition("Tests requiring full distribution are disabled", AssumeTestGroupUtil::isFullDistribution);
+    }
+
+    /**
+     * Checks whether tests are running against a full distribution.
+     * Full distributions are available from build/dist modules. It skips tests in case
+     * {@code '-Dtestsuite.default.build.project.prefix'} Maven argument is used with
+     * a non empty value, e.g. testsuite.default.build.project.prefix=ee- which means we
+     * are using ee-build/ee-dist modules as the source where to find the server under test.
+     *
+     * @throws {@code true} of system property {@code testsuite.default.build.project.prefix} has a non-empty value
+     */
+    public static boolean isFullDistribution() {
+        return System.getProperty("testsuite.default.build.project.prefix", "").equals("");
     }
 
     /**
@@ -163,10 +193,20 @@ public class AssumeTestGroupUtil {
      * @throws AssumptionViolatedException if a docker client cannot be initialized
      */
     public static void assumeDockerAvailable() {
+        assumeCondition("Docker is not available.", AssumeTestGroupUtil::isDockerAvailable);
+    }
+
+    /**
+     * Checks whether a docker installation is available.
+     *
+     * @throws AssumptionViolatedException if a docker client cannot be initialized
+     */
+    public static boolean isDockerAvailable() {
         try {
             DockerClientFactory.instance().client();
+            return true;
         } catch (Throwable ex) {
-            throw new AssumptionViolatedException("Docker is not available.");
+            return false;
         }
     }
 
@@ -176,13 +216,13 @@ public class AssumeTestGroupUtil {
      * @throws AssumptionViolatedException if one of the system properties that indicates WildFly Preview is being tested is set
      */
     public static void assumeNotWildFlyPreview() {
-        assumeFalse("Some tests are disabled on WildFly Preview",
-                isWildFlyPreview());
+        assumeCondition("Some tests are disabled on WildFly Preview",
+                () -> !isWildFlyPreview());
     }
 
     public static void assumeWildFlyPreview() {
-        assumeTrue("Some tests require WildFly Preview",
-                isWildFlyPreview());
+        assumeCondition("Some tests require WildFly Preview",
+                AssumeTestGroupUtil::isWildFlyPreview);
     }
 
     public static boolean isWildFlyPreview() {
