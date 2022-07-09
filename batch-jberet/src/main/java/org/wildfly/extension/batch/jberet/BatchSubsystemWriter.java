@@ -33,6 +33,7 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
+import org.wildfly.extension.batch.jberet.job.repository.JpaJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDefinition;
 
 /**
@@ -73,7 +74,18 @@ public class BatchSubsystemWriter implements XMLElementWriter<SubsystemMarshalli
                 writer.writeEndElement(); // end job-repository
             }
         }
-
+        // Write the JPA job repositories
+        if (model.hasDefined(JpaJobRepositoryDefinition.NAME)) {
+            final List<Property> repositories = model.get(JpaJobRepositoryDefinition.NAME).asPropertyList();
+            for (Property property : repositories) {
+                writer.writeStartElement(Element.JOB_REPOSITORY.getLocalName());
+                writeNameAttribute(writer, property.getName());
+                writer.writeStartElement(Element.JPA.getLocalName());
+                JpaJobRepositoryDefinition.DATA_SOURCE.marshallAsAttribute(property.getValue(), writer);
+                writer.writeEndElement();
+                writer.writeEndElement(); // end job-repository
+            }
+        }
         // Write the thread pool
         if (model.hasDefined(BatchThreadPoolResourceDefinition.NAME)) {
             final List<Property> threadPools = model.get(BatchThreadPoolResourceDefinition.NAME).asPropertyList();

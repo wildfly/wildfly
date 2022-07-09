@@ -48,6 +48,10 @@
             <artifactId>jberet-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jberet</groupId>
+            <artifactId>jberet-jpa-repository</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.spec.javax.batch</groupId>
             <artifactId>jboss-batch-api_1.0_spec</artifactId>
         </dependency>
@@ -138,6 +142,15 @@
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
             <artifactId>wildfly-transaction-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- test -->

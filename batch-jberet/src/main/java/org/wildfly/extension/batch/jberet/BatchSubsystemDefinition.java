@@ -65,6 +65,7 @@ import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentResourceProc
 import org.wildfly.extension.batch.jberet.deployment.BatchEnvironmentProcessor;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
+import org.wildfly.extension.batch.jberet.job.repository.JpaJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDefinition;
 import org.wildfly.security.auth.server.SecurityDomain;
 
@@ -128,6 +129,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         super.registerChildren(resourceRegistration);
         resourceRegistration.registerSubModel(new InMemoryJobRepositoryDefinition());
         resourceRegistration.registerSubModel(new JdbcJobRepositoryDefinition());
+        resourceRegistration.registerSubModel(new JpaJobRepositoryDefinition());
         // thread-pool resource
         resourceRegistration.registerSubModel(new BatchThreadPoolResourceDefinition(registerRuntimeOnly));
 

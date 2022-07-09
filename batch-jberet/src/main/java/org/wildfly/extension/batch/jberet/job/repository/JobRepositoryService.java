@@ -204,6 +204,11 @@ abstract class JobRepositoryService implements JobRepository, Service<JobReposit
         return getAndCheckDelegate().getJobExecutionsByJob(jobName);
     }
 
+    @Override
+    public List<Long> getJobExecutionsByJob(String string, Integer intgr) {
+        return getAndCheckDelegate().getJobExecutionsByJob(string, intgr);
+    }
+
     protected abstract void startJobRepository(StartContext context) throws StartException;
 
     protected abstract void stopJobRepository(StopContext context);

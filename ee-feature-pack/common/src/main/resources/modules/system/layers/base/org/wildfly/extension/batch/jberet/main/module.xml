@@ -42,7 +42,9 @@
         <module name="javax.batch.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.transaction.api"/>
+        <module name="org.hibernate"/>
         <module name="org.jberet.jberet-core" services="import"/>
+        <module name="org.jberet.jberet-jpa-repository"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.naming"/>

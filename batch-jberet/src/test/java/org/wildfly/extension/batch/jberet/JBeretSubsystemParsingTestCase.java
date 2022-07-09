@@ -76,6 +76,10 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
     public void testJdbcSubsystem() throws Exception {
         standardSubsystemTest("/jdbc-default-subsystem.xml");
     }
+    @Test
+    public void testJpaSubsystem() throws Exception {
+        standardSubsystemTest("/jpa-default-subsystem.xml");
+    }
 
     @Test
     public void testSecurityDomainSubsystem() throws Exception {

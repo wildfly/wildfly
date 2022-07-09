@@ -1949,6 +1949,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jberet</groupId>
+            <artifactId>jberet-jpa-repository</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-iiop-client</artifactId>
         </dependency>

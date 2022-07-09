@@ -44,6 +44,7 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
+import org.wildfly.extension.batch.jberet.job.repository.JpaJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDefinition;
 
 /**
@@ -130,6 +131,12 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
                 final Map<Attribute, String> attributes = AttributeParsers.readRequiredAttributes(reader, EnumSet.of(Attribute.DATA_SOURCE));
                 final ModelNode op = Util.createAddOperation(subsystemAddress.append(JdbcJobRepositoryDefinition.NAME, name));
                 JdbcJobRepositoryDefinition.DATA_SOURCE.parseAndSetParameter(attributes.get(Attribute.DATA_SOURCE), op, reader);
+                ops.add(op);
+                ParseUtils.requireNoContent(reader);
+            } else if (element == Element.JPA) {
+                final Map<Attribute, String> attributes = AttributeParsers.readRequiredAttributes(reader, EnumSet.of(Attribute.DATA_SOURCE));
+                final ModelNode op = Util.createAddOperation(subsystemAddress.append(JpaJobRepositoryDefinition.NAME, name));
+                JpaJobRepositoryDefinition.DATA_SOURCE.parseAndSetParameter(attributes.get(Attribute.DATA_SOURCE), op, reader);
                 ops.add(op);
                 ParseUtils.requireNoContent(reader);
             } else {

@@ -1,0 +1,320 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2015, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.wildfly.extension.batch.jberet.job.repository;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Supplier;
+import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.JobInstance;
+import javax.batch.runtime.StepExecution;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.SharedCacheMode;
+import javax.persistence.spi.PersistenceUnitTransactionType;
+import javax.sql.DataSource;
+import static org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO;
+import static org.hibernate.cfg.AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS;
+import org.hibernate.jpa.boot.spi.Bootstrap;
+
+import org.jberet.jpa.repository.JpaRepository;
+import org.jberet.repository.JobRepository;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.batch.jberet._private.BatchLogger;
+import org.hibernate.jpa.boot.spi.EntityManagerFactoryBuilder;
+import org.jberet.job.model.Job;
+import org.jberet.repository.ApplicationAndJobName;
+import org.jberet.repository.JobExecutionSelector;
+import org.jberet.runtime.AbstractStepExecution;
+import org.jberet.runtime.JobExecutionImpl;
+import org.jberet.runtime.JobInstanceImpl;
+import org.jberet.runtime.PartitionExecutionImpl;
+import org.jberet.runtime.StepExecutionImpl;
+import org.jberet.jpa.util.BatchPersistenceUnitInfo;
+
+/**
+ * A service which provides a JPA job repository.
+ *
+ * @author a.moscatelli
+ */
+public class JpaJobRepositoryService extends JobRepositoryService implements Service<JobRepository> {
+
+    private final InjectedValue<DataSource> dataSourceValue = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executor = new InjectedValue<>();
+    private EntityManagerFactoryBuilder entityManagerFactoryBuilder;
+    private EntityManagerFactory entityManagerFactory;
+    private final ThreadLocal<EntityManager> entityManager = new ThreadLocal<EntityManager>();
+    private final ThreadLocal<JobRepository> repository = new ThreadLocal<JobRepository>();
+
+    private EntityManager getEntityManager() {
+        if (Objects.isNull(this.entityManager.get())) {
+            this.entityManager.set(this.entityManagerFactory.createEntityManager());
+        }
+        return this.entityManager.get();
+    }
+
+    private <T> T wrapInTransaction(Supplier<T> supplier) {
+        try {
+            getEntityManager().getTransaction().begin();
+            T result = supplier.get();
+            getEntityManager().getTransaction().commit();
+            return result;
+        } catch (Exception e) {
+            BatchLogger.LOGGER.error(e.getMessage(), e);
+            getEntityManager().getTransaction().rollback();
+            throw e;
+        }
+    }
+
+    private void wrapInTransaction(Runnable runnable) {
+        try {
+            getEntityManager().getTransaction().begin();
+            runnable.run();
+            getEntityManager().getTransaction().commit();
+        } catch (Exception e) {
+            BatchLogger.LOGGER.error(e.getMessage(), e);
+            getEntityManager().getTransaction().rollback();
+            throw e;
+        }
+    }
+
+    @Override
+    public void startJobRepository(final StartContext context) throws StartException {
+        final ExecutorService service = executor.getValue();
+        final Runnable task = () -> {
+            try {
+                BatchPersistenceUnitInfo batchPersistenceUnitInfo = new BatchPersistenceUnitInfo();
+                batchPersistenceUnitInfo.setPersistenceUnitName(JpaJobRepositoryService.class.getSimpleName());
+                batchPersistenceUnitInfo.setClassLoader(Thread.currentThread().getContextClassLoader());
+                batchPersistenceUnitInfo.setProperties(new Properties());
+                batchPersistenceUnitInfo.setNonJtaDataSource(dataSourceValue.getValue());
+                batchPersistenceUnitInfo.setTransactionType(PersistenceUnitTransactionType.RESOURCE_LOCAL);
+                batchPersistenceUnitInfo.setSharedCacheMode(SharedCacheMode.ALL);
+                batchPersistenceUnitInfo.setExcludeUnlistedClasses(false);
+                batchPersistenceUnitInfo.setJarFileUrls(List.of(JpaRepository.class.getProtectionDomain().getCodeSource().getLocation()));
+                this.entityManagerFactoryBuilder = Bootstrap.getEntityManagerFactoryBuilder(
+                        batchPersistenceUnitInfo,
+                        Map.of(
+                                HBM2DDL_AUTO, "update",
+                                USE_NEW_ID_GENERATOR_MAPPINGS, "false"
+                        )
+                );
+                this.entityManagerFactory = entityManagerFactoryBuilder.build();
+                context.complete();
+            } catch (IllegalStateException e) {
+                context.failed(BatchLogger.LOGGER.failedToCreateJobRepository(e, "JPA"));
+            }
+        };
+        try {
+            service.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
+    }
+
+    @Override
+    public void stopJobRepository(final StopContext context) {
+        if (Objects.nonNull(this.entityManagerFactory) && this.entityManagerFactory.isOpen()) {
+            this.entityManagerFactory.close();
+        }
+        if (Objects.nonNull(this.entityManagerFactoryBuilder)) {
+            this.entityManagerFactoryBuilder.cancel();
+        }
+    }
+
+    @Override
+    protected JobRepository getDelegate() {
+        if (Objects.isNull(this.repository.get())) {
+            this.repository.set(
+                    new JpaRepository(
+                            getEntityManager()
+                    )
+            );
+        }
+        return this.repository.get();
+    }
+
+    @Override
+    public void addJob(final ApplicationAndJobName applicationAndJobName, final Job job) {
+        wrapInTransaction(() -> super.addJob(applicationAndJobName, job));
+    }
+
+    @Override
+    public void removeJob(final String jobId) {
+        wrapInTransaction(() -> super.removeJob(jobId));
+    }
+
+    @Override
+    public Job getJob(final ApplicationAndJobName applicationAndJobName) {
+        return wrapInTransaction(() -> super.getJob(applicationAndJobName));
+    }
+
+    @Override
+    public Set<String> getJobNames() {
+        return wrapInTransaction(() -> super.getJobNames());
+    }
+
+    @Override
+    public boolean jobExists(final String jobName) {
+        return wrapInTransaction(() -> super.jobExists(jobName));
+    }
+
+    @Override
+    public JobInstanceImpl createJobInstance(final Job job, final String applicationName, final ClassLoader classLoader) {
+        return wrapInTransaction(() -> super.createJobInstance(job, applicationName, classLoader));
+    }
+
+    @Override
+    public void removeJobInstance(final long jobInstanceId) {
+        wrapInTransaction(() -> super.removeJobInstance(jobInstanceId));
+    }
+
+    @Override
+    public JobInstance getJobInstance(final long jobInstanceId) {
+        return wrapInTransaction(() -> super.getJobInstance(jobInstanceId));
+    }
+
+    @Override
+    public List<JobInstance> getJobInstances(final String jobName) {
+        return wrapInTransaction(() -> super.getJobInstances(jobName));
+    }
+
+    @Override
+    public int getJobInstanceCount(final String jobName) {
+        return wrapInTransaction(() -> super.getJobInstanceCount(jobName));
+    }
+
+    @Override
+    public JobExecutionImpl createJobExecution(final JobInstanceImpl jobInstance, final Properties jobParameters) {
+        return wrapInTransaction(() -> super.createJobExecution(jobInstance, jobParameters));
+    }
+
+    @Override
+    public JobExecution getJobExecution(final long jobExecutionId) {
+        return wrapInTransaction(() -> super.getJobExecution(jobExecutionId));
+    }
+
+    @Override
+    public List<JobExecution> getJobExecutions(final JobInstance jobInstance) {
+        return wrapInTransaction(() -> super.getJobExecutions(jobInstance));
+    }
+
+    @Override
+    public void updateJobExecution(final JobExecutionImpl jobExecution, final boolean fullUpdate, final boolean saveJobParameters) {
+        wrapInTransaction(() -> super.updateJobExecution(jobExecution, fullUpdate, saveJobParameters));
+    }
+
+    @Override
+    public void stopJobExecution(final JobExecutionImpl jobExecution) {
+        wrapInTransaction(() -> super.stopJobExecution(jobExecution));
+    }
+
+    @Override
+    public List<Long> getRunningExecutions(final String jobName) {
+        return wrapInTransaction(() -> super.getRunningExecutions(jobName));
+    }
+
+    @Override
+    public void removeJobExecutions(final JobExecutionSelector jobExecutionSelector) {
+        wrapInTransaction(() -> super.removeJobExecutions(jobExecutionSelector));
+    }
+
+    @Override
+    public List<StepExecution> getStepExecutions(final long jobExecutionId, final ClassLoader classLoader) {
+        return wrapInTransaction(() -> super.getStepExecutions(jobExecutionId, classLoader));
+    }
+
+    @Override
+    public StepExecutionImpl createStepExecution(final String stepName) {
+        return wrapInTransaction(() -> super.createStepExecution(stepName));
+    }
+
+    @Override
+    public void addStepExecution(final JobExecutionImpl jobExecution, final StepExecutionImpl stepExecution) {
+        wrapInTransaction(() -> super.addStepExecution(jobExecution, stepExecution));
+    }
+
+    @Override
+    public void updateStepExecution(final StepExecution stepExecution) {
+        wrapInTransaction(() -> super.updateStepExecution(stepExecution));
+    }
+
+    @Override
+    public StepExecutionImpl findOriginalStepExecutionForRestart(final String stepName, final JobExecutionImpl jobExecutionToRestart, final ClassLoader classLoader) {
+        return wrapInTransaction(() -> super.findOriginalStepExecutionForRestart(stepName, jobExecutionToRestart, classLoader));
+    }
+
+    @Override
+    public int countStepStartTimes(final String stepName, final long jobInstanceId) {
+        return wrapInTransaction(() -> super.countStepStartTimes(stepName, jobInstanceId));
+    }
+
+    @Override
+    public void addPartitionExecution(final StepExecutionImpl enclosingStepExecution, final PartitionExecutionImpl partitionExecution) {
+        wrapInTransaction(() -> super.addPartitionExecution(enclosingStepExecution, partitionExecution));
+    }
+
+    @Override
+    public List<PartitionExecutionImpl> getPartitionExecutions(final long stepExecutionId, final StepExecutionImpl stepExecution, final boolean notCompletedOnly, final ClassLoader classLoader) {
+        return wrapInTransaction(() -> super.getPartitionExecutions(stepExecutionId, stepExecution, notCompletedOnly, classLoader));
+    }
+
+    @Override
+    public void savePersistentData(final JobExecution jobExecution, final AbstractStepExecution stepOrPartitionExecution) {
+        wrapInTransaction(() -> super.savePersistentData(jobExecution, stepOrPartitionExecution));
+    }
+
+    @Override
+    public int savePersistentDataIfNotStopping(final JobExecution jobExecution, final AbstractStepExecution abstractStepExecution) {
+        return wrapInTransaction(() -> super.savePersistentDataIfNotStopping(jobExecution, abstractStepExecution));
+    }
+
+    @Override
+    public List<Long> getJobExecutionsByJob(final String jobName) {
+        return wrapInTransaction(() -> super.getJobExecutionsByJob(jobName));
+    }
+
+    @Override
+    public List<Long> getJobExecutionsByJob(String string, Integer intgr) {
+        return wrapInTransaction(() -> super.getJobExecutionsByJob(string, intgr));
+    }
+
+    public InjectedValue<DataSource> getDataSourceInjector() {
+        return dataSourceValue;
+    }
+
+    public Injector<ExecutorService> getExecutorServiceInjector() {
+        return executor;
+    }
+}
