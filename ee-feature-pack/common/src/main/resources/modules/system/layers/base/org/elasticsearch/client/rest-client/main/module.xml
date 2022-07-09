@@ -39,7 +39,6 @@
         <module name="org.apache.commons.logging"/>
         <module name="org.apache.commons.codec" export="true"/>
         <module name="org.apache.httpcomponents" export="true" services="export"/>
-        <module name="org.apache.httpcomponents" export="true" services="export"/>
         <module name="com.fasterxml.jackson.core.jackson-core"/>
     </dependencies>
 </module>
