@@ -59,14 +59,26 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
     }
 
     public RemoteEJBClientStatefulFailoverTestBase() {
-        super(TWO_NODES, new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_1, DEPLOYMENT_2 });
+        super(NODE_1_2, DEPLOYMENT_1_2);
+    }
+
+    @Override
+    protected void deploy() {
+        this.deploy(DEPLOYMENT_HELPER_1_2);
+        super.deploy();
+    }
+
+    @Override
+    protected void undeploy() {
+        super.undeploy();
+        this.deploy(DEPLOYMENT_HELPER_1_2);
     }
 
     @Override
     public void afterTestMethod() {
-        start(nodes);
-        undeploy(TWO_DEPLOYMENTS);
-        undeploy(TWO_DEPLOYMENT_HELPERS);
+        start();
+        undeploy(DEPLOYMENT_1_2);
+        undeploy(DEPLOYMENT_HELPER_1_2);
     }
 
     @Before
