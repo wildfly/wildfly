@@ -111,4 +111,15 @@ class AttributeParsers {
         }
         return result;
     }
+
+    static Map<Attribute, String> readAttributes(final XMLExtendedStreamReader reader, final Set<Attribute> attributes) {
+        final Map<Attribute, String> result = new EnumMap<>(Attribute.class);
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            final Attribute current = Attribute.forName(reader.getAttributeLocalName(i));
+            if (attributes.contains(current)) {
+                result.put(current, reader.getAttributeValue(i));
+            }
+        }
+        return result;
+    }
 }

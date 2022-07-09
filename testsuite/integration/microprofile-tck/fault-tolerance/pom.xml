@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-fault-tolerance</artifactId>
@@ -72,6 +72,10 @@
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-metrics</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.metrics</groupId>
@@ -163,12 +167,6 @@
                 <!-- Enable galleon provisioning -->
                 <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                </dependency>
-            </dependencies>
         </profile>
 
         <!-- Profile to turn off execution of this module's tests if the testsuite is being run

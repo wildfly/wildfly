@@ -22,23 +22,16 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
-import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.ReadAttributeTranslationHandler;
-import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.validation.EnumValidator;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -46,13 +39,14 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.server.service.DistributedCacheServiceConfiguratorProvider;
 
 /**
  * Base class for cache resources which require common cache attributes and clustered cache attributes.
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
+public class ClusteredCacheResourceDefinition extends CacheResourceDefinition<DistributedCacheServiceConfiguratorProvider> {
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
         TRANSPORT("org.wildfly.clustering.infinispan.cache-container.cache.transport"),
@@ -94,84 +88,6 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         }
     }
 
-    @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        ASYNC_MARSHALLING("async-marshalling", ModelType.BOOLEAN, ModelNode.FALSE, InfinispanModel.VERSION_4_0_0),
-        MODE("mode", ModelType.STRING, new ModelNode(Mode.SYNC.name()), InfinispanModel.VERSION_6_0_0) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(Mode.class));
-            }
-        },
-        QUEUE_FLUSH_INTERVAL("queue-flush-interval", ModelType.LONG, new ModelNode(10L), InfinispanModel.VERSION_4_1_0) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
-            }
-        },
-        QUEUE_SIZE("queue-size", ModelType.INT, ModelNode.ZERO, InfinispanModel.VERSION_4_1_0),
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setDefaultValue(defaultValue)
-                    .setDeprecated(deprecation.getVersion())
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    ).build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-
-        @Override
-        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-            return builder;
-        }
-    }
-
-    enum DeprecatedMetric implements AttributeTranslation, UnaryOperator<PathAddress>, Registration<ManagementResourceRegistration> {
-        AVERAGE_REPLICATION_TIME(ClusteredCacheMetric.AVERAGE_REPLICATION_TIME),
-        REPLICATION_COUNT(ClusteredCacheMetric.REPLICATION_COUNT),
-        REPLICATION_FAILURES(ClusteredCacheMetric.REPLICATION_FAILURES),
-        SUCCESS_RATIO(ClusteredCacheMetric.SUCCESS_RATIO),
-        ;
-        private final AttributeDefinition definition;
-        private final org.jboss.as.clustering.controller.Attribute targetAttribute;
-
-        DeprecatedMetric(ClusteredCacheMetric metric) {
-            this.targetAttribute = metric;
-            this.definition = new SimpleAttributeDefinitionBuilder(metric.getName(), metric.getDefinition().getType())
-                    .setStorageRuntime()
-                    .setDeprecated(InfinispanModel.VERSION_11_0_0.getVersion())
-                    .build();
-        }
-
-        @Override
-        public void register(ManagementResourceRegistration registration) {
-            registration.registerReadOnlyAttribute(this.definition, new ReadAttributeTranslationHandler(this));
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
-            return this.targetAttribute;
-        }
-
-        @Override
-        public UnaryOperator<PathAddress> getPathAddressTransformation() {
-            return this;
-        }
-
-        @Override
-        public PathAddress apply(PathAddress address) {
-            return address.getParent().append(CacheRuntimeResourceDefinition.pathElement(address.getLastElement().getValue()));
-        }
-    }
-
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         private final UnaryOperator<ResourceDescriptor> configurator;
 
@@ -183,7 +99,6 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return this.configurator.apply(descriptor)
                     .addAttributes(Attribute.class)
-                    .addIgnoredAttributes(DeprecatedAttribute.class)
                     .addCapabilities(Capability.class)
                     .addResourceCapabilityReference(new ResourceCapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL, UnaryCapabilityNameResolver.PARENT))
                     ;
@@ -192,18 +107,5 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     ClusteredCacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ClusteredCacheServiceHandler handler, FunctionExecutorRegistry<Cache<?, ?>> executors) {
         super(path, new ResourceDescriptorConfigurator(configurator), handler, executors);
-    }
-
-    @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = super.register(parent);
-
-        if (registration.isRuntimeOnlyRegistrationValid()) {
-            for (DeprecatedMetric metric : EnumSet.allOf(DeprecatedMetric.class)) {
-                metric.register(registration);
-            }
-        }
-
-        return registration;
     }
 }

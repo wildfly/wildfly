@@ -30,7 +30,6 @@ import org.jboss.as.connector.security.ElytronSecurityIntegration;
 import org.jboss.as.connector.services.workmanager.transport.CommandDispatcherTransport;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.txn.integration.JBossContextXATerminator;
-import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
 import org.jboss.jca.core.spi.workmanager.Address;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.jca.core.workmanager.WorkManagerCoordinator;
@@ -41,7 +40,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 
 /**
  * A WorkManager Service.
@@ -97,12 +96,7 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
 
         this.value.setXATerminator(new XATerminatorImpl(xaTerminator.getValue()));
 
-
-        if (this.value.isElytronEnabled()) {
-            this.value.setSecurityIntegration(new ElytronSecurityIntegration());
-        } else {
-            this.value.setSecurityIntegration(new PicketBoxSecurityIntegration());
-        }
+        this.value.setSecurityIntegration(new ElytronSecurityIntegration());
 
         try {
             transport.startup();

@@ -48,7 +48,7 @@ class ClassConfigSourceRegistrationService implements Service {
         this.sources = sources;
     }
 
-    static void install(OperationContext context, String name, ConfigSource configSource, Registry registry) {
+    static void install(OperationContext context, String name, ConfigSource configSource, Registry<ConfigSource> registry) {
         ServiceBuilder<?> builder = context.getServiceTarget()
                 .addService(ServiceNames.CONFIG_SOURCE.append(name));
 

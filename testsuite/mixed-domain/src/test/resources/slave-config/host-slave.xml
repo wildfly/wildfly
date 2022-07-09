@@ -60,7 +60,7 @@
     </management>
 
     <domain-controller>
-       <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm">
+       <remote host="${jboss.test.host.master.address}" port="${jboss.domain.primary.port:9999}" security-realm="ManagementRealm">
            <!-- The DomainAdjustors used in the test setup delete all the invalid extensions
             <ignored-resources type="extension">
 

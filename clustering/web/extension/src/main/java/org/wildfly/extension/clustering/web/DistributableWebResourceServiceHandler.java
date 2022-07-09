@@ -31,7 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.web.WebProviderRequirement;
+import org.wildfly.clustering.web.service.WebProviderRequirement;
 import org.wildfly.extension.clustering.web.DistributableWebResourceDefinition.Attribute;
 import org.wildfly.extension.clustering.web.DistributableWebResourceDefinition.Capability;
 

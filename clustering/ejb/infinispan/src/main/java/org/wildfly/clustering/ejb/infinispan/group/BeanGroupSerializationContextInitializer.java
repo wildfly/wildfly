@@ -25,9 +25,10 @@ package org.wildfly.clustering.ejb.infinispan.group;
 import java.util.Map;
 
 import org.infinispan.protostream.SerializationContext;
-import org.jboss.ejb.client.SessionID;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 
@@ -40,7 +41,7 @@ public class BeanGroupSerializationContextInitializer extends AbstractSerializat
     @SuppressWarnings("unchecked")
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalMarshaller<>((Class<InfinispanBeanGroupKey<SessionID>>) (Class<?>) InfinispanBeanGroupKey.class, SessionID.class, InfinispanBeanGroupKey::getId, InfinispanBeanGroupKey::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(InfinispanBeanGroupKey.class, Scalar.ANY, InfinispanBeanGroupKey::getId, InfinispanBeanGroupKey::new));
         context.registerMarshaller(new FunctionalMarshaller<>(InfinispanBeanGroupEntry.class, (Class<MarshalledValue<Map<Object, Object>, Object>>) (Class<?>) ByteBufferMarshalledValue.class, InfinispanBeanGroupEntry<Object, Object, Object>::getBeans, InfinispanBeanGroupEntry<Object, Object, Object>::new));
     }
 }

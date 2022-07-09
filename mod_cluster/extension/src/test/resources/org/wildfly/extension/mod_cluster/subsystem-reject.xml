@@ -20,29 +20,30 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:modcluster:5.0">
-    <proxy advertise="${modcluster.advertise:true}"
+<subsystem xmlns="urn:jboss:domain:modcluster:6.0">
+    <proxy name="default"
+           advertise="${modcluster.advertise:true}"
            advertise-security-key="${modcluster.advertise-security-key:mysecurekey!}"
            advertise-socket="modcluster"
            auto-enable-contexts="${modcluster.auto-enable-contexts:true}"
            balancer="${modcluster.balancer:mybalancer}"
-           listener="ajp"
            excluded-contexts="${modcluster.excluded-contexts:contextA,contextB,contextC}"
            flush-packets="${modcluster.flush-packets:true}"
            flush-wait="${modcluster.flush-wait:10}"
+           listener="ajp"
            load-balancing-group="${modcluster.load-balancing-group:mylbgroup}"
            max-attempts="${modcluster.max-attempts:10}"
-           name="default"
            node-timeout="${modcluster.node-timeout:123}"
            ping="${modcluster.ping:10}"
+           proxies="proxy1 proxy2"
            proxy-url="${modcluster.proxy-url:/}"
            session-draining-strategy="${modcluster.session-draining-strategy:ALWAYS}"
            smax="${modcluster.smax:2}"
            socket-timeout="${modcluster.socket-timeout:20}"
-           status-interval="15"
+           status-interval="${modcluster.status-interval:99}"
+           sticky-session="${modcluster.sticky-session:true}"
            sticky-session-force="${modcluster.sticky-session-force:false}"
            sticky-session-remove="${modcluster.sticky-session-remove:false}"
-           sticky-session="${modcluster.sticky-session:true}"
            stop-context-timeout="${modcluster.stop-context-timeout:10}"
            ttl="${modcluster.ttl:1}"
            worker-timeout="${modcluster.worker-timeout:2}">
@@ -59,7 +60,6 @@
                          type="receive-traffic"/>
             <load-metric type="requests"
                          weight="4"/>
-            <load-metric type="mem"/>
             <load-metric type="cpu"/>
             <load-metric type="heap"/>
             <load-metric type="busyness">
@@ -78,13 +78,6 @@
             <custom-load-metric class="SomeFakeLoadMetricClass3"
                                 weight="${modcluster.custom-load-metric.weight:5}"/>
         </dynamic-load-provider>
-        <ssl ca-certificate-file="${modcluster.ca-certificate-file:/home/rhusar/client-keystore.jks}"
-             ca-revocation-url="${modcluster.ca-revocation-url:/home/rhusar/revocations}"
-             certificate-key-file="${modcluster.certificate-key-file:/home/rhusar/client-keystore.jks}"
-             cipher-suite="${modcluster.cipher-suite:SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA}"
-             key-alias="${modcluster.key-alias:mykeyalias}"
-             password="${modcluster.password:mypassword}"
-             protocol="${modcluster.protocol:TLS}"/>
     </proxy>
     <proxy name="other"
            listener="default">

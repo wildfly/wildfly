@@ -35,7 +35,6 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -62,7 +61,7 @@ public class CdiJsfWebServicesTestCase {
     public static Archive<?> archive() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
         war.addPackage(CdiJsfWebServicesTestCase.class.getPackage());
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         war.add(new StringAsset("<html><body>#{myBean.message}</body></html>"), "index.xhtml");
         war.addAsWebInfResource(new StringAsset(FACES_CONFIG), "faces-config.xml");
         return war;

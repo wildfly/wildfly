@@ -21,15 +21,15 @@
  */
 package org.jboss.as.test.integration.jsf.managedbean.managedproperty;
 
-import javax.faces.bean.ApplicationScoped;
-import javax.faces.bean.ManagedBean;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 
 /**
  * A greeting bean.
  *
  * @author Farah Juma
  */
-@ManagedBean(name = "greetingBean", eager = true)
+@Named("greetingBean")
 @ApplicationScoped
 public class GreetingBean {
 

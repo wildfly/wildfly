@@ -23,9 +23,10 @@
 package org.jboss.as.ejb3.component.stateless;
 
 
+import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
-
 import javax.ejb.TransactionManagementType;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -44,7 +45,6 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -59,13 +59,12 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT;
 
 /**
  * User: jpai
@@ -191,7 +190,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             }
         });
 
-            if (view.getMethodIntf() == MethodIntf.REMOTE) {
+            if (view.getMethodIntf() == MethodInterfaceType.Remote) {
                 view.getConfigurators().add(new ViewConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {

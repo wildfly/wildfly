@@ -1,0 +1,275 @@
+<subsystem xmlns="urn:jboss:domain:datasources:7.0">
+  <datasources>
+    <!--You have a CHOICE of the next 2 items at this level-->
+    <datasource jta="${test.expr:true}" jndi-name="${test.expr:java:/token}" pool-name="token" enabled="${test.expr:true}" use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" connectable="${test.expr:true}" statistics-enabled="${test.expr:true}" tracking="${test.expr:true}">
+      <connection-url>${test.expr:token}</connection-url>
+      <driver-class>${test.expr:token}</driver-class>
+      <!--Optional:-->
+      <datasource-class>${test.expr:token}</datasource-class>
+      <!--Zero or more repetitions:-->
+      <connection-property name="token">${test.expr:e gero}</connection-property>
+      <!--Optional:-->
+      <driver>${test.expr:token}</driver>
+      <!--Optional:-->
+      <new-connection-sql>${test.expr:string}</new-connection-sql>
+      <!--Optional:-->
+      <transaction-isolation>${test.expr:TRANSACTION_REPEATABLE_READ}</transaction-isolation>
+      <!--Optional:-->
+      <url-delimiter>${test.expr:token}</url-delimiter>
+      <!--Optional:-->
+      <url-selector-strategy-class-name>${test.expr:token}</url-selector-strategy-class-name>
+      <!--Optional:-->
+      <pool>
+        <!--Optional:-->
+        <min-pool-size>${test.expr:200}</min-pool-size>
+        <!--Optional:-->
+        <initial-pool-size>${test.expr:200}</initial-pool-size>
+        <!--Optional:-->
+        <max-pool-size>${test.expr:200}</max-pool-size>
+        <!--Optional:-->
+        <prefill>${test.expr:true}</prefill>
+        <!--Optional:-->
+        <use-strict-min>${test.expr:true}</use-strict-min>
+        <!--Optional:-->
+        <flush-strategy>${test.expr:EntirePool}</flush-strategy>
+        <!--Optional:-->
+        <allow-multiple-users>${test.expr:true}</allow-multiple-users>
+        <!--Optional:-->
+        <connection-listener class-name="${test.expr:token}">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">${test.expr:token}</config-property>
+        </connection-listener>
+        <!--Optional:-->
+        <capacity>
+          <!--Optional:-->
+          <incrementer class-name="${test.expr:token}">
+            <!--Zero or more repetitions:-->
+            <config-property name="token">${test.expr:token}</config-property>
+          </incrementer>
+          <!--Optional:-->
+          <decrementer class-name="${test.expr:token}">
+            <!--Zero or more repetitions:-->
+            <config-property name="token">${test.expr:token}</config-property>
+          </decrementer>
+        </capacity>
+      </pool>
+      <!--Optional:-->
+      <security>
+        <!--You have a CHOICE of the next 2 items at this level-->
+        <!--Optional:-->
+        <security-domain>${test.expr:token}</security-domain>
+        <!--Optional:-->
+        <credential-reference store="test-store" alias="${test.expr:test-alias}" type="${test.expr:org.wildfly.Foo}"/>
+        <elytron-enabled>${test.expr:true}</elytron-enabled>
+      </security>
+      <!--Optional:-->
+      <validation>
+        <!--Optional:-->
+        <valid-connection-checker class-name="token">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">${test.expr:token}</config-property>
+        </valid-connection-checker>
+        <!--Optional:-->
+        <check-valid-connection-sql>${test.expr:string}</check-valid-connection-sql>
+        <!--Optional:-->
+        <validate-on-match>${test.expr:true}</validate-on-match>
+        <!--Optional:-->
+        <background-validation>${test.expr:true}</background-validation>
+        <!--Optional:-->
+        <background-validation-millis>${test.expr:200}</background-validation-millis>
+        <!--Optional:-->
+        <use-fast-fail>${test.expr:false}</use-fast-fail>
+        <!--Optional:-->
+        <stale-connection-checker class-name="token">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">${test.expr:token}</config-property>
+        </stale-connection-checker>
+        <!--Optional:-->
+        <exception-sorter class-name="token">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">${test.expr:token}</config-property>
+        </exception-sorter>
+      </validation>
+      <!--Optional:-->
+      <timeout>
+        <!--Optional:-->
+        <set-tx-query-timeout>${test.expr:true}</set-tx-query-timeout>
+        <!--Optional:-->
+        <blocking-timeout-millis>${test.expr:200}</blocking-timeout-millis>
+        <!--Optional:-->
+        <idle-timeout-minutes>${test.expr:200}</idle-timeout-minutes>
+        <!--Optional:-->
+        <query-timeout>${test.expr:200}</query-timeout>
+        <!--Optional:-->
+        <use-try-lock>${test.expr:200}</use-try-lock>
+        <!--Optional:-->
+        <allocation-retry>${test.expr:200}</allocation-retry>
+        <!--Optional:-->
+        <allocation-retry-wait-millis>${test.expr:200}</allocation-retry-wait-millis>
+      </timeout>
+      <!--Optional:-->
+      <statement>
+        <!--Optional:-->
+        <track-statements>${test.expr:false}</track-statements>
+        <!--Optional:-->
+        <prepared-statement-cache-size>${test.expr:200}</prepared-statement-cache-size>
+        <!--Optional:-->
+        <share-prepared-statements>${test.expr:true}</share-prepared-statements>
+      </statement>
+    </datasource>
+    <xa-datasource jndi-name="${test.expr:java:/token}" pool-name="xa-token" enabled="${test.expr:true}" use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" connectable="${test.expr:true}"  statistics-enabled="${test.expr:true}" tracking="${test.expr:true}">
+      <!--1 or more repetitions:-->
+      <xa-datasource-property name="token">${test.expr:per turbine}</xa-datasource-property>
+      <!--Optional:-->
+      <xa-datasource-class>${test.expr:token}</xa-datasource-class>
+      <!--Optional:-->
+      <driver>${test.expr:token}</driver>
+      <!--Optional:-->
+      <url-delimiter>${test.expr:token}</url-delimiter>
+      <!--Optional:-->
+      <url-selector-strategy-class-name>${test.expr:token}</url-selector-strategy-class-name>
+      <!--Optional:-->
+      <new-connection-sql>${test.expr:string}</new-connection-sql>
+      <!--Optional:-->
+      <transaction-isolation>${test.expr:TRANSACTION_SERIALIZABLE}</transaction-isolation>
+      <!--Optional:-->
+      <xa-pool>
+        <!--Optional:-->
+        <min-pool-size>${test.expr:200}</min-pool-size>
+        <!--Optional:-->
+        <initial-pool-size>${test.expr:200}</initial-pool-size>
+        <!--Optional:-->
+        <max-pool-size>${test.expr:200}</max-pool-size>
+        <!--Optional:-->
+        <prefill>${test.expr:false}</prefill>
+        <!--Optional:-->
+        <use-strict-min>${test.expr:true}</use-strict-min>
+        <!--Optional:-->
+        <flush-strategy>${test.expr:EntirePool}</flush-strategy>
+        <!--Optional:-->
+        <allow-multiple-users>${test.expr:true}</allow-multiple-users>
+        <!--Optional:-->
+        <connection-listener class-name="${test.expr:token}">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">${test.expr:token}</config-property>
+        </connection-listener>
+        <!--Optional:-->
+        <capacity>
+          <!--Optional:-->
+          <incrementer class-name="${test.expr:token}">
+            <!--Zero or more repetitions:-->
+            <config-property name="token">${test.expr:token}</config-property>
+          </incrementer>
+          <!--Optional:-->
+          <decrementer class-name="${test.expr:token}">
+            <!--Zero or more repetitions:-->
+            <config-property name="token">${test.expr:token}</config-property>
+          </decrementer>
+        </capacity>
+        <!--Optional:-->
+        <is-same-rm-override>${test.expr:false}</is-same-rm-override>
+        <!--Optional:-->
+        <interleaving>${test.expr:true}</interleaving>
+        <!--Optional:-->
+        <no-tx-separate-pools>${test.expr:true}</no-tx-separate-pools>
+        <!--Optional:-->
+        <pad-xid>${test.expr:false}</pad-xid>
+        <!--Optional:-->
+        <wrap-xa-resource>${test.expr:false}</wrap-xa-resource>
+      </xa-pool>
+      <!--Optional:-->
+      <security>
+        <user-name>${test.expr:token}</user-name>
+        <password>${test.expr:token}</password>
+        <elytron-enabled>${test.expr:true}</elytron-enabled>
+        <!--Optional:-->
+        <reauth-plugin class-name="${test.expr:token}">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">${test.expr:token}</config-property>
+        </reauth-plugin>
+      </security>
+      <!--Optional:-->
+      <recovery no-recovery="${test.expr:false}">
+        <!--Optional:-->
+        <recover-credential>
+          <elytron-enabled>${test.expr:true}</elytron-enabled>
+          <authentication-context>CredentialAuthCtxt</authentication-context>
+          <credential-reference store="test-store" alias="test-alias" type="org.wildfly.Foo" />
+        </recover-credential>
+        <!--Optional:-->
+        <recover-plugin class-name="${test.expr:token}">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">${test.expr:token}</config-property>
+        </recover-plugin>
+      </recovery>
+      <!--Optional:-->
+      <validation>
+        <!--Optional:-->
+        <valid-connection-checker class-name="${test.expr:token}">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">${test.expr:token}</config-property>
+        </valid-connection-checker>
+        <!--Optional:-->
+        <check-valid-connection-sql>${test.expr:string}</check-valid-connection-sql>
+        <!--Optional:-->
+        <validate-on-match>${test.expr:false}</validate-on-match>
+        <!--Optional:-->
+        <background-validation>${test.expr:false}</background-validation>
+        <!--Optional:-->
+        <background-validation-millis>${test.expr:200}</background-validation-millis>
+        <!--Optional:-->
+        <use-fast-fail>${test.expr:true}</use-fast-fail>
+        <!--Optional:-->
+        <stale-connection-checker class-name="${test.expr:token}">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">${test.expr:token}</config-property>
+        </stale-connection-checker>
+        <!--Optional:-->
+        <exception-sorter class-name="${test.expr:token}">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">${test.expr:token}</config-property>
+        </exception-sorter>
+      </validation>
+      <!--Optional:-->
+      <timeout>
+        <!--Optional:-->
+        <set-tx-query-timeout>${test.expr:true}</set-tx-query-timeout>
+        <!--Optional:-->
+        <blocking-timeout-millis>${test.expr:200}</blocking-timeout-millis>
+        <!--Optional:-->
+        <idle-timeout-minutes>${test.expr:200}</idle-timeout-minutes>
+        <!--Optional:-->
+        <query-timeout>${test.expr:200}</query-timeout>
+        <!--Optional:-->
+        <use-try-lock>${test.expr:200}</use-try-lock>
+        <!--Optional:-->
+        <allocation-retry>${test.expr:200}</allocation-retry>
+        <!--Optional:-->
+        <allocation-retry-wait-millis>${test.expr:200}</allocation-retry-wait-millis>
+        <!--Optional:-->
+        <xa-resource-timeout>${test.expr:200}</xa-resource-timeout>
+      </timeout>
+      <!--Optional:-->
+      <statement>
+        <!--Optional:-->
+        <track-statements>${test.expr:nowarn}</track-statements>
+        <!--Optional:-->
+        <prepared-statement-cache-size>${test.expr:200}</prepared-statement-cache-size>
+        <!--Optional:-->
+        <share-prepared-statements>${test.expr:true}</share-prepared-statements>
+      </statement>
+    </xa-datasource>
+    <!--Optional:-->
+    <drivers>
+      <!--1 or more repetitions:-->
+      <driver name="token" module="token" major-version="${test.expr:3}" minor-version="${test.expr:3}">
+        <!--Optional:-->
+        <driver-class>${test.expr:token}</driver-class>
+        <!--Optional:-->
+        <xa-datasource-class>${test.expr:token}</xa-datasource-class>
+        <!--Optional:-->
+        <datasource-class>${test.expr:token}</datasource-class>
+      </driver>
+    </drivers>
+  </datasources>
+</subsystem>

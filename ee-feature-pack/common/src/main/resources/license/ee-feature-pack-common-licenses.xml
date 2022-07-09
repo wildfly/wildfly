@@ -13,6 +13,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>com.carrotsearch</groupId>
+      <artifactId>hppc</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>com.fasterxml</groupId>
       <artifactId>classmate</artifactId>
       <licenses>
@@ -149,17 +160,6 @@
         <license>
           <name>GNU Lesser General Public License v3.0 or later</name>
           <url>https://spdx.org/licenses/LGPL-3.0+.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>com.github.spullara.mustache.java</groupId>
-      <artifactId>compiler</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -408,17 +408,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>commons-cli</groupId>
-      <artifactId>commons-cli</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <licenses>
@@ -458,6 +447,39 @@
         <license>
           <name>GNU Library General Public License v2 only</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.0-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.agroal</groupId>
+      <artifactId>agroal-api</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.agroal</groupId>
+      <artifactId>agroal-narayana</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.agroal</groupId>
+      <artifactId>agroal-pool</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -533,28 +555,162 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>io.jaegertracing</groupId>
-      <artifactId>jaeger-core</artifactId>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-buffer</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.jaegertracing</groupId>
-      <artifactId>jaeger-thrift</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
-      <artifactId>netty-all</artifactId>
+      <artifactId>netty-codec</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-dns</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-http</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-http2</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-socks</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-common}</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-handler-proxy</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-handler</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-resolver</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-resolver-dns</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-epoll</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-kqueue</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-unix-common</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -566,16 +722,6 @@
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-api-metrics</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -625,16 +771,6 @@
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-proto</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-sdk</artifactId>
       <licenses>
         <license>
@@ -646,6 +782,26 @@
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-sdk-common</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-logs</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-metrics</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -697,17 +853,6 @@
     <dependency>
       <groupId>io.reactivex.rxjava3</groupId>
       <artifactId>rxjava</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.undertow.js</groupId>
-      <artifactId>undertow-js</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -783,6 +928,17 @@
         <license>
           <name>The BSD License</name>
           <url>http://repository.jboss.org/licenses/bsd.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jipijapa-eclipselink</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -958,17 +1114,6 @@
         <license>
           <name>MIT License</name>
           <url>http://www.opensource.org/licenses/MIT</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1469,6 +1614,8 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-backward-codecs</artifactId>
       <licenses>
@@ -1502,6 +1649,8 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-misc</artifactId>
       <licenses>
@@ -1526,6 +1675,17 @@
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-queryparser</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-join</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -1657,7 +1817,7 @@
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcmail-jdk15on</artifactId>
+      <artifactId>bcmail-jdk18on</artifactId>
       <licenses>
         <license>
           <name>MIT License</name>
@@ -1689,6 +1849,28 @@
         <license>
           <name>Plexus Classworlds License</name>
           <url>https://fedoraproject.org/wiki/Licensing/Plexus_Classworlds_License</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>elasticsearch-rest-client</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>elasticsearch-rest-client-sniffer</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1807,6 +1989,8 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search-backend-jms</artifactId>
       <licenses>
@@ -1818,6 +2002,8 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search-engine</artifactId>
       <licenses>
@@ -1829,6 +2015,8 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search-orm</artifactId>
       <licenses>
@@ -1840,8 +2028,65 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search-serialization-avro</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.search</groupId>
+      <artifactId>hibernate-search-util-common</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.search</groupId>
+      <artifactId>hibernate-search-engine</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.search</groupId>
+      <artifactId>hibernate-search-backend-lucene</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.search</groupId>
+      <artifactId>hibernate-search-mapper-pojo-base</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.search</groupId>
+      <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2170,28 +2415,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-api</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-common</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-ee-cache</artifactId>
       <licenses>
         <license>
@@ -2247,6 +2470,17 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-ejb-extension</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
       <licenses>
         <license>
@@ -2269,7 +2503,73 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-infinispan-client</artifactId>
+      <artifactId>wildfly-clustering-el-glassfish</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-infinispan-client-api</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-infinispan-client-service</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-infinispan-client-spi</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-infinispan-embedded-api</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2292,17 +2592,6 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-infinispan-spi</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2336,6 +2625,17 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-jgroups-spi</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-jsf-mojarra</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2390,7 +2690,51 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-server</artifactId>
+      <artifactId>wildfly-clustering-server-api</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-server-extension</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-server-infinispan</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-server-service</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-server-spi</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2434,7 +2778,18 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-spi</artifactId>
+      <artifactId>wildfly-clustering-singleton-server</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-singleton-service</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2511,6 +2866,17 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-web-service</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-web-spi</artifactId>
       <licenses>
         <license>
@@ -2533,7 +2899,51 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-weld-core</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-weld-ejb</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-weld-web</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-connector</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-datasources-agroal</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2698,17 +3108,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-ormtransformer</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-pojo</artifactId>
       <licenses>
         <license>
@@ -2732,17 +3131,6 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-sar</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-servlet-feature-pack</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3517,17 +3905,6 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ws.cxf</groupId>
-      <artifactId>jbossws-cxf-jaspi</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.ws.cxf</groupId>
       <artifactId>jbossws-cxf-resources</artifactId>
       <licenses>
         <license>
@@ -3913,17 +4290,6 @@
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
       <artifactId>wildfly-http-transaction-client</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.yaml</groupId>
-      <artifactId>snakeyaml</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>

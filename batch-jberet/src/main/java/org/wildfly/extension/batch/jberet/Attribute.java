@@ -22,18 +22,23 @@
 
 package org.wildfly.extension.batch.jberet;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public enum Attribute {
-
     UNKNOWN(null),
     DATA_SOURCE("data-source"),
     NAME("name"),
-    VALUE("value");
+    VALUE("value"),
+    EXECUTION_RECORDS_LIMIT("execution-records-limit");
+
+    private static final Map<String, Attribute> MAP = Map.of(
+            DATA_SOURCE.name, DATA_SOURCE,
+            NAME.name, NAME,
+            VALUE.name, VALUE,
+            EXECUTION_RECORDS_LIMIT.name, EXECUTION_RECORDS_LIMIT);
 
     private final String name;
 
@@ -50,23 +55,11 @@ public enum Attribute {
         return name;
     }
 
-    private static final Map<String, Attribute> MAP;
-
-    static {
-        final Map<String, Attribute> map = new HashMap<>();
-        for (Attribute element : values()) {
-            final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
-        }
-        MAP = map;
-    }
-
     public static Attribute forName(String localName) {
+        if (localName == null) {
+            return UNKNOWN;
+        }
         final Attribute element = MAP.get(localName);
         return element == null ? UNKNOWN : element;
-    }
-
-    public static Map<String, Attribute> getMap() {
-        return MAP;
     }
 }

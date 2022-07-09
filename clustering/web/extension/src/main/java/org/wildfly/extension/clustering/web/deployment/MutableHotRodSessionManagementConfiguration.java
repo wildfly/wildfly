@@ -24,12 +24,13 @@ package org.wildfly.extension.clustering.web.deployment;
 
 import java.util.function.UnaryOperator;
 
-import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementConfiguration;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementConfiguration;
 
 /**
  * @author Paul Ferraro
  */
-public class MutableHotRodSessionManagementConfiguration extends MutableSessionManagementConfiguration implements HotRodSessionManagementConfiguration {
+public class MutableHotRodSessionManagementConfiguration extends MutableSessionManagementConfiguration implements HotRodSessionManagementConfiguration<DeploymentUnit> {
 
     private volatile String containerName;
     private volatile String configurationName;

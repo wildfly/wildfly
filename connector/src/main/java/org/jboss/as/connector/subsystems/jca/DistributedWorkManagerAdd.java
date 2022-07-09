@@ -56,8 +56,8 @@ import org.jboss.jca.core.workmanager.selector.PingTime;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
 
 /**
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
@@ -67,11 +67,8 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
 
     public static final DistributedWorkManagerAdd INSTANCE = new DistributedWorkManagerAdd();
 
-    @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (JcaDistributedWorkManagerDefinition.DWmParameters parameter : JcaDistributedWorkManagerDefinition.DWmParameters.values()) {
-            parameter.getAttribute().validateAndSet(operation, model);
-        }
+    private DistributedWorkManagerAdd() {
+        super(JcaDistributedWorkManagerDefinition.DWmParameters.getAttributes());
     }
 
     @Override

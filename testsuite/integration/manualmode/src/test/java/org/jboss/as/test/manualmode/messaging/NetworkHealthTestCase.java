@@ -93,7 +93,12 @@ public class NetworkHealthTestCase {
     @Test
     public void testNetworkUnHealthyNetwork() throws Exception {
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-        ModelNode op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", IP_ADDRESS);
+        //Windows fix required until ARTEMIS-3799 is in
+        ModelNode op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping6-command", "ping -6 -n 1 -w %d %s");
+        if(TestSuiteEnvironment.isWindows()) {
+            executeOperationForSuccess(managementClient, op);
+        }
+        op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", IP_ADDRESS);
         executeOperationForSuccess(managementClient, op);
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-period", 1000);
         executeOperationForSuccess(managementClient, op);
@@ -106,10 +111,20 @@ public class NetworkHealthTestCase {
         managementClient = createManagementClient();
         Thread.sleep(TimeoutUtil.adjust(2000));
 
-        Assert.assertTrue("Log should contains ActiveMQ ping error log message: [AMQ202002]", LoggingUtil.hasLogMessage(managementClient, "artemis-log", "AMQ202002", (line) -> line.contains(IP_ADDRESS)));
+        if(TestSuiteEnvironment.isWindows()) {
+            // Until Artemis is upgraded to 2.22.0 which contains the fix.
+            // @see ARTEMIS-3803 / ARTEMIS-3799
+            Assert.assertTrue("Log should contains ActiveMQ ping error log message: [AMQ201001]", LoggingUtil.hasLogMessage(managementClient, "artemis-log", "AMQ201001", (line) -> line.contains("name=default")));
+        } else {
+            Assert.assertTrue("Log should contains ActiveMQ ping error log message: [AMQ202002]", LoggingUtil.hasLogMessage(managementClient, "artemis-log", "AMQ202002", (line) -> line.contains(IP_ADDRESS)));
+        }
         Assert.assertFalse("Broker should be stopped", isBrokerActive(jmsOperations, managementClient));
 
-        op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", TestSuiteEnvironment.getServerAddress());
+        String ipAddress = TestSuiteEnvironment.getServerAddress();
+        if(ipAddress.charAt(0) == '[') {
+            ipAddress = ipAddress.substring(1, ipAddress.lastIndexOf(']'));
+        }
+        op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", ipAddress);
         executeOperationForSuccess(managementClient, op);
         managementClient.close();
         container.stop(DEFAULT_FULL_JBOSSAS);
@@ -120,6 +135,7 @@ public class NetworkHealthTestCase {
         managementClient = createManagementClient();
         Thread.sleep(TimeoutUtil.adjust(2000));
 
+        LoggingUtil.dumpTestLog(managementClient, "artemis-log");
         Assert.assertFalse("Log contains ActiveMQ ping error log message: [AMQ202002]",
                 LoggingUtil.hasLogMessage(managementClient, "artemis-log", "AMQ202002", restartLine, (line) -> line.contains(IP_ADDRESS)));
         Assert.assertTrue("Broker should be running", isBrokerActive(jmsOperations, managementClient));
@@ -129,6 +145,10 @@ public class NetworkHealthTestCase {
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-period");
         executeOperationForSuccess(managementClient, op);
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-timeout");
+        executeOperationForSuccess(managementClient, op);
+        op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping-command");
+        executeOperationForSuccess(managementClient, op);
+        op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping6-command");
         executeOperationForSuccess(managementClient, op);
     }
 
@@ -205,12 +225,12 @@ public class NetworkHealthTestCase {
 
         @Override
         public Collection<String> getCategories() {
-            return Arrays.asList("org.apache.activemq.artemis.logs");
+            return Arrays.asList("org.apache.activemq.artemis");
         }
 
         @Override
         public String getLevel() {
-            return "WARN";
+            return "TRACE";
         }
 
         @Override

@@ -64,7 +64,7 @@ public class TimerTesterBean implements TimerTester {
 
     public void startTimer(long pPeriod) {
         timerCalled = false;
-        timerService.createTimer(new Date(new Date().getTime() + pPeriod), null);
+        timerService.createTimer(new Date(System.currentTimeMillis() + pPeriod), null);
 
     }
 

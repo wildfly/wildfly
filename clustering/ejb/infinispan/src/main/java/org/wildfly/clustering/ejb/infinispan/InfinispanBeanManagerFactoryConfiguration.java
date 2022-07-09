@@ -24,12 +24,12 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
-import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
+import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.spi.group.Group;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.group.Group;
 
 /**
  * @author Paul Ferraro

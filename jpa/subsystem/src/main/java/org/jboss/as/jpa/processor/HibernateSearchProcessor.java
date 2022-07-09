@@ -22,11 +22,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
-
-
-import java.util.List;
-
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
@@ -48,6 +43,10 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
+import java.util.List;
+
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+
 /**
  * Deployment processor which adds a Hibernate Search module dependency.
  *
@@ -55,14 +54,21 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  */
 public class HibernateSearchProcessor implements DeploymentUnitProcessor {
 
-    private static final DotName SEARCH_INDEXED_ANNOTATION_NAME = DotName.createSimple("org.hibernate.search.annotations.Indexed");
-    private static final ModuleIdentifier defaultSearchModule =
-            ModuleIdentifier.fromString(Configuration.PROVIDER_MODULE_HIBERNATE_SEARCH);
+    private static final DotName ANNOTATION_LEGACY_INDEXED_NAME = DotName.createSimple("org.hibernate.search.annotations.Indexed");
+    private static final DotName ANNOTATION_INDEXED_NAME = DotName.createSimple("org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed");
+    private static final String MODULE_MAPPER_ORM_LEGACY = Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM_LEGACY;
+    private static final ModuleIdentifier MODULE_MAPPER_ORM_DEFAULT =
+            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM);
+    private static final ModuleIdentifier MODULE_BACKEND_LUCENE =
+            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_BACKEND_LUCENE);
+    private static final ModuleIdentifier MODULE_BACKEND_ELASTICSEARCH =
+            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_BACKEND_ELASTICSEARCH);
 
 
     private static final String NONE = "none";
     private static final String IGNORE = "auto";  // if set to `auto`, will behave like not having set the property
 
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
@@ -77,42 +83,67 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
     private void addSearchDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                      DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
 
-        String searchModuleName = null;
+        String searchMapperModuleName = null;
         PersistenceUnitsInApplication persistenceUnitsInApplication = DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(PersistenceUnitsInApplication.PERSISTENCE_UNITS_IN_APPLICATION);
         for (PersistenceUnitMetadataHolder holder : persistenceUnitsInApplication.getPersistenceUnitHolders()) {
             for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                 String providerModule = pu.getProperties().getProperty(Configuration.HIBERNATE_SEARCH_MODULE);
                 if (providerModule != null) {
                     // one persistence unit specifying the Hibernate search module is allowed
-                    if (searchModuleName == null) {
-                        searchModuleName = providerModule;
+                    if (searchMapperModuleName == null) {
+                        searchMapperModuleName = providerModule;
                     }
                     // more than one persistence unit specifying different Hibernate search module names is not allowed
-                    else if (!providerModule.equals(searchModuleName)) {
-                        throw JpaLogger.ROOT_LOGGER.differentSearchModuleDependencies(deploymentUnit.getName(), searchModuleName, providerModule);
+                    else if (!providerModule.equals(searchMapperModuleName)) {
+                        throw JpaLogger.ROOT_LOGGER.differentSearchModuleDependencies(deploymentUnit.getName(), searchMapperModuleName, providerModule);
                     }
                 }
             }
         }
 
-        if (NONE.equals(searchModuleName)) {
+        if (NONE.equals(searchMapperModuleName)) {
             // Hibernate Search module will not be added to deployment
             ROOT_LOGGER.debugf("Not adding Hibernate Search dependency to deployment %s", deploymentUnit.getName());
             return;
         }
 
         // use Search module name specified in persistence unit definition
-        if (searchModuleName != null && !IGNORE.equals(searchModuleName)) {
-            ModuleIdentifier moduleIdentifier = ModuleIdentifier.fromString(searchModuleName);
+        if (searchMapperModuleName != null && !IGNORE.equals(searchMapperModuleName)) {
+            ModuleIdentifier moduleIdentifier = ModuleIdentifier.fromString(searchMapperModuleName);
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, true, true, false));
             ROOT_LOGGER.debugf("added %s dependency to %s", moduleIdentifier, deploymentUnit.getName());
         } else {
             // add Hibernate Search module dependency if application is using the Hibernate Search Indexed annotation
             final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
-            List<AnnotationInstance> annotations = index.getAnnotations(SEARCH_INDEXED_ANNOTATION_NAME);
+            List<AnnotationInstance> annotations = index.getAnnotations(ANNOTATION_INDEXED_NAME);
             if (annotations != null && !annotations.isEmpty()) {
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, defaultSearchModule, false, true, true, false));
-                ROOT_LOGGER.debugf("deployment %s contains %s annotation, added %s dependency", deploymentUnit.getName(), SEARCH_INDEXED_ANNOTATION_NAME, defaultSearchModule);
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_MAPPER_ORM_DEFAULT,
+                        false, true, true, false));
+                ROOT_LOGGER.debugf("deployment %s contains %s annotation, added %s dependency", deploymentUnit.getName(),
+                        ANNOTATION_INDEXED_NAME, MODULE_MAPPER_ORM_DEFAULT);
+            }
+            else {
+                // Hibernate Search 5.x support
+                // TODO WFLY-16362 Remove this when we switch to EE 10 and remove Hibernate Search 5.x modules
+                List<AnnotationInstance> legacyAnnotations = index.getAnnotations(ANNOTATION_LEGACY_INDEXED_NAME);
+                if (legacyAnnotations != null && !legacyAnnotations.isEmpty()) {
+                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_MAPPER_ORM_LEGACY,
+                            false, true, true, false));
+                    ROOT_LOGGER.debugf("deployment %s contains %s annotation, added %s dependency", deploymentUnit.getName(),
+                            ANNOTATION_LEGACY_INDEXED_NAME, MODULE_MAPPER_ORM_LEGACY);
+                }
+            }
+        }
+
+        List<String> backendTypes = HibernateSearchDeploymentMarker.getBackendTypes(deploymentUnit);
+        if (backendTypes != null) {
+            if (backendTypes.contains(Configuration.HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_LUCENE)) {
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_BACKEND_LUCENE,
+                        false, true, true, false));
+            }
+            if (backendTypes.contains(Configuration.HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_ELASTICSEARCH)) {
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_BACKEND_ELASTICSEARCH,
+                        false, true, true, false));
             }
         }
     }

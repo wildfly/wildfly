@@ -20,8 +20,8 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
-import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
 
 /**
  * Definies a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
@@ -29,6 +29,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
  *
  * @author Paul Ferraro
  */
+@Deprecated
 public class PassivationStoreResourceDefinition extends SimpleResourceDefinition {
 
     public static final String PASSIVATION_STORE_CAPABILITY_NAME = "org.wildfly.ejb.passivation-store";
@@ -80,6 +81,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
                 .setRemoveHandler(new PassivationStoreRemove(ADD_HANDLER, PASSIVATION_STORE_CAPABILITY))
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(PASSIVATION_STORE_CAPABILITY));
+        this.setDeprecated(EJB3Model.VERSION_10_0_0.getVersion());
     }
 
     @Override

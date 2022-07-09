@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-mod_cluster-undertow}"/>
+        <artifact name="\${org.wildfly:wildfly-mod_cluster-undertow@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
@@ -45,6 +45,7 @@
         <module name="org.jboss.mod_cluster.core"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.xnio"/>
+        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.extension.mod_cluster"/>
         <module name="org.wildfly.extension.undertow"/>

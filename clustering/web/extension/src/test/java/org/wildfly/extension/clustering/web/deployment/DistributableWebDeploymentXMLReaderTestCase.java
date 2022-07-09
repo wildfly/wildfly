@@ -34,21 +34,23 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.clustering.web.cache.routing.NullRouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementConfiguration;
-import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementProvider;
-import org.wildfly.clustering.web.infinispan.routing.RankedRouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
-import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementProvider;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import org.wildfly.extension.clustering.web.routing.NullRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.routing.infinispan.RankedRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementConfiguration;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementProvider;
+import org.wildfly.extension.clustering.web.session.infinispan.InfinispanSessionManagementProvider;
 
 /**
  * @author Paul Ferraro
@@ -97,19 +99,19 @@ public class DistributableWebDeploymentXMLReaderTestCase {
             mapper.parseDocument(config, reader);
 
             Assert.assertNull(config.getSessionManagementName());
-            DistributableSessionManagementProvider result = config.getSessionManagement();
+            DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> result = config.getSessionManagement();
             Assert.assertNotNull(result);
             Assert.assertTrue(result instanceof InfinispanSessionManagementProvider);
             InfinispanSessionManagementProvider provider = (InfinispanSessionManagementProvider) result;
 
-            InfinispanSessionManagementConfiguration configuration = provider.getSessionManagementConfiguration();
+            InfinispanSessionManagementConfiguration<DeploymentUnit> configuration = provider.getSessionManagementConfiguration();
             Assert.assertEquals("foo", configuration.getContainerName());
             Assert.assertEquals("bar", configuration.getCacheName());
             Assert.assertSame(SessionAttributePersistenceStrategy.FINE, configuration.getAttributePersistenceStrategy());
 
             if (this.schema.since(DistributableWebDeploymentSchema.VERSION_2_0)) {
                 Assert.assertTrue(provider.getRouteLocatorServiceConfiguratorFactory() instanceof RankedRouteLocatorServiceConfiguratorFactory);
-                RankedRoutingConfiguration routing = ((RankedRouteLocatorServiceConfiguratorFactory) provider.getRouteLocatorServiceConfiguratorFactory()).getConfiguration();
+                RankedRoutingConfiguration routing = ((RankedRouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration<DeploymentUnit>>) provider.getRouteLocatorServiceConfiguratorFactory()).getConfiguration();
                 Assert.assertEquals(":", routing.getDelimiter());
                 Assert.assertEquals(4, routing.getMaxRoutes());
             } else {
@@ -134,10 +136,10 @@ public class DistributableWebDeploymentXMLReaderTestCase {
             mapper.parseDocument(config, reader);
 
             Assert.assertNull(config.getSessionManagementName());
-            DistributableSessionManagementProvider result = config.getSessionManagement();
+            DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> result = config.getSessionManagement();
             Assert.assertNotNull(result);
             Assert.assertTrue(result instanceof HotRodSessionManagementProvider);
-            HotRodSessionManagementConfiguration configuration = ((HotRodSessionManagementProvider) result).getSessionManagementConfiguration();
+            HotRodSessionManagementConfiguration<DeploymentUnit> configuration = ((HotRodSessionManagementProvider) result).getSessionManagementConfiguration();
             Assert.assertEquals("foo", configuration.getContainerName());
             Assert.assertSame(SessionAttributePersistenceStrategy.FINE, configuration.getAttributePersistenceStrategy());
         } finally {

@@ -48,7 +48,7 @@ public class MyDummyTokenHandler
         if (login && (session == null || session.getAttribute(AUTHENTICATED) == null)) {
             request.login("testuser", "testpassword");
             session = session == null ? request.getSession() : session;
-            session.putValue(AUTHENTICATED, AUTHENTICATED);
+            session.setAttribute(AUTHENTICATED, AUTHENTICATED);
         }
     }
 

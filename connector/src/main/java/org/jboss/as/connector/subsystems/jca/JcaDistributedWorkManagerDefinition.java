@@ -27,6 +27,7 @@ import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_ENABLED_NA
 import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_MANAGED_SECURITY;
 import static org.jboss.as.connector.subsystems.jca.JcaWorkManagerDefinition.registerSubModels;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import org.jboss.as.connector.metadata.api.common.Security;
@@ -43,7 +44,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
+import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -105,7 +106,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName(Element.SELECTOR.getLocalName())
-                .setValidator(new EnumValidator<SelectorValue>(SelectorValue.class, true, true))
+                .setValidator(EnumValidator.create(SelectorValue.class))
                 .setDefaultValue(new ModelNode(SelectorValue.PING_TIME.name()))
                 .build()),
         POLICY(SimpleAttributeDefinitionBuilder.create("policy", ModelType.STRING)
@@ -114,7 +115,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName(Element.POLICY.getLocalName())
-                .setValidator(new EnumValidator<PolicyValue>(PolicyValue.class, true, true))
+                .setValidator(EnumValidator.create(PolicyValue.class))
                 .setDefaultValue(new ModelNode(PolicyValue.WATERMARK.name()))
                 .build()),
         POLICY_OPTIONS(new PropertiesAttributeDefinition.Builder("policy-options", true)
@@ -130,7 +131,6 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                 .setAllowExpression(true)
                 .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
                 .build());
-
 
         public static AttributeDefinition[] getAttributeDefinitions() {
             final AttributeDefinition[] returnValue = new AttributeDefinition[DWmParameters.values().length];
@@ -167,6 +167,10 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
         }
 
         private AttributeDefinition attribute;
+
+        static AttributeDefinition[] getAttributes() {
+            return Arrays.stream(DWmParameters.values()).map(DWmParameters::getAttribute).toArray(AttributeDefinition[]::new);
+        }
     }
 
     enum DWmCapabilities {

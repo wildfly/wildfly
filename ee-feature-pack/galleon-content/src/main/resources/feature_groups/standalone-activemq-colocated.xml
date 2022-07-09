@@ -25,7 +25,7 @@
                 <param name="journal-file-size" value="102400"/>
                 <param name="journal-min-files" value="2"/>
                 <param name="journal-type" value="ASYNCIO"/>
-                <feature spec="subsystem.messaging-activemq.server.ha-policy.shared-store-master"/>
+                <feature spec="subsystem.messaging-activemq.server.ha-policy.shared-store-primary"/>
 
                 <feature spec="subsystem.messaging-activemq.server.in-vm-connector">
                     <param name="in-vm-connector" value="in-vm"/>
@@ -70,7 +70,7 @@
                 <param name="journal-file-size" value="102400"/>
                 <param name="journal-min-files" value="2"/>
                 <param name="journal-type" value="ASYNCIO"/>
-                <feature spec="subsystem.messaging-activemq.server.ha-policy.shared-store-slave"/>
+                <feature spec="subsystem.messaging-activemq.server.ha-policy.shared-store-secondary"/>
                 <feature spec="subsystem.messaging-activemq.server.path.bindings-directory">
                     <param name="path-feature" value="activemq-backup/bindings"/>
                 </feature>

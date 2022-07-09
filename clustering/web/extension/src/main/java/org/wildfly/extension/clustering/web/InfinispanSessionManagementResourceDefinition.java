@@ -32,8 +32,8 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
 
 /**
  * Definition of the /subsystem=distributable-web/infinispan-session-management=* resource.
@@ -41,7 +41,10 @@ import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
  */
 public class InfinispanSessionManagementResourceDefinition extends SessionManagementResourceDefinition {
 
-    static final PathElement WILDCARD_PATH = PathElement.pathElement("infinispan-session-management");
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement("infinispan-session-management", name);
+    }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         CACHE_CONTAINER("cache-container", ModelType.STRING) {

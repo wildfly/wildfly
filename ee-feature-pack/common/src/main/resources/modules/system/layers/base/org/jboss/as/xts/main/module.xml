@@ -33,7 +33,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-xts}"/>
+	<artifact name="\${org.wildfly:wildfly-xts@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>

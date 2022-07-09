@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-health</artifactId>
@@ -134,6 +134,12 @@
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
             </properties>
+             <dependencies>
+                 <dependency>
+                     <groupId>org.eclipse.parsson</groupId>
+                     <artifactId>parsson</artifactId>
+                 </dependency>
+             </dependencies>
         </profile>
 
         <profile>
@@ -150,8 +156,8 @@
             </properties>
             <dependencies>
                 <dependency>
-                    <groupId>org.glassfish</groupId>
-                    <artifactId>jakarta.json</artifactId>
+                    <groupId>org.eclipse.parsson</groupId>
+                    <artifactId>parsson</artifactId>
                 </dependency>
             </dependencies>
         </profile>

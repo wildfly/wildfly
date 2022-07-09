@@ -22,23 +22,11 @@
 
 package org.wildfly.test.integration.microprofile.health;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
-import java.io.StringReader;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.jboss.as.arquillian.container.ManagementClient;
+import static org.wildfly.test.integration.microprofile.health.MicroProfileHealthUtils.testHttpEndPoint;
+
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
@@ -60,33 +48,6 @@ public class MicroProfileHealthApplicationLiveHTTPEndpointTestCase extends Micro
                 httpEndpoint = "/health";
         }
         final String healthURL = "http://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort() + httpEndpoint;
-
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-
-            CloseableHttpResponse resp = client.execute(new HttpGet(healthURL));
-            assertEquals(mustBeUP ? 200 : 503, resp.getStatusLine().getStatusCode());
-
-            String content = EntityUtils.toString(resp.getEntity());
-            resp.close();
-
-            try (
-                    JsonReader jsonReader = Json.createReader(new StringReader(content))
-            ) {
-                JsonObject payload = jsonReader.readObject();
-                String outcome = payload.getString("status");
-                assertEquals(mustBeUP ? "UP": "DOWN", outcome);
-
-                if (probeName != null) {
-                    for (JsonValue check : payload.getJsonArray("checks")) {
-                        if (probeName.equals(check.asJsonObject().getString("name"))) {
-                            // probe name found
-                            assertEquals(mustBeUP ? "UP" : "DOWN", check.asJsonObject().getString("status"));
-                            return;
-                        }
-                    }
-                    fail("Probe named " + probeName + " not found in " + content);
-                }
-            }
-        }
+        testHttpEndPoint(healthURL, mustBeUP, probeName);
     }
 }

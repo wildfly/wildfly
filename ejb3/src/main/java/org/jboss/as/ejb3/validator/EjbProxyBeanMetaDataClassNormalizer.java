@@ -22,19 +22,19 @@
 
 package org.jboss.as.ejb3.validator;
 
-import org.hibernate.validator.cdi.spi.BeanNames;
-import org.hibernate.validator.metadata.BeanMetaDataClassNormalizer;
-
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.literal.NamedLiteral;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.PassivationCapable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.Set;
+
+import org.hibernate.validator.cdi.spi.BeanNames;
+import org.hibernate.validator.metadata.BeanMetaDataClassNormalizer;
 
 /**
  *
@@ -69,7 +69,9 @@ public class EjbProxyBeanMetaDataClassNormalizer implements BeanMetaDataClassNor
         return Collections.emptySet();
     }
 
-    @Override
+//    This method is removed from jakarta.enterprise.inject.spi.Bean.
+//    So comment out @Override to be able to compile with either javax or jakarta cdi-api
+//    @Override
     public boolean isNullable() {
         return false;
     }

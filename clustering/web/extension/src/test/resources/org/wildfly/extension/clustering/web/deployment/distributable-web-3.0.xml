@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<distributable-web xmlns="urn:jboss:distributable-web:3.0">
+    <session-management name="foo">
+        <immutable-class>java.util.Locale</immutable-class>
+        <immutable-class>java.util.UUID</immutable-class>
+    </session-management>
+</distributable-web>

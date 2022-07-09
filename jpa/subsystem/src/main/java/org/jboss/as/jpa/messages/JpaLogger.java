@@ -26,8 +26,6 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
-import java.lang.instrument.IllegalClassFormatException;
-
 import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
@@ -756,10 +754,7 @@ public interface JpaLogger extends BasicLogger {
     // id = 72, value = "Could not obtain TransactionListenerRegistry from transaction manager")
 
     @Message(id = 73, value = "Transformation of class %s failed")
-    IllegalStateException invalidClassFormat(@Cause IllegalClassFormatException cause, String className);
+    IllegalStateException invalidClassFormat(@Cause Exception cause, String className);
 
-    @LogMessage(level = INFO)
-    @Message(id = 74, value = "Deprecated Hibernate51CompatibilityTransformer is enabled for all application deployments.")
-    void hibernate51CompatibilityTransformerEnabled();
-
+    // @Message(id = 74, value = "Deprecated Hibernate51CompatibilityTransformer is enabled for all application deployments.")
 }

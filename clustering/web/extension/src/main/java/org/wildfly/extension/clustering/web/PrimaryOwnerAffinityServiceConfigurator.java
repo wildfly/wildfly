@@ -23,21 +23,21 @@
 package org.wildfly.extension.clustering.web;
 
 import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.web.infinispan.routing.PrimaryOwnerRouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
-import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.infinispan.InfinispanCacheConfiguration;
 
 /**
  * @author Paul Ferraro
  */
-public class PrimaryOwnerAffinityServiceConfigurator extends AffinityServiceConfigurator<InfinispanSessionManagementConfiguration> {
+public class PrimaryOwnerAffinityServiceConfigurator<C extends InfinispanCacheConfiguration> extends AffinityServiceConfigurator<C> {
 
     public PrimaryOwnerAffinityServiceConfigurator(PathAddress address) {
         super(address);
     }
 
     @Override
-    public RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> get() {
-        return new PrimaryOwnerRouteLocatorServiceConfiguratorFactory();
+    public RouteLocatorServiceConfiguratorFactory<C> get() {
+        return new PrimaryOwnerRouteLocatorServiceConfiguratorFactory<>();
     }
 }

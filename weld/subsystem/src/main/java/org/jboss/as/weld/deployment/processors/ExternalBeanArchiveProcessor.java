@@ -52,7 +52,6 @@ import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl.BeanArchiveType;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadata;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadataContainer;
-import org.jboss.as.weld.deployment.PropertyReplacingBeansXmlParser;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.processors.UrlScanner.ClassFile;
 import org.jboss.as.weld.discovery.AnnotationType;
@@ -61,6 +60,7 @@ import org.jboss.as.weld.spi.ComponentSupport;
 import org.jboss.as.weld.spi.ModuleServicesProvider;
 import org.jboss.as.weld.util.Reflections;
 import org.jboss.as.weld.util.ServiceLoaders;
+import org.jboss.as.weld.util.Utils;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -76,6 +76,7 @@ import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.xml.BeansXmlParser;
+import org.wildfly.common.iteration.CompositeIterable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -124,7 +125,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
         deploymentUnits.add(deploymentUnit);
         deploymentUnits.addAll(deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS));
 
-        PropertyReplacingBeansXmlParser parser = new PropertyReplacingBeansXmlParser(deploymentUnit);
+        BeansXmlParser parser = BeansXmlParserFactory.getPropertyReplacingParser(deploymentUnit,
+                Utils.getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY)
+                        .isLegacyEmptyBeansXmlTreatment());
 
         final HashSet<URL> existing = new HashSet<URL>();
 
@@ -173,6 +176,8 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             if (module == null) {
                 return;
             }
+            Iterable<ModuleServicesProvider> providers = new CompositeIterable<>(moduleServicesProviders, module.loadService(ModuleServicesProvider.class));
+
             for (DependencySpec dep : module.getDependencies()) {
                 if (!(dep instanceof ModuleDependencySpec)) {
                     continue;
@@ -240,7 +245,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
 
                         // Add module services to external bean deployment archive
                         for (Entry<Class<? extends Service>, Service> moduleService : ServiceLoaders
-                                .loadModuleServices(moduleServicesProviders, deploymentUnit, deployment, module, null).entrySet()) {
+                                .loadModuleServices(providers, deploymentUnit, deployment, module, null).entrySet()) {
                             bda.getServices().add(moduleService.getKey(), Reflections.cast(moduleService.getValue()));
                         }
 
@@ -376,7 +381,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
     }
 
     private boolean hasBeanDefiningAnnotation(ClassInfo classInfo, Set<AnnotationType> beanDefiningAnnotations) {
-        Map<DotName, List<AnnotationInstance>> annotationsMap = classInfo.annotations();
+        Map<DotName, List<AnnotationInstance>> annotationsMap = classInfo.annotationsMap();
         for (AnnotationType beanDefiningAnnotation : beanDefiningAnnotations) {
             List<AnnotationInstance> annotations = annotationsMap.get(beanDefiningAnnotation.getName());
             if (annotations != null) {

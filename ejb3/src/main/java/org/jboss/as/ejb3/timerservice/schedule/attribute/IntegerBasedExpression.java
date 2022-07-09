@@ -21,6 +21,11 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.value.IncrementValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ListValue;
@@ -28,11 +33,6 @@ import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.SingleValue;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Represents a {@link Integer} type value in a {@link javax.ejb.ScheduleExpression}.
@@ -168,7 +168,7 @@ public abstract class IntegerBasedExpression {
 
     protected void processIncrement(IncrementValue incr) {
         String startValue = incr.getStart();
-        Integer start = startValue.equals("*") ? 0 : this.parseInt(startValue);
+        Integer start = startValue.equals("*") ? Integer.valueOf(0) : this.parseInt(startValue);
         // make sure it's a valid value
         this.assertValid(start);
         Integer interval = this.parseInt(incr.getInterval());
@@ -201,7 +201,7 @@ public abstract class IntegerBasedExpression {
 
     protected void assertValid(Integer value) throws IllegalArgumentException {
         if (value == null) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.couldNotParseScheduleExpression(this.origValue);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue("", this.origValue);
         }
         int max = this.getMaxValue();
         int min = this.getMinValue();
@@ -210,6 +210,11 @@ public abstract class IntegerBasedExpression {
         }
     }
 
+    /**
+     * Checks if relative value is supported.
+     * @param value non-null value
+     * @return true if relative value is supported
+     */
     public abstract boolean isRelativeValue(String value);
 
 }

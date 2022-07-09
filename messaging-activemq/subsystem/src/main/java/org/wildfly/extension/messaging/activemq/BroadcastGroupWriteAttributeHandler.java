@@ -49,7 +49,7 @@ public class BroadcastGroupWriteAttributeHandler extends ReloadRequiredWriteAttr
 
     public static final BroadcastGroupWriteAttributeHandler INSTANCE = new BroadcastGroupWriteAttributeHandler(BROADCAST_GROUP_PATH, BroadcastGroupDefinition.ATTRIBUTES);
     public static final BroadcastGroupWriteAttributeHandler JGROUP_INSTANCE = new BroadcastGroupWriteAttributeHandler(JGROUPS_BROADCAST_GROUP_PATH, JGroupsBroadcastGroupDefinition.ATTRIBUTES);
-    public static final BroadcastGroupWriteAttributeHandler SOCKET_INSTANCE = new BroadcastGroupWriteAttributeHandler(SOCKET_BROADCAST_GROUP_PATH, JGroupsBroadcastGroupDefinition.ATTRIBUTES);
+    public static final BroadcastGroupWriteAttributeHandler SOCKET_INSTANCE = new BroadcastGroupWriteAttributeHandler(SOCKET_BROADCAST_GROUP_PATH, SocketBroadcastGroupDefinition.ATTRIBUTES);
 
     private final PathElement path;
 

@@ -4,6 +4,7 @@
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
         <properties>
             <property name="hibernate.ejb.cfgfile" value="hibernate.cfg.xml"/>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
         </properties>
     </persistence-unit>
 </persistence>

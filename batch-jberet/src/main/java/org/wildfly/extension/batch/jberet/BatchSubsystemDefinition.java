@@ -61,6 +61,7 @@ import org.wildfly.extension.batch.jberet.deployment.BatchCleanupProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchDependencyProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentDescriptorParser_1_0;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentDescriptorParser_2_0;
+import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentDescriptorParser_3_0;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentResourceProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchEnvironmentProcessor;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
@@ -183,14 +184,13 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                 throws OperationFailedException {
             // Check if the request-controller subsystem exists
             final boolean rcPresent = context.hasOptionalCapability("org.wildfly.request-controller", null, null);
-            // Check if the legacy security subsystem exists
-            final boolean legacySecurityPresent = context.hasOptionalCapability("org.wildfly.legacy-security", null, null);
 
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {
                     final JBossAllXmlParserRegisteringProcessor<Object> jbossAllProcessor = JBossAllXmlParserRegisteringProcessor.builder()
                             .addParser(BatchDeploymentDescriptorParser_1_0.ROOT_ELEMENT, BatchAttachments.BATCH_ENVIRONMENT_META_DATA, new BatchDeploymentDescriptorParser_1_0())
                             .addParser(BatchDeploymentDescriptorParser_2_0.ROOT_ELEMENT, BatchAttachments.BATCH_ENVIRONMENT_META_DATA, new BatchDeploymentDescriptorParser_2_0())
+                            .addParser(BatchDeploymentDescriptorParser_3_0.ROOT_ELEMENT, BatchAttachments.BATCH_ENVIRONMENT_META_DATA, new BatchDeploymentDescriptorParser_3_0())
                             .build();
 
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
@@ -198,7 +198,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                     processorTarget.addDeploymentProcessor(NAME,
                             Phase.DEPENDENCIES, Phase.DEPENDENCIES_BATCH, new BatchDependencyProcessor());
                     processorTarget.addDeploymentProcessor(NAME,
-                            Phase.POST_MODULE, Phase.POST_MODULE_BATCH_ENVIRONMENT, new BatchEnvironmentProcessor(rcPresent, legacySecurityPresent, selector));
+                            Phase.POST_MODULE, Phase.POST_MODULE_BATCH_ENVIRONMENT, new BatchEnvironmentProcessor(rcPresent, selector));
                     processorTarget.addDeploymentProcessor(NAME,
                             Phase.INSTALL, Phase.INSTALL_BATCH_RESOURCES, new BatchDeploymentResourceProcessor(NAME));
                     processorTarget.addDeploymentProcessor(NAME,

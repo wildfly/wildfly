@@ -22,6 +22,26 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.ejb.EJBException;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentIsStoppedException;
 import org.jboss.as.ee.component.ComponentView;
@@ -39,7 +59,6 @@ import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ProtocolSocketBinding;
-import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.EJBClientInvocationContext;
@@ -59,7 +78,6 @@ import org.jboss.ejb.server.ModuleAvailabilityListener;
 import org.jboss.ejb.server.Request;
 import org.jboss.ejb.server.SessionOpenRequest;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.remoting3.Connection;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.registry.Registry;
@@ -68,30 +86,9 @@ import org.wildfly.common.annotation.NotNull;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import javax.ejb.EJBException;
-import javax.net.ssl.SSLSession;
-
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
+ * @author <a href="mailto:jbaesner@redhat.com">Joerg Baesner</a>
  */
 final class AssociationImpl implements Association, AutoCloseable {
 
@@ -228,24 +225,6 @@ final class AssociationImpl implements Association, AutoCloseable {
             // invoke the method
             final Object result;
 
-            // the Remoting connection that is set here is only used for legacy purposes
-            Connection remotingConnection = invocationRequest.getProviderInterface(Connection.class);
-            if(remotingConnection != null) {
-                SecurityActions.remotingContextSetConnection(remotingConnection);
-            } else if (invocationRequest.getSecurityIdentity() != null) {
-                SecurityActions.remotingContextSetConnection(new RemoteConnection() {
-                    @Override
-                    public SSLSession getSslSession() {
-                        return null;
-                    }
-
-                    @Override
-                    public SecurityIdentity getSecurityIdentity() {
-                        return invocationRequest.getSecurityIdentity();
-                    }
-                });
-            }
-
             try {
                 final Map<String, Object> contextDataHolder = new HashMap<>();
                 result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag, actualLocator, contextDataHolder);
@@ -282,8 +261,6 @@ final class AssociationImpl implements Association, AutoCloseable {
                 }
                 invocationRequest.writeException(exceptionToWrite);
                 return;
-            } finally {
-                SecurityActions.remotingContextClear();
             }
             // invocation was successful
             if (! oneWay) try {
@@ -502,7 +479,7 @@ final class AssociationImpl implements Association, AutoCloseable {
         return moduleDeployment.getEjbs().get(beanName);
     }
 
-    private class ClusterTopologyRegistrar implements RegistryListener<String, List<ClientMapping>> {
+    private static final class ClusterTopologyRegistrar implements RegistryListener<String, List<ClientMapping>> {
         private final Set<ClusterTopologyListener> clusterTopologyListeners = ConcurrentHashMap.newKeySet();
         private final Registry<String, List<ClientMapping>> clientMappingRegistry;
         private final Registration listenerRegistration;
@@ -666,6 +643,9 @@ final class AssociationImpl implements Association, AutoCloseable {
         for(String key : returnKeys) {
             if(interceptorContext.getContextData().containsKey(key)) {
                 contextDataHolder.put(key, interceptorContext.getContextData().get(key));
+            } else {
+                // need to remove the attachment, as the ContextData value for this key got removed
+                content.getAttachments().remove(key);
             }
         }
     }

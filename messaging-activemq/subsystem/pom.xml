@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
@@ -97,6 +97,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-service-extensions</artifactId>
+        </dependency>
+
+        <dependency>
               <groupId>org.apache.activemq</groupId>
               <artifactId>artemis-server</artifactId>
         </dependency>
@@ -141,6 +146,18 @@
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-ra</artifactId>
         </dependency>
+
+        <!-- This is only required for the MessagingExtension to initialize Netty's InternalLoggerFactory -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+        </dependency>
+        <!-- This is only required for the HTTPUpgradeService to initialize Netty's channel -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>jakarta.inject</groupId>
@@ -193,7 +210,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-spi</artifactId>
+            <artifactId>wildfly-clustering-server-service</artifactId>
         </dependency>
 
         <dependency>

@@ -36,8 +36,8 @@ import javax.persistence.PersistenceUnit;
 import javax.persistence.Query;
 
 import org.hibernate.Session;
+import org.hibernate.stat.CacheRegionStatistics;
 import org.hibernate.stat.QueryStatistics;
-import org.hibernate.stat.SecondLevelCacheStatistics;
 import org.hibernate.stat.Statistics;
 
 /**
@@ -101,7 +101,7 @@ public class SFSB2LC {
         EntityManager em = emf.createEntityManager();
         Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
         stats.clear();
-        SecondLevelCacheStatistics emp2LCStats = stats.getSecondLevelCacheStatistics(CACHE_REGION_NAME + "Employee");
+        CacheRegionStatistics emp2LCStats = stats.getDomainDataRegionStatistics(CACHE_REGION_NAME + "Employee");
 
         try {
             // add new entities and check if they are put in 2LC
@@ -139,7 +139,7 @@ public class SFSB2LC {
         EntityManager em = emf.createEntityManager();
         Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
         stats.clear();
-        SecondLevelCacheStatistics emp2LCStats = stats.getSecondLevelCacheStatistics(CACHE_REGION_NAME + "Employee");
+        CacheRegionStatistics emp2LCStats = stats.getDomainDataRegionStatistics(CACHE_REGION_NAME + "Employee");
 
         try {
             // add new entity
@@ -178,7 +178,7 @@ public class SFSB2LC {
         EntityManager em = emf.createEntityManager();
         Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
         stats.clear();
-        SecondLevelCacheStatistics emp2LCStats = stats.getSecondLevelCacheStatistics(CACHE_REGION_NAME + "Employee");
+        CacheRegionStatistics emp2LCStats = stats.getDomainDataRegionStatistics(CACHE_REGION_NAME + "Employee");
 
         try {
             createEmployee(em, "Jan", "Ostrava", 20);
@@ -208,7 +208,7 @@ public class SFSB2LC {
         EntityManager em = emf.createEntityManager();
         Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
         stats.clear();
-        SecondLevelCacheStatistics emp2LCStats = stats.getSecondLevelCacheStatistics(CACHE_REGION_NAME + "Employee");
+        CacheRegionStatistics emp2LCStats = stats.getDomainDataRegionStatistics(CACHE_REGION_NAME + "Employee");
 
         try {
             assertEquals("Expected no entities stored in the cache" + emp2LCStats, 0, emp2LCStats.getElementCountInMemory());
@@ -248,7 +248,7 @@ public class SFSB2LC {
         stats.clear();
 
         try {
-            String queryString = "from Employee e where e.id > " + id;
+            String queryString = "select e from Employee e where e.id > " + id;
             QueryStatistics queryStats = stats.getQueryStatistics(queryString);
             Query query = em.createQuery(queryString);
             query.setHint("org.hibernate.cacheable", true);
@@ -308,7 +308,7 @@ public class SFSB2LC {
             // the nextTimestamp from infinispan is "return System.currentTimeMillis() / 100;"
             Thread.sleep(1000);
 
-            String queryString = "from Employee e where e.id > " + id;
+            String queryString = "select e from Employee e where e.id > " + id;
             QueryStatistics queryStats = stats.getQueryStatistics(queryString);
             Query query = em.createQuery(queryString);
             query.setHint("org.hibernate.cacheable", true);
@@ -346,7 +346,7 @@ public class SFSB2LC {
     /**
      * Generate entity cache statistics for put, hit and miss count as one String
      */
-    public String generateEntityCacheStats(SecondLevelCacheStatistics stats) {
+    public String generateEntityCacheStats(CacheRegionStatistics stats) {
         String result = "(hitCount=" + stats.getHitCount()
                 + ", missCount=" + stats.getMissCount()
                 + ", putCount=" + stats.getPutCount() + ").";
@@ -413,7 +413,7 @@ public class SFSB2LC {
 
         Query query;
 
-        query = em.createQuery("from Employee e where e.id=:id");
+        query = em.createQuery("select e from Employee e where e.id=:id");
 
         query.setParameter("id", id);
         query.setHint("org.hibernate.cacheable", true);
@@ -430,7 +430,7 @@ public class SFSB2LC {
 
         Query query;
 
-        query = em.createQuery("from Employee");
+        query = em.createQuery("select e from Employee e");
         query.setHint("org.hibernate.cacheable", true);
 
         return query.getResultList();

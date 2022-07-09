@@ -33,7 +33,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
+import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
 
 /**
  * Resource description for the addressable resource:
@@ -69,7 +69,7 @@ public class HotRodStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     public HotRodStoreResourceDefinition() {
-        super(PATH, null, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
     }
 
     @Override

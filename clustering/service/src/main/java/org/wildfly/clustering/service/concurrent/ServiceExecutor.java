@@ -30,7 +30,9 @@ import org.wildfly.common.function.ExceptionSupplier;
 /**
  * Allows safe invocation of tasks that require resources not available after {@link #close(Runnable)} to block a service from stopping.
  * @author Paul Ferraro
+ * @deprecated To be removed without replacement
  */
+@Deprecated(forRemoval = true)
 public interface ServiceExecutor extends Executor {
 
     /**

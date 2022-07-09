@@ -48,6 +48,7 @@ import org.junit.runner.RunWith;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
+@org.junit.Ignore("WFLY-16418")
 @RunWith(Arquillian.class)
 @RunAsClient
 public class WildCardReadsTestCase extends AbstractCliTestBase {

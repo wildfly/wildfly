@@ -78,7 +78,7 @@ public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
 
     public static final SimpleAttributeDefinition TYPE = create("type", STRING)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<>(TYPE.class, false, true))
+            .setValidator(EnumValidator.create(TYPE.class))
             .setRestartAllServices()
             .build();
 

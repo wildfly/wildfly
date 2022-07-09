@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -64,10 +63,9 @@ public class EJB3Extension implements Extension {
     public static final String NAMESPACE_7_0 = EJB3SubsystemNamespace.EJB3_7_0.getUriString();
     public static final String NAMESPACE_8_0 = EJB3SubsystemNamespace.EJB3_8_0.getUriString();
     public static final String NAMESPACE_9_0 = EJB3SubsystemNamespace.EJB3_9_0.getUriString();
+    public static final String NAMESPACE_10_0 = EJB3SubsystemNamespace.EJB3_10_0.getUriString();
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
-
-    static final ModelVersion CURRENT_MODEL_VERSION = EJB3Model.VERSION_9_0_0.getVersion();
 
     private static final String RESOURCE_NAME = EJB3Extension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -83,7 +81,7 @@ public class EJB3Extension implements Extension {
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, EJB3Model.CURRENT.getVersion());
 
         subsystem.registerXMLElementWriter(EJB3SubsystemXMLPersister.INSTANCE);
 
@@ -92,7 +90,7 @@ public class EJB3Extension implements Extension {
 
         if (registerRuntimeOnly) {
             ResourceDefinition deploymentsDef = new SimpleResourceDefinition(new Parameters(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
-                    getResourceDescriptionResolver("deployed")).setFeature(false));
+                    getResourceDescriptionResolver("deployed")).setFeature(false).setRuntime());
             final ManagementResourceRegistration deploymentsRegistration = subsystem.registerDeploymentModel(deploymentsDef);
             deploymentsRegistration.registerSubModel(MessageDrivenBeanResourceDefinition.INSTANCE);
             deploymentsRegistration.registerSubModel(SingletonBeanDeploymentResourceDefinition.INSTANCE);
@@ -121,5 +119,6 @@ public class EJB3Extension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_7_0, EJB3Subsystem70Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_8_0, EJB3Subsystem80Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_9_0, EJB3Subsystem90Parser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_10_0, EJB3Subsystem100Parser::new);
     }
 }

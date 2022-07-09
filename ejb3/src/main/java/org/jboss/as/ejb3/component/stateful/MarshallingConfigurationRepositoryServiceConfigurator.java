@@ -35,7 +35,7 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
+import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.service.FunctionalService;
@@ -75,7 +75,7 @@ public class MarshallingConfigurationRepositoryServiceConfigurator extends Simpl
                 config.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(deployment));
                 config.setClassTable(new StatefulSessionBeanClassTable());
                 config.setObjectResolver(new EJBClientContextIdentifierResolver());
-                config.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
+                config.setObjectTable(new DynamicExternalizerObjectTable(module.getClassLoader()));
                 return config;
             }
         },

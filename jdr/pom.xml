@@ -33,15 +33,93 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jdr</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>wildfly-jdr</artifactId>
+    <name>WildFly: JDR</name>
 
-    <name>WildFly: JBoss Diagnostic Reporter</name>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-parent</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-    <modules>
-        <module>jboss-as-jdr</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-network</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.common</groupId>
+            <artifactId>wildfly-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem-test</artifactId>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>serializer</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-cli</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-annotations</artifactId>
+            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.-->
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.-->
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
 </project>

@@ -112,7 +112,7 @@ New WildFly Logging
 
 [source,java,options="nowrap"]
 ----
-private static Logger logger = Logger.getLogger(CustomerManagerBean.class.toString());
+private static Logger logger = Logger.getLogger(CustomerManagerBean.class);
 ----
 
 Old JBoss Commons Logging/Log4J:

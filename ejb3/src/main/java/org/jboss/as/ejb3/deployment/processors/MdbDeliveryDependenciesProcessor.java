@@ -78,7 +78,6 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                     if (mdbDescription.isClusteredSingleton()) {
                         clusteredSingletonFound = true;
                         builder.requires(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName());
-                        builder.addDependency(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName()/*.append("primary")*/);
                     }
                     if (mdbDescription.getDeliveryGroups() != null) {
                         for (String deliveryGroup : mdbDescription.getDeliveryGroups()) {
@@ -86,7 +85,7 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                             if (phaseContext.getServiceRegistry().getService(deliveryGroupServiceName) == null) {
                                 throw EjbLogger.DEPLOYMENT_LOGGER.missingMdbDeliveryGroup(deliveryGroup);
                             }
-                            builder.addDependency(deliveryGroupServiceName);
+                            builder.requires(deliveryGroupServiceName);
                         }
                     }
                     builder.install();

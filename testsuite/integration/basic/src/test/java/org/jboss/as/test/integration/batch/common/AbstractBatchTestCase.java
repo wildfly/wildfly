@@ -47,7 +47,6 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -65,7 +64,7 @@ public abstract class AbstractBatchTestCase {
         final WebArchive deployment = ShrinkWrap.create(WebArchive.class, warName)
                 .addPackage(AbstractBatchTestCase.class.getPackage())
                 .addClasses(TimeoutUtil.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .setManifest(new StringAsset(
                         Descriptors.create(ManifestDescriptor.class)
                                 .attribute("Dependencies", "org.jboss.msc,org.wildfly.security.manager")
@@ -126,7 +125,7 @@ public abstract class AbstractBatchTestCase {
         return new StringAsset(xml);
     }
 
-    protected static void waitForTermination(final JobExecution jobExecution, final int timeout) {
+    public static void waitForTermination(final JobExecution jobExecution, final int timeout) {
         long waitTimeout = TimeoutUtil.adjust(timeout * 1000);
         long sleep = 100L;
         while (true) {

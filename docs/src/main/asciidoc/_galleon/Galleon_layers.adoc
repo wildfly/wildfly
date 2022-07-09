@@ -363,7 +363,7 @@ link:#gal.microprofile-health[microprofile-health] (optional) +
 link:#gal.microprofile-jwt[microprofile-jwt] (optional) +
 link:#gal.microprofile-metrics[microprofile-metrics] (optional) +
 link:#gal.microprofile-openapi[microprofile-openapi] (optional) +
-link:#gal.open-tracing[microprofile-opentracing] (optional) +
+link:#gal.microprofile-opentracing[microprofile-opentracing] (optional) +
 link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
 
 |[[gal.microprofile-rest-client]]microprofile-rest-client
@@ -399,13 +399,7 @@ link:#gal.base-server[base-server] +
 link:#gal.microprofile-config[microprofile-config] (optional) +
 link:#gal.microprofile-health[microprofile-health] (optional) +
 link:#gal.microprofile-metrics[microprofile-metrics] (optional) +
-link:#gal.open-tracing[open-tracing] (optional) +
-
-|[[gal.open-tracing]]open-tracing
-|*Deprecated* Use link:#gal.microprofile-opentracing[microprofile-opentracing]
-|
-link:#gal.cdi[cdi] +
-link:#gal.microprofile-config[microprofile-config] +
+link:#gal.microprofile-opentracing[microprofile-opentracing] (optional) +
 
 |[[gal.pojo]]pojo
 | Support for legacy JBoss Microcontainer applications.

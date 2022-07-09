@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:domain:19.0"
+<host xmlns="urn:jboss:domain:20.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:domain:10.0 wildfly-config_10_0.xsd"
       name="failover-h3">
@@ -56,7 +56,7 @@
     </management>
 
     <domain-controller>
-        <remote host="${jboss.test.host.master.address}" protocol="${jboss.domain.master.protocol:remote+http}" port="${jboss.domain.master.port:9990}" security-realm="ManagementRealm">
+        <remote host="${jboss.test.host.master.address}" protocol="${jboss.domain.primary.protocol:remote+http}" port="${jboss.domain.primary.port:9990}" security-realm="ManagementRealm">
             <ignored-resources type="extension">
                 <instance name="ignored"/>
             </ignored-resources>

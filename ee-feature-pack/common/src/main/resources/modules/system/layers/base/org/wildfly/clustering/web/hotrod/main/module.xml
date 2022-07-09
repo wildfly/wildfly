@@ -37,7 +37,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.transaction.api"/>
+        <module name="internal.javax.transaction.api"/>
         <module name="com.github.ben-manes.caffeine"/>
         <module name="org.infinispan.client.hotrod"/>
         <module name="org.infinispan.commons"/>
@@ -47,15 +47,18 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.msc"/>
-        <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.ee.cache" services="import"/>
         <module name="org.wildfly.clustering.ee.hotrod"/>
         <module name="org.wildfly.clustering.ee.spi"/>
-        <module name="org.wildfly.clustering.infinispan.client"/>
+        <module name="org.wildfly.clustering.infinispan.client.api"/>
+        <module name="org.wildfly.clustering.infinispan.client.service"/>
+        <module name="org.wildfly.clustering.infinispan.client.spi"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
+        <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.web.cache" services="import"/>
         <module name="org.wildfly.clustering.web.spi"/>

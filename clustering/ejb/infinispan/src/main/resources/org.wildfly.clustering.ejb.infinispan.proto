@@ -8,6 +8,6 @@ import "org.jboss.as.network.proto";
  * @TypeId(300)
  */
 message ClientMappingsRegistryEntry {
-	required	string	name	= 1;
-	repeated	org.jboss.as.network.ClientMapping	mapping	= 2;
+	required	string	name	 = 1;
+	repeated	org.jboss.as.network.ClientMapping	mapping	 = 2;
 }

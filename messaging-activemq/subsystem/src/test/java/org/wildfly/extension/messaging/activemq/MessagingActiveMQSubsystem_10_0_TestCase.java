@@ -36,6 +36,7 @@ import static org.wildfly.extension.messaging.activemq.MessagingDependencies.get
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.ADDRESS_SETTING_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.BRIDGE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CLUSTER_CONNECTION_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_MASTER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONNECTION_FACTORY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_QUEUE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_TOPIC_PATH;
@@ -66,8 +67,8 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
-import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
-import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
+import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
@@ -218,7 +219,7 @@ public class MessagingActiveMQSubsystem_10_0_TestCase extends AbstractSubsystemB
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
         List<ModelNode> ops = builder.parseXmlResource("subsystem_10_0_reject_transform.xml");
-        System.out.println("ops = " + ops);
+//        System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
@@ -268,7 +269,7 @@ public class MessagingActiveMQSubsystem_10_0_TestCase extends AbstractSubsystemB
                         ))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_MASTER_PATH),
                         new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
-                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_COLOCATED_PATH, MessagingExtension.CONFIGURATION_MASTER_PATH),
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_COLOCATED_PATH, CONFIGURATION_MASTER_PATH),
                         new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, ADDRESS_SETTING_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(

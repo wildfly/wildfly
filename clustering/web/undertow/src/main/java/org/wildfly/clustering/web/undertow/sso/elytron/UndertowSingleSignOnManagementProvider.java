@@ -31,12 +31,10 @@ import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementConfiguration;
 import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementProvider;
-import org.wildfly.clustering.web.sso.DistributableSSOManagementProvider;
-import org.wildfly.clustering.web.sso.LegacySSOManagementProviderFactory;
-import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
+import org.wildfly.clustering.web.service.sso.LegacySSOManagementProviderFactory;
 
 /**
- * {@link SessionManagementProviderFactory} for Undertow using either the {@link DistributableSSOManagementProvider} for the given security domain, the default provider, or a legacy provider.
+ * {@link org.wildfly.extension.undertow.session.SessionManagementProviderFactory} for Undertow using either the {@link org.wildfly.clustering.web.sso.DistributableSSOManagementProvider} for the given security domain, the default provider, or a legacy provider.
  * @author Paul Ferraro
  */
 @MetaInfServices(SecurityDomainSingleSignOnManagementProvider.class)

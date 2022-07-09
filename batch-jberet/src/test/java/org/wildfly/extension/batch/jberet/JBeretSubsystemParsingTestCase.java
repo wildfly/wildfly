@@ -24,6 +24,7 @@ package org.wildfly.extension.batch.jberet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,15 +38,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
+import org.wildfly.extension.batch.jberet.job.repository.CommonAttributes;
+import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
+import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Basic subsystem test. Tests parsing various batch configurations
  */
+@SuppressWarnings("deprecation")
 public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
 
     public JBeretSubsystemParsingTestCase() {
@@ -58,8 +70,8 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-batch-jberet_2_0.xsd";
+    protected String getSubsystemXsdPath() {
+        return "schema/wildfly-batch-jberet_3_0.xsd";
     }
 
     @Test
@@ -88,6 +100,7 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
 
     /**
      * Verifies that attributes with expression are handled properly.
+     *
      * @throws Exception for any test failure
      */
     @Test
@@ -135,7 +148,7 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
             if (Files.isDirectory(path)) {
                 Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
                     @Override
-                    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) {
                         final String name = file.getFileName().toString();
                         if (pattern.matcher(name).matches()) {
                             configs.add("/" + name);
@@ -153,6 +166,42 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
             // Run the standard subsystem test, but don't compare the XML as it should never match
             standardSubsystemTest(configId, false);
         }
+    }
+
+    @Test
+    public void testRejectingTransformersEAP74() throws Exception {
+        FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
+
+        PathAddress repositoryAddress = PathAddress.pathAddress(BatchSubsystemDefinition.SUBSYSTEM_PATH, InMemoryJobRepositoryDefinition.PATH);
+        transformationConfig.addFailedAttribute(repositoryAddress,
+                new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.EXECUTION_RECORDS_LIMIT));
+
+        PathAddress jdbcRepositoryAddress = PathAddress.pathAddress(BatchSubsystemDefinition.SUBSYSTEM_PATH, JdbcJobRepositoryDefinition.PATH);
+        transformationConfig.addFailedAttribute(jdbcRepositoryAddress,
+                new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.EXECUTION_RECORDS_LIMIT));
+
+        testRejectingTransformers(transformationConfig, ModelTestControllerVersion.EAP_7_4_0);
+    }
+
+    private void testRejectingTransformers(FailedOperationTransformationConfig transformationConfig, ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion subsystemModelVersion = controllerVersion.getSubsystemModelVersion(BatchSubsystemDefinition.NAME);
+
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        LegacyKernelServicesInitializer kernelServicesInitializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, subsystemModelVersion)
+                .addMavenResourceURL("org.wildfly.core:wildfly-threads:" + controllerVersion.getCoreVersion())
+                .dontPersistXml();
+        try {
+            BatchSubsystemExtension.class.getClassLoader().loadClass("javax" + ".batch.operations.JobStartException");
+            kernelServicesInitializer.addMavenResourceURL("org.jboss.eap:wildfly-batch-jberet:" + controllerVersion.getMavenGavVersion());
+        } catch (ClassNotFoundException e) {
+            kernelServicesInitializer.addMavenResourceURL("org.wildfly:wildfly-batch-jberet-jakarta:26.0.0.Final");
+        }
+        KernelServices kernelServices = builder.build();
+        assertTrue(kernelServices.isSuccessfulBoot());
+        assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
+
+        List<ModelNode> operations = builder.parseXmlResource("/default-subsystem.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(kernelServices, subsystemModelVersion, operations, transformationConfig);
     }
 
     @Override

@@ -33,37 +33,31 @@ import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class CalendarTimerTask extends TimerTask<CalendarTimer> {
+public class CalendarTimerTask extends TimerTask {
 
-    /**
-     * @param calendarTimer
-     */
     public CalendarTimerTask(CalendarTimer calendarTimer) {
         super(calendarTimer);
     }
 
     @Override
     protected void callTimeout(TimerImpl timer) throws Exception {
-        CalendarTimer calendarTimer = (CalendarTimer) timer;
-
         // if we have any more schedules remaining, then schedule a new task
-        if (calendarTimer.getNextExpiration() != null && !calendarTimer.isInRetry()) {
-            calendarTimer.scheduleTimeout(false);
+        if (timer.getNextExpiration() != null && !timer.isInRetry()) {
+            timer.scheduleTimeout(false);
         }
-        invokeBeanMethod(calendarTimer);
-
-
+        invokeBeanMethod(timer);
     }
 
+    @Override
     protected void invokeBeanMethod(TimerImpl timer) throws Exception {
-        CalendarTimer calendarTimer = (CalendarTimer) timer;
         // finally invoke the timeout method through the invoker
-        if (calendarTimer.isAutoTimer()) {
+        if (timer.isAutoTimer()) {
+            CalendarTimer calendarTimer = (CalendarTimer) timer;
             TimedObjectInvoker invoker = this.timerService.getInvoker();
             // call the timeout method
             invoker.callTimeout(calendarTimer, calendarTimer.getTimeoutMethod());
         } else {
-            this.timerService.getInvoker().callTimeout(calendarTimer);
+            this.timerService.getInvoker().callTimeout(timer);
         }
     }
 
@@ -96,16 +90,15 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
     protected void postTimeoutProcessing(TimerImpl timer) throws InterruptedException {
         timer.lock();
         try {
-            final CalendarTimer calendarTimer = (CalendarTimer) timer;
-            final TimerState timerState = calendarTimer.getState();
+            final TimerState timerState = timer.getState();
             if (timerState != TimerState.CANCELED
                     && timerState != TimerState.EXPIRED) {
-                if (calendarTimer.getNextExpiration() == null) {
-                    timerService.expireTimer(calendarTimer);
+                if (timer.getNextExpiration() == null) {
+                    timerService.expireTimer(timer);
                 } else {
-                    calendarTimer.setTimerState(TimerState.ACTIVE, null);
+                    timer.setTimerState(TimerState.ACTIVE, null);
                     // persist changes
-                    timerService.persistTimer(calendarTimer, false);
+                    timerService.persistTimer(timer, false);
                 }
             }
         } finally {

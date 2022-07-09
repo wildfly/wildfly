@@ -28,9 +28,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import io.undertow.servlet.api.Deployment;
-
-import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
 import org.jboss.as.server.suspend.SuspendController.State;
@@ -43,9 +40,12 @@ import org.jboss.modcluster.container.Server;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowEventListener;
 import org.wildfly.extension.undertow.UndertowService;
+
+import io.undertow.servlet.api.Deployment;
 
 /**
  * Builds a service exposing an Undertow subsystem adapter to mod_cluster's {@link ContainerEventHandler}.
@@ -82,6 +82,11 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
         // Initialize mod_cluster and start it now
         eventHandler.init(this.server);
         eventHandler.start(this.server);
+        for (Engine engine : this.server.getEngines()) {
+            for (org.jboss.modcluster.container.Host host : engine.getHosts()) {
+                host.getContexts().forEach(c->contexts.add(c));
+            }
+        }
 
         // Start the periodic STATUS thread
         this.executor = Executors.newScheduledThreadPool(1, new DefaultThreadFactory(UndertowEventHandlerAdapterService.class));

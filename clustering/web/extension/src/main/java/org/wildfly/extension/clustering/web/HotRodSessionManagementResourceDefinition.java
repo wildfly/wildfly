@@ -31,14 +31,17 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
+import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
 
 /**
  * @author Paul Ferraro
  */
 public class HotRodSessionManagementResourceDefinition extends SessionManagementResourceDefinition {
 
-    static final PathElement WILDCARD_PATH = PathElement.pathElement("hotrod-session-management");
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement("hotrod-session-management", name);
+    }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         REMOTE_CACHE_CONTAINER("remote-cache-container", ModelType.STRING) {

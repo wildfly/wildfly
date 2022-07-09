@@ -36,7 +36,7 @@ import java.util.List;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.shared.ServerReload;
@@ -53,7 +53,7 @@ public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask 
         addSSLContext(operations);
         addHttpsListener(operations);
         addElytronSecurityDomain(operations);
-        ModelNode updateOp = Operations.createCompositeOperation(operations);
+        ModelNode updateOp = Util.createCompositeOperation(operations);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
         ServerReload.reloadIfRequired(managementClient);
@@ -65,7 +65,7 @@ public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask 
         removeHttpsListener(operations);
         removeSSLContext(operations);
         removeElytronSecurityDomain(operations);
-        ModelNode updateOp = Operations.createCompositeOperation(operations);
+        ModelNode updateOp = Util.createCompositeOperation(operations);
         updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());

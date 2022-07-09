@@ -36,7 +36,7 @@ import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.infinispan.spi.distribution.Locality;
+import org.wildfly.clustering.infinispan.distribution.Locality;
 
 /**
  * Schedules a bean for expiration.

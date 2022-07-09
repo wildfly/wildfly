@@ -19,9 +19,10 @@ public enum EJB3Model {
     VERSION_7_0_0(7, 0, 0),
     VERSION_8_0_0(8, 0, 0),
     VERSION_9_0_0(9, 0, 0),
+    VERSION_10_0_0(10, 0, 0),
     ;
 
-    static final EJB3Model CURRENT = VERSION_9_0_0;
+    static final EJB3Model CURRENT = VERSION_10_0_0;
 
     private final ModelVersion version;
 

@@ -121,7 +121,7 @@ public abstract class MixedDomainDeploymentTest {
         webArchive.as(ZipExporter.class).exportTo(new File(tmpDir, "archives/" + TEST), true);
         webArchive.as(ExplodedExporter.class).exportExploded(new File(tmpDir, "exploded"));
 
-        //Make the jsf war to test that jsf works on the older slaves that did not have the jsf subsystem
+        //Make the jsf war to test that jsf works on the older secondary hosts that did not have the jsf subsystem
         jsfTestArchive = ShrinkWrap.create(WebArchive.class, "jsf-test.war");
         jsfTestArchive.addClass(Bean.class);
         jsfTestArchive.addAsWebResource("jsf-test/index.html");

@@ -47,15 +47,15 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.wildfly.clustering.marshalling.protostream.DecoratorMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilderFieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
-import org.wildfly.clustering.marshalling.protostream.SynchronizedDecoratorMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
+import org.wildfly.clustering.marshalling.protostream.reflect.DecoratorMarshaller;
+import org.wildfly.clustering.marshalling.protostream.reflect.SynchronizedDecoratorMarshaller;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -83,11 +83,17 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     LINKED_HASH_MAP(new LinkedHashMapMarshaller()),
     LINKED_HASH_SET(new CollectionMarshaller<>(LinkedHashSet::new)),
     LINKED_LIST(new CollectionMarshaller<>(LinkedList::new)),
+    LIST12(new UnmodifiableCollectionMarshaller<>(List.of(Boolean.TRUE).getClass().asSubclass(List.class), List::of)),
+    LISTN(new UnmodifiableCollectionMarshaller<>(List.of().getClass().asSubclass(List.class), List::of)),
     LOCALE(new FunctionalScalarMarshaller<>(Scalar.STRING.cast(String.class), Functions.constantSupplier(Locale.getDefault()), Locale::toLanguageTag, Locale::forLanguageTag)),
+    MAP1(new UnmodifiableMapMarshaller<>(Map.of(Boolean.TRUE, Boolean.FALSE).getClass().asSubclass(Map.class), Map::ofEntries)),
+    MAPN(new UnmodifiableMapMarshaller<>(Map.of().getClass().asSubclass(Map.class), Map::ofEntries)),
     OPTIONAL(OptionalMarshaller.OBJECT),
     OPTIONAL_DOUBLE(OptionalMarshaller.DOUBLE),
     OPTIONAL_INT(OptionalMarshaller.INT),
     OPTIONAL_LONG(OptionalMarshaller.LONG),
+    SET12(new UnmodifiableCollectionMarshaller<>(Set.of(Boolean.TRUE).getClass().asSubclass(Set.class), Set::of)),
+    SETN(new UnmodifiableCollectionMarshaller<>(Set.of().getClass().asSubclass(Set.class), Set::of)),
     SIMPLE_ENTRY(new MapEntryMarshaller<>(AbstractMap.SimpleEntry::new)),
     SIMPLE_IMMUTABLE_ENTRY(new MapEntryMarshaller<>(AbstractMap.SimpleImmutableEntry::new)),
     SINGLETON_LIST(new SingletonCollectionMarshaller<>(Collections::singletonList)),

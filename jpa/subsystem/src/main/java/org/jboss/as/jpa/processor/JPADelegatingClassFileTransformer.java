@@ -24,8 +24,6 @@ package org.jboss.as.jpa.processor;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.nio.ByteBuffer;
 import java.security.AccessControlContext;
 import java.security.AccessController;
@@ -33,25 +31,22 @@ import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 
 import org.jboss.as.jpa.messages.JpaLogger;
+import org.jboss.modules.ClassTransformer;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
+
 /**
- * Helps implement PersistenceUnitInfo.addClassTransformer() by using DelegatingClassFileTransformer
+ * Helps implement PersistenceUnitInfo.addClassTransformer() by using DelegatingClassTransformer
  *
  * @author Scott Marlow
  */
-class JPADelegatingClassFileTransformer implements ClassFileTransformer, org.jboss.modules.ClassTransformer {
+class JPADelegatingClassFileTransformer implements ClassTransformer {
     private final PersistenceUnitMetadata persistenceUnitMetadata;
 
     public JPADelegatingClassFileTransformer(PersistenceUnitMetadata pu) {
         persistenceUnitMetadata = pu;
-    }
-
-    @Override
-    public byte[] transform(ClassLoader classLoader, String className, Class<?> aClass, ProtectionDomain protectionDomain, byte[] originalBuffer) {
-        return getBytes(transform(classLoader, className, protectionDomain, ByteBuffer.wrap(originalBuffer)));
     }
 
     @Override
@@ -77,7 +72,7 @@ class JPADelegatingClassFileTransformer implements ClassFileTransformer, org.jbo
                                 // parameter classBeingRedefined is always passed as null
                                 // because we won't ever be called to transform already loaded classes.
                                 result = transformer.transform(classLoader, className, null, protectionDomain, transformedBuffer);
-                            } catch (IllegalClassFormatException e) {
+                            } catch (Exception e) {
                                 throw JpaLogger.ROOT_LOGGER.invalidClassFormat(e, className);
                             }
                             if (result != null) {

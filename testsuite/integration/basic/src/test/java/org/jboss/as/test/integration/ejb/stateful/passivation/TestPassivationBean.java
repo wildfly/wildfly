@@ -45,7 +45,7 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:andrew.rubinger@jboss.org">ALR</a>
  */
 @Stateful
-@Cache("passivating")
+@Cache("distributable")
 @Remote(TestPassivationRemote.class)
 @Interceptors(PassivationInterceptor.class)
 public class TestPassivationBean extends PassivationSuperClass implements TestPassivationRemote {

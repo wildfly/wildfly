@@ -66,7 +66,7 @@ public class JPADefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setXmlName(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<ExtendedPersistenceInheritance>(ExtendedPersistenceInheritance.class,true,true))
+                    .setValidator(EnumValidator.create(ExtendedPersistenceInheritance.class))
                     .setDefaultValue(new ModelNode(ExtendedPersistenceInheritance.DEEP.toString()))
                     .build();
 
@@ -80,7 +80,7 @@ public class JPADefinition extends SimpleResourceDefinition {
     private static Parameters getParameters(boolean feature) {
         Parameters result = new Parameters(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME),
                 JPAExtension.getResourceDescriptionResolver())
-                .setFeature(feature);
+                .setFeature(feature).setRuntime(!feature);
         if (feature) {
             result = result.setCapabilities(JPA_CAPABILITY);
         }

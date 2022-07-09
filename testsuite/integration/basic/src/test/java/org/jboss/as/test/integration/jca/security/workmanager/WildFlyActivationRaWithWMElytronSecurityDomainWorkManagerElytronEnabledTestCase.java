@@ -47,6 +47,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.auth.message.callback.GroupPrincipalCallback;
 
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -266,12 +267,12 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEna
     private void verifyUsers(MyWork work, String... expectedUsers) {
         Set<Principal> principals = work.getPrincipals();
         Set<Principal> expectedPrincipals = Stream.of(expectedUsers).map(NamePrincipal::new).collect(Collectors.toSet());
-        Assert.assertThat(principals, is(expectedPrincipals));
+        MatcherAssert.assertThat(principals, is(expectedPrincipals));
     }
 
     private void verifyRoles(MyWork work, String... expectedRoles) {
         String[] roles = work.getRoles();
-        Assert.assertThat(roles, is(expectedRoles));
+        MatcherAssert.assertThat(roles, is(expectedRoles));
     }
 
     public static class MyWork implements Work, WorkContextProvider {

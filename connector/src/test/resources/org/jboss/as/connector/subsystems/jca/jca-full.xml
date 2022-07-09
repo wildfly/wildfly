@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:jca:5.0">
+<subsystem xmlns="urn:jboss:domain:jca:6.0">
   <!--Optional:-->
   <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
   <!--Optional:-->
@@ -73,5 +73,5 @@
     <bootstrap-context name="bootStrapContext" workmanager="anotherWm"/>
   </bootstrap-contexts>
   <!--Optional:-->
-  <cached-connection-manager debug="false" error="true"/>
+  <cached-connection-manager debug="false" error="true" ignore-unknown-connections="false"/>
 </subsystem>

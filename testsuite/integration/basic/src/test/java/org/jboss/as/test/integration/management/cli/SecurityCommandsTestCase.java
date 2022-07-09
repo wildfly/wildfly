@@ -19,8 +19,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.aesh.complete.AeshCompleteOperation;
+import org.aesh.readline.completion.Completion;
+import org.aesh.readline.terminal.formatting.TerminalString;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.cli.CommandContext;
@@ -37,9 +41,9 @@ import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
@@ -48,9 +52,10 @@ import org.junit.runner.RunWith;
  *
  * @author jdenise@redhat.com
  */
-@Ignore("[WFCORE-5522] / [WFLY-15057] The security commands will need to be revisted for the new configuration.")
 @RunWith(Arquillian.class)
 public class SecurityCommandsTestCase {
+
+    private static final String TEST_SOCKET_BINDING="foo";
 
     private static final String DEFAULT_SERVER = "default-server";
     private static final String DEFAULT_KEY_STORE = "applicationKS";
@@ -93,7 +98,7 @@ public class SecurityCommandsTestCase {
         // Create ctx, used to setup the test and do the final reload.
         CommandContextConfiguration.Builder configBuilder = new CommandContextConfiguration.Builder();
         configBuilder.setConnectionTimeout(TimeoutUtil.adjust(5000)); // default from org.jboss.as.cli.impl.CliConfigImpl
-        configBuilder.setConsoleOutput(consoleOutput).
+        configBuilder.setConsoleOutput(consoleOutput).setInitConsole(true).
                 setController("remote+http://" + TestSuiteEnvironment.getServerAddress()
                         + ":" + TestSuiteEnvironment.getServerPort());
         ctx = CommandContextFactory.getInstance().newCommandContext(configBuilder.build());
@@ -144,6 +149,7 @@ public class SecurityCommandsTestCase {
     public void cleanupTest() throws Exception {
         try {
             removeTLS();
+            removeCustomHTTPSListeners();
         } finally {
             ctx.handle("reload");
         }
@@ -188,7 +194,7 @@ public class SecurityCommandsTestCase {
         {
             boolean failed = false;
             try {
-                ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+                ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                         + " --key-store-password=" + KEY_STORE_PASSWORD
                         + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload"
                         + " --server-name=foo");
@@ -204,7 +210,7 @@ public class SecurityCommandsTestCase {
         {
             boolean failed = false;
             try {
-                ctx.handle("security enable-ssl-http-server --key-store-path=" + "foo.bar"
+                ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + "foo.bar"
                         + " --key-store-password=" + KEY_STORE_PASSWORD + " --no-reload");
             } catch (Exception ex) {
                 failed = true;
@@ -217,7 +223,7 @@ public class SecurityCommandsTestCase {
             // Call the command with no password.
             boolean failed = false;
             try {
-                ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+                ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                         + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload");
             } catch (Exception ex) {
                 failed = true;
@@ -230,7 +236,7 @@ public class SecurityCommandsTestCase {
             // Call the command with an invalid key-store-name.
             boolean failed = false;
             try {
-                ctx.handle("security enable-ssl-http-server --key-store-name=" + "foo.bar" + " --no-reload");
+                ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-name=" + "foo.bar" + " --no-reload");
             } catch (Exception ex) {
                 failed = true;
                 // XXX OK, expected
@@ -245,7 +251,7 @@ public class SecurityCommandsTestCase {
                     + ", relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + ", credential-reference={clear-text=" + KEY_STORE_PASSWORD + "})");
             try {
                 try {
-                    ctx.handle("security enable-ssl-http-server --key-store-name=foo"
+                    ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-name=foo"
                             + " --key-store-path=" + SERVER_KEY_STORE_FILE
                             + " --key-store-password=" + KEY_STORE_PASSWORD
                             + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload");
@@ -267,7 +273,7 @@ public class SecurityCommandsTestCase {
                     + ", relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + ", credential-reference={clear-text=" + KEY_STORE_PASSWORD + "})");
             try {
                 try {
-                    ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+                    ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                             + " --key-store-password=" + KEY_STORE_PASSWORD
                             + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR
                             + " --trusted-certificate-path=" + clientCertificate.getAbsolutePath()
@@ -290,6 +296,77 @@ public class SecurityCommandsTestCase {
             Assert.assertTrue(failed);
             assertEmptyModel(null);
         }
+
+        {
+            boolean failed = false;
+            try {
+                 ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+                    + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to="
+                    + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload"
+                    + " --https-listener-name=" + "UNKNOWN");
+            } catch (Exception ex) {
+                failed = true;
+                // XXX OK, expected
+            }
+            Assert.assertTrue(failed);
+            assertEmptyModel(null);
+        }
+
+        {
+            boolean failed = false;
+            try {
+                 ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+                    + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to="
+                    + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload"
+                    + " --add-https-listener --https-listener-name=bar --https-listener-socket-binding-name=UNKNOWN");
+            } catch (Exception ex) {
+                failed = true;
+                // XXX OK, expected
+            }
+            Assert.assertTrue(failed);
+            assertEmptyModel(null);
+        }
+    }
+
+    @Test
+    public void testInvalidDisableSSL() throws Exception {
+        assertEmptyModel(null);
+        {
+            boolean failed = false;
+            try {
+                // We can't disable the default SSL context.
+                ctx.handle("security disable-ssl-http-server");
+            } catch (Exception ex) {
+                failed = true;
+                // XXX OK, expected
+            }
+            Assert.assertTrue(failed);
+            assertEmptyModel(null);
+        }
+        {
+            boolean failed = false;
+            try {
+                // Invalid default context.
+                ctx.handle("security disable-ssl-http-server --default-server-ssl-context=foo");
+            } catch (Exception ex) {
+                failed = true;
+                // XXX OK, expected
+            }
+            Assert.assertTrue(failed);
+            assertEmptyModel(null);
+        }
+        {
+            boolean failed = false;
+            try {
+                // Invalid listener name
+                ctx.handle("security disable-ssl-http-server --https-listener-name=foo");
+            } catch (Exception ex) {
+                failed = true;
+                // XXX OK, expected
+            }
+            Assert.assertTrue(failed);
+            assertEmptyModel(null);
+        }
     }
 
     @Test
@@ -298,7 +375,7 @@ public class SecurityCommandsTestCase {
         // first validation must fail
         boolean failed = false;
         try {
-            ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+            ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                     + " --key-store-password=" + KEY_STORE_PASSWORD
                     + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR
                     + " --trusted-certificate-path=" + clientCertificate.getAbsolutePath()
@@ -316,7 +393,7 @@ public class SecurityCommandsTestCase {
         Assert.assertTrue(failed);
 
         // Call the command without validation and no-reload.
-        ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+        ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                 + " --key-store-password=" + KEY_STORE_PASSWORD
                 + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR
                 + " --trusted-certificate-path=" + clientCertificate.getAbsolutePath()
@@ -351,7 +428,7 @@ public class SecurityCommandsTestCase {
         ctx.handle("security disable-ssl-http-server --no-reload");
 
         // Re-use the trust-store generated in previous step.
-        ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+        ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                 + " --key-store-password=" + KEY_STORE_PASSWORD
                 + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR
                 + " --trust-store-name=" + TRUST_STORE_NAME
@@ -364,6 +441,44 @@ public class SecurityCommandsTestCase {
                 TRUST_STORE_NAME, TRUST_MANAGER_NAME, SSL_CONTEXT_NAME);
 
         ctx.handle("security disable-ssl-http-server --no-reload");
+    }
+
+    @Test
+    public void testSSLCustomListener() throws Exception {
+        String listenerName = "foo";
+        // Need to add a socket binding
+        ctx.handle("/socket-binding-group=standard-sockets/socket-binding=" + TEST_SOCKET_BINDING + ":add(port=0)");
+        try {
+            ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+                    + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to="
+                    + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload"
+                    + " --add-https-listener --https-listener-name=" + listenerName + " --https-listener-socket-binding-name=" + TEST_SOCKET_BINDING);
+            Assert.assertNotNull(getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
+            Assert.assertTrue(getHTTPSListeners().contains(listenerName));
+            ctx.handle("security disable-ssl-http-server --https-listener-name=" + listenerName);
+            Assert.assertTrue(getHTTPSListeners().contains(listenerName));
+            Assert.assertTrue(getHTTPSListeners().contains(Util.HTTPS));
+            Assert.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
+            ctx.handle("security disable-ssl-http-server --remove-https-listener --https-listener-name=" + listenerName);
+            Assert.assertFalse(getHTTPSListeners().contains(listenerName));
+            Assert.assertTrue(getHTTPSListeners().contains(Util.HTTPS));
+        } finally {
+            ctx.handle("/socket-binding-group=standard-sockets/socket-binding=" + TEST_SOCKET_BINDING + ":remove");
+        }
+    }
+
+    @Test
+    public void testAddExistingHTTPSListener() throws Exception {
+        String listenerName = "https";
+        ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+                + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to="
+                + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload"
+                + " --override-ssl-context --add-https-listener");
+        Assert.assertNotNull(getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
+        Assert.assertNotEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
+        ctx.handle("security disable-ssl-http-server --https-listener-name=" + listenerName);
+        Assert.assertTrue(getHTTPSListeners().contains(listenerName));
+        Assert.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
     }
 
     @Test
@@ -398,7 +513,7 @@ public class SecurityCommandsTestCase {
         try {
             cli.executeInteractive();
             cli.clearOutput();
-            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --interactive --no-reload", "Key-store file name"));
+            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload", "Key-store file name"));
             Assert.assertTrue(cli.pushLineAndWaitForResults("", "Password"));
 
             //Loop until DN has been provided.
@@ -464,7 +579,7 @@ public class SecurityCommandsTestCase {
                     + Util.JBOSS_SERVER_CONFIG_DIR + ",path=" + SERVER_KEY_STORE_FILE);
             assertTLSNumResources(1, 0, 0, 0);
             // Don't reuse the ks because different credential-reference
-            ctx.handle("security enable-ssl-http-server --key-store-path="
+            ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path="
                     + SERVER_KEY_STORE_FILE
                     + " --key-store-password=" + KEY_STORE_PASSWORD
                     + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload");
@@ -485,7 +600,7 @@ public class SecurityCommandsTestCase {
                 + "type=JKS,relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + ",path=" + SERVER_KEY_STORE_FILE + ",alias-filter=foo");
         assertTLSNumResources(1, 0, 0, 0);
         //Don't reuse the key-store because different alias-filter
-        ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+        ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                 + " --key-store-password=" + KEY_STORE_PASSWORD
                 + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload");
         assertTLSNumResources(2, 1, 0, 1);
@@ -502,7 +617,7 @@ public class SecurityCommandsTestCase {
         ctx.handle("/subsystem=elytron/key-manager=km:add(algorithm=PKIX,credential-reference={clear-text=secret},key-store=ks1");
         assertTLSNumResources(1, 1, 0, 0);
         //Reuse the key-store but create a new key-manager
-        ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+        ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                 + " --key-store-password=" + KEY_STORE_PASSWORD
                 + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload");
         assertTLSNumResources(1, 2, 0, 1);
@@ -519,7 +634,7 @@ public class SecurityCommandsTestCase {
         ctx.handle("/subsystem=elytron/key-manager=km:add(alias-filter=foo,credential-reference={clear-text=secret},key-store=ks1");
         assertTLSNumResources(1, 1, 0, 0);
         //Reuse the key-store but create a new key-manager
-        ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+        ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                 + " --key-store-password=" + KEY_STORE_PASSWORD
                 + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload");
         assertTLSNumResources(1, 2, 0, 1);
@@ -538,7 +653,7 @@ public class SecurityCommandsTestCase {
         ctx.handle("/subsystem=elytron/server-ssl-context=ctx:add(key-manager=km,need-client-auth=true,want-client-auth=true)");
         assertTLSNumResources(1, 1, 0, 1);
         //Reuse the key-store but create a new key-manager
-        ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+        ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                 + " --key-store-password=" + KEY_STORE_PASSWORD
                 + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload");
         assertTLSNumResources(1, 1, 0, 2);
@@ -559,17 +674,134 @@ public class SecurityCommandsTestCase {
         ctx.handle("/subsystem=elytron/server-ssl-context=ctx:add(key-manager=km,trust-manager=tm)");
         assertTLSNumResources(1, 1, 1, 1);
         //Reuse the key-store but create a new key-manager
-        ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+        ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                 + " --key-store-password=" + KEY_STORE_PASSWORD
                 + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload");
         assertTLSNumResources(1, 1, 1, 2);
         ctx.handle("security disable-ssl-http-server --no-reload");
     }
 
+    @Test
+    public void testCompletion() throws Exception {
+        {
+            String cmd = "security enable-ssl-http-server ";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            List<String> res = Arrays.asList("--add-https-listener", "--https-listener-name=",
+                    "--interactive", "--key-store-name=", "--key-store-path=", "--override-ssl-context", "--server-name=");
+            Assert.assertEquals(candidates.toString(), res, candidates);
+            candidates = complete(ctx, cmd, null);
+            Assert.assertEquals(candidates.toString(), res, candidates);
+        }
+
+        {
+            String cmd = "security enable-ssl-http-server --add-https-listener ";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            List<String> res = Arrays.asList("--https-listener-name=",  "--https-listener-socket-binding-name=",
+                    "--interactive", "--key-store-name=", "--key-store-path=", "--override-ssl-context", "--server-name=");
+            Assert.assertEquals(candidates.toString(), res, candidates);
+            candidates = complete(ctx, cmd, null);
+            Assert.assertEquals(candidates.toString(), res, candidates);
+        }
+
+        {
+            String cmd = "security enable-ssl-http-server --https-listener-name=";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            List<String> res = Arrays.asList("https");
+            Assert.assertEquals(candidates.toString(), res, candidates);
+            candidates = complete(ctx, cmd, null);
+            Assert.assertEquals(candidates.toString(), res, candidates);
+        }
+
+        {
+            String cmd = "security enable-ssl-http-server --server-name=foo --https-listener-name=";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            Assert.assertTrue(candidates.isEmpty());
+            candidates = complete(ctx, cmd, null);
+            Assert.assertTrue(candidates.isEmpty());
+        }
+
+        {
+            String cmd = "security enable-ssl-http-server --add-https-listener --https-listener-name=";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            Assert.assertTrue(candidates.isEmpty());
+            candidates = complete(ctx, cmd, null);
+            Assert.assertTrue(candidates.isEmpty());
+        }
+
+        {
+            String cmd = "security enable-ssl-http-server --add-https-listener --https-listener-socket-binding-name=";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            Assert.assertFalse(candidates.isEmpty());
+            Assert.assertTrue(candidates.contains("https"));
+            candidates = complete(ctx, cmd, null);
+            Assert.assertFalse(candidates.isEmpty());
+            Assert.assertTrue(candidates.contains("https"));
+        }
+
+        {
+            String cmd = "security disable-ssl-http-server ";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            List<String> res = Arrays.asList("--default-server-ssl-context=", "--https-listener-name=",
+                    "--no-reload", "--remove-https-listener", "--server-name=");
+            Assert.assertEquals(candidates.toString(), res, candidates);
+            candidates = complete(ctx, cmd, null);
+            Assert.assertEquals(candidates.toString(), res, candidates);
+        }
+
+        {
+            String cmd = "security disable-ssl-http-server --https-listener-name=";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            Assert.assertFalse(candidates.isEmpty());
+            Assert.assertTrue(candidates.contains("https"));
+            candidates = complete(ctx, cmd, null);
+            Assert.assertFalse(candidates.isEmpty());
+            Assert.assertTrue(candidates.contains("https"));
+        }
+
+        {
+            String cmd = "security disable-ssl-http-server --server-name=foo --https-listener-name=";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            Assert.assertTrue(candidates.isEmpty());
+            candidates = complete(ctx, cmd, null);
+            Assert.assertTrue(candidates.isEmpty());
+        }
+
+        {
+            String cmd = "security disable-ssl-http-server --default-server-ssl-context=";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            Assert.assertEquals(1, candidates.size());
+            Assert.assertTrue(candidates.contains("applicationSSC"));
+            candidates = complete(ctx, cmd, null);
+            Assert.assertEquals(1, candidates.size());
+            Assert.assertTrue(candidates.contains("applicationSSC"));
+        }
+
+    }
+
     private void testEnableSSL(String serverName) throws Exception {
         //assertEmptyModel(serverName);
         // Call the command but no-reload.
-        ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+        ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                 + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to="
                 + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload"
                 + (serverName == null ? "" : " --server-name=" + serverName));
@@ -592,7 +824,7 @@ public class SecurityCommandsTestCase {
         ctx.handle("security disable-ssl-http-server --no-reload"
                 + (serverName == null ? "" : " --server-name=" + serverName));
         String usedSslCtx2 = getSSLContextName(ctx, serverName);
-        Assert.assertNull(usedSslCtx2);
+        Assert.assertEquals(DEFAULT_SSL_CONTEXT, usedSslCtx2);
         List<String> ks2 = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
         Assert.assertEquals(ks, ks2);
         List<String> km2 = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
@@ -601,7 +833,7 @@ public class SecurityCommandsTestCase {
         Assert.assertEquals(sslCtx, sslCtx2);
 
         // Re-enable, no new resources should be created.
-        ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+        ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                 + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR
                 + " --no-reload" + (serverName == null ? "" : " --server-name=" + serverName));
         String usedSslCtx3 = getSSLContextName(ctx, serverName);
@@ -630,7 +862,7 @@ public class SecurityCommandsTestCase {
         ctx.handle("security disable-ssl-http-server --no-reload" + (serverName == null ? "" : " --server-name=" + serverName));
 
         // Enable SSL with key-store-name, no new resources created.
-        ctx.handle("security enable-ssl-http-server --key-store-name=" + ks.get(1)
+        ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-name=" + ks.get(1)
                 + " --no-reload" + (serverName == null ? "" : " --server-name=" + serverName));
         String usedSslCtx4 = getSSLContextName(ctx, serverName);
         Assert.assertNotNull(usedSslCtx4);
@@ -646,7 +878,7 @@ public class SecurityCommandsTestCase {
                 + (serverName == null ? "" : " --server-name=" + serverName));
 
         // Enable SSL, provide new key-store, key-manager and ssl-context names;
-        ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+        ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                 + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR
                 + " --new-key-store-name=" + KEY_STORE_NAME + " --new-key-manager-name="
                 + KEY_MANAGER_NAME + " --new-ssl-context-name=" + SSL_CONTEXT_NAME + " --no-reload"
@@ -674,7 +906,7 @@ public class SecurityCommandsTestCase {
         // Enable SSL, provide same new-key-store-name, exception thrown because already exists
         failed = false;
         try {
-            ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+            ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                     + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR
                     + " --new-key-store-name=" + KEY_STORE_NAME + " --no-reload"
                     + (serverName == null ? "" : " --server-name=" + serverName));
@@ -684,12 +916,12 @@ public class SecurityCommandsTestCase {
         }
         Assert.assertTrue(failed);
         // Check that it has not been enabled.
-        Assert.assertNull(getSSLContextName(ctx, serverName));
+        Assert.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, serverName));
 
         // Enable SSL, provide same new-key-manager-name, exception thrown because already exists
         failed = false;
         try {
-            ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+            ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                     + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR
                     + " --new-key-manager-name=" + KEY_MANAGER_NAME + " --no-reload"
                     + (serverName == null ? "" : " --server-name=" + serverName));
@@ -699,12 +931,12 @@ public class SecurityCommandsTestCase {
         }
         Assert.assertTrue(failed);
         // Check that it has not been enabled.
-        Assert.assertNull(getSSLContextName(ctx, serverName));
+        Assert.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, serverName));
 
         // Enable SSL, provide same new-key-manager-name, exception thrown because already exists
         failed = false;
         try {
-            ctx.handle("security enable-ssl-http-server --key-store-path=" + SERVER_KEY_STORE_FILE
+            ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                     + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR
                     + " --new-ssl-context-name=" + SSL_CONTEXT_NAME + " --no-reload"
                     + (serverName == null ? "" : " --server-name=" + serverName));
@@ -714,7 +946,7 @@ public class SecurityCommandsTestCase {
         }
         Assert.assertTrue(failed);
         // Check that it has not been enabled.
-        Assert.assertNull(getSSLContextName(ctx, serverName));
+        Assert.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, serverName));
     }
 
     private void testEnableSSLInteractiveConfirm(String mgmtInterface) throws Exception {
@@ -732,7 +964,7 @@ public class SecurityCommandsTestCase {
         try {
             cli.executeInteractive();
             cli.clearOutput();
-            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --interactive --no-reload"
+            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload"
                     + (mgmtInterface == null ? "" : " --server-name=" + mgmtInterface), "Key-store file name"));
             Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_FILE_NAME, "Password"));
             Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_PASSWORD, "What is your first and last name? [Unknown]"));
@@ -782,12 +1014,12 @@ public class SecurityCommandsTestCase {
                     + (mgmtInterface == null ? "" : " --server-name=" + mgmtInterface));
 
             // Test that existing key-store file makes the command to abort.
-            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --interactive --no-reload"
+            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload"
                     + (mgmtInterface == null ? "" : " --server-name=" + mgmtInterface), "Key-store file name"));
             Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_FILE_NAME, null));
 
             //Test that existing trust-store file makes command to abort
-            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --interactive --no-reload"
+            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload"
                     + (mgmtInterface == null ? "" : " --server-name=" + mgmtInterface), "Key-store file name"));
             Assert.assertTrue(cli.pushLineAndWaitForResults("foo", "Password"));
             Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_PASSWORD, "What is your first and last name? [Unknown]"));
@@ -825,13 +1057,16 @@ public class SecurityCommandsTestCase {
     }
 
     private static String getSSLContextName(CommandContext ctx, String serverName) throws IOException, OperationFormatException {
+        return getSSLContextName(ctx, serverName, Util.HTTPS);
+    }
+    private static String getSSLContextName(CommandContext ctx, String serverName, String httpsListener) throws IOException, OperationFormatException {
         final DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
         try {
             builder.setOperationName(Util.READ_ATTRIBUTE);
             builder.addNode(Util.SUBSYSTEM, Util.UNDERTOW);
             builder.addNode(Util.SERVER, serverName == null ? DEFAULT_SERVER : serverName);
-            builder.addNode(Util.HTTPS_LISTENER, Util.HTTPS);
+            builder.addNode(Util.HTTPS_LISTENER, httpsListener);
             builder.addProperty(Util.NAME, Util.SSL_CONTEXT);
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
@@ -877,6 +1112,38 @@ public class SecurityCommandsTestCase {
         return Collections.emptyList();
     }
 
+    private List<String> getHTTPSListeners() {
+        final DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+        final ModelNode request;
+        try {
+            builder.setOperationName(Util.READ_CHILDREN_NAMES);
+            builder.addNode(Util.SUBSYSTEM, Util.UNDERTOW);
+            builder.addNode(Util.SERVER, DEFAULT_SERVER);
+            builder.addProperty(Util.CHILD_TYPE, Util.HTTPS_LISTENER);
+            request = builder.buildRequest();
+        } catch (OperationFormatException e) {
+            throw new IllegalStateException("Failed to build operation", e);
+        }
+
+        try {
+            final ModelNode outcome = ctx.getModelControllerClient().execute(request);
+            if (Util.isSuccess(outcome)) {
+                return Util.getList(outcome);
+            }
+        } catch (Exception e) {
+        }
+
+        return Collections.emptyList();
+    }
+
+    private void removeCustomHTTPSListeners() throws CommandLineException {
+        for (String listener : getHTTPSListeners()) {
+            if (!Util.HTTPS.equals(listener)) {
+                ctx.handle("/subsystem=undertow/server=" + DEFAULT_SERVER + "/https-listener=" + listener + ":remove");
+            }
+        }
+    }
+
     private static void removeTLS() throws CommandLineException {
         List<String> sslContextList = getNames(ctx.getModelControllerClient(), Util.SERVER_SSL_CONTEXT);
         for (String ssl : sslContextList) {
@@ -908,7 +1175,9 @@ public class SecurityCommandsTestCase {
 
     private static void assertEmptyModel(String serverName) throws Exception {
         String ssl = getSSLContextName(ctx, serverName);
-        Assert.assertNull(ssl);
+        if ( ssl != null && !DEFAULT_SSL_CONTEXT.equals(ssl)) {
+            throw new Exception("Unexpected SSL context " + serverName);
+        }
         assertTLSEmpty();
     }
 
@@ -1036,5 +1305,24 @@ public class SecurityCommandsTestCase {
         //Check that the sslContext is referenced from the interface
         String usedSslCtx = getSSLContextName(ctx, serverName);
         Assert.assertEquals(usedSslCtx, sslContextName);
+    }
+
+    // This completion is what aesh-readline completion is calling, so more
+    // similar to interactive CLI session
+    private List<String> complete(CommandContext ctx, String cmd, Boolean separator) {
+        Completion<AeshCompleteOperation> completer
+                = (Completion<AeshCompleteOperation>) ctx.getDefaultCommandCompleter();
+        AeshCompleteOperation op = new AeshCompleteOperation(cmd, cmd.length());
+        completer.complete(op);
+        if (separator != null) {
+            assertEquals(op.hasAppendSeparator(), separator);
+        }
+        List<String> candidates = new ArrayList<>();
+        for (TerminalString ts : op.getCompletionCandidates()) {
+            candidates.add(ts.getCharacters());
+        }
+        // aesh-readline does sort the candidates prior to display.
+        Collections.sort(candidates);
+        return candidates;
     }
 }

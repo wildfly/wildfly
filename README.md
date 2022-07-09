@@ -20,7 +20,7 @@ Building
 
 Prerequisites:
 
-* JDK 8 or newer - check `java -version`
+* JDK 11 or newer - check `java -version`
 * Maven 3.6.0 or newer - check `mvn -v`
 * On *nix systems, make sure that the maximum number of open files for the user running the build is at least 4096
   (check `ulimit -n`) or more, depending on what other i/o intensive processes the user is running.
@@ -66,7 +66,9 @@ Documentation
 
 Contributing
 ------------------
-* https://developer.jboss.org/wiki/HackingOnWildFly
+* Git Setup: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/github_setup.adoc
+* Contributing: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/contributing.adoc
+* Pull request standard: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/pullrequest_standards.adoc
 
 Build vs. Dist directories
 --------------------------
@@ -100,7 +102,7 @@ To run all the tests
 Using Eclipse
 -------------
 1. Install the latest version of eclipse
-2. Make sure Xmx in eclipse.ini is at least 1280M, and it's using Java 8
+2. Make sure Xmx in eclipse.ini is at least 1280M, and it's using Java 11
 3. Launch eclipse and install the m2e plugin, make sure it uses your repo configs
    (get it from: http://www.eclipse.org/m2e/
    or install "Maven Integration for Eclipse" from the Eclipse Marketplace)

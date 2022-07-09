@@ -4,7 +4,7 @@
   Set these VM properties in your IDE debugger
 
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-  -Djboss.home=${workspace_loc:wildfly-build}/target/wildfly-27.0.0.Beta1-SNAPSHOT
+  -Djboss.home=${workspace_loc:wildfly-build}/target/wildfly-27.0.0.Alpha3-SNAPSHOT
   -DallowConnectingToRunningServer=true
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -19,7 +19,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -61,12 +61,62 @@
         <!-- Required for artemis-commons, just needs to be on the class path -->
         <dependency>
             <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <artifactId>netty-buffer</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.logmanager</groupId>
-            <artifactId>log4j-jboss-logmanager</artifactId>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler-proxy</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-socks</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport-native-unix-common</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport-classes-epoll</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport-classes-kqueue</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -628,7 +678,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <!--<includes> included tests are defined in the common part of legacy-security-layers.surefire above </includes>-->
                                 </configuration>
                             </execution>
@@ -654,7 +703,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-legacy-sar</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/smoke/sar/**/*TestCase.java</include>
                                     </includes>
@@ -740,7 +788,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-cloud-profile.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
@@ -764,7 +811,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-legacy-security.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
@@ -875,7 +921,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-cloud-profile.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed

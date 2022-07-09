@@ -28,12 +28,15 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
+import org.jboss.logging.Logger;
+
 /**
  * @author Paul Ferraro
  * @param <T> the type wrapped by this marshalled value
  */
 public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBufferMarshaller>, Serializable {
     private static final long serialVersionUID = -8419893544424515905L;
+    private static final Logger LOGGER = Logger.getLogger(ByteBufferMarshalledValue.class);
 
     private transient volatile ByteBufferMarshaller marshaller;
     private transient volatile T object;
@@ -65,7 +68,9 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
         ByteBuffer buffer = this.buffer;
         if (buffer != null) return buffer;
         if (this.object == null) return null;
-        return this.marshaller.write(this.object);
+        ByteBuffer result = this.marshaller.write(this.object);
+        LOGGER.debugf("Marshalled size of %s(%s) = %d bytes", this.object.getClass().getCanonicalName(), this.object, result.limit() - result.arrayOffset());
+        return result;
     }
 
     @SuppressWarnings("unchecked")

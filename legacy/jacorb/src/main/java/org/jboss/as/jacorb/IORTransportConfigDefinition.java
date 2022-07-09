@@ -49,8 +49,7 @@ import org.jboss.dmr.ModelType;
  */
 class IORTransportConfigDefinition extends PersistentResourceDefinition {
 
-    static final ParameterValidator VALIDATOR = new EnumValidator<IORTransportConfigValues>(
-            IORTransportConfigValues.class, true, true);
+    static final ParameterValidator VALIDATOR = EnumValidator.create(IORTransportConfigValues.class);
 
     static final AttributeDefinition INTEGRITY =
             new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_INTEGRITY, ModelType.STRING, true)
@@ -69,7 +68,7 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
     static final AttributeDefinition TRUST_IN_TARGET =
             new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_TRUST_IN_TARGET, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<IORTransportConfigValues>(IORTransportConfigValues.class, true, true,
+                    .setValidator(new EnumValidator<IORTransportConfigValues>(IORTransportConfigValues.class,
                             IORTransportConfigValues.NONE, IORTransportConfigValues.SUPPORTED))
                     .setAllowExpression(true)
                     .build();

@@ -62,13 +62,17 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 import static org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators.LONG_INSTANCE;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.AliasEntry;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationColocatedDefinition;
-import org.wildfly.extension.messaging.activemq.ha.ReplicationMasterDefinition;
-import org.wildfly.extension.messaging.activemq.ha.ReplicationSlaveDefinition;
+import org.wildfly.extension.messaging.activemq.ha.ReplicationPrimaryDefinition;
+import org.wildfly.extension.messaging.activemq.ha.ReplicationSecondaryDefinition;
 import org.wildfly.extension.messaging.activemq.ha.SharedStoreColocatedDefinition;
-import org.wildfly.extension.messaging.activemq.ha.SharedStoreMasterDefinition;
-import org.wildfly.extension.messaging.activemq.ha.SharedStoreSlaveDefinition;
+import org.wildfly.extension.messaging.activemq.ha.SharedStorePrimaryDefinition;
+import org.wildfly.extension.messaging.activemq.ha.SharedStoreSecondaryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSQueueDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSServerControlHandler;
@@ -83,11 +87,22 @@ import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFacto
  */
 public class ServerDefinition extends PersistentResourceDefinition {
 
+    private static final String CLUSTER_ATTRIBUTE_GROUP = "cluster";
+    private static final String CRITICAL_ANALYZER_ATTRIBUTE_GROUP = "critical-analyzer";
+    private static final String DEBUG_ATTRIBUTE_GROUP = "debug";
+    private static final String JOURNAL_ATTRIBUTE_GROUP = "journal";
+    private static final String MANAGEMENT_ATTRIBUTE_GROUP = "management";
+    private static final String MESSAGE_EXPIRY_ATTRIBUTE_GROUP = "message-expiry";
+    private static final String NETWORK_ISOLATION_ATTRIBUTE_GROUP = "network-isolation";
+    private static final String SECURITY_ATTRIBUTE_GROUP = "security";
+    private static final String STATISTICS_ATTRIBUTE_GROUP = "statistics";
+    private static final String TRANSACTION_ATTRIBUTE_GROUP = "transaction";
+
     /**
      * @see ActiveMQDefaultConfiguration#getDefaultClusterPassword
      */
     public static final SimpleAttributeDefinition CLUSTER_PASSWORD = create("cluster-password", ModelType.STRING, true)
-            .setAttributeGroup("cluster")
+            .setAttributeGroup(CLUSTER_ATTRIBUTE_GROUP)
             .setXmlName("password")
             .setDefaultValue(new ModelNode("CHANGE ME!!"))
             .setAllowExpression(true)
@@ -96,21 +111,19 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
             .setAlternatives("cluster-" + CredentialReference.CREDENTIAL_REFERENCE)
             .build();
-
     public static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
             CredentialReference.getAttributeBuilder("cluster-" + CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true, true)
-                    .setAttributeGroup("cluster")
+                    .setAttributeGroup(CLUSTER_ATTRIBUTE_GROUP)
                     .setRestartAllServices()
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
                     .setAlternatives(CLUSTER_PASSWORD.getName())
                     .build();
-
      /**
      * @see ActiveMQDefaultConfiguration#getDefaultClusterUser
      */
     public static final SimpleAttributeDefinition CLUSTER_USER = create("cluster-user", ModelType.STRING)
-            .setAttributeGroup("cluster")
+            .setAttributeGroup(CLUSTER_ATTRIBUTE_GROUP)
             .setXmlName("user")
             .setDefaultValue(new ModelNode("ACTIVEMQ.CLUSTER.ADMIN.USER"))
             .setRequired(false)
@@ -131,7 +144,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition SECURITY_DOMAIN = create("security-domain", ModelType.STRING)
-            .setAttributeGroup("security")
+            .setAttributeGroup(SECURITY_ATTRIBUTE_GROUP)
             .setXmlName("domain")
             .setDefaultValue(new ModelNode("other"))
             .setAlternatives("elytron-domain")
@@ -143,7 +156,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setDeprecated(MessagingExtension.VERSION_2_0_0)
             .build();
     public static final SimpleAttributeDefinition ELYTRON_DOMAIN = create("elytron-domain", ModelType.STRING)
-            .setAttributeGroup("security")
+            .setAttributeGroup(SECURITY_ATTRIBUTE_GROUP)
             .setRequired(false)
             .setAlternatives(SECURITY_DOMAIN.getName())
             .setAllowExpression(false)
@@ -164,7 +177,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition OVERRIDE_IN_VM_SECURITY = create("override-in-vm-security", BOOLEAN)
-            .setAttributeGroup("security")
+            .setAttributeGroup(SECURITY_ATTRIBUTE_GROUP)
             .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
@@ -180,7 +193,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition STATISTICS_ENABLED = create(ModelDescriptionConstants.STATISTICS_ENABLED, BOOLEAN)
-            .setAttributeGroup("statistics")
+            .setAttributeGroup(STATISTICS_ATTRIBUTE_GROUP)
             .setXmlName("enabled")
             .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
@@ -188,7 +201,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .build();
     // no default values, depends on whether NIO or AIO is used.
     public static final SimpleAttributeDefinition JOURNAL_BUFFER_SIZE = create("journal-buffer-size", LONG)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("buffer-size")
             .setMeasurementUnit(BYTES)
             .setRequired(false)
@@ -198,7 +211,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .build();
     // no default values, depends on whether NIO or AIO is used.
     public static final SimpleAttributeDefinition JOURNAL_BUFFER_TIMEOUT = create("journal-buffer-timeout", LONG)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("buffer-timeout")
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
@@ -209,7 +222,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultJournalCompactMinFiles
      */
     public static final SimpleAttributeDefinition JOURNAL_COMPACT_MIN_FILES = create("journal-compact-min-files", INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("compact-min-files")
             .setDefaultValue(new ModelNode(10))
             .setRequired(false)
@@ -220,7 +233,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultJournalCompactPercentage
      */
     public static final SimpleAttributeDefinition JOURNAL_COMPACT_PERCENTAGE = create("journal-compact-percentage", INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("compact-percentage")
             .setDefaultValue(new ModelNode(30))
             .setMeasurementUnit(PERCENTAGE)
@@ -232,7 +245,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     // TODO: if this attribute is set, warn/error if any fs-related journal attribute is set.
     // TODO: add capability for data-source https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/data-source/capability.adoc
     public static final SimpleAttributeDefinition JOURNAL_DATASOURCE = create("journal-datasource", STRING)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("datasource")
             .setRequired(false)
             // references another resource
@@ -244,7 +257,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultBindingsTableName
      */
     public static final SimpleAttributeDefinition JOURNAL_BINDINGS_TABLE  = create("journal-bindings-table", STRING)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("bindings-table")
             .setRequired(false)
             .setDefaultValue(new ModelNode("BINDINGS"))
@@ -254,7 +267,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
 
     @Deprecated
     public static final SimpleAttributeDefinition JOURNAL_JMS_BINDINGS_TABLE  = create("journal-jms-bindings-table", STRING)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("jms-bindings-table")
             .setRequired(false)
             .setDefaultValue(new ModelNode("JMS_BINDINGS"))
@@ -265,7 +278,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultLargeMessagesTableName
      */
     public static final SimpleAttributeDefinition JOURNAL_LARGE_MESSAGES_TABLE  = create("journal-large-messages-table", STRING)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("large-messages-table")
             .setRequired(false)
             .setDefaultValue(new ModelNode("LARGE_MESSAGES"))
@@ -276,7 +289,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultMessageTableName
      */
     public static final SimpleAttributeDefinition JOURNAL_MESSAGES_TABLE = create("journal-messages-table", STRING)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("messages-table")
             .setRequired(false)
             .setDefaultValue(new ModelNode("MESSAGES"))
@@ -288,7 +301,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultNodeManagerStoreTableName
      */
     public static final SimpleAttributeDefinition JOURNAL_NODE_MANAGER_STORE_TABLE = create("journal-node-manager-store-table", STRING)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("node-manager-store-table")
             .setRequired(false)
             .setDefaultValue(new ModelNode("NODE_MANAGER_STORE"))
@@ -299,7 +312,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultPageStoreTableName
      */
     public static final SimpleAttributeDefinition JOURNAL_PAGE_STORE_TABLE  = create("journal-page-store-table", STRING)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("page-store-table")
             .setRequired(false)
             .setDefaultValue(new ModelNode("PAGE_STORE"))
@@ -308,7 +321,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final AttributeDefinition JOURNAL_DATABASE = create("journal-database", STRING)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("database")
             .setRequired(false)
             .setAllowExpression(true)
@@ -319,7 +332,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultJdbcLockExpirationMillis()
      */
     public static final AttributeDefinition JOURNAL_JDBC_LOCK_EXPIRATION = create("journal-jdbc-lock-expiration", INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("jdbc-lock-expiration")
             .setDefaultValue(new ModelNode(20))
             .setMeasurementUnit(SECONDS)
@@ -332,7 +345,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultJdbcLockRenewPeriodMillis()
      */
     public static final AttributeDefinition JOURNAL_JDBC_LOCK_RENEW_PERIOD = create("journal-jdbc-lock-renew-period", INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("jdbc-lock-renew-period")
             .setDefaultValue(new ModelNode(4))
             .setMeasurementUnit(SECONDS)
@@ -346,7 +359,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultJdbcNetworkTimeout()
      */
     public static final AttributeDefinition JOURNAL_JDBC_NETWORK_TIMEOUT = create("journal-jdbc-network-timeout", INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("jdbc-network-timeout")
             .setDefaultValue(new ModelNode(20))
             .setMeasurementUnit(SECONDS)
@@ -358,7 +371,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultJournalFileSize
      */
     public static final SimpleAttributeDefinition JOURNAL_FILE_SIZE = create("journal-file-size", LONG)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("file-size")
             .setDefaultValue(new ModelNode(10485760L))
             .setMeasurementUnit(BYTES)
@@ -369,7 +382,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .build();
     // no default values, depends on whether NIO or AIO is used.
     public static final SimpleAttributeDefinition JOURNAL_MAX_IO = create("journal-max-io", INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("max-io")
             .setRequired(false)
             .setAllowExpression(true)
@@ -379,7 +392,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultJournalMinFiles
      */
     public static final SimpleAttributeDefinition JOURNAL_MIN_FILES = create("journal-min-files", INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("min-files")
             .setDefaultValue(new ModelNode(2))
             .setRequired(false)
@@ -392,7 +405,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultJournalPoolFiles
      */
     public static final SimpleAttributeDefinition JOURNAL_POOL_FILES = create("journal-pool-files", INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("pool-files")
             .setDefaultValue(new ModelNode(10))
             .setRequired(false)
@@ -405,7 +418,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultJournalFileOpenTimeout()
      */
     public static final SimpleAttributeDefinition JOURNAL_FILE_OPEN_TIMEOUT = create("journal-file-open-timeout", INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("file-open-timeout")
             .setDefaultValue(new ModelNode(5))
             .setRequired(false)
@@ -417,7 +430,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#isDefaultJournalSyncNonTransactional
      */
     public static final SimpleAttributeDefinition JOURNAL_SYNC_NON_TRANSACTIONAL = create("journal-sync-non-transactional", BOOLEAN)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("sync-non-transactional")
             .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
@@ -428,7 +441,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#isDefaultJournalSyncTransactional
      */
     public static final SimpleAttributeDefinition JOURNAL_SYNC_TRANSACTIONAL = create("journal-sync-transactional", BOOLEAN)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("sync-transactional")
             .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
@@ -436,17 +449,17 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition JOURNAL_TYPE = create("journal-type", ModelType.STRING)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("type")
             .setDefaultValue(new ModelNode(JournalType.ASYNCIO.toString()))
             .setRequired(false)
             .setAllowExpression(true)
             // list allowed values explicitly to exclude MAPPED
-            .setValidator(new EnumValidator<>(JournalType.class, true, true))
+            .setValidator(EnumValidator.create(JournalType.class))
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition JOURNAL_MAX_ATTIC_FILES = create("journal-max-attic-files", ModelType.INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("max-attic-files")
             .setDefaultValue(new ModelNode(10))
             .setRequired(false)
@@ -458,7 +471,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#isDefaultJournalLogWriteRate
      */
     public static final SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = create("log-journal-write-rate", BOOLEAN)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("log-write-rate")
             .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
@@ -489,7 +502,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultMessageCounterMaxDayHistory
      */
     public static final SimpleAttributeDefinition MESSAGE_COUNTER_MAX_DAY_HISTORY = create("message-counter-max-day-history", INT)
-            .setAttributeGroup("statistics")
+            .setAttributeGroup(STATISTICS_ATTRIBUTE_GROUP)
             .setDefaultValue(new ModelNode(10))
             .setMeasurementUnit(DAYS)
             .setRequired(false)
@@ -499,7 +512,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultMessageCounterSamplePeriod
      */
     public static final SimpleAttributeDefinition MESSAGE_COUNTER_SAMPLE_PERIOD = create("message-counter-sample-period", LONG)
-            .setAttributeGroup("statistics")
+            .setAttributeGroup(STATISTICS_ATTRIBUTE_GROUP)
             .setDefaultValue(new ModelNode(10000L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
@@ -509,7 +522,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultTransactionTimeout
      */
     public static final SimpleAttributeDefinition TRANSACTION_TIMEOUT = create("transaction-timeout", LONG)
-            .setAttributeGroup("transaction")
+            .setAttributeGroup(TRANSACTION_ATTRIBUTE_GROUP)
             .setXmlName("timeout")
             .setDefaultValue(new ModelNode(300000L))
             .setMeasurementUnit(MILLISECONDS)
@@ -521,7 +534,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultTransactionTimeoutScanPeriod
      */
     public static final SimpleAttributeDefinition TRANSACTION_TIMEOUT_SCAN_PERIOD = create("transaction-timeout-scan-period", LONG)
-            .setAttributeGroup("transaction")
+            .setAttributeGroup(TRANSACTION_ATTRIBUTE_GROUP)
             .setXmlName("scan-period")
             .setDefaultValue(new ModelNode(1000L))
             .setMeasurementUnit(MILLISECONDS)
@@ -533,7 +546,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultMessageExpiryScanPeriod
      */
     public static final SimpleAttributeDefinition MESSAGE_EXPIRY_SCAN_PERIOD = create("message-expiry-scan-period", LONG)
-            .setAttributeGroup("message-expiry")
+            .setAttributeGroup(MESSAGE_EXPIRY_ATTRIBUTE_GROUP)
             .setXmlName("scan-period")
             .setDefaultValue(new ModelNode(30000L))
             .setMeasurementUnit(MILLISECONDS)
@@ -545,7 +558,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultMessageExpiryThreadPriority
      */
     public static final SimpleAttributeDefinition MESSAGE_EXPIRY_THREAD_PRIORITY = create("message-expiry-thread-priority", INT)
-            .setAttributeGroup("message-expiry")
+            .setAttributeGroup(MESSAGE_EXPIRY_ATTRIBUTE_GROUP)
             .setXmlName("thread-priority")
             .setDefaultValue(new ModelNode(3))
             .setRequired(false)
@@ -557,7 +570,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     // Property no longer exists since Artemis 2
     @Deprecated
     public static final SimpleAttributeDefinition PERF_BLAST_PAGES = create("perf-blast-pages", INT)
-            .setAttributeGroup("debug")
+            .setAttributeGroup(DEBUG_ATTRIBUTE_GROUP)
             .setDefaultValue(new ModelNode(-1))
             .setRequired(false)
             .setAllowExpression(true)
@@ -570,7 +583,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     // Property no longer exists since Artemis 2
     @Deprecated
     public static final SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = create("run-sync-speed-test", BOOLEAN)
-            .setAttributeGroup("debug")
+            .setAttributeGroup(DEBUG_ATTRIBUTE_GROUP)
             .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
@@ -581,7 +594,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultServerDumpInterval
      */
     public static final SimpleAttributeDefinition SERVER_DUMP_INTERVAL = create("server-dump-interval", LONG)
-            .setAttributeGroup("debug")
+            .setAttributeGroup(DEBUG_ATTRIBUTE_GROUP)
             .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
@@ -593,7 +606,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultMemoryMeasureInterval
      */
     public static final SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = create("memory-measure-interval", LONG)
-            .setAttributeGroup("debug")
+            .setAttributeGroup(DEBUG_ATTRIBUTE_GROUP)
             .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
@@ -605,7 +618,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultMemoryWarningThreshold
      */
     public static final SimpleAttributeDefinition MEMORY_WARNING_THRESHOLD = create("memory-warning-threshold", INT)
-            .setAttributeGroup("debug")
+            .setAttributeGroup(DEBUG_ATTRIBUTE_GROUP)
             .setDefaultValue(new ModelNode(25))
             .setMeasurementUnit(PERCENTAGE)
             .setRequired(false)
@@ -616,7 +629,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultSecurityInvalidationInterval
      */
     public static final SimpleAttributeDefinition SECURITY_INVALIDATION_INTERVAL = create("security-invalidation-interval", LONG)
-            .setAttributeGroup("security")
+            .setAttributeGroup(SECURITY_ATTRIBUTE_GROUP)
             .setXmlName("invalidation-interval")
             .setDefaultValue(new ModelNode(10000L))
             .setMeasurementUnit(MILLISECONDS)
@@ -629,7 +642,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#isDefaultSecurityEnabled
      */
     public static final SimpleAttributeDefinition SECURITY_ENABLED = create("security-enabled", BOOLEAN)
-            .setAttributeGroup("security")
+            .setAttributeGroup(SECURITY_ATTRIBUTE_GROUP)
             .setXmlName("enabled")
             .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
@@ -650,7 +663,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultManagementNotificationAddress
      */
     public static final SimpleAttributeDefinition MANAGEMENT_NOTIFICATION_ADDRESS = create("management-notification-address", ModelType.STRING)
-            .setAttributeGroup("management")
+            .setAttributeGroup(MANAGEMENT_ATTRIBUTE_GROUP)
             .setXmlName("notification-address")
             .setDefaultValue(new ModelNode("activemq.notifications"))
             .setRequired(false)
@@ -662,7 +675,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultManagementAddress
      */
     public static final SimpleAttributeDefinition MANAGEMENT_ADDRESS = create("management-address", ModelType.STRING)
-            .setAttributeGroup("management")
+            .setAttributeGroup(MANAGEMENT_ATTRIBUTE_GROUP)
             .setXmlName("address")
             .setDefaultValue(new ModelNode("activemq.management"))
             .setRequired(false)
@@ -671,7 +684,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
             .build();
     public static final SimpleAttributeDefinition JMX_MANAGEMENT_ENABLED = create("jmx-management-enabled", BOOLEAN)
-            .setAttributeGroup("management")
+            .setAttributeGroup(MANAGEMENT_ATTRIBUTE_GROUP)
             .setXmlName("jmx-enabled")
             .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
@@ -683,7 +696,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultJmxDomain
      */
     public static final SimpleAttributeDefinition JMX_DOMAIN = create("jmx-domain", ModelType.STRING)
-            .setAttributeGroup("management")
+            .setAttributeGroup(MANAGEMENT_ATTRIBUTE_GROUP)
             .setDefaultValue(new ModelNode("org.apache.activemq.artemis"))
             .setRequired(false)
             .setAllowExpression(true)
@@ -731,7 +744,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#isDefaultCreateBindingsDir
      */
     public static final SimpleAttributeDefinition CREATE_BINDINGS_DIR = create("create-bindings-dir", BOOLEAN)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
@@ -741,7 +754,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#isDefaultCreateJournalDir
      */
     public static final SimpleAttributeDefinition CREATE_JOURNAL_DIR = create("create-journal-dir", BOOLEAN)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
@@ -752,7 +765,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultMaxDiskUsage
      */
     public static final SimpleAttributeDefinition GLOBAL_MAX_DISK_USAGE = create("global-max-disk-usage", INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setMeasurementUnit(MeasurementUnit.PERCENTAGE)
             .setDefaultValue(new ModelNode(100))
             .setRequired(false)
@@ -764,7 +777,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultDiskScanPeriod
      */
     public static final SimpleAttributeDefinition DISK_SCAN_PERIOD = create("disk-scan-period", INT)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setDefaultValue(new ModelNode(5000))
             .setValidator(INT_INSTANCE)
@@ -778,7 +791,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultMaxGlobalSize
      */
     public static final SimpleAttributeDefinition GLOBAL_MAX_MEMORY_SIZE = create("global-max-memory-size", LONG)
-            .setAttributeGroup("journal")
+            .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setMeasurementUnit(MeasurementUnit.BYTES)
             .setDefaultValue(new ModelNode(-1L))
             .setCorrector(NEGATIVE_VALUE_CORRECTOR)
@@ -791,7 +804,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultNetworkCheckNic
      */
     public static final SimpleAttributeDefinition NETWORK_CHECK_NIC = create("network-check-nic", STRING)
-            .setAttributeGroup("network-isolation")
+            .setAttributeGroup(NETWORK_ISOLATION_ATTRIBUTE_GROUP)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -801,7 +814,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultNetworkCheckPeriod
      */
     public static final SimpleAttributeDefinition NETWORK_CHECK_PERIOD = create("network-check-period", LONG)
-            .setAttributeGroup("network-isolation")
+            .setAttributeGroup(NETWORK_ISOLATION_ATTRIBUTE_GROUP)
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setDefaultValue(new ModelNode(5000L))
             .setRequired(false)
@@ -814,7 +827,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultNetworkCheckTimeout
      */
     public static final SimpleAttributeDefinition NETWORK_CHECK_TIMEOUT = create("network-check-timeout", LONG)
-            .setAttributeGroup("network-isolation")
+            .setAttributeGroup(NETWORK_ISOLATION_ATTRIBUTE_GROUP)
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setDefaultValue(new ModelNode(1000L))
             .setRequired(false)
@@ -827,7 +840,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultNetworkCheckList
      */
     public static final SimpleAttributeDefinition NETWORK_CHECK_LIST = create("network-check-list", STRING)
-            .setAttributeGroup("network-isolation")
+            .setAttributeGroup(NETWORK_ISOLATION_ATTRIBUTE_GROUP)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -837,7 +850,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getDefaultNetworkCheckURLList
      */
     public static final SimpleAttributeDefinition NETWORK_CHECK_URL_LIST = create("network-check-url-list", STRING)
-            .setAttributeGroup("network-isolation")
+            .setAttributeGroup(NETWORK_ISOLATION_ATTRIBUTE_GROUP)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -847,7 +860,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see NetworkHealthCheck#IPV4_DEFAULT_COMMAND
      */
     public static final SimpleAttributeDefinition NETWORK_CHECK_PING_COMMAND = create("network-check-ping-command", STRING)
-            .setAttributeGroup("network-isolation")
+            .setAttributeGroup(NETWORK_ISOLATION_ATTRIBUTE_GROUP)
             .setDefaultValue(new ModelNode("ping -c 1 -t %d %s"))
             .setRequired(false)
             .setAllowExpression(true)
@@ -858,7 +871,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see NetworkHealthCheck#IPV6_DEFAULT_COMMAND
      */
     public static final SimpleAttributeDefinition NETWORK_CHECK_PING6_COMMAND = create("network-check-ping6-command", STRING)
-            .setAttributeGroup("network-isolation")
+            .setAttributeGroup(NETWORK_ISOLATION_ATTRIBUTE_GROUP)
             .setDefaultValue(new ModelNode("ping6 -c 1 %2$s"))
             .setRequired(false)
             .setAllowExpression(true)
@@ -866,7 +879,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition CRITICAL_ANALYZER_ENABLED = create("critical-analyzer-enabled", BOOLEAN)
-            .setAttributeGroup("critical-analyzer")
+            .setAttributeGroup(CRITICAL_ANALYZER_ATTRIBUTE_GROUP)
             .setXmlName("enabled")
             .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
@@ -875,7 +888,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition CRITICAL_ANALYZER_CHECK_PERIOD = create("critical-analyzer-check-period", LONG)
-            .setAttributeGroup("critical-analyzer")
+            .setAttributeGroup(CRITICAL_ANALYZER_ATTRIBUTE_GROUP)
             .setXmlName("check-period")
             .setDefaultValue(new ModelNode(0L))
             .setMeasurementUnit(MILLISECONDS)
@@ -888,7 +901,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#getCriticalAnalyzerTimeout
      */
     public static final SimpleAttributeDefinition CRITICAL_ANALYZER_TIMEOUT = create("critical-analyzer-timeout", LONG)
-            .setAttributeGroup("critical-analyzer")
+            .setAttributeGroup(CRITICAL_ANALYZER_ATTRIBUTE_GROUP)
             .setXmlName("timeout")
             .setDefaultValue(new ModelNode(120000L))
             .setMeasurementUnit(MILLISECONDS)
@@ -898,10 +911,18 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition CRITICAL_ANALYZER_POLICY = create("critical-analyzer-policy", STRING)
-            .setAttributeGroup("critical-analyzer")
+            .setAttributeGroup(CRITICAL_ANALYZER_ATTRIBUTE_GROUP)
             .setXmlName("policy")
             .setDefaultValue(new ModelNode("LOG"))
             .setAllowedValues("HALT", "SHUTDOWN", "LOG")
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition ADDRESS_QUEUE_SCAN_PERIOD = create("address-queue-scan-period", LONG)
+            .setDefaultValue(new ModelNode(30000L))
+            .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -929,7 +950,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
             GLOBAL_MAX_DISK_USAGE, DISK_SCAN_PERIOD, GLOBAL_MAX_MEMORY_SIZE,
             NETWORK_CHECK_NIC, NETWORK_CHECK_PERIOD, NETWORK_CHECK_TIMEOUT,
             NETWORK_CHECK_LIST, NETWORK_CHECK_URL_LIST, NETWORK_CHECK_PING_COMMAND, NETWORK_CHECK_PING6_COMMAND,
-            CRITICAL_ANALYZER_ENABLED, CRITICAL_ANALYZER_CHECK_PERIOD, CRITICAL_ANALYZER_TIMEOUT, CRITICAL_ANALYZER_POLICY
+            CRITICAL_ANALYZER_ENABLED, CRITICAL_ANALYZER_CHECK_PERIOD, CRITICAL_ANALYZER_TIMEOUT, CRITICAL_ANALYZER_POLICY,
+            ADDRESS_QUEUE_SCAN_PERIOD
     };
 
     private final boolean registerRuntimeOnly;
@@ -975,14 +997,13 @@ public class ServerDefinition extends PersistentResourceDefinition {
     protected List<? extends PersistentResourceDefinition> getChildren() {
         List<PersistentResourceDefinition> children = new ArrayList<>();
         // Static resources
-        children.addAll(Arrays.asList(
-                // HA policy
+        children.addAll(Arrays.asList(// HA policy
                 LiveOnlyDefinition.INSTANCE,
-                registerRuntimeOnly ? ReplicationMasterDefinition.INSTANCE : ReplicationMasterDefinition.HC_INSTANCE,
-                registerRuntimeOnly ? ReplicationSlaveDefinition.INSTANCE : ReplicationSlaveDefinition.HC_INSTANCE,
+                registerRuntimeOnly ? ReplicationPrimaryDefinition.INSTANCE : ReplicationPrimaryDefinition.HC_INSTANCE,
+                registerRuntimeOnly ? ReplicationSecondaryDefinition.INSTANCE : ReplicationSecondaryDefinition.HC_INSTANCE,
                 ReplicationColocatedDefinition.INSTANCE,
-                SharedStoreMasterDefinition.INSTANCE,
-                SharedStoreSlaveDefinition.INSTANCE,
+                SharedStorePrimaryDefinition.INSTANCE,
+                SharedStoreSecondaryDefinition.INSTANCE,
                 SharedStoreColocatedDefinition.INSTANCE,
 
                 AddressSettingDefinition.INSTANCE,
@@ -1030,11 +1051,25 @@ public class ServerDefinition extends PersistentResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
+        resourceRegistration.registerAlias(MessagingExtension.REPLICATION_MASTER_PATH, createAlias(resourceRegistration, MessagingExtension.REPLICATION_PRIMARY_PATH));
+        resourceRegistration.registerAlias(MessagingExtension.REPLICATION_SLAVE_PATH, createAlias(resourceRegistration, MessagingExtension.REPLICATION_SECONDARY_PATH));
+        resourceRegistration.registerAlias(MessagingExtension.SHARED_STORE_MASTER_PATH, createAlias(resourceRegistration, MessagingExtension.SHARED_STORE_PRIMARY_PATH));
+        resourceRegistration.registerAlias(MessagingExtension.SHARED_STORE_SLAVE_PATH, createAlias(resourceRegistration, MessagingExtension.SHARED_STORE_SECONDARY_PATH));
         // runtime queues and core-address are only registered when it is ok to register runtime resource (ie they are not registered on HC).
         if (registerRuntimeOnly) {
-            resourceRegistration.registerSubModel(new QueueDefinition(registerRuntimeOnly,  MessagingExtension.RUNTIME_QUEUE_PATH));
+            resourceRegistration.registerSubModel(new QueueDefinition(registerRuntimeOnly, MessagingExtension.RUNTIME_QUEUE_PATH));
             resourceRegistration.registerSubModel(CoreAddressDefinition.INSTANCE);
         }
+    }
+
+    private static AliasEntry createAlias(ManagementResourceRegistration resourceRegistration, PathElement target) {
+        return new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(target))) {
+            @Override
+            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasEntry.AliasContext aliasContext) {
+                return aliasAddress.getParent().append(target);
+            }
+        };
+
     }
 
     private enum JournalType {

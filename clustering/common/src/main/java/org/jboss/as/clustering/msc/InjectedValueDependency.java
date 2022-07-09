@@ -32,7 +32,7 @@ import org.wildfly.clustering.service.ServiceSupplierDependency;
  * @author Paul Ferraro
  * @deprecated Replaced by {@link ServiceSupplierDependency}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class InjectedValueDependency<T> extends InjectorDependency<T> implements ValueDependency<T> {
 
     private final InjectedValue<T> value;

@@ -21,6 +21,7 @@ import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_1_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_2_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_3_0;
+import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_4_0;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BRIDGE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DEFAULT;
@@ -33,12 +34,13 @@ import static org.wildfly.extension.messaging.activemq.MessagingDependencies.get
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.ADDRESS_SETTING_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.BRIDGE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CLUSTER_CONNECTION_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_PRIMARY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONNECTION_FACTORY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_QUEUE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_TOPIC_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.POOLED_CONNECTION_FACTORY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_COLOCATED_PATH;
-import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_MASTER_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_PRIMARY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SERVER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SUBSYSTEM_PATH;
 
@@ -62,8 +64,8 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
-import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
-import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
+import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
@@ -131,6 +133,11 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
     // Transformers test //
     ///////////////////////
     @Test
+    public void testTransformersWildfly26_1() throws Exception {
+        testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_13_1_0);
+    }
+
+    @Test
     public void testTransformersWildfly25() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_13_0_0);
     }
@@ -157,6 +164,11 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
     }
 
     @Test
+    public void testTransformersEAP_7_4_0() throws Exception {
+        testTransformers(EAP_7_4_0, MessagingExtension.VERSION_13_0_0);
+    }
+
+    @Test
     public void testTransformersEAP_7_3_0() throws Exception {
         testTransformers(EAP_7_3_0, MessagingExtension.VERSION_8_0_0);
     }
@@ -174,6 +186,11 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
     @Test
     public void testTransformersEAP_7_0_0() throws Exception {
         testTransformers(EAP_7_0_0, MessagingExtension.VERSION_1_0_0);
+    }
+
+    @Test
+    public void testRejectingTransformersEAP_7_4_0() throws Exception {
+        testRejectingTransformers(EAP_7_4_0, MessagingExtension.VERSION_13_0_0);
     }
 
     @Test
@@ -286,11 +303,12 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                                 ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
                                 ServerDefinition.CRITICAL_ANALYZER_POLICY,
                                 ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
-                                ServerDefinition.JOURNAL_MAX_ATTIC_FILES
+                                ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
+                                ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
                         ))
-                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_MASTER_PATH),
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_PRIMARY_PATH),
                         new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
-                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_COLOCATED_PATH, MessagingExtension.CONFIGURATION_MASTER_PATH),
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_COLOCATED_PATH, CONFIGURATION_PRIMARY_PATH),
                         new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, ADDRESS_SETTING_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
@@ -311,8 +329,8 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                                 ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
-                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST,
                                 ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
                                 ConnectionFactoryAttributes.Common.USE_TOPOLOGY))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
@@ -321,8 +339,8 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                                 ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS,
                                 ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED,
                                 ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
-                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST,
                                 ConnectionFactoryAttributes.Common.USE_TOPOLOGY))
                 ;
         } else if (messagingVersion.equals(MessagingExtension.VERSION_2_0_0)) {
@@ -352,7 +370,8 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                                 ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
                                 ServerDefinition.CRITICAL_ANALYZER_POLICY,
                                 ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
-                                ServerDefinition.JOURNAL_MAX_ATTIC_FILES
+                                ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
+                                ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
                         ))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY))
@@ -382,13 +401,18 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                             ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
                             ServerDefinition.CRITICAL_ANALYZER_POLICY,
                             ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
-                            ServerDefinition.JOURNAL_MAX_ATTIC_FILES));
+                            ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
+                            ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig( BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_QUEUE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_TOPIC_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
         } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0 ) {
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
@@ -403,7 +427,8 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                     ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
                     ServerDefinition.CRITICAL_ANALYZER_POLICY,
                     ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
-                    ServerDefinition.JOURNAL_MAX_ATTIC_FILES
+                    ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
+                    ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
             ));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
@@ -472,10 +497,10 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                     ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
                     ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
                     ConnectionFactoryAttributes.Common.GROUP_ID,
-                    ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                    ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                    ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                    ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST,
                     ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE));
-        } else {
+        } else if (messagingVersion.compareTo(MessagingExtension.VERSION_12_0_0) > 0) {
             config.addFailedAttribute(subsystemAddress.append(CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     ConnectionFactoryAttributes.Common.CLIENT_FAILURE_CHECK_PERIOD,
                     ConnectionFactoryAttributes.Common.CONNECTION_TTL,
@@ -508,8 +533,8 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                     ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
                     ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
                     ConnectionFactoryAttributes.Common.GROUP_ID,
-                    ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                    ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                    ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                    ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST,
                     ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     ServerDefinition.NETWORK_CHECK_LIST,
@@ -523,10 +548,24 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                     ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
                     ServerDefinition.CRITICAL_ANALYZER_POLICY,
                     ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
-                    ServerDefinition.JOURNAL_MAX_ATTIC_FILES
+                    ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
+                    ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
             ));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_QUEUE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_TOPIC_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
+        } else {
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_QUEUE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_TOPIC_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(BridgeDefinition.ROUTING_TYPE));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
+                    ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
+            ));
         }
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
         mainServices.shutdown();

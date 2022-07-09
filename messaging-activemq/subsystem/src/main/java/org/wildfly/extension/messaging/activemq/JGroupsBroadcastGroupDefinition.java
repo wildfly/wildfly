@@ -30,8 +30,8 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTO
 
 import java.util.Arrays;
 import java.util.Collection;
-import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 
+import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
@@ -47,8 +47,8 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
-import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
+import org.wildfly.clustering.server.service.ClusteringRequirement;
 /**
  * Broadcast group definition using Jgroups.
  *

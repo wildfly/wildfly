@@ -45,7 +45,7 @@ public class DefaultDataSourceCDITestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
         jar.addClasses(DefaultDataSourceCDITestCase.class, DefaultDataSourceTestCDIBean.class);
-        jar.addAsManifestResource(new StringAsset(""), "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         return jar;
     }
 

@@ -22,21 +22,13 @@
 
 package org.jboss.as.test.integration.ejb.security.missingmethodpermission;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
 import java.util.concurrent.Callable;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -56,7 +48,6 @@ import javax.naming.InitialContext;
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-@ServerSetup(MissingMethodPermissionsTestCase.DefaultEjbSecurityDomainSetup.class)
 public class MissingMethodPermissionsTestCase {
 
     private static final Logger logger = Logger.getLogger(MissingMethodPermissionsTestCase.class);
@@ -173,52 +164,5 @@ public class MissingMethodPermissionsTestCase {
         };
         // establish an identity using the security domain associated with the beans in the JARs in the EAR deployment
         Util.switchIdentity("user1", "password1", callable, SecuredBeanOne.class.getClassLoader());
-    }
-
-    // Ensure the default security domain gets mapped to an appropriately configured Elytron security domain
-    static class DefaultEjbSecurityDomainSetup extends EjbSecurityDomainSetup {
-
-        @Override
-        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            if (System.getProperty("elytron") != null) {
-                super.setup(managementClient, containerId);
-
-                ModelNode address = getAddress();
-                ModelNode operation = new ModelNode();
-                operation.get(OP).set("write-attribute");
-                operation.get(OP_ADDR).set(address);
-                operation.get("name").set("default-security-domain");
-                operation.get("value").set("ejb3-tests");
-                ModelNode result = managementClient.getControllerClient().execute(operation);
-                Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-            }
-        }
-
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) {
-            if (System.getProperty("elytron") != null) {
-                super.tearDown(managementClient, containerId);
-
-                ModelNode address = getAddress();
-                ModelNode operation = new ModelNode();
-                operation.get(OP).set("write-attribute");
-                operation.get(OP_ADDR).set(address);
-                operation.get("name").set("default-security-domain");
-                operation.get("value").set("other");
-                try {
-                    ModelNode result = managementClient.getControllerClient().execute(operation);
-                    Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        private static ModelNode getAddress() {
-            ModelNode address = new ModelNode();
-            address.add("subsystem", "ejb3");
-            address.protect();
-            return address;
-        }
     }
 }

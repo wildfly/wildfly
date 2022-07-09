@@ -75,10 +75,10 @@ public final class ServiceLoaders {
      * @param deploymentUnit
      * @return
      */
-    public static Map<Class<? extends Service>, Service> loadModuleServices(ServiceLoader<ModuleServicesProvider> serviceLoader,
+    public static Map<Class<? extends Service>, Service> loadModuleServices(Iterable<ModuleServicesProvider> providers,
             DeploymentUnit rootDeploymentUnit, DeploymentUnit deploymentUnit, Module module, ResourceRoot resourceRoot) {
         List<Service> services = new ArrayList<>();
-        for (ModuleServicesProvider provider : serviceLoader) {
+        for (ModuleServicesProvider provider : providers) {
             services.addAll(provider.getServices(rootDeploymentUnit, deploymentUnit, module, resourceRoot));
         }
         Map<Class<? extends Service>, Service> servicesMap = new HashMap<>();

@@ -273,7 +273,7 @@ We can use git command to fetch a copy of the demo:
 
 [source,options="nowrap"]
 ----
-git clone git://github.com/liweinan/cluster-demo.git
+git clone git@github.com:liweinan/cluster-demo.git
 ----
 
 In this demo project we have a very simple web application. In web.xml

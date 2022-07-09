@@ -46,7 +46,6 @@ import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
-import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
@@ -65,7 +64,7 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.marshalling.InfinispanMarshallerFactory;
+import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -159,7 +158,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
 
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
         // Disable registration of MicroProfile Metrics
-        builder.metrics().gauges(false).histograms(false);
+        builder.metrics().gauges(false).histograms(false).accurateSize(true);
         builder.jmx().domain("org.wildfly.clustering.infinispan")
                 .mBeanServerLookup((this.server != null) ? new MBeanServerProvider(this.server.get()) : null)
                 .enabled(this.server != null)
@@ -173,8 +172,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
             // Disable triangle algorithm - we optimize for originator as primary owner
             builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
         }
-        // Disable configuration storage
-        builder.globalState().configurationStorage(ConfigurationStorage.IMMUTABLE).disable();
+        builder.globalState().disable();
 
         return builder.build();
     }

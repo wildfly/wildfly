@@ -31,14 +31,14 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-mail-jakarta</artifactId>
 
     <name>WildFly: Mail subsystem (Jakarta Namespace)</name>
-	
+
     <packaging>jar</packaging>
 
     <properties>
@@ -48,14 +48,19 @@
     <dependencies>
 
         <!-- Jakarta-namespace specific deps -->
-		
+
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
         </dependency>
 
         <!-- Other deps consistent with the javax.* mail module -->
-		
+
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>

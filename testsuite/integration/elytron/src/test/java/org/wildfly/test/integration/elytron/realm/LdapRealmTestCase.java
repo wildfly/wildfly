@@ -360,6 +360,7 @@ public class LdapRealmTestCase {
             tearDownDomain(DEPLOYMENT_HEX_CHARSET, LDAP_REALM_CHARSET_ENCODED_CONFIGURATION_NAME, LDAP_REALM_ENCODED_CHARSET_NAME);
             try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine(String.format("/subsystem=elytron/dir-context=%s:remove()", DIR_CONTEXT_NAME));
+                cli.sendLine("/subsystem=elytron/simple-role-decoder=from-roles-attribute:remove()");
             }
             ServerReload.reloadIfRequired(mc);
         }

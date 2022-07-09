@@ -57,6 +57,7 @@ public abstract class TestLogHandlerSetupTask implements ServerSetupTask {
         ModelNode addTestLogOp = Operations.createAddOperation(handlerAddress);
         addTestLogOp.get("level").set(getLevel());
         addTestLogOp.get("append").set("true");
+        addTestLogOp.get("encoding").set("UTF-8");
         ModelNode file = new ModelNode();
         file.get("relative-to").set("jboss.server.log.dir");
         file.get("path").set(getLogFileName());

@@ -12,20 +12,50 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-jpa-parent</artifactId>
     <packaging>pom</packaging>
     <name>WildFly: JPA</name>
+
+    <properties>
+        <dependency.management.pom.artifactId>wildfly-ee-feature-pack-parent</dependency.management.pom.artifactId>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>${dependency.management.pom.artifactId}</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <modules>
         <module>subsystem</module>
         <module>spi</module>
         <module>hibernate5</module>
         <module>hibernate5_3</module>
-        <module>hibernate-transformer</module>
         <module>eclipselink</module>
         <module>openjpa</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>include-hibernate-6</id>
+            <activation>
+                <property>
+                    <name>!skip.preview</name>
+                </property>
+            </activation>
+            <modules>
+                <module>hibernate6</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

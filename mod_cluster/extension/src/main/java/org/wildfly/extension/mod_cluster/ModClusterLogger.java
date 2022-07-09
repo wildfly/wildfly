@@ -25,7 +25,6 @@ package org.wildfly.extension.mod_cluster;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -78,7 +77,7 @@ interface ModClusterLogger extends BasicLogger {
      * Logs an error message indicating ModCluster requires advertise, but no multi-cast interface is available.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 4, value = "Mod_cluster requires Advertise but Multicast interface is not available")
+    @Message(id = 4, value = "Mod_cluster requires Advertise but Multicast interface is not available.")
     void multicastInterfaceNotAvailable();
 
     @LogMessage(level = WARN)
@@ -95,14 +94,14 @@ interface ModClusterLogger extends BasicLogger {
     @Message(id = 6, value = "Error applying properties to load metric class '%s'. Metric will not be loaded.")
     void errorApplyingMetricProperties(@Cause Throwable cause, String metricClass);
 
-    /**
-     * Logs a warning message that this metric type is no longer supported.
-     *
-     * @param metricType name of the unsupported metric
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 7, value = "Metric of type '%s' is no longer supported and will be ignored.")
-    void unsupportedMetric(String metricType);
+//    /**
+//     * Logs a warning message that this metric type is no longer supported.
+//     *
+//     * @param metricType name of the unsupported metric
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 7, value = "Metric of type '%s' is no longer supported and will be ignored.")
+//    void unsupportedMetric(String metricType);
 
 //    /**
 //     * A message indicating a class attribute is needed for the attribute represented by the {@code attributeName}
@@ -140,24 +139,24 @@ interface ModClusterLogger extends BasicLogger {
 //    @Message(id = 13, value = "'property' can not have more than one entry")
 //    String propertyCanOnlyHaveOneEntry();
 
-    /**
-     * A message indicating a valid port and host are needed.
-     *
-     * @return the message
-     */
-    @Message(id = 14, value = "Need valid host and port in the form host:port, %s is not valid")
-    String needHostAndPort(String value);
+//    /**
+//     * A message indicating a valid port and host are needed.
+//     *
+//     * @return the message
+//     */
+//    @Message(id = 14, value = "Need valid host and port in the form host:port, %s is not valid")
+//    String needHostAndPort(String value);
 
 //    @Message(id = 15, value = "session-draining-strategy must either be undefined or have the value \"DEFAULT\"")
 //    String sessionDrainingStrategyMustBeUndefinedOrDefault();
 
-    /**
-     * A message indicating the host of the reverse proxy server could not be resolved.
-     *
-     * @return the message.
-     */
-    @Message(id = 16, value = "No IP address could be resolved for the specified host of the proxy.")
-    String couldNotResolveProxyIpAddress();
+//    /**
+//     * A message indicating the host of the reverse proxy server could not be resolved.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 16, value = "No IP address could be resolved for the specified host of the proxy.")
+//    String couldNotResolveProxyIpAddress();
 
 //    /**
 //     * A message explaining that 'proxy-list' attribute has been deprecated and that 'proxies' attribute which is a list
@@ -165,7 +164,7 @@ interface ModClusterLogger extends BasicLogger {
 //     *
 //     * @return the message
 //     */
-//    @Message(id = 17, value = "'proxy-list' usage not allowed in the current model, can only be used to support older slaves")
+//    @Message(id = 17, value = "'proxy-list' usage not allowed in the current model, can only be used to support older secondary hosts")
 //    String proxyListNotAllowedInCurrentModel();
 
 //    /**
@@ -178,31 +177,38 @@ interface ModClusterLogger extends BasicLogger {
 //    String proxyListAttributeUsage();
 
     /**
-     * Logs a error message when excluded contexts are in a wrong format.
+     * Logs an error message when excluded contexts are in a wrong format.
      *
      * @param trimmedContexts value which is in the wrong format
      */
     @Message(id = 19, value = "'%s' is not a valid value for excluded-contexts.")
     IllegalArgumentException excludedContextsWrongFormat(String trimmedContexts);
 
-    /**
-     * Exception thrown when user configures both 'ssl-context' attribute reference and the mod-cluster-config=configuration/ssl=configuration.
-     */
-    @Message(id = 20, value = "Only one of 'ssl-context' attribute or 'ssl' resource can be defined!")
-    IllegalStateException bothElytronAndLegacySslContextDefined();
+//    /**
+//     * Exception thrown when user configures both 'ssl-context' attribute reference and the proxy=X/ssl=configuration.
+//     */
+//    @Message(id = 20, value = "Only one of 'ssl-context' attribute or 'ssl' resource can be defined!")
+//    IllegalStateException bothElytronAndLegacySslContextDefined();
 
     @LogMessage(level = WARN)
     @Message(id = 21, value = "Value 'ROOT' for excluded-contexts is deprecated, to exclude the root context use '/' instead.")
     void excludedContextsUseSlashInsteadROOT();
 
-    @Message(id = 22, value = "Legacy operations cannot be used with multiple proxy configurations. Use non-deprecated operations at the correct proxy address.")
-    String legacyOperationsWithMultipleProxies();
+//    @Message(id = 22, value = "Legacy operations cannot be used with multiple proxy configurations. Use non-deprecated operations at the correct proxy address.")
+//    String legacyOperationsWithMultipleProxies();
 
     @LogMessage(level = ERROR)
     @Message(id = 23, value = "Error loading module '%s' to load custom metric from.")
     void errorLoadingModuleForCustomMetric(String moduleName, @Cause Throwable cause);
 
-    @Message(id = 24, value = "Dynamic load factor provider is currently configured. A simple load factor provider needs to be configured first to read or write a static factor.")
-    OperationFailedException simpleLoadFactorProviderIsNotConfigured();
+//    @Message(id = 24, value = "Dynamic load factor provider is currently configured. A simple load factor provider needs to be configured first to read or write a static factor.")
+//    OperationFailedException simpleLoadFactorProviderIsNotConfigured();
 
+    @LogMessage(level = WARN)
+    @Message(id = 25, value = "The '%s' element is no longer supported and will be ignored.")
+    void ignoredElement(String element);
+
+    @LogMessage(level = WARN)
+    @Message(id = 26, value = "Attribute '%s' of element '%s' is no longer supported and will be ignored.")
+    void ignoredAttribute(String attribute, String element);
 }

@@ -59,7 +59,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -95,6 +95,12 @@
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
+
+        <!-- The artifactId of the pom to use as an import scope dependency (a bom) for testsuite modules.
+             Child modules or profiles can override this to use a different dependency set,
+             for example to test WildFly Preview or to test microprofile.
+             Default is the EE dependency set. -->
+        <dependency.management.import.artifact>wildfly-ee-feature-pack-parent</dependency.management.import.artifact>
 
         <!-- IP address defaults. -->
         <node0>127.0.0.1</node0>
@@ -154,9 +160,12 @@
         <surefire.memory.args>-Xmx512m -XX:MetaspaceSize=128m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <as.debug.port>8787</as.debug.port>
-        <modular.jdk.testsuite.args />
+        <modular.jdk.testsuite.args>${modular.jdk.args}</modular.jdk.testsuite.args>
         <surefire.system.args>${modular.jdk.testsuite.args} -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist} ${surefire.jacoco.args} -Dmaven.repo.local=${settings.localRepository}</surefire.system.args>
         <extra.server.jvm.args />
+        <!-- needed for arquillian-byteman-extension -->
+        <surefire.byteman.argline>-Djdk.attach.allowAttachSelf=true</surefire.byteman.argline>
+        <surefire.byteman.args>-Djboss.modules.system.packages=com.sun.tools.attach,org.jboss.byteman -Djdk.attach.allowAttachSelf=true</surefire.byteman.args>
         <!-- Hook to control forked process timeout via -D. Default value of 0 means no timeout -->
         <surefire.forked.process.timeout>0</surefire.forked.process.timeout>
 
@@ -173,6 +182,17 @@
         <trace>none</trace>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>${dependency.management.import.artifact}</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -280,7 +300,6 @@
                    <artifactId>maven-surefire-plugin</artifactId>
                    <configuration>
                        <failIfNoTests>false</failIfNoTests>
-                       <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                        <systemPropertyVariables>
                            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                            <jboss.dist>${jboss.dist}</jboss.dist>
@@ -290,10 +309,6 @@
                            <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                            <org.wildfly.test.kill-servers-before-test>${org.wildfly.test.kill-servers-before-test}</org.wildfly.test.kill-servers-before-test>
                        </systemPropertyVariables>
-                       <!-- Arquillian's config files. -->
-                       <additionalClasspathElements combine.children="append">
-                           <additionalClasspathElement>${basedir}/src/test/config/arq</additionalClasspathElement>
-                       </additionalClasspathElements>
                        <argLine>${surefire.system.args}</argLine>
                        <trimStackTrace>false</trimStackTrace>
                    </configuration>
@@ -333,64 +348,6 @@
 
     <profiles>
 
-        <!-- tools.jar dependency: needed for Byteman tests. -->
-        <profile>
-            <id>ts.clustering.use-toolsjar-jigsaw.profile</id>
-            <activation>
-                <jdk>[1.9,)</jdk>
-            </activation>
-            <properties>
-                <!-- needed for arquillian-byteman-extension -->
-                <surefire.byteman.argline>-Djdk.attach.allowAttachSelf=true</surefire.byteman.argline>
-                <surefire.byteman.args>-Djboss.modules.system.packages=com.sun.tools.attach,org.jboss.byteman -Djdk.attach.allowAttachSelf=true</surefire.byteman.args>
-            </properties>
-            <dependencies/>
-        </profile>
-        <profile>
-            <id>ts.clustering.use-toolsjar-default.profile</id>
-            <activation>
-                <file>
-                    <exists>${java.home}/../lib/tools.jar</exists>
-                </file>
-            </activation>
-            <properties>
-                <surefire.byteman.argline></surefire.byteman.argline>
-                <tools.jar>${java.home}/../lib/tools.jar</tools.jar>
-                <surefire.byteman.args>-Djboss.modules.system.packages=com.sun.tools.attach,org.jboss.byteman -Xbootclasspath/a:${tools.jar}</surefire.byteman.args>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <version>1.8</version>
-                    <scope>system</scope>
-                    <systemPath>${tools.jar}</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>ts.clustering.use-toolsjar-osx.profile</id>
-            <activation>
-                <file>
-                    <exists>${java.home}/../Classes/classes.jar</exists>
-                </file>
-            </activation>
-            <properties>
-                <surefire.byteman.argline></surefire.byteman.argline>
-                <tools.jar>${java.home}/../Classes/classes.jar</tools.jar>
-                <surefire.byteman.args>-Djboss.modules.system.packages=com.sun.tools.attach,org.jboss.byteman -Xbootclasspath/a:${tools.jar}</surefire.byteman.args>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <version>1.8</version>
-                    <scope>system</scope>
-                    <systemPath>${tools.jar}</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-
         <!--
            Module profiles
            - used to activate modules alone or in combination
@@ -402,7 +359,6 @@
             <activation><property><name>allTests</name></property></activation>
             <modules>
                 <module>integration</module>
-                <module>compat</module>
                 <module>domain</module>
                 <module>scripts</module>
             </modules>
@@ -431,12 +387,6 @@
         <profile>
             <id>integ-clustering.module.profile</id>
             <activation><property><name>ts.clustering</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <!-- Keep -Dts.clust compatibility -->
-        <profile>
-            <id>integ-clustering.module.profile.compability</id>
-            <activation><property><name>ts.clust</name></property></activation>
             <modules><module>integration</module></modules>
         </profile>
         <profile>
@@ -490,7 +440,16 @@
                 <module>layers</module>
             </modules>
         </profile>
-
+        <profile>
+            <id>galleon.module.profile</id>
+            <activation><property><name>galleon.module</name></property></activation>
+            <modules><module>galleon</module></modules>
+        </profile>
+        <profile>
+            <id>galleon_.module.profile</id>
+            <activation><property><name>ts.galleon</name></property></activation>
+            <modules><module>galleon</module></modules>
+        </profile>
         <profile>
             <id>scripts.module.profile</id>
             <activation><property><name>scripts.module</name></property></activation>
@@ -506,12 +465,13 @@
             <id>ee9.profile</id>
             <activation><property><name>ts.ee9</name></property></activation>
             <modules>
+                <module>domain</module>
                 <module>integration</module>
                 <module>layers</module>
+                <module>preview</module>
                 <module>scripts</module>
             </modules>
         </profile>
-
 
         <!--
           Debugging profiles.
@@ -520,14 +480,14 @@
             <id>jpda.profile</id>
             <activation><property><name>jpda</name></property></activation>
             <properties>
-                <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
+                <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
         <profile>
             <id>debug.profile</id>
             <activation><property><name>debug</name></property></activation>
             <properties>
-                <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
+                <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
 
@@ -1046,42 +1006,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>jdk9</id>
-            <activation>
-                <jdk>[9,)</jdk>
-            </activation>
-            <properties>
-                <modular.jdk.testsuite.args>${modular.jdk.args}
-                    --add-opens=java.base/javax.crypto=ALL-UNNAMED
-                    --add-opens=java.base/sun.security.validator=ALL-UNNAMED
-                    --add-exports=java.base/sun.security.validator=ALL-UNNAMED
-                    --add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED
-                    --add-exports=java.base/com.sun.crypto.provider=ALL-UNNAMED
-                </modular.jdk.testsuite.args>
-            </properties>
-        </profile>
-        <profile>
-            <id>jdk-target</id>
-            <activation>
-                <jdk>[9,)</jdk>
-                <property>
-                    <name>jdk-release</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>${version.compiler.plugin}</version>
-                        <configuration>
-                            <release>${jdk-release}</release>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

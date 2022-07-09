@@ -212,7 +212,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Servic
         return modules;
     }
 
-    private class DeploymentHolder {
+    private static final class DeploymentHolder {
         final ModuleDeployment deployment;
         volatile boolean started = false;
 

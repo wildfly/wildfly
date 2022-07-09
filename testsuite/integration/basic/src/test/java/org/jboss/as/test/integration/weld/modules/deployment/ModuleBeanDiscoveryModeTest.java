@@ -25,6 +25,7 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.module.util.TestModule;
@@ -101,6 +102,6 @@ public class ModuleBeanDiscoveryModeTest {
     public void testBeanDiscovery() {
         Assert.assertFalse(injected.isUnsatisfied());
         Assert.assertFalse(injected.isAmbiguous());
-        Assert.assertThat(injected.get(), CoreMatchers.instanceOf(FooImplAnnotated.class));
+        MatcherAssert.assertThat(injected.get(), CoreMatchers.instanceOf(FooImplAnnotated.class));
     }
 }

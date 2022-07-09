@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<distributable-web xmlns="urn:jboss:distributable-web:3.0">
+    <infinispan-session-management cache-container="foo" cache="bar" granularity="ATTRIBUTE">
+        <ranked-affinity delimiter=":" max-routes="4"/>
+        <immutable-class>java.util.Locale</immutable-class>
+        <immutable-class>java.util.UUID</immutable-class>
+    </infinispan-session-management>
+</distributable-web>

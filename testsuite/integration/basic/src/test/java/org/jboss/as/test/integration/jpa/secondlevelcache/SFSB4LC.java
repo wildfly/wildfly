@@ -57,7 +57,7 @@ public class SFSB4LC {
         stats.clear();
 
         try {
-            String queryString = "from Employee e where e.id = " + id;
+            String queryString = "select e from Employee e where e.id = " + id;
             QueryStatistics queryStats = stats.getQueryStatistics(queryString);
             Query query = em.createQuery(queryString);
             query.setHint("org.hibernate.cacheable", true);

@@ -1,0 +1,9 @@
+package org.jboss.weld.manager;
+
+/**
+ * @TypeId(460)
+ */
+message BeanManagerImpl {
+	optional	string	context	 = 1;
+	optional	string	id	 = 2;
+}

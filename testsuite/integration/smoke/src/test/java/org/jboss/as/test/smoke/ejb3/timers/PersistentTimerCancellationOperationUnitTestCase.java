@@ -23,7 +23,7 @@
 package org.jboss.as.test.smoke.ejb3.timers;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.List;
 import java.util.Set;

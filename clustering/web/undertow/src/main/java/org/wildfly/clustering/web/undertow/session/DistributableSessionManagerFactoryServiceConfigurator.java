@@ -21,8 +21,6 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import java.io.Externalizable;
-import java.io.Serializable;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -32,9 +30,7 @@ import javax.servlet.ServletContext;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassResolver;
-import org.jboss.modules.Module;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -42,18 +38,12 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
-import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 import io.undertow.servlet.api.SessionManagerFactory;
 
@@ -61,45 +51,15 @@ import io.undertow.servlet.api.SessionManagerFactory;
  * Distributable {@link SessionManagerFactory} builder for Undertow.
  * @author Paul Ferraro
  */
-public class DistributableSessionManagerFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<org.wildfly.clustering.web.session.SessionManagerFactory<ServletContext, Map<String, Object>, Batch>, SessionManagerFactory> {
-
-    enum MarshallingVersion implements Function<Module, MarshallingConfiguration> {
-        VERSION_1() {
-            @Override
-            public MarshallingConfiguration apply(Module module) {
-                MarshallingConfiguration config = new MarshallingConfiguration();
-                config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-                config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
-                return config;
-            }
-        },
-        VERSION_2() {
-            @Override
-            public MarshallingConfiguration apply(Module module) {
-                MarshallingConfiguration config = new MarshallingConfiguration();
-                config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-                config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
-                config.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
-                return config;
-            }
-        },
-        ;
-        static final MarshallingVersion CURRENT = VERSION_2;
-    }
+public class DistributableSessionManagerFactoryServiceConfigurator<C extends DistributableSessionManagementConfiguration<DeploymentUnit>> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<org.wildfly.clustering.web.session.SessionManagerFactory<ServletContext, Map<String, Object>, Batch>, SessionManagerFactory> {
 
     private final SessionManagerFactoryConfiguration configuration;
     private final CapabilityServiceConfigurator configurator;
 
-    public DistributableSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration, DistributableSessionManagementProvider provider, Immutability immutability) {
+    public DistributableSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration, DistributableSessionManagementProvider<C> provider, Immutability immutability) {
         super(name);
         this.configuration = configuration;
-        ByteBufferMarshaller marshaller = createMarshaller(configuration.getModule());
-        MarshalledValueFactory<ByteBufferMarshaller> factory = new ByteBufferMarshalledValueFactory(marshaller);
-        this.configurator = provider.getSessionManagerFactoryServiceConfigurator(new SessionManagerFactoryConfigurationAdapter<>(configuration, factory, immutability));
-    }
-
-    private static ByteBufferMarshaller createMarshaller(Module module) {
-        return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
+        this.configurator = provider.getSessionManagerFactoryServiceConfigurator(new SessionManagerFactoryConfigurationAdapter<>(configuration, provider.getSessionManagementConfiguration(), immutability));
     }
 
     @Override

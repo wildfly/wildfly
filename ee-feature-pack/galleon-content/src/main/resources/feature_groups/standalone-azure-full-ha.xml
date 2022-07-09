@@ -105,7 +105,6 @@
             </feature>
         </feature>
     </feature-group>
-    <feature-group name="jsr77"/>
     <feature-group name="iiop-openjdk"/>
     <feature-group name="messaging-activemq-ha"/>
 

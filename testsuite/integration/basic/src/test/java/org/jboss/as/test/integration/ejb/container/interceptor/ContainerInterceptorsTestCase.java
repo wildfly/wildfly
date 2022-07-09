@@ -43,7 +43,7 @@ import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

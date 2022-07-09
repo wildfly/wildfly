@@ -34,7 +34,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-connector}"/>
+        <artifact name="\${org.wildfly:wildfly-connector@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
@@ -42,6 +42,7 @@
         <module name="java.naming"/>
         <module name="java.security.jgss"/>
         <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
         <module name="javax.security.auth.message.api" />
         <module name="sun.jdk"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
@@ -73,11 +74,13 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.vfs"/>
-        <module name="org.picketbox"/>
-        <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.ee.cache"/>
+        <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
+        <module name="org.wildfly.clustering.server.api"/>
+        <module name="org.wildfly.clustering.server.service"/>
+        <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
-        <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.common"/>
         <module name="org.glassfish.jakarta.el"/>
         <module name="java.xml"/>

@@ -19,14 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq.jms;
-
 
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CALL_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CLIENT_ID;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST;
 
 import java.util.List;
 
@@ -35,6 +37,7 @@ import org.apache.activemq.artemis.jms.server.JMSServerManager;
 import org.apache.activemq.artemis.jms.server.config.ConnectionFactoryConfiguration;
 import org.apache.activemq.artemis.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -143,13 +146,17 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         if (clientProtocolManagerFactory.isDefined()) {
             config.setProtocolManagerFactoryStr(clientProtocolManagerFactory.asString());
         }
-        List<String> deserializationBlackList = Common.DESERIALIZATION_BLACKLIST.unwrap(context, model);
-        if (!deserializationBlackList.isEmpty()) {
-            config.setDeserializationBlackList(String.join(",", deserializationBlackList));
+        if (model.hasDefined(DESERIALIZATION_BLOCKLIST.getName())) {
+            List<String> deserializationBlockList = DESERIALIZATION_BLOCKLIST.unwrap(context, model);
+            if (!deserializationBlockList.isEmpty()) {
+                config.setDeserializationBlackList(String.join(",", deserializationBlockList));
+            }
         }
-        List<String> deserializationWhiteList = Common.DESERIALIZATION_WHITELIST.unwrap(context, model);
-        if (!deserializationWhiteList.isEmpty()) {
-            config.setDeserializationWhiteList(String.join(",", deserializationWhiteList));
+        if (model.hasDefined(DESERIALIZATION_ALLOWLIST.getName())) {
+            List<String> deserializationAllowList = DESERIALIZATION_ALLOWLIST.unwrap(context, model);
+            if (!deserializationAllowList.isEmpty()) {
+                config.setDeserializationWhiteList(String.join(",", deserializationAllowList));
+            }
         }
         JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         config.setFactoryType(jmsFactoryType);
@@ -159,5 +166,22 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         config.setEnable1xPrefixes(true);
         config.setUseTopologyForLoadBalancing(ConnectionFactoryAttributes.Common.USE_TOPOLOGY.resolveModelAttribute(context, model).asBoolean());
         return config;
+    }
+
+    @Override
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        for (AttributeDefinition attr : attributes) {
+            if (DESERIALIZATION_BLACKLIST.equals(attr)) {
+                if (operation.hasDefined(DESERIALIZATION_BLACKLIST.getName())) {
+                    DESERIALIZATION_BLOCKLIST.validateAndSet(operation, model);
+                }
+            } else if (DESERIALIZATION_WHITELIST.equals(attr)) {
+                if (operation.hasDefined(DESERIALIZATION_WHITELIST.getName())) {
+                    DESERIALIZATION_ALLOWLIST.validateAndSet(operation, model);
+                }
+            } else {
+                attr.validateAndSet(operation, model);
+            }
+        }
     }
 }

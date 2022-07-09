@@ -22,24 +22,15 @@
 
 package org.wildfly.clustering.infinispan.marshalling.jboss;
 
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.jboss.marshalling.ClassResolver;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.wildfly.clustering.infinispan.marshalling.ByteBufferExternalizer;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.jboss.DefaultExternalizerProviders;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
-import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
-import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
 
 /**
  * @author Paul Ferraro
@@ -52,37 +43,10 @@ public enum JBossMarshallingVersion implements Function<Map.Entry<ClassResolver,
             ClassLoader loader = entry.getValue();
             config.setClassResolver(entry.getKey());
             config.setClassTable(new DynamicClassTable(loader));
-            config.setObjectTable(new ExternalizerObjectTable(loadExternalizers(loader)));
+            config.setObjectTable(new DynamicExternalizerObjectTable(List.of(ByteBufferExternalizer.INSTANCE), List.of(loader)));
             return config;
         }
     },
     ;
     public static final JBossMarshallingVersion CURRENT = VERSION_1;
-
-    @SuppressWarnings("unchecked")
-    static List<Externalizer<Object>> loadExternalizers(ClassLoader loader) {
-        List<Externalizer<Object>> loadedExternalizers = WildFlySecurityManager.doUnchecked(new PrivilegedAction<List<Externalizer<Object>>>() {
-            @Override
-            public List<Externalizer<Object>> run() {
-                List<Externalizer<Object>> externalizers = new LinkedList<>();
-                for (Externalizer<Object> externalizer : ServiceLoader.load(Externalizer.class, loader)) {
-                    externalizers.add(externalizer);
-                }
-                return externalizers;
-            }
-        });
-
-        Set<DefaultExternalizerProviders> providers = EnumSet.allOf(DefaultExternalizerProviders.class);
-        int size = loadedExternalizers.size() + 1;
-        for (DefaultExternalizerProviders provider : providers) {
-            size += provider.get().size();
-        }
-        List<Externalizer<Object>> result = new ArrayList<>(size);
-        result.add((Externalizer<Object>) (Externalizer<?>) ByteBufferExternalizer.INSTANCE);
-        for (DefaultExternalizerProviders provider : providers) {
-            result.addAll(provider.get());
-        }
-        result.addAll(loadedExternalizers);
-        return result;
-    }
 }

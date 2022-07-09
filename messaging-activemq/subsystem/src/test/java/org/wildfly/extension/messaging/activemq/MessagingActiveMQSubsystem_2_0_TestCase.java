@@ -152,7 +152,7 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
         List<ModelNode> ops = builder.parseXmlResource("subsystem_2_0_reject_transform.xml");
-        System.out.println("ops = " + ops);
+//        System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, new FailedOperationTransformationConfig()
                 .addFailedAttribute(subsystemAddress,

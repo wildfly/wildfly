@@ -1,9 +1,9 @@
-<subsystem xmlns="urn:jboss:domain:jca:5.0">
+<subsystem xmlns="urn:jboss:domain:jca:6.0">
   <!--Optional:-->
   <archive-validation enabled="${test.expr:true}" fail-on-error="${test.expr:true}" fail-on-warn="${test.expr:false}"/>
   <!--Optional:-->
   <bean-validation enabled="${test.expr:false}"/>
-  <tracer enabled="true" />
+  <tracer enabled="${test.expr:true}" />
   <default-workmanager>
     <short-running-threads allow-core-timeout="${test.expr:true}">
       <!--Optional:-->
@@ -28,7 +28,7 @@
     </long-running-threads>
   </default-workmanager>
     <workmanager name="anotherWm">
-      <elytron-enabled>false</elytron-enabled>
+      <elytron-enabled>${test.expr:false}</elytron-enabled>
       <short-running-threads allow-core-timeout="${test.expr:true}">
       <!--Optional:-->
       <core-threads count="${test.expr:3}"/>
@@ -52,7 +52,7 @@
     </long-running-threads>
   </workmanager>
   <distributed-workmanager name="MyDWM">
-      <elytron-enabled>false</elytron-enabled>
+      <elytron-enabled>${test.expr:false}</elytron-enabled>
       <selector name="${test.expr:PING_TIME}">
         <option name="myOption">${test.expr:ignored}</option>
       </selector>
@@ -72,5 +72,5 @@
     <bootstrap-context name="bootStrapContext" workmanager="${test.expr:anotherWm}"/>
   </bootstrap-contexts>
   <!--Optional:-->
-  <cached-connection-manager debug="${test.expr:false}" error="${test.expr:true}"/>
+  <cached-connection-manager debug="${test.expr:false}" error="${test.expr:true}" ignore-unknown-connections="${test.expr:false}"/>
 </subsystem>

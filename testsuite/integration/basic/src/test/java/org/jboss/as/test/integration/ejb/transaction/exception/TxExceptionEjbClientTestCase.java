@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ejb.transaction.exception;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.rmi.RemoteException;
 

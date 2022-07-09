@@ -64,7 +64,7 @@ public class RemoteInvocationByReferenceTestCase {
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             // switch back to the default pass-by-value semantics
-            EJBManagementUtil.enablePassByValueForRemoteInterfaceInvocations(managementClient);
+            EJBManagementUtil.undefinePassByValueForRemoteInterfaceInvocations(managementClient);
         }
     }
 

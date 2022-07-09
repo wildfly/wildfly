@@ -21,19 +21,25 @@ package org.wildfly.test.integration.elytron.oidc.client;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
+import java.time.Duration;
+
 /**
  * KeycloakContainer for testing.
  *
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
 public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
-    public static final String KEYCLOAK_ADMIN_USER = "admin";
-    public static final String KEYCLOAK_ADMIN_PASSWORD = "admin";
-    private static final String KEYCLOAK_AUTH_PATH = "/auth";
+    public static final String ADMIN_USER = "admin";
+    public static final String ADMIN_PASSWORD = "admin";
 
     private static final String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:latest";
-    private static final int KEYCLOAK_PORT_HTTP = 8080;
-    private static final int KEYCLOAK_PORT_HTTPS = 8443;
+    private static final String SSO_IMAGE = System.getProperty("testsuite.integration.oidc.rhsso.image",KEYCLOAK_IMAGE);
+    private static final int STARTUP_ATTEMPTS = Integer.parseInt(
+            System.getProperty("testsuite.integration.oidc.container.startup.attempts", "5"));
+    private static final Duration ATTEMPT_DURATION = Duration.parse(
+            System.getProperty("testsuite.integration.oidc.container.attempt.duration", "PT30S"));
+    private static final int PORT_HTTP = 8080;
+    private static final int PORT_HTTPS = 8443;
 
     private boolean useHttps;
 
@@ -42,20 +48,37 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
     }
 
     public KeycloakContainer(final boolean useHttps) {
-        super(KEYCLOAK_IMAGE);
+        super(SSO_IMAGE);
         this.useHttps = useHttps;
-
+        this.withStartupTimeout(ATTEMPT_DURATION);
+        this.setStartupAttempts(STARTUP_ATTEMPTS);
     }
 
     @Override
     protected void configure() {
-        withExposedPorts(KEYCLOAK_PORT_HTTP, KEYCLOAK_PORT_HTTPS);
-        waitingFor(Wait.forHttp("/auth").forPort(8080));
-        withEnv("KEYCLOAK_USER", KEYCLOAK_ADMIN_USER);
-        withEnv("KEYCLOAK_PASSWORD", KEYCLOAK_ADMIN_PASSWORD);
+        withExposedPorts(PORT_HTTP, PORT_HTTPS);
+        withEnv("KEYCLOAK_ADMIN", ADMIN_USER);
+        withEnv("KEYCLOAK_ADMIN_PASSWORD", ADMIN_PASSWORD);
+        withEnv("SSO_ADMIN_USERNAME", ADMIN_USER);
+        withEnv("SSO_ADMIN_PASSWORD", ADMIN_PASSWORD);
+        if (isUsedRHSSOImage()) {
+            waitingFor(Wait.forHttp("/auth").forPort(PORT_HTTP));
+        }else{
+            waitingFor(Wait.forHttp("/").forPort(PORT_HTTP));
+            withCommand("start-dev");
+        }
     }
 
     public String getAuthServerUrl() {
-        return String.format("http://%s:%s%s", getContainerIpAddress(), useHttps ? getMappedPort(KEYCLOAK_PORT_HTTPS) : getMappedPort(KEYCLOAK_PORT_HTTP), KEYCLOAK_AUTH_PATH);
+        Integer port = useHttps ? getMappedPort(PORT_HTTPS) : getMappedPort(PORT_HTTP);
+        String authServerUrl = String.format("http://%s:%s", getContainerIpAddress(), port);
+        if(isUsedRHSSOImage()){
+            authServerUrl += "/auth";
+        }
+        return authServerUrl;
+    }
+
+    private boolean isUsedRHSSOImage(){
+        return SSO_IMAGE.contains("rh-sso");
     }
 }

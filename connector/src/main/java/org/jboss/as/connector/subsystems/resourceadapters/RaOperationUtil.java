@@ -59,8 +59,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MCP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
@@ -111,7 +111,6 @@ import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
 import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterXmlDeploymentService;
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.connector.util.CopyOnWriteArrayListMultiMap;
 import org.jboss.as.connector.util.ModelNodeUtil;
 import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.OperationContext;
@@ -296,7 +295,7 @@ public class RaOperationUtil {
                 credential = new CredentialImpl(recoveryUsername, recoveryPassword,
                         recoveryElytronEnabled ? recoveryAuthenticationContext : recoverySecurityDomain, recoveryElytronEnabled, recoveryCredentialSourceSupplier);
 
-            Extension recoverPlugin = ModelNodeUtil.extractExtension(context, connDefModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+            Extension recoverPlugin = ModelNodeUtil.extractExtension(context, connDefModel, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
 
             if (noRecovery == null)
                 noRecovery = Boolean.FALSE;
@@ -415,7 +414,7 @@ public class RaOperationUtil {
             ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter, name);
             ServiceBuilder builder = serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
-                    .addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, CopyOnWriteArrayListMultiMap.class, raService.getResourceAdaptersMapInjector());
+                    .addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, ResourceAdaptersSubsystemService.class, raService.getResourceAdaptersSubsystemInjector());
             // add dependency on security domain service if applicable for recovery config
             for (ConnectionDefinition cd : resourceAdapter.getConnectionDefinitions()) {
                 Security security = cd.getSecurity();
@@ -524,8 +523,9 @@ public class RaOperationUtil {
                 }
                 final ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName());
                 final ServiceController<?> deployerService = context.getServiceRegistry(true).getService(deployerServiceName);
+
                 if (deployerService == null) {
-                    ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(name), null, null, support);
+                    ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(name), null, null, support, false);
                     builder.requires(raServiceName);
                     newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
                 }

@@ -30,7 +30,6 @@ import java.util.concurrent.Executor;
 import org.jboss.as.connector.security.ElytronSecurityIntegration;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.txn.integration.JBossContextXATerminator;
-import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.jca.core.workmanager.WorkManagerCoordinator;
 import org.jboss.msc.inject.Injector;
@@ -99,12 +98,8 @@ public final class WorkManagerService implements Service<NamedWorkManager> {
         if (value.isShutdown())
             value.cancelShutdown();
 
+        this.value.setSecurityIntegration(new ElytronSecurityIntegration());
 
-        if (this.value.isElytronEnabled()) {
-            this.value.setSecurityIntegration(new ElytronSecurityIntegration());
-        } else {
-            this.value.setSecurityIntegration(new PicketBoxSecurityIntegration());
-        }
         ROOT_LOGGER.debugf("Started Jakarta Connectors WorkManager: ", value.getName());
     }
 

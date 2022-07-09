@@ -23,22 +23,19 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.DEFAULT_CAPABILITIES;
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.DEFAULT_CLUSTERING_CAPABILITIES;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.ListAttribute.MODULES;
 
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.ServiceLoader;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.Capability;
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ModulesServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.clustering.naming.JndiNameFactory;
@@ -49,14 +46,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.CacheContainer;
-import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.lifecycle.WildFlyInfinispanModuleLifecycle;
+import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.clustering.server.service.ProvidedIdentityCacheServiceConfigurator;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
-import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.service.ServiceNameRegistry;
-import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * @author Paul Ferraro
@@ -78,7 +71,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        new ModulesServiceConfigurator(CacheContainerComponent.MODULES.getServiceName(address), MODULES, Collections.singletonList(Module.forClass(CacheContainer.class))).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        new ModulesServiceConfigurator(CacheContainerComponent.MODULES.getServiceName(address), MODULES, Collections.singletonList(Module.forClass(WildFlyInfinispanModuleLifecycle.class))).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         GlobalConfigurationServiceConfigurator configBuilder = new GlobalConfigurationServiceConfigurator(address);
         configBuilder.configure(context, model).build(target).install();
@@ -103,13 +96,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
                 new BinderServiceConfigurator(InfinispanBindingFactory.createCacheConfigurationBinding(name, JndiNameFactory.DEFAULT_LOCAL_NAME), DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CONFIGURATION).getServiceName(address)).build(target).install();
             }
 
-            ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry<>(DEFAULT_CLUSTERING_CAPABILITIES, address);
-
-            for (IdentityCacheServiceConfiguratorProvider provider : ServiceLoader.load(IdentityCacheServiceConfiguratorProvider.class, IdentityCacheServiceConfiguratorProvider.class.getClassLoader())) {
-                for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, name, null, defaultCache)) {
-                    configurator.configure(context).build(target).install();
-                }
-            }
+            new ProvidedIdentityCacheServiceConfigurator(name, null, defaultCache).configure(context).build(target).install();
         }
     }
 
@@ -120,13 +107,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         String defaultCache = DEFAULT_CACHE.resolveModelAttribute(context, model).asString(null);
         if (defaultCache != null) {
-            ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry<>(DEFAULT_CLUSTERING_CAPABILITIES, address);
-
-            for (IdentityCacheServiceConfiguratorProvider provider : ServiceLoader.load(IdentityCacheServiceConfiguratorProvider.class, IdentityCacheServiceConfiguratorProvider.class.getClassLoader())) {
-                for (ServiceNameProvider configurator : provider.getServiceConfigurators(registry, name, null, defaultCache)) {
-                    context.removeService(configurator.getServiceName());
-                }
-            }
+            new ProvidedIdentityCacheServiceConfigurator(name, null, defaultCache).remove(context);
 
             if (!defaultCache.equals(JndiNameFactory.DEFAULT_LOCAL_NAME)) {
                 context.removeService(InfinispanBindingFactory.createCacheBinding(name, JndiNameFactory.DEFAULT_LOCAL_NAME).getBinderServiceName());

@@ -1,0 +1,38 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2013, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<subsystem xmlns="urn:jboss:domain:batch-jberet:2.0">
+    <default-job-repository name="in-memory"/>
+    <default-thread-pool name="batch"/>
+    <restart-jobs-on-resume value="false"/>
+    <job-repository name="in-memory">
+        <in-memory/>
+    </job-repository>
+
+    <thread-pool name="batch">
+        <max-threads count="10"/>
+        <keepalive-time time="100" unit="milliseconds"/>
+        <thread-factory name="batch"/>
+    </thread-pool>
+
+    <thread-factory name="batch" group-name="batch" priority="5" thread-name-pattern="%i-%g"/>
+</subsystem>

@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
@@ -51,14 +51,6 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ejb-client</artifactId>
         </dependency>
         <dependency>
@@ -67,11 +59,24 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-spi</artifactId>
+            <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-spi</artifactId>
+            <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-server-service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -101,7 +106,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-spi</artifactId>
+            <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>

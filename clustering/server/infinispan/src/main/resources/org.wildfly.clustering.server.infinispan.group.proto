@@ -1,0 +1,26 @@
+package org.wildfly.clustering.server.infinispan.group;
+
+import "org.jgroups.stack.proto";
+import "org.jgroups.util.proto";
+
+// IDs: 131 - 132
+
+/**
+ * @TypeId(131)
+ */
+message AddressableNode {
+	oneof address {
+		org.jgroups.util.UUID	uuidAddress	= 1;
+		org.jgroups.stack.IpAddress	ipAddress	= 2;
+		org.jgroups.stack.IpAddressUUID	uuidIpAddress	= 3;
+	}
+	required	string	name	= 4;
+	optional	bytes	socketAddress	= 5;
+}
+
+/**
+ * @TypeId(132)
+ */
+message LocalNode {
+	required	string	name	= 1;
+}

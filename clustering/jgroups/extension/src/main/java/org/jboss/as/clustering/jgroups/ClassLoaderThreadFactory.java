@@ -22,10 +22,10 @@
 
 package org.jboss.as.clustering.jgroups;
 
-import org.jboss.as.clustering.context.ContextClassLoaderReference;
-import org.jboss.as.clustering.context.ContextReferenceExecutor;
-import org.jboss.as.clustering.context.Contextualizer;
 import org.jgroups.util.ThreadFactory;
+import org.wildfly.clustering.context.ContextClassLoaderReference;
+import org.wildfly.clustering.context.ContextReferenceExecutor;
+import org.wildfly.clustering.context.Contextualizer;
 
 /**
  * {@link ThreadFactory} decorator that associates a specific class loader to created threads.

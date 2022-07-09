@@ -50,7 +50,12 @@ public class WildFlySender implements Sender {
 
     @Override
     public int close() throws SenderException {
-        return delegate.close();
+        try {
+            return delegate.close();
+        } catch (SenderException ex) {
+            TracingExtensionLogger.ROOT_LOGGER.debugf("Error while flushing %s spans", ex.getDroppedSpanCount(), ex);
+            return 0;
+        }
     }
 
 }

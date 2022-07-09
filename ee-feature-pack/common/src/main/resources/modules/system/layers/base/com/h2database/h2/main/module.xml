@@ -37,6 +37,7 @@
         <module name="java.naming"/>
         <module name="java.scripting"/>
         <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
         <!-- H2 uses Jakarta Servlet to allow apps (in our case deployments) to expose its console as a servlet.
              WildFly isn't concerning itself with allowing this H2 feature to continue to work in both a
              javax.* EE namespace and jakarta.* EE namespace environment, so this no longer works out of the box.

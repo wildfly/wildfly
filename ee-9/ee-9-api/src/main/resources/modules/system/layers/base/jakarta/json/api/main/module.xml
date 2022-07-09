@@ -38,6 +38,6 @@
             It must also be exported so that modules that depend on the API, e.g. deployments, will be able to see the
             implementation.
         -->
-        <module name="org.glassfish.jakarta.json" export="true"/>
+        <module name="org.eclipse.parsson" export="true"/>
     </dependencies>
 </module>

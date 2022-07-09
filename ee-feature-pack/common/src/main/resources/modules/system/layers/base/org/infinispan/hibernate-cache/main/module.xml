@@ -40,13 +40,13 @@
         <module name="java.sql"/>
         <module name="org.hibernate"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
-        <module name="javax.transaction.api"/>
+        <module name="internal.javax.transaction.api"/>
         <module name="org.hibernate.jipijapa-hibernate5-3" services="import"/>
         <module name="org.infinispan" services="import"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.component.annotations"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.logging"/>
-        <module name="org.wildfly.clustering.infinispan.spi" services="import"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.spi" services="import"/>
     </dependencies>
 </module>

@@ -33,6 +33,7 @@
         <module name="java.desktop"/>
         <module name="java.naming"/>
         <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
         <module name="javax.transaction.api" export="true"/>
         <module name="javax.api" export="false">
             <exports>

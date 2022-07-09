@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-compat</artifactId>
@@ -48,6 +48,9 @@
         <jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.dist>
         <ts.elytron.cli>../shared/enable-elytron.cli</ts.elytron.cli>
         <version.org.hibernate>5.1.14.Final</version.org.hibernate>
+
+        <!-- Props used to control whether various plugin executions run -->
+        <antrun.phase>test-compile</antrun.phase>
     </properties>
 
     <!--
@@ -251,17 +254,6 @@
        </dependency>
     </dependencies>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>jipijapa-eclipselink</artifactId>
-                <version>${project.version}</version>
-                <scope>test</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <build>
         <plugins>
             <plugin>
@@ -271,7 +263,7 @@
                 <executions>
                     <execution>
                         <id>ts.compat.copy-jars</id> <goals><goal>run</goal></goals>
-                        <phase>test-compile</phase>
+                        <phase>${antrun.phase}</phase>
                         <configuration>
                             <target>
                                 <property name="tests.resources.dir" value="${basedir}/src/test/resources"/>
@@ -350,6 +342,18 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>noCompile</id>
+            <activation>
+                <property>
+                    <name>noCompile</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Turn off the antrun plugin -->
+                <antrun.phase>none</antrun.phase>
+            </properties>
         </profile>
 
     </profiles>

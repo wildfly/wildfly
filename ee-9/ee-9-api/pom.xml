@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-preview-feature-pack-ee-9-api</artifactId>
@@ -68,8 +68,8 @@
         <!-- EE 9 API - Servlet -->
 
         <dependency>
-            <groupId>com.sun.activation</groupId>
-            <artifactId>jakarta.activation</artifactId>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
         </dependency>
 
         <dependency>
@@ -80,6 +80,11 @@
         <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.lang-model</artifactId>
         </dependency>
 
         <dependency>
@@ -104,7 +109,7 @@
 
         <dependency>
             <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jboss-el-api_4.0_spec</artifactId>
+            <artifactId>jboss-el-api_5.0_spec</artifactId>
         </dependency>
 
         <dependency>
@@ -139,16 +144,20 @@
             <artifactId>jakarta.websocket-api</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-client-api</artifactId>
+        </dependency>
+
         <!-- EE 9 API - Full -->
 
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>jakarta.jws</groupId>
-            <artifactId>jakarta.jws-api</artifactId>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
 
         <dependency>
@@ -187,23 +196,18 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.spec.javax.ws.rs</groupId>
-            <artifactId>jboss-jaxrs-api_3.0_spec</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.jakarta.xml.soap</groupId>
-            <artifactId>jboss-saaj-api_2.0_spec</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.xml.bind</groupId>
-            <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
+            <artifactId>jboss-saaj-api_3.0_spec</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
-            <artifactId>jboss-jakarta-xml-ws-api_3.0_spec</artifactId>
+            <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
         </dependency>
 
         <dependency>

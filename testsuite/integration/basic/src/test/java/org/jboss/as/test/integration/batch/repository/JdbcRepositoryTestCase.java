@@ -102,17 +102,15 @@ public class JdbcRepositoryTestCase extends AbstractBatchTestCase {
 
         // Check the job as completed and the expected execution id should be 1
         Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
-        Assert.assertEquals(1L, jobExecution.getExecutionId());
 
         // Query the actual DB and ensure we're using the correct repository
         Assert.assertNotNull(dataSource);
         try (Connection connection = dataSource.getConnection()) {
             final Statement stmt = connection.createStatement();
-            final ResultSet rs = stmt.executeQuery("SELECT JOBEXECUTIONID, BATCHSTATUS FROM JOB_EXECUTION");
+            final ResultSet rs = stmt.executeQuery("SELECT JOBEXECUTIONID, BATCHSTATUS FROM JOB_EXECUTION ORDER BY JOBEXECUTIONID DESC");
             Assert.assertTrue("Expected a single entry for the query", rs.next());
-            Assert.assertEquals(1L, rs.getLong("JOBEXECUTIONID"));
+            Assert.assertEquals(jobExecution.getExecutionId(), rs.getLong("JOBEXECUTIONID"));
             Assert.assertEquals(BatchStatus.COMPLETED.toString(), rs.getString("BATCHSTATUS"));
-            Assert.assertFalse("Expected a single entry for the query", rs.next());
         }
     }
 

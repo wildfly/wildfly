@@ -28,17 +28,18 @@ import static org.wildfly.extension.clustering.web.InfinispanSessionManagementRe
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
-import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementProvider;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
+import org.wildfly.extension.clustering.web.session.infinispan.InfinispanSessionManagementProvider;
 
 /**
  * Service configurator for Infinispan session management providers.
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagementServiceConfigurator extends SessionManagementServiceConfigurator<InfinispanSessionManagementConfiguration> implements InfinispanSessionManagementConfiguration {
+public class InfinispanSessionManagementServiceConfigurator extends SessionManagementServiceConfigurator<InfinispanSessionManagementConfiguration<DeploymentUnit>> implements InfinispanSessionManagementConfiguration<DeploymentUnit> {
 
     private volatile String containerName;
     private volatile String cacheName;
@@ -55,7 +56,7 @@ public class InfinispanSessionManagementServiceConfigurator extends SessionManag
     }
 
     @Override
-    public DistributableSessionManagementProvider get() {
+    public DistributableSessionManagementProvider<InfinispanSessionManagementConfiguration<DeploymentUnit>> get() {
         return new InfinispanSessionManagementProvider(this, this.getRouteLocatorServiceConfiguratorFactory());
     }
 

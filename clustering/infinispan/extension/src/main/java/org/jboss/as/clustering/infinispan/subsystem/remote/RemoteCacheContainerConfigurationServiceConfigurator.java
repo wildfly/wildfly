@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +49,6 @@ import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
@@ -69,7 +67,6 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.client.marshaller.HotRodMarshallerFactory;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -142,7 +139,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
 
         this.properties.clear();
-        for (Property property : ModelNodes.optionalPropertyList(Attribute.PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
+        for (Property property : Attribute.PROPERTIES.resolveModelAttribute(context, model).asPropertyListOrEmpty()) {
             this.properties.setProperty(property.getName(), property.getValue().asString());
         }
 

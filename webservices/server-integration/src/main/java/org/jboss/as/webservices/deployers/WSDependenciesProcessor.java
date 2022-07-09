@@ -31,6 +31,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.wsf.spi.deployment.Endpoint;
 
 /**
  * A DUP that sets the WS dependencies
@@ -66,8 +67,11 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
         for(ModuleIdentifier api : JAVAEE_APIS) {
             moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, api, false, false, true, false));
         }
-        //After jboss modules 2.0, the xercers module is not added
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, XERCES_IMPL, true, false, true, false));
 
+        //After jboss modules 2.0, the xerces module is not added and this is required for jaxb 2.3.x(EE8) to pass the TCK
+        //But this is not needed for jaxb 3.x in WildFly Preview(EE10)
+        if (Endpoint.class.getPackage().getImplementationVersion().startsWith("3")) {
+            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, XERCES_IMPL, true, false, true, false));
+        }
     }
 }

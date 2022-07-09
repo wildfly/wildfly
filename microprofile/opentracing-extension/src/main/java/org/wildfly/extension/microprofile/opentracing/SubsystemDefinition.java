@@ -22,21 +22,22 @@
 package org.wildfly.extension.microprofile.opentracing;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+import static org.wildfly.extension.microprofile.opentracing.Constants.*;
 import static org.wildfly.microprofile.opentracing.smallrye.WildFlyTracerFactory.TRACER_CAPABILITY_NAME;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.capability.RuntimeCapability;
 
 import java.util.Collection;
 import java.util.Collections;
+
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
@@ -65,19 +66,19 @@ public class SubsystemDefinition extends PersistentResourceDefinition {
             .build();
 
     static final String[] MODULES = {
-        "io.opentracing.contrib.opentracing-tracerresolver",
         "io.opentracing.opentracing-api",
         "io.opentracing.opentracing-util",
         "org.eclipse.microprofile.config.api",
         "org.eclipse.microprofile.opentracing",
         "org.eclipse.microprofile.restclient",
-        "io.opentracing.contrib.opentracing-jaxrs2",
+        CONTRIB_PACKAGE,
+        TRACERRESOLVER_PACKAGE,
     };
 
     static final String[] EXPORTED_MODULES = {
         "io.smallrye.opentracing",
         "org.wildfly.microprofile.opentracing-smallrye",
-        "io.opentracing.contrib.opentracing-interceptors",
+        INTERCEPTOR_PACKAGE,
         };
 
     public static final SimpleAttributeDefinition DEFAULT_TRACER = SimpleAttributeDefinitionBuilder

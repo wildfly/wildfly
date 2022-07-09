@@ -28,17 +28,17 @@ import static org.wildfly.extension.clustering.web.HotRodSessionManagementResour
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementConfiguration;
-import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementProvider;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementConfiguration;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class HotRodSessionManagementServiceConfigurator extends SessionManagementServiceConfigurator<DistributableSessionManagementConfiguration> implements HotRodSessionManagementConfiguration {
+public class HotRodSessionManagementServiceConfigurator extends SessionManagementServiceConfigurator<HotRodSessionManagementConfiguration<DeploymentUnit>> implements HotRodSessionManagementConfiguration<DeploymentUnit> {
 
     private volatile String containerName;
     private volatile String configurationName;
@@ -55,7 +55,7 @@ public class HotRodSessionManagementServiceConfigurator extends SessionManagemen
     }
 
     @Override
-    public DistributableSessionManagementProvider get() {
+    public DistributableSessionManagementProvider<HotRodSessionManagementConfiguration<DeploymentUnit>> get() {
         return new HotRodSessionManagementProvider(this);
     }
 

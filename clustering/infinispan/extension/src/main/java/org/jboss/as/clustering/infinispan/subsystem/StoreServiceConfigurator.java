@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheComponent.PERSISTENCE;
 import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.*;
 
-import java.util.Collections;
 import java.util.Properties;
 import java.util.function.Consumer;
 
@@ -34,7 +33,6 @@ import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StoreConfiguration;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -81,7 +79,7 @@ public abstract class StoreServiceConfigurator<C extends StoreConfiguration, B e
         this.shared = SHARED.resolveModelAttribute(context, model).asBoolean();
         this.maxBatchSize = MAX_BATCH_SIZE.resolveModelAttribute(context, model).asInt();
         this.properties.clear();
-        for (Property property : ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
+        for (Property property : PROPERTIES.resolveModelAttribute(context, model).asPropertyListOrEmpty()) {
             this.properties.setProperty(property.getName(), property.getValue().asString());
         }
         return this;
@@ -101,5 +99,9 @@ public abstract class StoreServiceConfigurator<C extends StoreConfiguration, B e
                     ;
         this.accept(builder);
         return builder.async().read(this.async.get()).persistence().create();
+    }
+
+    boolean isPurgeOnStartup() {
+        return this.purge;
     }
 }

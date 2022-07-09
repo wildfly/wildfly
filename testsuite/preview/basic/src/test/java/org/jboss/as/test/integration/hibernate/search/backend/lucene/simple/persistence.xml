@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.1">
+    <persistence-unit name="jpa-search-test-pu">
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <properties>
+            <!--
+                        example of specifying the Hibernate Search module name
+                        <property name="wildfly.jpa.hibernate.search.module" value="org.hibernate.search.orm:main" />
+
+                        example of specifying that a dependency on the Hibernate Search module should not be added to deployment
+                        <property name="wildfly.jpa.hibernate.search.module" value="none" />
+            -->
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="hibernate.search.schema_management.strategy" value="drop-and-create-and-drop"/>
+            <property name="hibernate.search.backend.type" value="lucene"/>
+            <property name="hibernate.search.backend.lucene_version" value="LUCENE_CURRENT"/>
+            <property name="hibernate.search.backend.directory.type" value="local-heap"/>
+            <property name="hibernate.search.backend.analysis.configurer"
+                      value="org.jboss.as.test.integration.hibernate.search.backend.lucene.simple.AnalysisConfigurer"/>
+        </properties>
+    </persistence-unit>
+</persistence>

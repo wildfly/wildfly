@@ -23,24 +23,26 @@
 package org.wildfly.clustering.web.undertow.session;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.container.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.undertow.routing.DistributableSessionIdentifierCodecServiceConfigurator;
 
 /**
  * {@link SessionManagementProvider} for Undertow.
  * @author Paul Ferraro
  */
-public class UndertowDistributableSessionManagementProvider implements SessionManagementProvider {
+public class UndertowDistributableSessionManagementProvider<C extends DistributableSessionManagementConfiguration<DeploymentUnit>> implements SessionManagementProvider {
 
-    private final DistributableSessionManagementProvider provider;
+    private final DistributableSessionManagementProvider<C> provider;
     private final Immutability immutability;
 
-    public UndertowDistributableSessionManagementProvider(DistributableSessionManagementProvider provider, Immutability immutability) {
+    public UndertowDistributableSessionManagementProvider(DistributableSessionManagementProvider<C> provider, Immutability immutability) {
         this.provider = provider;
         this.immutability = immutability;
     }
@@ -52,6 +54,6 @@ public class UndertowDistributableSessionManagementProvider implements SessionMa
 
     @Override
     public CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration) {
-        return new DistributableSessionManagerFactoryServiceConfigurator(name, configuration, this.provider, this.immutability);
+        return new DistributableSessionManagerFactoryServiceConfigurator<>(name, configuration, this.provider, this.immutability);
     }
 }

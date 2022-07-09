@@ -36,7 +36,10 @@ public interface TimerPersistence {
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "timerService", "timerPersistence");
 
     /**
-     * Called when a timer is being persisted
+     * Called when a timer is being persisted.
+     * In a clustered environment, if an auto timer has already been persisted
+     * by another concurrent node, it should not be persisted again, and its
+     * state should be set to {@code CANCELED}.
      *
      * @param timer The timer
      */

@@ -24,9 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.Consumer;
 
-import org.jboss.as.clustering.controller.transform.DiscardSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.RejectNonSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.SingletonListAttributeConverter;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -44,20 +41,12 @@ public class CacheContainerResourceTransformer implements Consumer<ModelVersion>
         this.builder = parent.addChildResource(CacheContainerResourceDefinition.WILDCARD_PATH);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void accept(ModelVersion version) {
         if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, CacheContainerResourceDefinition.Attribute.MARSHALLER.getDefinition())
                     .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(CacheContainerResourceDefinition.Attribute.MARSHALLER.getDefinition().getDefaultValue()), CacheContainerResourceDefinition.Attribute.MARSHALLER.getDefinition())
-                    .end();
-        }
-        if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
-            this.builder.getAttributeBuilder()
-                    .setValueConverter(new SingletonListAttributeConverter(CacheContainerResourceDefinition.ListAttribute.MODULES), CacheContainerResourceDefinition.DeprecatedAttribute.MODULE.getDefinition())
-                    .setDiscard(DiscardSingletonListAttributeChecker.INSTANCE, CacheContainerResourceDefinition.ListAttribute.MODULES.getDefinition())
-                    .addRejectCheck(RejectNonSingletonListAttributeChecker.INSTANCE, CacheContainerResourceDefinition.ListAttribute.MODULES.getDefinition())
                     .end();
         }
 

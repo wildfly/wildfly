@@ -34,7 +34,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,7 +55,7 @@ public abstract class MicroProfileHealthApplicationStartupTestBase {
     @Deployment(name = "MicroProfileHealthApplicationStartupTestBaseSetup")
     public static Archive<?> deploySetup() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthApplicationStartupTestBaseSetup.war")
-            .addClass(MicroProfileHealthApplicationStartupSetupTask.class);
+                .addClass(MicroProfileHealthApplicationStartupSetupTask.class);
         return war;
     }
 
@@ -63,7 +63,7 @@ public abstract class MicroProfileHealthApplicationStartupTestBase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthApplicationStartupTestBase.war")
                 .addClass(SuccessfulStartupProbe.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         return war;
     }
 
@@ -86,7 +86,7 @@ public abstract class MicroProfileHealthApplicationStartupTestBase {
     @InSequence(2)
     @OperateOnDeployment("MicroProfileHealthApplicationStartupTestBase")
     public void testApplicationStartupAfterDeployment(@ArquillianResource URL url) throws Exception {
-            checkGlobalOutcome(managementClient, "check-started", true, "successfulStartupProbe");
+        checkGlobalOutcome(managementClient, "check-started", true, "successfulStartupProbe");
     }
 
     @Test
@@ -97,5 +97,4 @@ public abstract class MicroProfileHealthApplicationStartupTestBase {
 
         checkGlobalOutcome(managementClient, "check-started", false, null);
     }
-
 }

@@ -43,7 +43,7 @@ class JASPIMappingModuleDefinition extends MappingModuleDefinition {
 
     private static final SimpleAttributeDefinition FLAG = new SimpleAttributeDefinitionBuilder(Constants.FLAG, ModelType.STRING)
             .setRequired(false)
-            .setValidator(new EnumValidator<ModuleFlag>(ModuleFlag.class, true, true))
+            .setValidator(EnumValidator.create(ModuleFlag.class))
             .setAllowExpression(true)
             .build();
 

@@ -23,7 +23,6 @@ package org.jboss.as.ejb3.timerservice;
 
 import static org.jboss.as.ejb3.util.MethodInfoHelper.EMPTY_STRING_ARRAY;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,13 +30,13 @@ import java.util.Map;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -47,11 +46,11 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Timed object invoker for an Jakarta Enterprise Beans. This is analogous to a view service for timer invocations
+ * Timed object invoker for an enterprise bean. This is analogous to a view service for timer invocations
  *
  * @author Stuart Douglas
  */
-public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable, Service<TimedObjectInvoker> {
+public class TimedObjectInvokerImpl implements TimedObjectInvoker, Service<TimedObjectInvoker> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("TimedObjectInvoker");
 
@@ -96,7 +95,7 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
         }
         context.setTimer(timer);
         context.putPrivateData(Component.class, ejbComponent.getValue());
-        context.putPrivateData(MethodIntf.class, MethodIntf.TIMER);
+        context.putPrivateData(MethodInterfaceType.class, MethodInterfaceType.Timer);
         context.putPrivateData(InvocationType.class, InvocationType.TIMER);
         interceptor.processInvocation(context);
     }

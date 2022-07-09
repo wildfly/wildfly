@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -129,15 +129,6 @@
         <profile>
             <id>ts.integ.group.clustering</id>
             <activation><property><name>ts.clustering</name></property></activation>
-            <modules>
-                <module>clustering</module>
-            </modules>
-        </profile>
-
-        <!-- Keep -Dts.clust compatibility -->
-        <profile>
-            <id>ts.integ.group.clustering.compatibility</id>
-            <activation><property><name>ts.clust</name></property></activation>
             <modules>
                 <module>clustering</module>
             </modules>
@@ -271,6 +262,15 @@
             </modules>
         </profile>
 
+        <!-- -Dts.elytron-oidc-client-->
+        <profile>
+            <id>ts.integ.group.elytron-oidc-client</id>
+            <activation><property><name>ts.elytron-oidc-client</name></property></activation>
+            <modules>
+                <module>elytron-oidc-client</module>
+            </modules>
+        </profile>
+
         <!-- Test against bootable jar -->
         <profile>
             <id>bootablejar.profile</id>
@@ -326,7 +326,9 @@
                 <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
+                <module>elytron</module>
                 <module>elytron-oidc-client</module>
+                <module>vdx</module>
             </modules>
         </profile>
 
@@ -383,8 +385,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skipTests>${ts.skipTests}</skipTests>
-                    <!-- Prevent test and server output appearing in console. -->
-                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
                  
                     <!-- Forked process timeout -->

@@ -41,7 +41,7 @@ public class AnnotationType {
     public static final Function<ClassInfo, AnnotationType> FOR_CLASSINFO = new Function<ClassInfo, AnnotationType>() {
         @Override
         public AnnotationType apply(ClassInfo clazz) {
-            return new AnnotationType(clazz.name(), clazz.annotations().containsKey(Indices.INHERITED_NAME));
+            return new AnnotationType(clazz.name(), clazz.annotationsMap().containsKey(Indices.INHERITED_NAME));
         }
     };
 

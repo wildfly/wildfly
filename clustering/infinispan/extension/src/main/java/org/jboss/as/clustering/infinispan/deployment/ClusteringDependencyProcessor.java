@@ -38,9 +38,9 @@ import org.jboss.modules.ModuleLoader;
 @SuppressWarnings("deprecation")
 public class ClusteringDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier API = ModuleIdentifier.create("org.wildfly.clustering.api");
+    private static final ModuleIdentifier API = ModuleIdentifier.create("org.wildfly.clustering.server.api");
     private static final ModuleIdentifier MARSHALLING_API = ModuleIdentifier.create("org.wildfly.clustering.marshalling.api");
-    private static final ModuleIdentifier SINGLETON_API = ModuleIdentifier.create("org.wildfly.clustering.singleton");
+    private static final ModuleIdentifier SINGLETON_API = ModuleIdentifier.create("org.wildfly.clustering.singleton.api");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {

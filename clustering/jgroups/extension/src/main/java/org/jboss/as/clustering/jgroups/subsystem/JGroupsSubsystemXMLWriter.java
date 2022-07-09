@@ -44,7 +44,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMarshallingContext> {
 
-    @SuppressWarnings("deprecation")
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(JGroupsSchema.CURRENT.getNamespaceUri(), false);
@@ -79,7 +78,6 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
             }
             if (model.hasDefined(StackResourceDefinition.WILDCARD_PATH.getKey())) {
                 writer.writeStartElement(XMLElement.STACKS.getLocalName());
-                writeAttribute(writer, model, JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK);
                 for (Property property: model.get(StackResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                     writer.writeStartElement(XMLElement.STACK.getLocalName());
                     writer.writeAttribute(XMLAttribute.NAME.getLocalName(), property.getName());
@@ -104,13 +102,11 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writer.writeEndElement();
     }
 
-    @SuppressWarnings("deprecation")
     private static void writeTransport(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writer.writeStartElement(XMLElement.TRANSPORT.getLocalName());
         writeGenericProtocolAttributes(writer, property);
         ModelNode transport = property.getValue();
         writeAttributes(writer, transport, TransportResourceDefinition.Attribute.class);
-        writeAttributes(writer, transport, TransportResourceDefinition.ThreadingAttribute.class);
         if (containsName(TransportRegistration.SocketTransport.class, property.getName())) {
             writeAttributes(writer, property.getValue(), SocketTransportResourceDefinition.Attribute.class);
         }
@@ -131,7 +127,6 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writeAttributes(writer, property.getValue(), EnumSet.complementOf(EnumSet.of(AbstractProtocolResourceDefinition.Attribute.PROPERTIES)));
     }
 
-    @SuppressWarnings("deprecation")
     private static void writeProtocolAttributes(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writeGenericProtocolAttributes(writer, property);
 
@@ -148,8 +143,6 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
             writeAttributes(writer, property.getValue(), SocketDiscoveryProtocolResourceDefinition.Attribute.class);
         } else if (containsName(ProtocolRegistration.AuthProtocol.class, protocol)) {
             writeAuthToken(writer, property.getValue().get(AuthTokenResourceDefinition.WILDCARD_PATH.getKey()).asProperty());
-        } else {
-            writeAttributes(writer, property.getValue(), GenericProtocolResourceDefinition.DeprecatedAttribute.class);
         }
     }
 

@@ -31,6 +31,7 @@ import java.util.Map;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -69,7 +70,7 @@ public class OperationHandler<C> extends AbstractRuntimeOnlyHandler implements R
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) {
-        String name = Operations.getName(operation);
+        String name = operation.get(ModelDescriptionConstants.OP).asString();
         Operation<C> executable = this.executables.get(name);
         try {
             ModelNode result = this.executor.execute(context, operation, executable);

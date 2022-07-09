@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-galleon-pack</artifactId>
@@ -52,6 +52,7 @@
         <galleon-common.resources.directory>${basedir}/../galleon-common/src/main/resources</galleon-common.resources.directory>
         <pruned.resources.directory>${basedir}/../pruned/src/main/resources</pruned.resources.directory>
         <content.resources.directory>${basedir}/../galleon-content/src/main/resources</content.resources.directory>
+        <module.jms.suffix>jms</module.jms.suffix>
     </properties>
 
     <build>

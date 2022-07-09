@@ -40,7 +40,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.routing.RouteLocator;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 
 /**
  * Builds a distributable {@link SessionIdentifierCodec} service.
@@ -51,7 +51,7 @@ public class DistributableSessionIdentifierCodecServiceConfigurator extends Simp
     private final CapabilityServiceConfigurator configurator;
     private final RoutingSupport routing = new SimpleRoutingSupport();
 
-    public DistributableSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration, DistributableSessionManagementProvider provider) {
+    public DistributableSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration, DistributableSessionManagementProvider<?> provider) {
         super(name);
         this.configurator = provider.getRouteLocatorServiceConfigurator(configuration);
     }

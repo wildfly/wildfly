@@ -25,14 +25,14 @@
     </properties>
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-sdk}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-sdk-logs}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-sdk-metrics}"/>
         <artifact name="${io.opentelemetry:opentelemetry-sdk-trace}"/>
         <artifact name="${io.opentelemetry:opentelemetry-sdk-common}"/>
         <artifact name="${io.opentelemetry:opentelemetry-semconv}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-api-metrics}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-jaeger}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-trace}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-proto}"/>
     </resources>
 
     <dependencies>
@@ -40,7 +40,6 @@
         <module name="io.opentelemetry.context"/>
         <module name="com.squareup.okhttp3"/>
         <module name="org.slf4j"/>
-        <module name="io.jaegertracing"/>
         <module name="io.grpc"/>
         <module name="com.google.guava" />
         <module name="com.google.code.gson"/>

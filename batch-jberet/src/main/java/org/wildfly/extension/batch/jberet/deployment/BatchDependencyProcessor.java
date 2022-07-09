@@ -30,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
@@ -38,16 +37,13 @@ import org.jboss.modules.ModuleLoader;
  */
 public class BatchDependencyProcessor implements DeploymentUnitProcessor {
 
-    private final ModuleIdentifier batchModule = ModuleIdentifier.create("javax.batch.api");
-    private final ModuleIdentifier jberetModule = ModuleIdentifier.create("org.jberet.jberet-core");
-
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, batchModule, false, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, jberetModule, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "javax.batch.api", false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.jberet.jberet-core", false, false, true, false));
     }
 }

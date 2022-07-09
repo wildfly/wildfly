@@ -66,8 +66,8 @@ public class KeycloakConfiguration {
         return RestAssured
                 .given()
                 .param("grant_type", "password")
-                .param("username", KeycloakContainer.KEYCLOAK_ADMIN_USER)
-                .param("password", KeycloakContainer.KEYCLOAK_ADMIN_PASSWORD)
+                .param("username", KeycloakContainer.ADMIN_USER)
+                .param("password", KeycloakContainer.ADMIN_PASSWORD)
                 .param("client_id", "admin-cli")
                 .when()
                 .post(authServerUrl + "/realms/master/protocol/openid-connect/token")

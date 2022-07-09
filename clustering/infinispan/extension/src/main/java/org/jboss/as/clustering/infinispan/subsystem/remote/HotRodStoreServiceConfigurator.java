@@ -32,8 +32,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
@@ -65,7 +65,7 @@ public class HotRodStoreServiceConfigurator extends StoreServiceConfigurator<Hot
 
     @Override
     public void accept(HotRodStoreConfigurationBuilder builder) {
-        builder.segmented(true)
+        builder.segmented(false)
                 .cacheConfiguration(this.cacheConfiguration)
                 .remoteCacheContainer(this.remoteCacheContainer.get())
         ;

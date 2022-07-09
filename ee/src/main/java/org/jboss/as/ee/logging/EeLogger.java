@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.logging;
 
+
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -32,7 +33,6 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
@@ -51,7 +51,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
@@ -473,8 +472,8 @@ public interface EeLogger extends BasicLogger {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 40, value = "A component named '%s' is already defined in this module")
-    IllegalArgumentException componentAlreadyDefined(String name);
+    @Message(id = 40, value = "Component '%s' in class '%s' is already defined in class '%s'")
+    IllegalArgumentException componentAlreadyDefined(String commonName, String addedClassName, String existingClassname);
 
     /**
      * Creates an exception indicating the component class, represented by the {@code className} parameter, for the
@@ -1163,7 +1162,7 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 123, value = "Global directory %s cannot be added, because global directory %s is already defined.")
     OperationFailedException oneGlobalDirectory(String newGlobalDirectory, String existingGlobalDirectory);
 
-    @LogMessage(level = Level.WARN)
+    @LogMessage(level = WARN)
     @Message(id = 124, value = "Error deleting Jakarta Authorization Policy")
     void errorDeletingJACCPolicy(@Cause Throwable t);
 
@@ -1210,4 +1209,10 @@ public interface EeLogger extends BasicLogger {
 
     @Message(id = 132, value = "ManagedReference was null and injection is not optional for injection into method %s")
     RuntimeException managedReferenceMethodWasNull(Method method);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 133, value = "A JNDI binding for component '%s' has already been installed under JNDI name '%s' in accordance with Jakarta EE " +
+            "specifications. The conflicting class is %s. Solutions include providing an alternate name for the component " +
+            "or renaming the class.")
+    void duplicateJndiBindingFound(String componentName, String jndiName, Class clazz);
 }

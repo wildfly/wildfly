@@ -42,11 +42,11 @@ import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.concurrent.CompletableFutures;
-import org.jboss.as.clustering.context.DefaultExecutorService;
-import org.jboss.as.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.context.DefaultExecutorService;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Key;
-import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
-import org.wildfly.clustering.infinispan.spi.distribution.Locality;
+import org.wildfly.clustering.infinispan.distribution.ConsistentHashLocality;
+import org.wildfly.clustering.infinispan.distribution.Locality;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

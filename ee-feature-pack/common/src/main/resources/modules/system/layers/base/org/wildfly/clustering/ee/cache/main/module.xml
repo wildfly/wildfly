@@ -33,17 +33,15 @@
     </resources>
 
     <dependencies>
-        <module name="javax.transaction.api"/>
+        <module name="internal.javax.transaction.api"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.protostream"/>
-        <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.logging"/>
+        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.ee.spi"/>
-        <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
-        <module name="jdk.unsupported"/>
     </dependencies>
 </module>

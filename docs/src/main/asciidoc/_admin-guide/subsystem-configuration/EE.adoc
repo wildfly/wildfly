@@ -26,7 +26,7 @@ specified:
     <global-modules>
         <module name="org.jboss.logging"
                 slot="main"/>
-        <module name="org.apache.log4j"
+        <module name="org.apache.logging.log4j.api"
                 annotations="true"
                 meta-inf="true"
                 services="false" />

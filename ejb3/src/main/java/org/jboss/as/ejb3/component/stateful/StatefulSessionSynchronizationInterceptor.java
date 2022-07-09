@@ -241,7 +241,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
     }
 
 
-    private class StatefulSessionSynchronization implements Synchronization {
+    private static final class StatefulSessionSynchronization implements Synchronization {
 
         private final StatefulSessionComponentInstance statefulSessionComponentInstance;
 
@@ -277,6 +277,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
             }
         }
     }
+
     static void handleAfterCompletion(boolean committed, StatefulSessionComponentInstance statefulSessionComponentInstance, boolean toDiscard) {
         try {
             ROOT_LOGGER.tracef("After completion callback invoked on Transaction synchronization: %s", statefulSessionComponentInstance);

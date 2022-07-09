@@ -30,7 +30,7 @@ import java.util.concurrent.TimeoutException;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
@@ -42,7 +42,7 @@ public abstract class InjectionSupportTestCase {
     protected static WebArchive createTestArchiveBase() {
         return ShrinkWrap.create(WebArchive.class)
                 .addClasses(Alpha.class, Bravo.class, Charlie.class, ComponentInterceptorBinding.class, ComponentInterceptor.class, InjectionSupportTestCase.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
     }
 
     public static final Class<?>[] constructTestsHelperClasses = new Class<?>[] { AroundConstructInterceptor.class,

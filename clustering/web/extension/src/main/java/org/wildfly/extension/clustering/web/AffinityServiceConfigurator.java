@@ -32,13 +32,12 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
+import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class AffinityServiceConfigurator<C extends DistributableSessionManagementConfiguration> extends AffinityServiceNameProvider implements ResourceServiceConfigurator, Supplier<RouteLocatorServiceConfiguratorFactory<C>> {
+public abstract class AffinityServiceConfigurator<C> extends AffinityServiceNameProvider implements ResourceServiceConfigurator, Supplier<RouteLocatorServiceConfiguratorFactory<C>> {
 
     public AffinityServiceConfigurator(PathAddress address) {
         super(address.getParent());

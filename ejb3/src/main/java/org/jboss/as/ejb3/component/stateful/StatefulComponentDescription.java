@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TransactionManagementType;
@@ -54,7 +53,6 @@ import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
 import org.jboss.as.ejb3.cache.CacheInfo;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -72,6 +70,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
@@ -98,9 +97,9 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     /**
      * Map of init method, to the corresponding home create method on the home interface
      */
-    private Map<Method, String> initMethods = new HashMap<Method, String>(0);
+    private final Map<Method, String> initMethods = new HashMap<Method, String>(0);
 
-    public class StatefulRemoveMethod {
+    public static final class StatefulRemoveMethod {
         private final MethodIdentifier methodIdentifier;
         private final boolean retainIfException;
 
@@ -284,7 +283,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
         this.addViewSerializationInterceptor(view);
 
-        if (view.getMethodIntf() == MethodIntf.REMOTE) {
+        if (view.getMethodIntf() == MethodInterfaceType.Remote) {
             view.getConfigurators().add(new ViewConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -340,7 +339,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
                 EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
                 //if this is a home interface we add a different interceptor
-                if (ejbViewDescription.getMethodIntf() == MethodIntf.HOME || ejbViewDescription.getMethodIntf() == MethodIntf.LOCAL_HOME) {
+                if (ejbViewDescription.getMethodIntf() == MethodInterfaceType.Home || ejbViewDescription.getMethodIntf() == MethodInterfaceType.LocalHome) {
                     for (Method method : viewConfiguration.getProxyFactory().getCachedMethods()) {
                         if ((method.getName().equals("hashCode") && method.getParameterCount() == 0) ||
                                 method.getName().equals("equals") && method.getParameterCount() == 1 &&
@@ -365,7 +364,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 }
             }
         });
-        if (view.getMethodIntf() != MethodIntf.LOCAL_HOME && view.getMethodIntf() != MethodIntf.HOME) {
+        if (view.getMethodIntf() != MethodInterfaceType.LocalHome && view.getMethodIntf() != MethodInterfaceType.Home) {
             view.getConfigurators().add(new ViewConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {

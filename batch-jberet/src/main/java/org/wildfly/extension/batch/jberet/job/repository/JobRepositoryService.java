@@ -46,6 +46,11 @@ import org.wildfly.extension.batch.jberet._private.BatchLogger;
  */
 abstract class JobRepositoryService implements JobRepository, Service<JobRepository> {
     private volatile boolean started;
+    private final Integer executionRecordsLimit;
+
+    public JobRepositoryService(Integer executionRecordsLimit) {
+        this.executionRecordsLimit = executionRecordsLimit;
+    }
 
     @Override
     public final void start(final StartContext context) throws StartException {
@@ -84,9 +89,16 @@ abstract class JobRepositoryService implements JobRepository, Service<JobReposit
         return getAndCheckDelegate().getJobNames();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * WildFly JBeret subsystem validates a job name before each batch job operations.
+     * If a job name is invalid, {@code NoSuchJobException} would already have been thrown.
+     * So this method is optimized to always return true.
+     */
     @Override
     public boolean jobExists(final String jobName) {
-        return getAndCheckDelegate().jobExists(jobName);
+        return true;
     }
 
     @Override
@@ -201,12 +213,12 @@ abstract class JobRepositoryService implements JobRepository, Service<JobReposit
 
     @Override
     public List<Long> getJobExecutionsByJob(final String jobName) {
-        return getAndCheckDelegate().getJobExecutionsByJob(jobName);
+        return getAndCheckDelegate().getJobExecutionsByJob(jobName, executionRecordsLimit);
     }
 
     @Override
-    public List<Long> getJobExecutionsByJob(String string, Integer intgr) {
-        return getAndCheckDelegate().getJobExecutionsByJob(string, intgr);
+    public List<Long> getJobExecutionsByJob(String jobName, Integer executionRecordsLimit) {
+        return getAndCheckDelegate().getJobExecutionsByJob(jobName, executionRecordsLimit);
     }
 
     protected abstract void startJobRepository(StartContext context) throws StartException;

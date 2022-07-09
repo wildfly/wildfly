@@ -52,14 +52,12 @@ public class RolePropagationWithoutExplicitSecDomainElytronTest {
     @Test
     @RunAsClient
     public void testStartupSingletonSecuredBeanRolePropagation() {
-        if (System.getProperty("elytron") != null) {
-            try {
-                deployer.deploy(BEAN_DEPLOYMENT);
-            } catch (Exception ex) {
-                Assert.fail("Deployment should not fail because TEST role should have been propagated from RunAs annotation.");
-            } finally {
-                deployer.undeploy(BEAN_DEPLOYMENT);
-            }
+        try {
+            deployer.deploy(BEAN_DEPLOYMENT);
+        } catch (Exception ex) {
+            Assert.fail("Deployment should not fail because TEST role should have been propagated from RunAs annotation.");
+        } finally {
+            deployer.undeploy(BEAN_DEPLOYMENT);
         }
     }
 }

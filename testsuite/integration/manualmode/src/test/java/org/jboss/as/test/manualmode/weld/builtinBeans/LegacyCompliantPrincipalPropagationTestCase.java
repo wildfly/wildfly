@@ -34,14 +34,13 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
+import org.wildfly.security.permission.ElytronPermission;
 
-import static org.jboss.as.controller.client.helpers.Operations.createAddOperation;
-import static org.jboss.as.controller.client.helpers.Operations.createRemoveOperation;
 import static org.jboss.as.controller.client.helpers.Operations.createWriteAttributeOperation;
-import static org.junit.Assume.assumeTrue;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 
 /**
@@ -67,29 +66,23 @@ public class LegacyCompliantPrincipalPropagationTestCase {
     public static Archive<?> createTestArchive() {
         return ShrinkWrap.create(WebArchive.class).addPackage(LegacyCompliantPrincipalPropagationTestCase.class.getPackage())
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsWebInfResource(LegacyCompliantPrincipalPropagationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-    }
-
-    @BeforeClass
-    public static void executeOnlyForElytron() {
-        // this functionality affects elytron only
-        assumeTrue(System.getProperty("elytron") != null);
+                .addAsWebInfResource(LegacyCompliantPrincipalPropagationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
+                // TODO WFLY-15289 The Elytron permissions need to be checked, should a deployment really need these?
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new ElytronPermission("getIdentity"),
+                        new ElytronPermission("createAdHocIdentity"),
+                        new ChangeRoleMapperPermission("ejb")
+                ), "permissions.xml");
     }
 
     @Test
     @InSequence(1)
     @RunAsClient
-    public void startContainerAndConfigureApplicationSecDomain() throws Exception {
+    public void startContainer() throws Exception {
         if (!serverController.isStarted(DEFAULT_FULL_JBOSSAS)) {
             serverController.start(DEFAULT_FULL_JBOSSAS);
         }
-        // add application-security-domain called "other" that is mapped with an Elytron security domain (ApplicationDomain) in the Jakarta Enterprise Beans subsystem
         ManagementClient managementClient = getManagementClient();
-        ModelNode modelNode = createAddOperation(PathAddress.parseCLIStyleAddress(("/subsystem=ejb3/application-security-domain=other")).toModelNode());
-        modelNode.get("security-domain").set("ApplicationDomain");
-        managementClient.getControllerClient().execute(modelNode);
-
-        ServerReload.reloadIfRequired(managementClient);
         deployer.deploy(LEGACY_COMPLIANT_ATTRIBUTE_TEST_DEPL);
     }
 
@@ -126,9 +119,11 @@ public class LegacyCompliantPrincipalPropagationTestCase {
     @RunAsClient
     public void restoreConfigurationAndStopContainer() throws Exception {
         deployer.undeploy(LEGACY_COMPLIANT_ATTRIBUTE_TEST_DEPL);
-
-        ModelNode modelNode = createRemoveOperation(PathAddress.parseCLIStyleAddress(("/subsystem=ejb3/application-security-domain=other")).toModelNode());
-        getManagementClient().getControllerClient().execute(modelNode);
+        ManagementClient managementClient = getManagementClient();
+        ModelNode modelNode = createWriteAttributeOperation(PathAddress.parseCLIStyleAddress(("/subsystem=ejb3/application-security-domain=other")).toModelNode(),
+                "legacy-compliant-principal-propagation", true);
+        managementClient.getControllerClient().execute(modelNode);
+        ServerReload.reloadIfRequired(managementClient);
 
         serverController.stop(DEFAULT_FULL_JBOSSAS);
     }

@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-reactive-messaging</artifactId>
@@ -54,6 +54,9 @@
         <!-- These properties control what layers are provisioned if galleon provision occurs -->
         <ts.microprofile-tck-provisioning.base.layer>cloud-server</ts.microprofile-tck-provisioning.base.layer>
         <ts.microprofile-tck-provisioning.decorator.layer>microprofile-reactive-messaging</ts.microprofile-tck-provisioning.decorator.layer>
+
+        <!-- Temporary property until we are fully aligned with Jakarta -->
+        <version.eclipse.mp.rm.for.jakarta>3.0-RC2</version.eclipse.mp.rm.for.jakarta>
     </properties>
 
     <dependencies>
@@ -106,7 +109,7 @@
                     </dependenciesToScan>
                     <systemPropertyVariables>
                         <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
-                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
+                        <!-- Override the standard module path that points at the shared module set from the dist -->
                         <module.path>${project.build.directory}/wildfly/modules</module.path>
                     </systemPropertyVariables>
                 </configuration>
@@ -155,6 +158,16 @@
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
             </properties>
+
+
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.spec.jakarta.el</groupId>
+                    <artifactId>jboss-el-api_5.0_spec</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+
         </profile>
 
         <profile>
@@ -170,7 +183,55 @@
                 <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
                 <!--<version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>-->
 
+                <version.jakarta.enterprise>4.0.0</version.jakarta.enterprise>
+                <version.org.eclipse.microprofile.reactive-messaging.api>${version.eclipse.mp.rm.for.jakarta}</version.org.eclipse.microprofile.reactive-messaging.api>
+                <version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.0.Alpha1</version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
             </properties>
+
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.spec.jakarta.el</groupId>
+                    <artifactId>jboss-el-api_5.0_spec</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+
+            <!-- Enable legacy empty beans.xml treatment otherwise the TCKs will fail -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>configure-weld-subsystem</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <commands>
+                                        <command>embed-server --server-config=standalone-microprofile.xml</command>
+                                        <command>/subsystem=weld:write-attribute(name=legacy-empty-beans-xml-treatment,value=true)</command>
+                                        <command>stop-embedded-server</command>
+                                    </commands>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <jboss-home>${basedir}/target/wildfly</jboss-home>
+                            <stdout>${project.build.directory}/wildfly/standalone/log/weld-configuration.log</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${maven.repo.local}</maven.repo.local>
+                                <module.path>${project.build.directory}/wildfly/modules</module.path>
+                            </system-properties>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
     </profiles>

@@ -1,0 +1,10 @@
+package org.jboss.weld.bean.builtin;
+
+/**
+ * @TypeId(425)
+ */
+message InstanceImpl {
+	optional	bytes	injectionPoint	 = 1;
+	optional	bytes	creationalContext	 = 2;
+	optional	bytes	manager	 = 3;
+}

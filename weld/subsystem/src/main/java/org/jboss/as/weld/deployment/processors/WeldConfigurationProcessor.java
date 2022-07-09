@@ -40,11 +40,13 @@ public class WeldConfigurationProcessor implements DeploymentUnitProcessor {
     private final boolean requireBeanDescriptorGlobal;
     private final boolean nonPortableModeGlobal;
     private final boolean developmentModeGlobal;
+    private final boolean legacyEmptyBeansXmlTreatmentGlobal;
 
-    public WeldConfigurationProcessor(boolean requireBeanDescriptorGlobal, boolean nonPortableModeGlobal, boolean developmentModeGlobal) {
+    public WeldConfigurationProcessor(boolean requireBeanDescriptorGlobal, boolean nonPortableModeGlobal, boolean developmentModeGlobal, boolean legacyEmptyBeansXmlTreatmentGlobal) {
         this.requireBeanDescriptorGlobal = requireBeanDescriptorGlobal;
         this.nonPortableModeGlobal = nonPortableModeGlobal;
         this.developmentModeGlobal = developmentModeGlobal;
+        this.legacyEmptyBeansXmlTreatmentGlobal = legacyEmptyBeansXmlTreatmentGlobal;
     }
 
     @Override
@@ -58,14 +60,16 @@ public class WeldConfigurationProcessor implements DeploymentUnitProcessor {
         boolean requireBeanDescriptor = requireBeanDescriptorGlobal;
         boolean nonPortableMode = nonPortableModeGlobal;
         boolean developmentMode = developmentModeGlobal;
+        boolean legacyEmptyBeansXmlTreatment = legacyEmptyBeansXmlTreatmentGlobal;
 
         WeldJBossAllConfiguration configuration = deploymentUnit.getAttachment(WeldJBossAllConfiguration.ATTACHMENT_KEY);
         if (configuration != null) {
             requireBeanDescriptor = getValue(configuration.getRequireBeanDescriptor(), requireBeanDescriptorGlobal);
             nonPortableMode = getValue(configuration.getNonPortableMode(), nonPortableModeGlobal);
             developmentMode = getValue(configuration.getDevelopmentMode(), developmentModeGlobal);
+            legacyEmptyBeansXmlTreatment = getValue(configuration.getLegacyEmptyBeansXmlTreatment(), legacyEmptyBeansXmlTreatmentGlobal);
         }
-        WeldConfiguration mergedConfiguration = new WeldConfiguration(requireBeanDescriptor, nonPortableMode, developmentMode);
+        WeldConfiguration mergedConfiguration = new WeldConfiguration(requireBeanDescriptor, nonPortableMode, developmentMode, legacyEmptyBeansXmlTreatment);
         deploymentUnit.putAttachment(WeldConfiguration.ATTACHMENT_KEY, mergedConfiguration);
     }
 

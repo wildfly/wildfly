@@ -103,7 +103,7 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
     }
 
     static boolean isEjb3(final ClassInfo clazz) {
-        return clazz.annotations().containsKey(STATELESS_ANNOTATION) || clazz.annotations().containsKey(SINGLETON_ANNOTATION);
+        return clazz.annotationsMap().containsKey(STATELESS_ANNOTATION) || clazz.annotationsMap().containsKey(SINGLETON_ANNOTATION);
     }
 
 }

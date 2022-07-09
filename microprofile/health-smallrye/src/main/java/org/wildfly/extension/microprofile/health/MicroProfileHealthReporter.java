@@ -166,7 +166,13 @@ public class MicroProfileHealthReporter {
         builder.add("status", status.toString());
         builder.add("checks", checkResults);
 
-        return new SmallRyeHealth(builder.build());
+        JsonObject build = builder.build();
+
+        if (status.equals(HealthCheckResponse.Status.DOWN)) {
+            MicroProfileHealthLogger.LOGGER.healthDownStatus(build.toString());
+        }
+
+        return new SmallRyeHealth(build);
     }
 
     private HealthCheckResponse.Status processChecks(Map<HealthCheck, ClassLoader> checks, JsonArrayBuilder results, HealthCheckResponse.Status status) {

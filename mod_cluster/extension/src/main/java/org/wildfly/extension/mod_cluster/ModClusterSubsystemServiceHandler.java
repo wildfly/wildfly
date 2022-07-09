@@ -27,7 +27,6 @@ import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefini
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.STATUS_INTERVAL;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -36,7 +35,6 @@ import java.util.Set;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ServiceValueRegistry;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -160,13 +158,6 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
             Class<? extends LoadMetric> loadMetricClass = null;
             if (node.hasDefined(LoadMetricResourceDefinition.Attribute.TYPE.getName())) {
                 String type = LoadMetricResourceDefinition.Attribute.TYPE.resolveModelAttribute(context, node).asString();
-
-                // MODCLUSTER-288 Metric "mem" has been dropped, keep it in the model for versions prior to 8.0
-                if (type.equals("mem")) {
-                    ROOT_LOGGER.unsupportedMetric(type);
-                    continue;
-                }
-
                 LoadMetricEnum metric = LoadMetricEnum.forType(type);
                 loadMetricClass = (metric != null) ? metric.getLoadMetricClass() : null;
             } else {
@@ -190,7 +181,7 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
                     metric.setWeight(weight);
 
                     Properties props = new Properties();
-                    for (Property property : ModelNodes.optionalPropertyList(LoadMetricResourceDefinition.SharedAttribute.PROPERTY.resolveModelAttribute(context, node)).orElse(Collections.emptyList())) {
+                    for (Property property : LoadMetricResourceDefinition.SharedAttribute.PROPERTY.resolveModelAttribute(context, node).asPropertyListOrEmpty()) {
                         props.put(property.getName(), property.getValue().asString());
                     }
 

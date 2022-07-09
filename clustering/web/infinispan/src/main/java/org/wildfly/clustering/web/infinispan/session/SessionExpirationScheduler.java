@@ -32,7 +32,7 @@ import org.wildfly.clustering.ee.cache.scheduler.SortedScheduledEntries;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
-import org.wildfly.clustering.infinispan.spi.distribution.Locality;
+import org.wildfly.clustering.infinispan.distribution.Locality;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;

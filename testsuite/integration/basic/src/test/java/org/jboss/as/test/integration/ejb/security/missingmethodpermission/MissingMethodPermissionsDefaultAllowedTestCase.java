@@ -58,7 +58,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-@ServerSetup({MissingMethodPermissionsDefaultAllowedTestCase.DefaultEjbSecurityDomainSetup.class, MissingMethodPermissionsDefaultAllowedTestCase.MissingMethodPermissionsDefaultAllowedTestCaseServerSetup.class})
+@ServerSetup({MissingMethodPermissionsDefaultAllowedTestCase.MissingMethodPermissionsDefaultAllowedTestCaseServerSetup.class})
 public class MissingMethodPermissionsDefaultAllowedTestCase {
 
     private static final Logger logger = Logger.getLogger(MissingMethodPermissionsDefaultAllowedTestCase.class);
@@ -95,53 +95,6 @@ public class MissingMethodPermissionsDefaultAllowedTestCase {
             operation.get("value").set(true);
             ModelNode result = managementClient.getControllerClient().execute(operation);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        }
-
-        private static ModelNode getAddress() {
-            ModelNode address = new ModelNode();
-            address.add("subsystem", "ejb3");
-            address.protect();
-            return address;
-        }
-    }
-
-    // Ensure the default security domain gets mapped to an appropriately configured Elytron security domain
-    static class DefaultEjbSecurityDomainSetup extends EjbSecurityDomainSetup {
-
-        @Override
-        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            if (System.getProperty("elytron") != null) {
-                super.setup(managementClient, containerId);
-
-                ModelNode address = getAddress();
-                ModelNode operation = new ModelNode();
-                operation.get(OP).set("write-attribute");
-                operation.get(OP_ADDR).set(address);
-                operation.get("name").set("default-security-domain");
-                operation.get("value").set("ejb3-tests");
-                ModelNode result = managementClient.getControllerClient().execute(operation);
-                Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-            }
-        }
-
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) {
-            if (System.getProperty("elytron") != null) {
-                super.tearDown(managementClient, containerId);
-
-                ModelNode address = getAddress();
-                ModelNode operation = new ModelNode();
-                operation.get(OP).set("write-attribute");
-                operation.get(OP_ADDR).set(address);
-                operation.get("name").set("default-security-domain");
-                operation.get("value").set("other");
-                try {
-                    ModelNode result = managementClient.getControllerClient().execute(operation);
-                    Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
         }
 
         private static ModelNode getAddress() {

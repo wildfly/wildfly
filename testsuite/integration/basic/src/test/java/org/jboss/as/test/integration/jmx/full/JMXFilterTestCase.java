@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.jmx.full;
 
 import java.util.Set;
 
-import javax.management.MBeanInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
@@ -57,7 +56,7 @@ public class JMXFilterTestCase {
     static MBeanServerConnection connection;
 
     @Deployment
-    public static Archive createDeployment() {
+    public static Archive<?> createDeployment() {
         final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "test-jmx-sar.sar");
         sar.addClasses(org.jboss.as.test.integration.jmx.sar.Test.class, TestMBean.class);
         sar.addAsManifestResource(JMXFilterTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
@@ -81,24 +80,38 @@ public class JMXFilterTestCase {
 
     @Test
     public void testFilter() throws Exception {
+
+        // Check the non-management JMX domain
+        final ObjectName sarMbeanName = new ObjectName("jboss:name=test-sar-1234567890,type=jmx-sar");
         Set<ObjectName> names = connection.queryNames(new ObjectName("*:name=test-sar-1234567890,*"), null);
         Assert.assertEquals(1, names.size());
-        Assert.assertTrue(names.contains(new ObjectName("jboss:name=test-sar-1234567890,type=jmx-sar")));
-
-        names = connection.queryNames(new ObjectName("*:subsystem=jsr77,*"), null);
-        Assert.assertTrue(names.toString(), names.size() == 4);
-        Assert.assertTrue(names.contains(new ObjectName("jboss.as.expr:subsystem=jsr77")));
-        Assert.assertTrue(names.contains(new ObjectName("jboss.as:subsystem=jsr77")));
-        Assert.assertTrue(names.contains(new ObjectName("jboss.as.expr:extension=org.jboss.as.jsr77,subsystem=jsr77")));
-        Assert.assertTrue(names.contains(new ObjectName("jboss.as:extension=org.jboss.as.jsr77,subsystem=jsr77")));
-
-        names = connection.queryNames(new ObjectName("*:j2eeType=J2EEServer,*"), null);
+        Assert.assertTrue(names.contains(sarMbeanName));
+        // Check that names with no pattern work
+        names = connection.queryNames(sarMbeanName, null);
         Assert.assertEquals(1, names.size());
-        final ObjectName name = new ObjectName("jboss.jsr77:j2eeType=J2EEServer,name=default");
-        Assert.assertTrue(names.contains(name));
+        Assert.assertTrue(names.contains(sarMbeanName));
+        // Check getMBeanInfo
+        Assert.assertNotNull(connection.getMBeanInfo(sarMbeanName));
 
-        MBeanInfo info = connection.getMBeanInfo(name);
-        Assert.assertNotNull(info);
+        // Check the management JMX domains
+        final ObjectName asMbeanName = new ObjectName("jboss.as:subsystem=sar");
+        final ObjectName asExprMbeanName = new ObjectName("jboss.as.expr:subsystem=sar");
+        names = connection.queryNames(new ObjectName("*:subsystem=sar,*"), null);
+        Assert.assertEquals(names.toString(), 4, names.size());
+        Assert.assertTrue(names.contains(asExprMbeanName));
+        Assert.assertTrue(names.contains(asMbeanName));
+        Assert.assertTrue(names.contains(new ObjectName("jboss.as.expr:extension=org.jboss.as.sar,subsystem=sar")));
+        Assert.assertTrue(names.contains(new ObjectName("jboss.as:extension=org.jboss.as.sar,subsystem=sar")));
+        // Check that names with no pattern work
+        names = connection.queryNames(asMbeanName, null);
+        Assert.assertEquals(1, names.size());
+        Assert.assertTrue(names.contains(asMbeanName));
+        names = connection.queryNames(asExprMbeanName, null);
+        Assert.assertEquals(1, names.size());
+        Assert.assertTrue(names.contains(asExprMbeanName));
+        // Check getMBeanInfo
+        Assert.assertNotNull(connection.getMBeanInfo(asMbeanName));
+        Assert.assertNotNull(connection.getMBeanInfo(asExprMbeanName));
     }
 
     private MBeanServerConnection setupAndGetConnection() throws Exception {

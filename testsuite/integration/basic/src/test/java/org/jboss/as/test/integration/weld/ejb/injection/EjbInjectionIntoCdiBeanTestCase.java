@@ -49,7 +49,7 @@ public class EjbInjectionIntoCdiBeanTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         war.addPackage(EjbInjectionIntoCdiBeanTestCase.class.getPackage());
-        war.addAsWebInfResource(new StringAsset(""), "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         return war;
     }
 

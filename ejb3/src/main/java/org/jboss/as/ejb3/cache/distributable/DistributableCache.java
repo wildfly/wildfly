@@ -21,8 +21,10 @@
  */
 package org.jboss.as.ejb3.cache.distributable;
 
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
+import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ejb3.cache.Cache;
@@ -119,6 +121,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
             // Batch is not closed here - it will be closed during release(...) or discard(...)
             Batch batch = batcher.createBatch();
             try {
+                // TODO WFLY-14167 Cache lookup timeout should reflect @AccessTimeout of associated bean/invocation
                 Bean<K, V> bean = this.manager.findBean(id);
                 if (bean == null) {
                     batch.close();
@@ -131,6 +134,9 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
                     this.tsr.putResource(Batch.class, batch);
                 }
                 return result;
+            } catch (TimeoutException e) {
+                batch.close();
+                throw new ConcurrentAccessTimeoutException(e.getMessage());
             } catch (RuntimeException | Error e) {
                 batch.discard();
                 batch.close();
@@ -148,6 +154,8 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
                     if (bean != null && bean.release()) {
                         bean.close();
                     }
+                } catch (TimeoutException e) {
+                    throw new ConcurrentAccessTimeoutException(e.getMessage());
                 } catch (RuntimeException | Error e) {
                     batch.discard();
                     throw e;
@@ -160,10 +168,13 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     public void remove(K id) {
         try (Batch batch = this.manager.getBatcher().createBatch()) {
             try {
+                // TODO WFLY-14167 Cache lookup timeout should reflect @AccessTimeout of associated bean/invocation
                 Bean<K, V> bean = this.manager.findBean(id);
                 if (bean != null) {
                     bean.remove(this.listener);
                 }
+            } catch (TimeoutException e) {
+                throw new ConcurrentAccessTimeoutException(e.getMessage());
             } catch (RuntimeException | Error e) {
                 batch.discard();
                 throw e;
@@ -180,6 +191,8 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
                     if (bean != null) {
                         bean.remove(null);
                     }
+                } catch (TimeoutException e) {
+                    throw new ConcurrentAccessTimeoutException(e.getMessage());
                 } catch (RuntimeException | Error e) {
                     batch.discard();
                     throw e;

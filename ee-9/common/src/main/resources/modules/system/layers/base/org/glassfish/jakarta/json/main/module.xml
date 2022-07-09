@@ -21,27 +21,4 @@
 <!-- TODO Consider dropping direct dep on core-galleon-pack and instead using
      a source dep, eliminating the need to re-provision this just to get a
      different version. -->
-<module xmlns="urn:jboss:module:1.9" name="org.glassfish.jakarta.json">
-
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
-    <resources>
-        <artifact name="${org.glassfish:jakarta.json}">
-            <filter>
-                <!-- This artifact packages both the API and the impl in the same jar,
-                     but we want to use our own API jar (see javax.json.api module).
-                     So suppress the API packages. We suppress both javax and jakarta
-                     so this same file can be used with artifacts that provide either
-                     package namespace. -->
-                <exclude path="javax/*"/>
-                <exclude path="jakarta/*"/>
-            </filter>
-        </artifact>
-    </resources>
-
-    <dependencies>
-        <module name="javax.json.api" />
-    </dependencies>
-</module>
+<module-alias xmlns="urn:jboss:module:1.9" name="org.glassfish.jakarta.json" target-name="org.eclipse.parsson"/>

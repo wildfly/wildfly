@@ -29,7 +29,10 @@ import org.wildfly.clustering.service.Requirement;
  * @author Paul Ferraro
  */
 public enum SingletonRequirement implements DefaultableUnaryRequirement {
-    @Deprecated SINGLETON_POLICY("org.wildfly.clustering.singleton.policy", SingletonDefaultRequirement.SINGLETON_POLICY),
+    /**
+     * @deprecated Use {@link SingletonRequirement#POLICY} instead.
+     */
+    @Deprecated(forRemoval = true) SINGLETON_POLICY("org.wildfly.clustering.singleton.policy", SingletonDefaultRequirement.SINGLETON_POLICY),
     POLICY("org.wildfly.clustering.singleton-policy", SingletonDefaultRequirement.POLICY),
     ;
     private final String name;

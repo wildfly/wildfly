@@ -109,6 +109,7 @@ public class NetworkHealthTestCase extends ContainerResourceMgmtTestBase {
         executeOperationForSuccess(op);
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping6-command");
         executeOperationForSuccess(op);
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     private void executeOperationForSuccess(ModelNode operation) throws IOException, MgmtOperationException {

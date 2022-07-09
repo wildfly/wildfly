@@ -164,7 +164,9 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
             throw EeLogger.ROOT_LOGGER.nullVar("componentClassName","module", moduleName);
         }
         if (componentsByName.containsKey(componentName)) {
-            throw EeLogger.ROOT_LOGGER.componentAlreadyDefined(componentName);
+            ComponentDescription existingComponent = componentsByName.get(componentName);
+            throw EeLogger.ROOT_LOGGER.componentAlreadyDefined(componentName, componentClassName,
+                    existingComponent.getComponentClassName());
         }
         componentsByName.put(componentName, description);
         List<ComponentDescription> list = componentsByClassName.get(componentClassName);

@@ -45,7 +45,7 @@ class MicroProfileConfigSubsystemParser_1_0 extends PersistentResourceXMLParser 
                                 ConfigSourceDefinition.ORDINAL,
                                 ConfigSourceDefinition.PROPERTIES,
                                 ConfigSourceDefinition.CLASS,
-                                ConfigSourceDefinition.DIR))
+                                ConfigSourceDefinition.DIR_1_0))
                 .addChild(builder(MicroProfileConfigExtension.CONFIG_SOURCE_PROVIDER_PATH)
                         .addAttributes(
                                 ConfigSourceProviderDefinition.CLASS))

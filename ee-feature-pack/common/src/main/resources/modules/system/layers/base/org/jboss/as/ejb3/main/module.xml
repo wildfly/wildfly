@@ -26,7 +26,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-ejb3}"/>
+        <artifact name="\${org.wildfly:wildfly-ejb3@module.jakarta.suffix@}"/>
         <resource-root path="timers" />
     </resources>
 
@@ -36,6 +36,7 @@
         <module name="java.naming"/>
         <module name="java.rmi"/>
         <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
         <module name="javax.transaction.api"/>
         <module name="org.wildfly.http-client.ejb" services="import"/>
         <module name="javax.annotation.api"/>
@@ -50,15 +51,17 @@
         <module name="javax.resource.api"/>
         <module name="org.jboss.common-beans" services="import"/>
         <module name="org.jboss.as.clustering.common"/>
-        <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.ejb.spi"/>
-        <module name="org.wildfly.clustering.infinispan.spi"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.api"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.service"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
+        <module name="org.wildfly.clustering.server.api"/>
+        <module name="org.wildfly.clustering.server.service"/>
+        <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
-        <module name="org.wildfly.clustering.spi"/>
-        <module name="org.wildfly.clustering.singleton"/>
+        <module name="org.wildfly.clustering.singleton.api"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.extension.request-controller"/>
         <module name="org.wildfly.discovery"/>
@@ -67,7 +70,6 @@
         <module name="org.jboss.as.connector"/>
         <!-- Need access to org.jboss.as.core.security.ServerSecurityManager -->
         <module name="org.jboss.as.core-security"/>
-        <module name="org.jboss.as.security-plugins"/>
         <!-- Need access to org.jboss.as.domain.management.SecurityRealm for authentication of EJB cluster nodes
          in EJB client context-->
         <module name="org.jboss.as.domain-management"/>
@@ -104,7 +106,6 @@
         <module name="org.jboss.staxmapper"/>
         <!-- For parser DUP -->
         <module name="org.jboss.vfs"/>
-        <module name="org.picketbox"/>
 
         <module name="org.omg.api"/>
         <!-- Not supported but a class is a return value in the EE 8 SessionContext API

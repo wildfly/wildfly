@@ -95,7 +95,7 @@ public enum ScheduleExpressionType {
 
     public static ScheduleExpressionType getType(String value) {
         if (value == null) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.valueIsNull();
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue("", value);
         }
         // Order of check is important.
         // TODO: Explain why this order is important

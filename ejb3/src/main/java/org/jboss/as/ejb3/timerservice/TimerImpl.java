@@ -86,11 +86,6 @@ public class TimerImpl implements Timer {
     protected final long intervalDuration;
 
     /**
-     * If this is an entity bean then this is the primary key
-     */
-    protected final Object primaryKey;
-
-    /**
      * Next expiry date of this timer
      */
     protected volatile Date nextExpiration;
@@ -140,8 +135,6 @@ public class TimerImpl implements Timer {
             this.nextExpiration = builder.nextDate;
         }
         this.previousRun = builder.previousRun;
-        this.primaryKey = builder.primaryKey;
-
         this.timerState = builder.timerState;
         this.timerService = service;
         this.timedObjectInvoker = service.getInvoker();
@@ -383,7 +376,7 @@ public class TimerImpl implements Timer {
      * @return
      */
     public boolean isActive() {
-        return timerService.isStarted() && !isCanceled() && !isExpired() && (timerService.isScheduled(getId()) || timerState == TimerState.CREATED);
+        return timerService.isStarted() && !isCanceled() && !isExpired() && (timerState == TimerState.CREATED || timerService.isScheduled(getId()));
     }
 
     /**
@@ -522,8 +515,8 @@ public class TimerImpl implements Timer {
      * @return
      * @see TimerTask
      */
-    protected TimerTask<?> getTimerTask() {
-        return new TimerTask<TimerImpl>(this);
+    protected TimerTask getTimerTask() {
+        return new TimerTask(this);
     }
 
     public void lock() throws InterruptedException {
@@ -589,10 +582,6 @@ public class TimerImpl implements Timer {
         return sb.toString();
    }
 
-    public Object getPrimaryKey() {
-        return primaryKey;
-    }
-
     public static Builder builder() {
         return new Builder();
     }
@@ -605,7 +594,6 @@ public class TimerImpl implements Timer {
         protected Date nextDate;
         protected Date previousRun;
         protected Serializable info;
-        protected Object primaryKey;
         protected TimerState timerState;
         protected boolean persistent;
         protected boolean newTimer;
@@ -642,11 +630,6 @@ public class TimerImpl implements Timer {
 
         public Builder setInfo(final Serializable info) {
             this.info = info;
-            return this;
-        }
-
-        public Builder setPrimaryKey(final Object primaryKey) {
-            this.primaryKey = primaryKey;
             return this;
         }
 

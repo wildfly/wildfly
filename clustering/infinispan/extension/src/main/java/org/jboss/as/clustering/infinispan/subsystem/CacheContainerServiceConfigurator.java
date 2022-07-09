@@ -24,16 +24,16 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONTAINER;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.ListAttribute.ALIASES;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -47,12 +47,10 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
 import org.infinispan.util.concurrent.CompletableFutures;
-import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ServiceValueCaptor;
 import org.jboss.as.clustering.controller.ServiceValueRegistry;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
@@ -66,8 +64,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.infinispan.spi.CacheContainer;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -78,15 +76,15 @@ import org.wildfly.clustering.service.SupplierDependency;
  * @author Paul Ferraro
  */
 @Listener
-public class CacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Function<EmbeddedCacheManager, CacheContainer>, Supplier<EmbeddedCacheManager>, Consumer<EmbeddedCacheManager> {
+public class CacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, UnaryOperator<EmbeddedCacheManager>, Supplier<EmbeddedCacheManager>, Consumer<EmbeddedCacheManager> {
 
     private final ServiceValueRegistry<Cache<?, ?>> registry;
     private final Map<String, Registration> registrations = new ConcurrentHashMap<>();
     private final PathAddress address;
     private final String name;
     private final SupplierDependency<GlobalConfiguration> configuration;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(this.getClass()));
 
+    private volatile ExecutorService executor;
     private volatile Registrar<String> registrar;
     private volatile ServiceName[] names;
 
@@ -99,7 +97,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     }
 
     @Override
-    public CacheContainer apply(EmbeddedCacheManager manager) {
+    public EmbeddedCacheManager apply(EmbeddedCacheManager manager) {
         return new DefaultCacheContainer(manager);
     }
 
@@ -119,6 +117,8 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         }
 
         manager.start();
+        // Must create executor before registering cache listener
+        this.executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(this.getClass()));
         manager.addListener(this);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
         return manager;
@@ -134,7 +134,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
 
     @Override
     public CacheContainerServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        List<ModelNode> aliases = ModelNodes.optionalList(ALIASES.resolveModelAttribute(context, model)).orElse(Collections.emptyList());
+        List<ModelNode> aliases = ALIASES.resolveModelAttribute(context, model).asListOrEmpty();
         this.names = new ServiceName[aliases.size() + 1];
         this.names[0] = this.getServiceName();
         for (int i = 0; i < aliases.size(); ++i) {
@@ -147,7 +147,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
-        Consumer<CacheContainer> container = new CompositeDependency(this.configuration).register(builder).provides(this.names);
+        Consumer<EmbeddedCacheManager> container = new CompositeDependency(this.configuration).register(builder).provides(this.names);
         Service service = new FunctionalService<>(container, this, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }
@@ -163,12 +163,16 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         this.registrations.put(cacheName, this.registrar.register(cacheName));
         ServiceValueCaptor<Cache<?, ?>> captor = this.registry.add(this.createCacheServiceName(cacheName));
         // Use getCacheAsync(), once available
-        this.executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                captor.accept(event.getCacheManager().getCache(cacheName));
-            }
-        });
+        try {
+            this.executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    captor.accept(event.getCacheManager().getCache(cacheName));
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            // Service was stopped
+        }
         return CompletableFutures.completedNull();
     }
 

@@ -43,6 +43,7 @@ public class AttributeDefaultsTest extends AbstractSubsystemTest {
         Assert.assertNotEquals(ServerDefinition.GLOBAL_MAX_DISK_USAGE.getName(), ServerDefinition.GLOBAL_MAX_DISK_USAGE.getDefaultValue().asInt(), ActiveMQDefaultConfiguration.getDefaultMaxDiskUsage());
         Assert.assertNotEquals(ServerDefinition.GLOBAL_MAX_MEMORY_SIZE.getName(), ServerDefinition.GLOBAL_MAX_MEMORY_SIZE.getDefaultValue().asLong(), ActiveMQDefaultConfiguration.getDefaultMaxGlobalSize());
         Assert.assertNotEquals(ServerDefinition.JOURNAL_POOL_FILES.getName(), ServerDefinition.JOURNAL_POOL_FILES.getDefaultValue().asInt(), ActiveMQDefaultConfiguration.getDefaultJournalPoolFiles());
+//        Assert.assertNotEquals(ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE.getName(), ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE.getDefaultValue().asInt(), ActiveMQDefaultConfiguration.getDefaultBridgeProducerWindowSize());
 
         Assert.assertEquals(BridgeDefinition.INITIAL_CONNECT_ATTEMPTS.getName(), BridgeDefinition.INITIAL_CONNECT_ATTEMPTS.getDefaultValue().asInt(), ActiveMQDefaultConfiguration.getDefaultBridgeInitialConnectAttempts());
         Assert.assertEquals(BridgeDefinition.RECONNECT_ATTEMPTS.getName(), BridgeDefinition.RECONNECT_ATTEMPTS.getDefaultValue().asInt(), ActiveMQDefaultConfiguration.getDefaultBridgeReconnectAttempts());
@@ -57,7 +58,7 @@ public class AttributeDefaultsTest extends AbstractSubsystemTest {
         Assert.assertEquals(ClusterConnectionDefinition.MESSAGE_LOAD_BALANCING_TYPE.getName(), ClusterConnectionDefinition.MESSAGE_LOAD_BALANCING_TYPE.getDefaultValue().asString(), ActiveMQDefaultConfiguration.getDefaultClusterMessageLoadBalancingType());
         Assert.assertEquals(ClusterConnectionDefinition.NOTIFICATION_ATTEMPTS.getName(), ClusterConnectionDefinition.NOTIFICATION_ATTEMPTS.getDefaultValue().asInt(), ActiveMQDefaultConfiguration.getDefaultClusterNotificationAttempts());
         Assert.assertEquals(ClusterConnectionDefinition.NOTIFICATION_INTERVAL.getName(), ClusterConnectionDefinition.NOTIFICATION_INTERVAL.getDefaultValue().asLong(), ActiveMQDefaultConfiguration.getDefaultClusterNotificationInterval());
-        Assert.assertEquals(ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE.getName(), ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE.getDefaultValue().asInt(), ActiveMQDefaultConfiguration.getDefaultBridgeProducerWindowSize());
+
         Assert.assertEquals(ClusterConnectionDefinition.RECONNECT_ATTEMPTS.getName(), ClusterConnectionDefinition.RECONNECT_ATTEMPTS.getDefaultValue().asInt(), ActiveMQDefaultConfiguration.getDefaultClusterReconnectAttempts());
         Assert.assertEquals(ClusterConnectionDefinition.RETRY_INTERVAL.getName(), ClusterConnectionDefinition.RETRY_INTERVAL.getDefaultValue().asLong(), ActiveMQDefaultConfiguration.getDefaultClusterRetryInterval());
         Assert.assertEquals(ClusterConnectionDefinition.RETRY_INTERVAL_MULTIPLIER.getName(), ClusterConnectionDefinition.RETRY_INTERVAL_MULTIPLIER.getDefaultValue().asDouble(), ActiveMQDefaultConfiguration.getDefaultClusterRetryIntervalMultiplier(), 0);

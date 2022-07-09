@@ -31,7 +31,7 @@ import org.wildfly.clustering.service.Builder;
  * @author Paul Ferraro
  * @deprecated Replaced by {@link org.wildfly.clustering.singleton.service.SingletonPolicy}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public interface SingletonPolicy extends org.wildfly.clustering.singleton.service.SingletonPolicy {
 
     /**

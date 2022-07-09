@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<host xmlns="urn:jboss:domain:19.0" name="master">
+<host xmlns="urn:jboss:domain:20.0" name="master">
     <extensions>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.wildfly.extension.core-management"/>
@@ -127,8 +127,8 @@
             <http>
                 <http-authentication-factory name="management-http-authentication" http-server-mechanism-factory="global" security-domain="ManagementDomain">
                     <mechanism-configuration>
-                        <mechanism mechanism-name="BASIC">
-                            <mechanism-realm realm-name="Management Realm"/>
+                        <mechanism mechanism-name="DIGEST">
+                            <mechanism-realm realm-name="ManagementRealm"/>
                         </mechanism>
                     </mechanism-configuration>
                 </http-authentication-factory>

@@ -41,6 +41,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import org.apache.http.Header;
 
+import org.hamcrest.MatcherAssert;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.logging.Logger;
 
@@ -228,7 +229,7 @@ public class CommonBase {
             responseString = EntityUtils.toString(httpEntity);
             Assert.assertEquals(expectedStatus, statusCode);
             if (expectedStatus == HttpStatus.SC_OK) {
-                Assert.assertThat(responseString, CoreMatchers.containsString(containedText));
+                MatcherAssert.assertThat(responseString, CoreMatchers.containsString(containedText));
             }
         } finally {
             if (httpEntity != null) {

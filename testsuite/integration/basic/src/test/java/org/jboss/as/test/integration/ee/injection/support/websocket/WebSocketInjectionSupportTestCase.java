@@ -37,7 +37,6 @@ import org.jboss.as.test.integration.ee.injection.support.ComponentInterceptorBi
 import org.jboss.as.test.integration.ee.injection.support.InjectionSupportTestCase;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -59,7 +58,7 @@ public class WebSocketInjectionSupportTestCase {
                 .addPackage(WebSocketInjectionSupportTestCase.class.getPackage())
                 .addClasses(TestSuiteEnvironment.class, Alpha.class, Bravo.class, ComponentInterceptorBinding.class,
                         ComponentInterceptor.class).addClasses(InjectionSupportTestCase.constructTestsHelperClasses)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .addAsManifestResource(new StringAsset("io.undertow.websockets.jsr.UndertowContainerProvider"),
                         "services/javax.websocket.ContainerProvider")
                 .addAsManifestResource(createPermissionsXmlAsset(

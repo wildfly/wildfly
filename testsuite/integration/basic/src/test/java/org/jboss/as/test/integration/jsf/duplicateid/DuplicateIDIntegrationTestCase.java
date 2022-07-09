@@ -1,5 +1,15 @@
 package org.jboss.as.test.integration.jsf.duplicateid;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -26,24 +36,13 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 /**
  * Test case based on reproducer for https://issues.jboss.org/browse/JBEAP-10758
- *
+ * <p>
  * Original reproducer: https://github.com/tuner/mojarra-dynamic-include-reproducer
  * Original reproducer author: Kari Lavikka <tuner@bdb.fi>
  *
  * @author Jan Kasik <jkasik@redhat.com>
- *
  */
 @RunWith(Arquillian.class)
 @RunAsClient

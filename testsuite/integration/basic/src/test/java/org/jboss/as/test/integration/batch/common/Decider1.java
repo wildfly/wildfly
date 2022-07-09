@@ -32,6 +32,7 @@ import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -59,7 +60,7 @@ public class Decider1 implements Decider {
     public String decide(final StepExecution[] stepExecutions) throws Exception {
         Assert.assertEquals("decision-prop", decisionProp);
         Assert.assertEquals("job-prop", referencingJobProp);
-        Assert.assertThat(referencingStepProp, not(equalTo("step-prop")));
+        MatcherAssert.assertThat(referencingStepProp, not(equalTo("step-prop")));
         Assert.assertEquals(WildFlySecurityManager.getPropertyPrivileged("java.version", ""), referencingSystemProp);
         Assert.assertEquals("job-param", referencingJobParam);
         return "next";

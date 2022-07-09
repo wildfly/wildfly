@@ -39,6 +39,7 @@ import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.distribution.group.Grouper;
+import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
@@ -48,13 +49,12 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.service.ConfigurationServiceConfigurator;
+import org.wildfly.clustering.infinispan.service.ConfigurationServiceConfigurator;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * Builds a cache configuration from its components.
@@ -130,7 +130,7 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
         }
         try {
             // Configure invocation batching based on transaction configuration
-            builder.invocationBatching().enable(tx.transactionMode().isTransactional() && (tx.transactionManagerLookup().getTransactionManager() != ContextTransactionManager.getInstance()));
+            builder.invocationBatching().enable(tx.transactionMode().isTransactional() && (tx.transactionManagerLookup().getTransactionManager() == EmbeddedTransactionManager.getInstance()));
         } catch (Exception e) {
             throw new CacheException(e);
         }

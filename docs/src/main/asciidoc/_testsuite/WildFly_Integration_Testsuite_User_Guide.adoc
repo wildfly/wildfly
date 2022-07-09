@@ -74,7 +74,7 @@ To define groups of tests to be run, these properties are available:
 * `-DallInteg` - Runs all integration tests. Same as
 `cd testsuite/integration; mvn clean install -DallTests`
 * `-Dts.integ` - Basic integration + clustering tests.
-* `-Dts.clust` - Clustering tests.
+* `-Dts.clustering` - Clustering tests.
 * `-Dts.iiop` - IIOP tests.
 * `-Dts.multinode `- Tests with many nodes.
 * `-Dts.manualmode` - Tests with manual mode Arquillian containers.
@@ -168,7 +168,7 @@ operations.
 Single test is run using *-Dtest=...* . Examples:
 
 * `./integration-tests.sh install -Dtest='` `*` `Clustered` `*`
-`' -Dintegration.module` `-Dts.clust`
+`' -Dintegration.module` `-Dts.clustering`
 * `./integration-tests.sh clean install -Dtest=org` `/` `jboss` `/` `as`
 `/` `test` `/` `integration` `/` `ejb/async/*TestCase.java`
 `-Dintegration.module` `-Dts.basic`

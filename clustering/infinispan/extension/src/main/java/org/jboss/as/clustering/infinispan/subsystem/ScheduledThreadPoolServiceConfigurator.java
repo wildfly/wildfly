@@ -30,11 +30,11 @@ import java.util.concurrent.TimeUnit;
 import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
-import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**

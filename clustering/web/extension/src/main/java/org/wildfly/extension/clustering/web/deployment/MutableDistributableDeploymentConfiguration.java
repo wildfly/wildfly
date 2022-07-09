@@ -31,7 +31,8 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.metadata.property.PropertyReplacer;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**
  * @author Paul Ferraro
@@ -42,7 +43,7 @@ public class MutableDistributableDeploymentConfiguration implements Distributabl
     private final PropertyReplacer replacer;
 
     private String managementName;
-    private DistributableSessionManagementProvider management;
+    private DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> management;
 
     public MutableDistributableDeploymentConfiguration() {
         this.replacer = null;
@@ -53,11 +54,11 @@ public class MutableDistributableDeploymentConfiguration implements Distributabl
     }
 
     @Override
-    public DistributableSessionManagementProvider getSessionManagement() {
+    public DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> getSessionManagement() {
         return this.management;
     }
 
-    public void setSessionManagement(DistributableSessionManagementProvider management) {
+    public void setSessionManagement(DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> management) {
         this.management = management;
     }
 

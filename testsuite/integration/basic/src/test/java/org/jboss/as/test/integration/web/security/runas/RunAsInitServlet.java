@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 @RunAs("anil")
 public class RunAsInitServlet extends HttpServlet {
 
-    private String initName;
+    private volatile String initName;
 
     @EJB
     private CurrentUserEjb currentUserEjb;

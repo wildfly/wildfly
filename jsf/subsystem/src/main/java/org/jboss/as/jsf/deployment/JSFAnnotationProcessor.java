@@ -22,6 +22,13 @@
 
 package org.jboss.as.jsf.deployment;
 
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.jsf.logging.JSFLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -37,22 +44,6 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.component.FacesComponent;
-import javax.faces.component.behavior.FacesBehavior;
-import javax.faces.convert.FacesConverter;
-import javax.faces.event.NamedEvent;
-import javax.faces.render.FacesBehaviorRenderer;
-import javax.faces.render.FacesRenderer;
-import javax.faces.validator.FacesValidator;
-import javax.faces.view.facelets.FaceletsResourceResolver;
-import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * {@link DeploymentUnitProcessor} implementation responsible for extracting Jakarta Server Faces annotations from a deployment and attaching them
  * to the deployment unit to eventually be added to the {@link javax.servlet.ServletContext}.
@@ -63,26 +54,6 @@ public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
 
     public static final String FACES_ANNOTATIONS_SC_ATTR =  "org.jboss.as.jsf.FACES_ANNOTATIONS";
     private static final String MANAGED_ANNOTATION_PARAMETER = "managed";
-
-    private enum FacesAnnotation {
-        FACES_COMPONENT(FacesComponent.class),
-        FACES_CONVERTER(FacesConverter.class),
-        FACES_VALIDATOR(FacesValidator.class),
-        FACES_RENDERER(FacesRenderer.class),
-        MANAGED_BEAN(ManagedBean.class),
-        NAMED_EVENT(NamedEvent.class),
-        FACES_BEHAVIOR(FacesBehavior.class),
-        FACES_BEHAVIOR_RENDERER(FacesBehaviorRenderer.class),
-        FACELETS_RESOURCE_RESOLVER(FaceletsResourceResolver.class);
-
-        private final Class<? extends Annotation> annotationClass;
-        private final DotName indexName;
-
-        private FacesAnnotation(Class<? extends Annotation> annotationClass) {
-            this.annotationClass = annotationClass;
-            this.indexName = DotName.createSimple(annotationClass.getName());
-        }
-    }
 
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

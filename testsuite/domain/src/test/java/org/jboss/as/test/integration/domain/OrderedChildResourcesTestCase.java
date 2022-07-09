@@ -59,10 +59,10 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
 
     @Test
     public void testOrderedChildResources() throws Exception {
-        final WildFlyManagedConfiguration masterConfig = createConfiguration("domain.xml", "host-master.xml", getClass().getSimpleName());
+        final WildFlyManagedConfiguration masterConfig = createConfiguration("domain.xml", "host-primary.xml", getClass().getSimpleName());
         final DomainLifecycleUtil masterUtils = new DomainLifecycleUtil(masterConfig);
-        final WildFlyManagedConfiguration slaveConfig = createConfiguration("domain.xml", "host-slave.xml", getClass().getSimpleName(),
-                "slave", slaveAddress, 19990);
+        final WildFlyManagedConfiguration slaveConfig = createConfiguration("domain.xml", "host-secondary.xml", getClass().getSimpleName(),
+                "secondary", slaveAddress, 19990);
         final DomainLifecycleUtil slaveUtils = new DomainLifecycleUtil(slaveConfig);
         try {
             masterUtils.start();

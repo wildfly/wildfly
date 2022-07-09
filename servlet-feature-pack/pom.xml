@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-feature-pack-parent</artifactId>
@@ -45,8 +45,19 @@
         <module>common</module>
         <module>ee-8-api</module>
         <module>galleon-common</module>
-        <module>galleon-feature-pack</module>
         <module>galleon-pruned</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-parent</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>

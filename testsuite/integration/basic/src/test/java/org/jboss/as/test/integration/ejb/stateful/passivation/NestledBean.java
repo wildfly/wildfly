@@ -12,7 +12,7 @@ import org.jboss.ejb3.annotation.Cache;
  * @author Stuart Douglas
  */
 @Stateful
-@Cache("passivating")
+@Cache("distributable")
 public class NestledBean {
 
     @PersistenceContext(type = PersistenceContextType.EXTENDED)

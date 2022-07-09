@@ -21,12 +21,15 @@
  */
 package org.jboss.as.jsf.deployment;
 
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -37,6 +40,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -71,7 +75,8 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
             DotName.createSimple("javax.faces.bean.ManagedBean"),
             DotName.createSimple("javax.faces.event.NamedEvent"),
             DotName.createSimple("javax.faces.application.ResourceDependencies"),
-            DotName.createSimple("javax.faces.application.ResourceDependency")};
+            DotName.createSimple("javax.faces.application.ResourceDependency"),
+            DotName.createSimple("javax.faces.annotation.ManagedProperty")};
 
 
     private static final DotName[] JSF_INTERFACES = {
@@ -105,6 +110,15 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
         if (!shouldJsfActivate(deploymentUnit, metaData)) {
             JsfVersionMarker.setVersion(deploymentUnit, JsfVersionMarker.NONE);
             return;
+        }
+
+        try {
+            // As per section 5.6 of the spec, mark deployment as requiring CDI.
+            deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
+                    .getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class)
+                    .markAsWeldDeployment(deploymentUnit);
+        } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
+            throw new DeploymentUnitProcessingException(e);
         }
 
         if (metaData == null) {

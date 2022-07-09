@@ -21,22 +21,20 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
+
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.util.CalendarUtil;
 import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.SingleValue;
-
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
 
 /**
  * Represents the value of a day in a month, constructed out of a {@link javax.ejb.ScheduleExpression#getDayOfMonth()}
@@ -75,7 +73,10 @@ import java.util.regex.Pattern;
  * @version $Revision: $
  */
 public class DayOfMonth extends IntegerBasedExpression {
-
+    /**
+     * Regex pattern for multiple space characters
+     */
+    public static final Pattern REGEX_SPACES = Pattern.compile("\\s+");
     /**
      * The maximum allowed value for the {@link DayOfMonth}
      */
@@ -91,39 +92,15 @@ public class DayOfMonth extends IntegerBasedExpression {
      * Internally, we map all allowed {@link String} values to their {@link Integer} equivalents.
      * This map holds the {@link String} name to {@link Integer} value mapping.
      */
-    private static final Map<String, Integer> DAY_OF_MONTH_ALIAS = new HashMap<String, Integer>();
+    private static final Map<String, Integer> ORDINAL_TO_WEEK_NUMBER_MAPPING = new HashMap<>(8);
 
     static {
-        DAY_OF_MONTH_ALIAS.put("sun", Calendar.SUNDAY);
-        DAY_OF_MONTH_ALIAS.put("mon", Calendar.MONDAY);
-        DAY_OF_MONTH_ALIAS.put("tue", Calendar.TUESDAY);
-        DAY_OF_MONTH_ALIAS.put("wed", Calendar.WEDNESDAY);
-        DAY_OF_MONTH_ALIAS.put("thu", Calendar.THURSDAY);
-        DAY_OF_MONTH_ALIAS.put("fri", Calendar.FRIDAY);
-        DAY_OF_MONTH_ALIAS.put("sat", Calendar.SATURDAY);
-
-    }
-
-    private static final Set<String> ORDINALS = new HashSet<String>();
-
-    private static final Map<String, Integer> ORDINAL_TO_WEEK_NUMBER_MAPPING = new HashMap<String, Integer>();
-
-    static {
-        ORDINALS.add("1st");
-        ORDINALS.add("2nd");
-        ORDINALS.add("3rd");
-        ORDINALS.add("4th");
-        ORDINALS.add("5th");
-        ORDINALS.add("last");
-
         ORDINAL_TO_WEEK_NUMBER_MAPPING.put("1st", 1);
         ORDINAL_TO_WEEK_NUMBER_MAPPING.put("2nd", 2);
         ORDINAL_TO_WEEK_NUMBER_MAPPING.put("3rd", 3);
         ORDINAL_TO_WEEK_NUMBER_MAPPING.put("4th", 4);
         ORDINAL_TO_WEEK_NUMBER_MAPPING.put("5th", 5);
-
     }
-
 
     /**
      * Creates a {@link DayOfMonth} by parsing the passed {@link String} <code>value</code>
@@ -184,23 +161,20 @@ public class DayOfMonth extends IntegerBasedExpression {
     @Override
     protected void assertValid(Integer value) throws IllegalArgumentException {
         if (value != null && value == 0) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.invalidValueDayOfMonth(value);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue(DayOfMonth.class.getSimpleName(), String.valueOf(value));
         }
         super.assertValid(value);
     }
 
     private boolean hasRelativeDayOfMonth() {
-        if (this.relativeValues.isEmpty()) {
-            return false;
-        }
-        return true;
+        return !this.relativeValues.isEmpty();
     }
 
     private SortedSet<Integer> getEligibleDaysOfMonth(Calendar cal) {
-        if (this.hasRelativeDayOfMonth() == false) {
+        if (!this.hasRelativeDayOfMonth()) {
             return this.absoluteValues;
         }
-        SortedSet<Integer> eligibleDaysOfMonth = new TreeSet<Integer>(this.absoluteValues);
+        SortedSet<Integer> eligibleDaysOfMonth = new TreeSet<>(this.absoluteValues);
         for (ScheduleValue relativeValue : this.relativeValues) {
             if (relativeValue instanceof SingleValue) {
                 SingleValue singleValue = (SingleValue) relativeValue;
@@ -212,7 +186,7 @@ public class DayOfMonth extends IntegerBasedExpression {
                 String start = range.getStart();
                 String end = range.getEnd();
 
-                Integer dayOfMonthStart = null;
+                Integer dayOfMonthStart;
                 // either start will be relative or end will be relative or both are relative
                 if (this.isRelativeValue(start)) {
                     dayOfMonthStart = this.getAbsoluteDayOfMonth(cal, start);
@@ -220,7 +194,7 @@ public class DayOfMonth extends IntegerBasedExpression {
                     dayOfMonthStart = this.parseInt(start);
                 }
 
-                Integer dayOfMonthEnd = null;
+                Integer dayOfMonthEnd;
                 if (this.isRelativeValue(end)) {
                     dayOfMonthEnd = this.getAbsoluteDayOfMonth(cal, end);
                 } else {
@@ -258,32 +232,39 @@ public class DayOfMonth extends IntegerBasedExpression {
         return eligibleDaysOfMonth;
     }
 
-    private int getAbsoluteDayOfMonth(Calendar cal, String relativeDayOfMonth) {
-        if (relativeDayOfMonth == null || relativeDayOfMonth.trim().isEmpty()) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.relativeDayOfMonthIsNull();
+    /**
+     * Gets the absolute day of month.
+     * @param cal the calendar
+     * @param trimmedRelativeDayOfMonth a non-null, trimmed, relative day of month
+     * @return the absolute day of month
+     */
+    private int getAbsoluteDayOfMonth(Calendar cal, String trimmedRelativeDayOfMonth) {
+        if (trimmedRelativeDayOfMonth.isEmpty()) {
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue(DayOfMonth.class.getSimpleName(), trimmedRelativeDayOfMonth);
         }
-        String trimmedRelativeDayOfMonth = relativeDayOfMonth.trim();
-        if (trimmedRelativeDayOfMonth.equalsIgnoreCase("last")) {
-            int lastDayOfCurrentMonth = CalendarUtil.getLastDateOfMonth(cal);
-            return lastDayOfCurrentMonth;
+        trimmedRelativeDayOfMonth = trimmedRelativeDayOfMonth.toLowerCase(Locale.ROOT);
+        if (trimmedRelativeDayOfMonth.equals("last")) {
+            return CalendarUtil.getLastDateOfMonth(cal);
         }
         if (this.isValidNegativeDayOfMonth(trimmedRelativeDayOfMonth)) {
-            Integer negativeRelativeDayOfMonth = Integer.parseInt(trimmedRelativeDayOfMonth);
+            int negativeRelativeDayOfMonth = Integer.parseInt(trimmedRelativeDayOfMonth);
             int lastDayOfCurrentMonth = CalendarUtil.getLastDateOfMonth(cal);
             return lastDayOfCurrentMonth + negativeRelativeDayOfMonth;
         }
-        if (this.isDayOfWeekBased(trimmedRelativeDayOfMonth)) {
-
-            String[] parts = trimmedRelativeDayOfMonth.split("\\s+");
+        String[] parts = splitDayOfWeekBased(trimmedRelativeDayOfMonth);
+        if (parts != null) {
             String ordinal = parts[0];
             String day = parts[1];
-            int dayOfWeek = DAY_OF_MONTH_ALIAS.get(day.toLowerCase(Locale.ENGLISH));
 
-            Integer date = null;
-            if (ordinal.equalsIgnoreCase("last")) {
+            // DAY_OF_WEEK_ALIAS value is 0-based, while Calendar.SUNDAY is 1,
+            // MONDAY is 2, so need to add 1 match Calendar's value.
+            int dayOfWeek = DayOfWeek.DAY_OF_WEEK_ALIAS.get(day) + 1;
+
+            Integer date;
+            if (ordinal.equals("last")) {
                 date = CalendarUtil.getDateOfLastDayOfWeekInMonth(cal, dayOfWeek);
             } else {
-                int weekNumber = ORDINAL_TO_WEEK_NUMBER_MAPPING.get(ordinal.toLowerCase(Locale.ENGLISH));
+                int weekNumber = ORDINAL_TO_WEEK_NUMBER_MAPPING.get(ordinal);
                 date = CalendarUtil.getNthDayOfMonth(cal, weekNumber, dayOfWeek);
             }
 
@@ -297,12 +278,12 @@ public class DayOfMonth extends IntegerBasedExpression {
 
             return date;
         }
-        throw EjbLogger.EJB3_TIMER_LOGGER.invalidRelativeValue(relativeDayOfMonth);
+        throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue(DayOfMonth.class.getSimpleName(), trimmedRelativeDayOfMonth);
     }
 
     private boolean isValidNegativeDayOfMonth(String dayOfMonth) {
         try {
-            Integer val = Integer.parseInt(dayOfMonth.trim());
+            int val = Integer.parseInt(dayOfMonth.trim());
             if (val <= -1 && val >= -7) {
                 return true;
             }
@@ -313,45 +294,44 @@ public class DayOfMonth extends IntegerBasedExpression {
 
     }
 
-    private boolean isDayOfWeekBased(String relativeVal) {
-        String trimmedVal = relativeVal.trim();
-        // one or more spaces (which includes tabs and other forms of space)
-        Pattern p = Pattern.compile("\\s+");
-        String[] relativeParts = p.split(trimmedVal);
+    /**
+     * Checks if a relative value is weekOfDay-based, and splits the passed
+     * {@code trimmedLowerCaseRelativeVal} to 2 parts.
+     * @param trimmedLowerCaseRelativeVal must be non-null, trimmed and lower case value
+     * @return 2 parts, or null if {@code trimmedLowerCaseRelativeVal} is not dayOfWeek-based
+     */
+    private String[] splitDayOfWeekBased(String trimmedLowerCaseRelativeVal) {
+        String[] relativeParts = REGEX_SPACES.split(trimmedLowerCaseRelativeVal);
         if (relativeParts == null) {
-            return false;
+            return null;
         }
         if (relativeParts.length != 2) {
-            return false;
+            return null;
         }
-        String ordinal = relativeParts[0];
-        String dayOfWeek = relativeParts[1];
-        if (ordinal == null || dayOfWeek == null) {
-            return false;
+        String lowerCaseOrdinal = relativeParts[0];
+        String lowerCaseDayOfWeek = relativeParts[1];
+        if (lowerCaseOrdinal == null || lowerCaseDayOfWeek == null) {
+            return null;
         }
-        String lowerCaseOrdinal = ordinal.toLowerCase(Locale.ENGLISH);
-        if (ORDINALS.contains(lowerCaseOrdinal) == false) {
-            return false;
+        if (!ORDINAL_TO_WEEK_NUMBER_MAPPING.containsKey(lowerCaseOrdinal) && !lowerCaseOrdinal.equals("last")) {
+            return null;
         }
-        String lowerCaseDayOfWeek = dayOfWeek.toLowerCase(Locale.ENGLISH);
-        if (DAY_OF_MONTH_ALIAS.containsKey(lowerCaseDayOfWeek) == false) {
-            return false;
+        if (!DayOfWeek.DAY_OF_WEEK_ALIAS.containsKey(lowerCaseDayOfWeek)) {
+            return null;
         }
-        return true;
+        return relativeParts;
     }
 
     @Override
     public boolean isRelativeValue(String value) {
-        if (value == null) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.relativeValueIsNull();
-        }
-        if (value.equalsIgnoreCase("last")) {
+        String lowerCaseValue = value.toLowerCase(Locale.ROOT);
+        if (lowerCaseValue.equals("last")) {
             return true;
         }
-        if (this.isValidNegativeDayOfMonth(value)) {
+        if (this.isValidNegativeDayOfMonth(lowerCaseValue)) {
             return true;
         }
-        if (this.isDayOfWeekBased(value)) {
+        if (this.splitDayOfWeekBased(lowerCaseValue) != null) {
             return true;
         }
         return false;
@@ -388,11 +368,12 @@ public class DayOfMonth extends IntegerBasedExpression {
         try {
             return super.parseInt(alias);
         } catch (NumberFormatException nfe) {
-            if (DAY_OF_MONTH_ALIAS != null) {
-                String lowerCaseAlias = alias.toLowerCase(Locale.ENGLISH);
-                return DAY_OF_MONTH_ALIAS.get(lowerCaseAlias);
-            }
+            String lowerCaseAlias = alias.toLowerCase(Locale.ENGLISH);
+            final Integer dayOfWeekInteger = DayOfWeek.DAY_OF_WEEK_ALIAS.get(lowerCaseAlias);
+
+            // DAY_OF_WEEK_ALIAS value is 0-based, while Calendar.SUNDAY is 1,
+            // MONDAY is 2, so need to add 1 match Calendar's value.
+            return dayOfWeekInteger == null ? null : dayOfWeekInteger + 1;
         }
-        return null;
     }
 }

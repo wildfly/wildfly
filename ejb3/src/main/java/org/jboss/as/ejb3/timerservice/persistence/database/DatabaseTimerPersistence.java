@@ -61,6 +61,7 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+import javax.ejb.ScheduleExpression;
 import javax.sql.DataSource;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -129,9 +130,24 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private MarshallingConfiguration configuration;
     private RefreshTask refreshTask;
 
+    /** database values */
+    private static final String POSTGRES = "postgres";
+    private static final String POSTGRESQL = "postgresql";
+    private static final String MYSQL = "mysql";
+    private static final String MARIADB = "mariadb";
+    private static final String DB2 = "db2";
+    private static final String HSQL = "hsql";
+    private static final String HYPERSONIC = "hypersonic";
+    private static final String H2 = "h2";
+    private static final String ORACLE = "oracle";
+    private static final String MSSQL = "mssql";
+    private static final String SYBASE = "sybase";
+    private static final String JCONNECT = "jconnect";
+
     /** Names for the different SQL commands stored in the properties*/
     private static final String CREATE_TABLE = "create-table";
     private static final String CREATE_TIMER = "create-timer";
+    private static final String CREATE_AUTO_TIMER = "create-auto-timer";
     private static final String UPDATE_TIMER = "update-timer";
     private static final String LOAD_ALL_TIMERS = "load-all-timers";
     private static final String LOAD_TIMER = "load-timer";
@@ -216,6 +232,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private void loadSqlProperties() throws StartException {
         final InputStream stream = DatabaseTimerPersistence.class.getClassLoader().getResourceAsStream("timer-sql.properties");
         sql = new Properties();
+
         try {
             sql.load(stream);
         } catch (IOException e) {
@@ -223,6 +240,17 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         } finally {
             safeClose(stream);
         }
+
+        // Update the create-auto-timer statements for DB specifics
+        switch (database) {
+            case DB2:
+                adjustCreateAutoTimerStatement("FROM SYSIBM.SysDummy1 ");
+            break;
+            case ORACLE:
+                adjustCreateAutoTimerStatement("FROM DUAL ");
+            break;
+        }
+
         final Iterator<Map.Entry<Object, Object>> iterator = sql.entrySet().iterator();
         while (iterator.hasNext()) {
             final Map.Entry<Object, Object> next = iterator.next();
@@ -291,28 +319,38 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
         if (name != null) {
             name = name.toLowerCase(Locale.ROOT);
-            if (name.contains("postgres")) {
-               unified = "postgresql";
-            } else if (name.contains("mysql")) {
-                unified = "mysql";
-            } else if (name.contains("mariadb")) {
-                unified = "mariadb";
-            } else if (name.contains("db2")) {
-                unified = "db2";
-            } else if (name.contains("hsql") || name.contains("hypersonic")) {
-                unified = "hsql";
-            } else if (name.contains("h2")) {
-                unified = "h2";
-            } else if (name.contains("oracle")) {
-                unified = "oracle";
+            if (name.contains(POSTGRES)) {
+               unified = POSTGRESQL;
+            } else if (name.contains(MYSQL)) {
+                unified = MYSQL;
+            } else if (name.contains(MARIADB)) {
+                unified = MARIADB;
+            } else if (name.contains(DB2)) {
+                unified = DB2;
+            } else if (name.contains(HSQL) || name.contains(HYPERSONIC)) {
+                unified = HSQL;
+            } else if (name.contains(H2)) {
+                unified = H2;
+            } else if (name.contains(ORACLE)) {
+                unified = ORACLE;
             } else if (MSSQL_PATTERN.matcher(name).find()) {
-                unified = "mssql";
-            } else if (name.contains("sybase") || name.contains("jconnect")) {
-                unified = "sybase";
+                unified = MSSQL;
+            } else if (name.contains(SYBASE) || name.contains(JCONNECT)) {
+                unified = SYBASE;
             }
          }
         EjbLogger.EJB3_TIMER_LOGGER.debugf("Check dialect for '%s', result is '%s'", name, unified);
         return unified;
+    }
+
+    private void adjustCreateAutoTimerStatement(final String fromDummyTable) {
+        final String insertQuery = sql.getProperty(CREATE_AUTO_TIMER);
+        final int whereNotExists = insertQuery.indexOf("WHERE NOT EXISTS");
+        if (whereNotExists > 0) {
+            StringBuilder sb = new StringBuilder(insertQuery.substring(0, whereNotExists));
+            sb.append(fromDummyTable).append("WHERE NOT EXISTS").append(insertQuery.substring(whereNotExists + 16));
+            sql.setProperty(CREATE_AUTO_TIMER, sb.toString());
+        }
     }
 
     /**
@@ -409,6 +447,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             if(!knownTimerIds.containsKey(timedObjectId)) {
                 throw EjbLogger.EJB3_TIMER_LOGGER.timerCannotBeAdded(timerEntity);
             }
+        }
+
+        if (timerEntity.isAutoTimer()) {
+            addAutoTimer((CalendarTimer) timerEntity);
+            return;
         }
 
         String createTimer = sql.getProperty(CREATE_TIMER);
@@ -664,16 +707,19 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             CalendarTimer.Builder cb = CalendarTimer.builder();
             builder = cb;
             //set calendar timer specifics first
-            cb.setScheduleExprSecond(resultSet.getString(10));
-            cb.setScheduleExprMinute(resultSet.getString(11));
-            cb.setScheduleExprHour(resultSet.getString(12));
-            cb.setScheduleExprDayOfWeek(resultSet.getString(13));
-            cb.setScheduleExprDayOfMonth(resultSet.getString(14));
-            cb.setScheduleExprMonth(resultSet.getString(15));
-            cb.setScheduleExprYear(resultSet.getString(16));
-            cb.setScheduleExprStartDate(stringAsSchedulerDate(resultSet.getString(17), timerId));
-            cb.setScheduleExprEndDate(stringAsSchedulerDate(resultSet.getString(18), timerId));
-            cb.setScheduleExprTimezone(resultSet.getString(19));
+            final ScheduleExpression scheduleExpression = new ScheduleExpression();
+            scheduleExpression.second(resultSet.getString(10));
+            scheduleExpression.minute(resultSet.getString(11));
+            scheduleExpression.hour(resultSet.getString(12));
+            scheduleExpression.dayOfWeek(resultSet.getString(13));
+            scheduleExpression.dayOfMonth(resultSet.getString(14));
+            scheduleExpression.month(resultSet.getString(15));
+            scheduleExpression.year(resultSet.getString(16));
+            scheduleExpression.start(stringAsSchedulerDate(resultSet.getString(17), timerId));
+            scheduleExpression.end(stringAsSchedulerDate(resultSet.getString(18), timerId));
+            scheduleExpression.timezone(resultSet.getString(19));
+
+            cb.setScheduleExpression(scheduleExpression);
             cb.setAutoTimer(resultSet.getBoolean(20));
 
             final String clazz = resultSet.getString(21);
@@ -699,7 +745,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         builder.setRepeatInterval(resultSet.getLong(4));
         builder.setNextDate(resultSet.getTimestamp(5));
         builder.setPreviousRun(resultSet.getTimestamp(6));
-        builder.setPrimaryKey(deSerialize(resultSet.getString(7)));
+//        builder.setPrimaryKey(deSerialize(resultSet.getString(7)));
         builder.setInfo((Serializable) deSerialize(resultSet.getString(8)));
         builder.setTimerState(timerState != null ? timerState : TimerState.valueOf(resultSet.getString(9)));
         builder.setPersistent(true);
@@ -726,7 +772,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         statement.setLong(4, timerEntity.getInterval());
         statement.setTimestamp(5, timestamp(timerEntity.getNextExpiration()));
         statement.setTimestamp(6, timestamp(timerEntity.getPreviousRun()));
-        statement.setString(7, serialize((Serializable) timerEntity.getPrimaryKey()));
+        statement.setString(7, null);
         statement.setString(8, serialize(timerEntity.getTimerInfo()));
         statement.setString(9, timerEntity.getState().name());
 
@@ -744,18 +790,12 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             statement.setString(17, schedulerDateAsString(c.getScheduleExpression().getStart()));
             statement.setString(18, schedulerDateAsString(c.getScheduleExpression().getEnd()));
             statement.setString(19, c.getScheduleExpression().getTimezone());
-            statement.setBoolean(20, c.isAutoTimer());
-            if (c.isAutoTimer()) {
-                final Method timeoutMethod = c.getTimeoutMethod();
-                statement.setString(21, timeoutMethod.getDeclaringClass().getName());
-                statement.setString(22, timeoutMethod.getName());
-                String paramsToPersist = timeoutMethod.getParameterCount() == 0 ? null : TIMER_PARAM_1;
-                statement.setString(23, paramsToPersist);
-            } else {
-                statement.setString(21, null);
-                statement.setString(22, null);
-                statement.setString(23, null);
-            }
+            statement.setBoolean(20, false);
+
+            statement.setString(21, null);
+            statement.setString(22, null);
+            statement.setString(23, null);
+
             statement.setBoolean(24, true);
         } else {
             statement.setString(10, null);
@@ -776,6 +816,86 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         }
         statement.setString(25, partition);
         setNodeName(timerEntity.getState(), statement, 26);
+    }
+
+    private void addAutoTimer(final CalendarTimer timer) {
+        String createTimer = sql.getProperty(CREATE_AUTO_TIMER);
+        Connection connection = null;
+        PreparedStatement statement = null;
+        final String timerInfoString = serialize(timer.getTimerInfo());
+        final Method timeoutMethod = timer.getTimeoutMethod();
+        final String timeoutMethodClassName = timeoutMethod.getDeclaringClass().getName();
+        final String timeoutMethodParam = timeoutMethod.getParameterCount() == 0 ? null : TIMER_PARAM_1;
+        final ScheduleExpression exp = timer.getScheduleExpression();
+        final String startDateString = schedulerDateAsString(exp.getStart());
+        final String endDateString = schedulerDateAsString(exp.getEnd());
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.prepareStatement(createTimer);
+
+            // insert values
+            statement.setString(1, timer.getId());
+            statement.setString(2, timer.getTimedObjectId());
+            statement.setTimestamp(3, timestamp(timer.getNextExpiration()));
+            statement.setString(4, timerInfoString);
+            statement.setString(5, exp.getSecond());
+            statement.setString(6, exp.getMinute());
+            statement.setString(7, exp.getHour());
+            statement.setString(8, exp.getDayOfWeek());
+            statement.setString(9, exp.getDayOfMonth());
+            statement.setString(10, exp.getMonth());
+            statement.setString(11, exp.getYear());
+            statement.setString(12, startDateString);
+            statement.setString(13, endDateString);
+            statement.setString(14, exp.getTimezone());
+            statement.setBoolean(15, true);
+            statement.setString(16, timeoutMethodClassName);
+            statement.setString(17, timeoutMethod.getName());
+            statement.setString(18, timeoutMethodParam);
+            statement.setBoolean(19, true);
+            statement.setString(20, partition);
+
+            // where clause
+            statement.setString(21, timer.getTimedObjectId());
+            statement.setString(22, exp.getSecond());
+            statement.setString(23, exp.getMinute());
+            statement.setString(24, exp.getHour());
+            statement.setString(25, exp.getDayOfWeek());
+            statement.setString(26, exp.getDayOfMonth());
+            statement.setString(27, exp.getMonth());
+            statement.setString(28, exp.getYear());
+
+            statement.setString(29, startDateString);
+            statement.setString(30, startDateString);
+
+            statement.setString(31, endDateString);
+            statement.setString(32, endDateString);
+
+            statement.setString(33, exp.getTimezone());
+            statement.setString(34, exp.getTimezone());
+
+            statement.setString(35, timeoutMethodClassName);
+            statement.setString(36, timeoutMethod.getName());
+
+            statement.setString(37, timeoutMethodParam);
+            statement.setString(38, timeoutMethodParam);
+
+            statement.setString(39, partition);
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows < 1) {
+                timer.setTimerState(TimerState.CANCELED, null);
+            } else {
+                synchronized (this) {
+                    knownTimerIds.get(timer.getTimedObjectId()).add(timer.getId());
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            safeClose(statement);
+            safeClose(connection);
+        }
     }
 
     /**

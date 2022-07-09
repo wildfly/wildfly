@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:6.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:6.1">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -39,7 +39,7 @@
             <!--Optional:-->
             <is-same-rm-override>true</is-same-rm-override>
             <!--Optional:-->
-            <interleaving />
+            <interleaving>false</interleaving>
             <!--Optional:-->
             <no-tx-separate-pools />
             <!--Optional:-->
@@ -97,4 +97,5 @@
       </admin-objects>
     </resource-adapter>
   </resource-adapters>
+  <report-directory path="/tmp"/>
 </subsystem>

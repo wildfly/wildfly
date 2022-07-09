@@ -67,12 +67,10 @@ import org.wildfly.extension.requestcontroller.RequestController;
 public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
     private final boolean rcPresent;
-    private final boolean legacySecurityPresent;
     private final ContextClassLoaderJobOperatorContextSelector selector;
 
-    public BatchEnvironmentProcessor(final boolean rcPresent, final boolean legacySecurityPresent, final ContextClassLoaderJobOperatorContextSelector selector) {
+    public BatchEnvironmentProcessor(final boolean rcPresent, final ContextClassLoaderJobOperatorContextSelector selector) {
         this.rcPresent = rcPresent;
-        this.legacySecurityPresent = legacySecurityPresent;
         this.selector = selector;
     }
 
@@ -99,6 +97,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             String dataSourceName = null;
             String jobExecutorName = null;
             Boolean restartJobsOnResume = null;
+            Integer executionRecordsLimit = null;
 
             // Check for a deployment descriptor
             BatchEnvironmentMetaData metaData = deploymentUnit.getAttachment(BatchAttachments.BATCH_ENVIRONMENT_META_DATA);
@@ -115,6 +114,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 dataSourceName = metaData.getDataSourceName();
                 jobExecutorName = metaData.getExecutorName();
                 restartJobsOnResume = metaData.getRestartJobsOnResume();
+                executionRecordsLimit = metaData.getExecutionRecordsLimit();
             }
 
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
@@ -127,7 +127,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             // Create the batch environment
             final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             final NamespaceContextSelector namespaceContextSelector = eeModuleDescription == null ? null : eeModuleDescription.getNamespaceContextSelector();
-            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobXmlResolver, deploymentName, namespaceContextSelector, legacySecurityPresent);
+            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobXmlResolver, deploymentName, namespaceContextSelector);
             final ServiceBuilder<SecurityAwareBatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
 
             // Add a dependency to the thread-pool
@@ -161,7 +161,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), jobRepositoryName), JobRepository.class, service.getJobRepositoryInjector());
             } else if (dataSourceName != null) {
                 // Register a jdbc job repository with data-source
-                final JdbcJobRepositoryService jdbcJobRepositoryService = new JdbcJobRepositoryService();
+                final JdbcJobRepositoryService jdbcJobRepositoryService = new JdbcJobRepositoryService(executionRecordsLimit);
                 final ServiceName jobRepositoryServiceName = support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), deploymentName);
                 final ServiceBuilder<JobRepository> jobRepositoryServiceBuilder =
                         Services.addServerExecutorDependency(serviceTarget.addService(jobRepositoryServiceName, jdbcJobRepositoryService),

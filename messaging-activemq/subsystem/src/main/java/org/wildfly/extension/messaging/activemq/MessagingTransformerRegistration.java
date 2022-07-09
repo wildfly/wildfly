@@ -27,10 +27,28 @@ import static org.jboss.as.controller.transform.description.RejectAttributeCheck
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.IN_VM_CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_CONNECTOR;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_MASTER_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_PRIMARY_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_SECONDARY_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_SLAVE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_QUEUE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_TOPIC_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.QUEUE_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_COLOCATED_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_MASTER_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_PRIMARY_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_SECONDARY_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_SLAVE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SERVER_PATH;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.SHARED_STORE_COLOCATED_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.SHARED_STORE_MASTER_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.SHARED_STORE_PRIMARY_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.SHARED_STORE_SECONDARY_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.SHARED_STORE_SLAVE_PATH;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -70,7 +88,8 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
-        registerTransformers_WF_25(builder.createBuilder(MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_13_0_0));
+        registerTransformers_WF_27(builder.createBuilder(MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_13_1_0));
+        registerTransformers_WF_26_1(builder.createBuilder(MessagingExtension.VERSION_13_1_0, MessagingExtension.VERSION_13_0_0));
         registerTransformers_WF_23(builder.createBuilder(MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_12_0_0));
         registerTransformers_WF_22(builder.createBuilder(MessagingExtension.VERSION_12_0_0, MessagingExtension.VERSION_11_0_0));
         registerTransformers_WF_21(builder.createBuilder(MessagingExtension.VERSION_11_0_0, MessagingExtension.VERSION_10_0_0));
@@ -88,14 +107,54 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
             MessagingExtension.VERSION_3_0_0, MessagingExtension.VERSION_4_0_0, MessagingExtension.VERSION_5_0_0,
             MessagingExtension.VERSION_6_0_0, MessagingExtension.VERSION_7_0_0, MessagingExtension.VERSION_8_0_0,
             MessagingExtension.VERSION_9_0_0, MessagingExtension.VERSION_10_0_0, MessagingExtension.VERSION_11_0_0,
-            MessagingExtension.VERSION_12_0_0, MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_14_0_0});
+            MessagingExtension.VERSION_12_0_0, MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_13_1_0,
+            MessagingExtension.VERSION_14_0_0});
     }
 
-    private static void registerTransformers_WF_25(ResourceTransformationDescriptionBuilder subsystem) {
-        ResourceTransformationDescriptionBuilder bridge = subsystem
-                .addChildResource(MessagingExtension.SERVER_PATH)
-                .addChildResource(MessagingExtension.BRIDGE_PATH);
+    private static void registerTransformers_WF_27(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder externaljmsqueue = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH);
+        rejectDefinedAttributeWithDefaultValue(externaljmsqueue, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
+        ResourceTransformationDescriptionBuilder externaljmstopic = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH);
+        rejectDefinedAttributeWithDefaultValue(externaljmstopic, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
+
+
+        ResourceTransformationDescriptionBuilder externalConnectionFactory = subsystem.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
+        renameAttribute(externalConnectionFactory, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST);
+        renameAttribute(externalConnectionFactory, DESERIALIZATION_WHITELIST, DESERIALIZATION_ALLOWLIST);
+
+        ResourceTransformationDescriptionBuilder pooledExternalConnectionFactory = subsystem.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
+        renameAttribute(pooledExternalConnectionFactory, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST);
+        renameAttribute(pooledExternalConnectionFactory, DESERIALIZATION_WHITELIST, DESERIALIZATION_ALLOWLIST);
+
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
+        ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
         rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.ROUTING_TYPE);
+
+        ResourceTransformationDescriptionBuilder connectionFactory = server.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
+        renameAttribute(connectionFactory, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST);
+        renameAttribute(connectionFactory, DESERIALIZATION_WHITELIST, DESERIALIZATION_ALLOWLIST);
+
+        ResourceTransformationDescriptionBuilder pooledConnectionFactory = server.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
+        renameAttribute(pooledConnectionFactory, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST);
+        renameAttribute(pooledConnectionFactory, DESERIALIZATION_WHITELIST, DESERIALIZATION_ALLOWLIST);
+
+        server.addChildRedirection(REPLICATION_PRIMARY_PATH, REPLICATION_MASTER_PATH);
+        server.addChildRedirection(REPLICATION_SECONDARY_PATH, REPLICATION_SLAVE_PATH);
+        server.addChildRedirection(SHARED_STORE_PRIMARY_PATH, SHARED_STORE_MASTER_PATH);
+        server.addChildRedirection(SHARED_STORE_SECONDARY_PATH, SHARED_STORE_SLAVE_PATH);
+
+        ResourceTransformationDescriptionBuilder colocatedSharedStore = server.addChildResource(SHARED_STORE_COLOCATED_PATH);
+        colocatedSharedStore.addChildRedirection(CONFIGURATION_PRIMARY_PATH, CONFIGURATION_MASTER_PATH);
+        colocatedSharedStore.addChildRedirection(CONFIGURATION_SECONDARY_PATH, CONFIGURATION_SLAVE_PATH);
+        ResourceTransformationDescriptionBuilder colocatedReplication = server.addChildResource(REPLICATION_COLOCATED_PATH);
+        colocatedReplication.addChildRedirection(CONFIGURATION_PRIMARY_PATH, CONFIGURATION_MASTER_PATH);
+        colocatedReplication.addChildRedirection(CONFIGURATION_SECONDARY_PATH, CONFIGURATION_SLAVE_PATH);
+    }
+
+    private static void registerTransformers_WF_26_1(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder server = subsystem
+                .addChildResource(MessagingExtension.SERVER_PATH);
+        rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD);
     }
 
     private static void registerTransformers_WF_23(ResourceTransformationDescriptionBuilder subsystem) {
@@ -345,13 +404,14 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         server.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.ALWAYS, ServerDefinition.CREDENTIAL_REFERENCE)
                 .addRejectCheck(DEFINED, ServerDefinition.CREDENTIAL_REFERENCE);
-        ResourceTransformationDescriptionBuilder replicationMaster = server.addChildResource(MessagingExtension.REPLICATION_MASTER_PATH);
-        replicationMaster.getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder replicationPrimary = server.addChildResource(MessagingExtension.REPLICATION_MASTER_PATH);
+        replicationPrimary.getAttributeBuilder()
                 // reject if the attribute is undefined as its default value was changed from false to true in EAP 7.1.0
                 .addRejectCheck(UNDEFINED, HAAttributes.CHECK_FOR_LIVE_SERVER);
-        ResourceTransformationDescriptionBuilder replicationColocated = server.addChildResource(MessagingExtension.REPLICATION_COLOCATED_PATH);
-        ResourceTransformationDescriptionBuilder masterForReplicationColocated = replicationColocated.addChildResource(MessagingExtension.CONFIGURATION_MASTER_PATH);
-        masterForReplicationColocated.getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder primaryForReplicationColocated = server
+                .addChildResource(MessagingExtension.REPLICATION_COLOCATED_PATH)
+                .addChildResource(MessagingExtension.CONFIGURATION_MASTER_PATH);
+        primaryForReplicationColocated.getAttributeBuilder()
                 // reject if the attribute is undefined as its default value was changed from false to true in EAP 7.1.0
                 .addRejectCheck(UNDEFINED, HAAttributes.CHECK_FOR_LIVE_SERVER);
         ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
@@ -394,5 +454,11 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         builder.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, attrs)
                 .addRejectCheck(DEFINED, attrs);
+    }
+
+    private static void renameAttribute(ResourceTransformationDescriptionBuilder resourceRegistry, AttributeDefinition attribute, AttributeDefinition newAttribute) {
+        resourceRegistry.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, newAttribute)
+                .addRename(newAttribute, attribute.getName());
     }
 }

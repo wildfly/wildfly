@@ -138,6 +138,9 @@ public class SocketBroadcastGroupAdd extends AbstractAddStepHandler {
     static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final String name, final BroadcastGroupConfiguration config, final SocketBinding socketBinding) throws Exception {
 
         final String localAddress = socketBinding.getAddress().getHostAddress();
+        if (socketBinding.getMulticastAddress() == null) {
+            throw MessagingLogger.ROOT_LOGGER.socketBindingMulticastNotSet("socket-broadcast-group", name, socketBinding.getName());
+        }
         final String groupAddress = socketBinding.getMulticastAddress().getHostAddress();
         final int localPort = socketBinding.getPort();
         final int groupPort = socketBinding.getMulticastPort();

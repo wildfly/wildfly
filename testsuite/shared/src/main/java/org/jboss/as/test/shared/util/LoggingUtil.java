@@ -20,6 +20,7 @@ package org.jboss.as.test.shared.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -99,7 +100,7 @@ public class LoggingUtil {
     @SafeVarargs
     private static boolean isMessageInLogFile(Path logPath, String logMessage, long offset, Predicate<String>... filters) throws Exception{
         boolean found = false;
-        try (BufferedReader fileReader = Files.newBufferedReader(logPath)) {
+        try (BufferedReader fileReader = Files.newBufferedReader(logPath, StandardCharsets.UTF_8)) {
             String line = "";
             long count = 0;
             while ((line = fileReader.readLine()) != null) {
@@ -143,7 +144,7 @@ public class LoggingUtil {
     }
 
     private static void dumpTestLog(Path logPath) throws IOException {
-        try (BufferedReader fileReader = Files.newBufferedReader(logPath)) {
+        try (BufferedReader fileReader = Files.newBufferedReader(logPath, StandardCharsets.UTF_8)) {
             String line = "";
             while ((line = fileReader.readLine()) != null) {
                 System.out.println(line);

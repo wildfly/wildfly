@@ -32,7 +32,6 @@
 
     <dependencies>
         <module name="org.slf4j"/>
-        <module name="org.apache.log4j"/>
         <module name="org.apache.kafka.client"/>
         <module name="io.vertx.core"/>
     </dependencies>

@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-infinispan-extension</artifactId>
@@ -46,6 +46,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ee-infinispan</artifactId>
         </dependency>
@@ -55,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-client</artifactId>
+            <artifactId>wildfly-clustering-infinispan-client-service</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -63,7 +68,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-spi</artifactId>
+            <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -71,7 +80,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-spi</artifactId>
+            <artifactId>wildfly-clustering-singleton-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-server-service</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -90,6 +103,10 @@
             <artifactId>infinispan-cachestore-remote</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-query-dsl</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.infinispan.protostream</groupId>
             <artifactId>protostream</artifactId>
         </dependency>
@@ -100,7 +117,7 @@
         <dependency>
             <!-- This is only required for the InfinispanExtension to initialize Netty's InternalLoggerFactory -->
             <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <artifactId>netty-common</artifactId>
         </dependency>
         <dependency>
             <groupId>io.reactivex.rxjava3</groupId>

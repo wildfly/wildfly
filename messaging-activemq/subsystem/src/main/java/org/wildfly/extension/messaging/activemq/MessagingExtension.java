@@ -47,15 +47,22 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.LEGACY_C
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LIVE_ONLY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.MASTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAGING_DIRECTORY;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.PRIMARY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.QUEUE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_COLOCATED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_MASTER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_PRIMARY;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_SECONDARY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_SLAVE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ROLE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.RUNTIME_QUEUE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SECONDARY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SECURITY_SETTING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_COLOCATED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_MASTER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_PRIMARY;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_SECONDARY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_SLAVE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SLAVE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SOCKET_BROADCAST_GROUP;
@@ -109,6 +116,14 @@ import io.netty.util.internal.logging.JdkLoggerFactory;
  *       <li>Management model: 14.0.0</li>
  *     </ul>
  *   </dd>
+ * <dt>WildFly 26.1</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging-activemq:13.1</li>
+ *       <li>Management model: 13.1.0</li>
+ *     </ul>
+ *   </dd>
+ * <dt>
  * <dt>WildFly 23</dt>
  *   <dd>
  *     <ul>
@@ -215,11 +230,18 @@ public class MessagingExtension implements Extension {
     public static final PathElement LIVE_ONLY_PATH = pathElement(HA_POLICY, LIVE_ONLY);
     public static final PathElement REPLICATION_MASTER_PATH = pathElement(HA_POLICY, REPLICATION_MASTER);
     public static final PathElement REPLICATION_SLAVE_PATH = pathElement(HA_POLICY, REPLICATION_SLAVE);
+    public static final PathElement REPLICATION_PRIMARY_PATH = pathElement(HA_POLICY, REPLICATION_PRIMARY);
+    public static final PathElement REPLICATION_SECONDARY_PATH = pathElement(HA_POLICY, REPLICATION_SECONDARY);
     public static final PathElement SHARED_STORE_MASTER_PATH = pathElement(HA_POLICY, SHARED_STORE_MASTER);
     public static final PathElement SHARED_STORE_SLAVE_PATH = pathElement(HA_POLICY, SHARED_STORE_SLAVE);
+    public static final PathElement SHARED_STORE_PRIMARY_PATH = pathElement(HA_POLICY, SHARED_STORE_PRIMARY);
+    public static final PathElement SHARED_STORE_SECONDARY_PATH = pathElement(HA_POLICY, SHARED_STORE_SECONDARY);
+    public static final PathElement SHARED_STORE_COLOCATED_PATH = pathElement(HA_POLICY, SHARED_STORE_COLOCATED);
     public static final PathElement REPLICATION_COLOCATED_PATH = pathElement(HA_POLICY, REPLICATION_COLOCATED);
     public static final PathElement CONFIGURATION_MASTER_PATH = pathElement(CONFIGURATION, MASTER);
     public static final PathElement CONFIGURATION_SLAVE_PATH = pathElement(CONFIGURATION, SLAVE);
+    public static final PathElement CONFIGURATION_PRIMARY_PATH = pathElement(CONFIGURATION, PRIMARY);
+    public static final PathElement CONFIGURATION_SECONDARY_PATH = pathElement(CONFIGURATION, SECONDARY);
     static final PathElement BINDINGS_DIRECTORY_PATH = pathElement(PATH, BINDINGS_DIRECTORY);
     static final PathElement JOURNAL_DIRECTORY_PATH = pathElement(PATH, JOURNAL_DIRECTORY);
     static final PathElement PAGING_DIRECTORY_PATH = pathElement(PATH, PAGING_DIRECTORY);
@@ -258,6 +280,7 @@ public class MessagingExtension implements Extension {
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     protected static final ModelVersion VERSION_14_0_0 = ModelVersion.create(14, 0, 0);
+    protected static final ModelVersion VERSION_13_1_0 = ModelVersion.create(13, 1, 0);
     protected static final ModelVersion VERSION_13_0_0 = ModelVersion.create(13, 0, 0);
     protected static final ModelVersion VERSION_12_0_0 = ModelVersion.create(12, 0, 0);
     protected static final ModelVersion VERSION_11_0_0 = ModelVersion.create(11, 0, 0);
@@ -368,13 +391,13 @@ public class MessagingExtension implements Extension {
 
         if (registerRuntimeOnly) {
             final ManagementResourceRegistration deployment = subsystemRegistration.registerDeploymentModel(new SimpleResourceDefinition(
-                    new Parameters(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployed")).setFeature(false)));
+                    new Parameters(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployed")).setFeature(false).setRuntime()));
             deployment.registerSubModel(new ExternalConnectionFactoryDefinition(registerRuntimeOnly));
             deployment.registerSubModel(ExternalPooledConnectionFactoryDefinition.DEPLOYMENT_INSTANCE);
             deployment.registerSubModel(new ExternalJMSQueueDefinition(registerRuntimeOnly));
             deployment.registerSubModel(new ExternalJMSTopicDefinition(registerRuntimeOnly));
             final ManagementResourceRegistration deployedServer = deployment.registerSubModel(new SimpleResourceDefinition(
-                    new Parameters(SERVER_PATH, getResourceDescriptionResolver(SERVER)).setFeature(false)));
+                    new Parameters(SERVER_PATH, getResourceDescriptionResolver(SERVER)).setFeature(false).setRuntime()));
             deployedServer.registerSubModel(new JMSQueueDefinition(true, registerRuntimeOnly));
             deployedServer.registerSubModel(new JMSTopicDefinition(true, registerRuntimeOnly));
             deployedServer.registerSubModel(PooledConnectionFactoryDefinition.DEPLOYMENT_INSTANCE);
@@ -398,6 +421,7 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_11_0.NAMESPACE, MessagingSubsystemParser_11_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_12_0.NAMESPACE, MessagingSubsystemParser_12_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_13_0.NAMESPACE, MessagingSubsystemParser_13_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_13_1.NAMESPACE, MessagingSubsystemParser_13_1::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_14_0.NAMESPACE, CURRENT_PARSER);
     }
 }

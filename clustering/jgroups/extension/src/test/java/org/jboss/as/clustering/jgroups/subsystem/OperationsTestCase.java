@@ -131,36 +131,6 @@ public class OperationsTestCase extends OperationTestCaseBase {
         result = services.executeOperation(getTransportGetPropertyOperation("maximal", "TCP", "enable_bundling"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
-
-        // Validate that add/read/write/remove via legacy property resource
-        result = services.executeOperation(getTransportPropertyAddOperation("maximal", "TCP", "shared", "false"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-
-        result = services.executeOperation(getTransportPropertyReadOperation("maximal", "TCP", "shared"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("false", result.get(RESULT).asString());
-
-        result = services.executeOperation(getTransportGetPropertyOperation("maximal", "TCP", "shared"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("false", result.get(RESULT).asString());
-
-        result = services.executeOperation(getTransportPropertyWriteOperation("maximal", "TCP", "shared", "true"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-
-        result = services.executeOperation(getTransportPropertyReadOperation("maximal", "TCP", "shared"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("true", result.get(RESULT).asString());
-
-        result = services.executeOperation(getTransportGetPropertyOperation("maximal", "TCP", "shared"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("true", result.get(RESULT).asString());
-
-        result = services.executeOperation(getTransportPropertyRemoveOperation("maximal", "TCP", "shared"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-
-        result = services.executeOperation(getTransportGetPropertyOperation("maximal", "TCP", "shared"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
     }
 
     @Test
@@ -210,36 +180,6 @@ public class OperationsTestCase extends OperationTestCaseBase {
 
         // re-read the property
         result = services.executeOperation(getProtocolGetPropertyOperation("maximal", "MPING", "name"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        // Validate property add/read/write/remove via legacy property resource
-        result = services.executeOperation(getProtocolPropertyAddOperation("maximal", "MPING", "async_discovery", "false"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-
-        result = services.executeOperation(getProtocolPropertyReadOperation("maximal", "MPING", "async_discovery"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("false", result.get(RESULT).asString());
-
-        result = services.executeOperation(getProtocolGetPropertyOperation("maximal", "MPING", "async_discovery"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("false", result.get(RESULT).asString());
-
-        result = services.executeOperation(getProtocolPropertyWriteOperation("maximal", "MPING", "async_discovery", "true"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-
-        result = services.executeOperation(getProtocolPropertyReadOperation("maximal", "MPING", "async_discovery"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("true", result.get(RESULT).asString());
-
-        result = services.executeOperation(getProtocolGetPropertyOperation("maximal", "MPING", "async_discovery"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("true", result.get(RESULT).asString());
-
-        result = services.executeOperation(getProtocolPropertyRemoveOperation("maximal", "MPING", "async_discovery"));
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-
-        result = services.executeOperation(getProtocolGetPropertyOperation("maximal", "MPING", "async_discovery"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
     }

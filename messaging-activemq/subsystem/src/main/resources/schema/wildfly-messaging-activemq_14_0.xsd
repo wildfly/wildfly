@@ -88,8 +88,8 @@
                         <xs:attribute name="scheduled-thread-pool-max-size" type="xs:int" use="optional" />
                         <xs:attribute name="thread-pool-max-size" type="xs:int" use="optional" />
                         <xs:attribute name="group-id" type="xs:string" use="optional" />
-                        <xs:attribute name="deserialization-white-list" type="stringList" use="optional" />
-                        <xs:attribute name="deserialization-black-list" type="stringList" use="optional" />
+                        <xs:attribute name="deserialization-allow-list" type="stringList" use="optional" />
+                        <xs:attribute name="deserialization-block-list" type="stringList" use="optional" />
                         <xs:attribute name="initial-message-packet-size" type="xs:int" use="optional" />
                     </xs:complexType>
                 </xs:element>
@@ -148,12 +148,14 @@
                     <xs:complexType>
                         <xs:attribute name="name" type="xs:string" use="required" />
                         <xs:attribute name="entries" type="stringList" use="required" />
+                        <xs:attribute name="enable-amq1-prefix" type="xs:boolean" use="optional" />
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="external-jms-topic" minOccurs="0" maxOccurs="unbounded">
                     <xs:complexType>
                         <xs:attribute name="name" type="xs:string" use="required" />
                         <xs:attribute name="entries" type="stringList" use="required" />
+                        <xs:attribute name="enable-amq1-prefix" type="xs:boolean" use="optional" />
                     </xs:complexType>
                 </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="server" type="serverType" />
@@ -329,26 +331,26 @@
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
-                <xs:element name="replication-master" minOccurs="0" maxOccurs="1" type="replication-masterType" />
-                <xs:element name="replication-slave" minOccurs="0" maxOccurs="1" type="replication-slaveType" />
+                <xs:element name="replication-primary" minOccurs="0" maxOccurs="1" type="replication-primaryType" />
+                <xs:element name="replication-secondary" minOccurs="0" maxOccurs="1" type="replication-secondaryType" />
                 <xs:element name="replication-colocated" minOccurs="0" maxOccurs="1">
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="master" minOccurs="0" maxOccurs="1" type="replication-masterType" />
-                            <xs:element name="slave" minOccurs="0" maxOccurs="1" type="replication-slaveType" />
+                            <xs:element name="primary" minOccurs="0" maxOccurs="1" type="replication-primaryType" />
+                            <xs:element name="secondary" minOccurs="0" maxOccurs="1" type="replication-secondaryType" />
                         </xs:sequence>
 
                         <xs:attributeGroup ref="ha-policy-colocated-attributeGroup" />
                         <xs:attribute name="excluded-connectors" type="xs:string" use="optional" />
                     </xs:complexType>
                 </xs:element>
-                <xs:element name="shared-store-master" minOccurs="0" maxOccurs="1" type="shared-store-masterType" />
-                <xs:element name="shared-store-slave" minOccurs="0" maxOccurs="1"  type="shared-store-slaveType" />
+                <xs:element name="shared-store-primary" minOccurs="0" maxOccurs="1" type="shared-store-primaryType" />
+                <xs:element name="shared-store-secondary" minOccurs="0" maxOccurs="1"  type="shared-store-secondaryType" />
                 <xs:element name="shared-store-colocated" minOccurs="0" maxOccurs="1">
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="master" minOccurs="0" maxOccurs="1" type="shared-store-masterType" />
-                            <xs:element name="slave" minOccurs="0" maxOccurs="1" type="shared-store-slaveType" />
+                            <xs:element name="primary" minOccurs="0" maxOccurs="1" type="shared-store-primaryType" />
+                            <xs:element name="secondary" minOccurs="0" maxOccurs="1" type="shared-store-secondaryType" />
                         </xs:sequence>
 
                         <xs:attributeGroup ref="ha-policy-colocated-attributeGroup" />
@@ -796,6 +798,7 @@
         <xs:attribute name="wild-card-routing-enabled" type="xs:boolean" use="optional" />
         <xs:attribute name="connection-ttl-override" type="xs:long" use="optional" />
         <xs:attribute name="async-connection-execution-enabled" type="xs:boolean" use="optional" />
+        <xs:attribute name="address-queue-scan-period" type="xs:long" use="optional" />
     </xs:complexType>
 
     <xs:simpleType name="stringList">
@@ -821,14 +824,14 @@
         <xs:attribute name="connectors" type="xs:string" use="optional" />
     </xs:complexType>
 
-    <xs:complexType name="replication-masterType">
+    <xs:complexType name="replication-primaryType">
         <xs:attribute name="cluster-name" type="xs:string" use="optional" />
         <xs:attribute name="group-name" type="xs:string" use="optional" />
         <xs:attribute name="check-for-live-server" type="xs:boolean" use="optional" />
         <xs:attribute name="initial-replication-sync-timeout" type="xs:long" use="optional" />
     </xs:complexType>
 
-    <xs:complexType name="replication-slaveType">
+    <xs:complexType name="replication-secondaryType">
         <xs:sequence>
             <xs:element name="scale-down" minOccurs="0" maxOccurs="1" type="scale-downType" />
         </xs:sequence>
@@ -841,11 +844,11 @@
         <xs:attribute name="max-saved-replicated-journal-size" type="xs:int" use="optional" />
     </xs:complexType>
 
-    <xs:complexType name="shared-store-masterType">
+    <xs:complexType name="shared-store-primaryType">
         <xs:attribute name="failover-on-server-shutdown" type="xs:boolean" use="optional" />
     </xs:complexType>
 
-    <xs:complexType name="shared-store-slaveType">
+    <xs:complexType name="shared-store-secondaryType">
         <xs:sequence>
             <xs:element name="scale-down" minOccurs="0" maxOccurs="1" type="scale-downType" />
         </xs:sequence>
@@ -922,8 +925,8 @@
         <xs:attribute name="scheduled-thread-pool-max-size" type="xs:int" use="optional" />
         <xs:attribute name="thread-pool-max-size" type="xs:int" use="optional" />
         <xs:attribute name="group-id" type="xs:string" use="optional" />
-        <xs:attribute name="deserialization-white-list" type="stringList" use="optional" />
-        <xs:attribute name="deserialization-black-list" type="stringList" use="optional" />
+        <xs:attribute name="deserialization-allow-list" type="stringList" use="optional" />
+        <xs:attribute name="deserialization-block-list" type="stringList" use="optional" />
         <xs:attribute name="initial-message-packet-size" type="xs:int" use="optional" />
         <xs:attribute name="use-topology-for-load-balancing" type="xs:boolean" use="optional" />
     </xs:attributeGroup>

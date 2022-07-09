@@ -203,25 +203,21 @@ public class GetCallerPrincipalTestCase {
     @Test
     public void testStatelessLifecycle() throws Exception {
         deployer.deploy("slsb");
-        final Callable<Void> callable = () -> {
-            ITestResultsSingleton results = this.getResultsSingleton();
-            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/slsb//" + SLSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName());
-            log.trace("Stateless bean returns: " + bean.get());
+        ITestResultsSingleton results = this.getResultsSingleton();
+        IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/slsb//" + SLSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName());
+        log.trace("Stateless bean returns: " + bean.get());
 
-            Assert.assertEquals(OK + "start", results.getSlsb("postconstruct"));
+        Assert.assertEquals(OK + "start", results.getSlsb("postconstruct"));
 
-            deployer.undeploy("slsb");
+        deployer.undeploy("slsb");
 
-            Assert.assertEquals(OK + "stop", results.getSlsb("predestroy"));
-            return null;
-        };
-        Util.switchIdentitySCF("user1", "password1", callable);
+        Assert.assertEquals(OK + "stop", results.getSlsb("predestroy"));
     }
 
     @Test
     public void testStatefulLifecycle() throws Exception {
         deployer.deploy("sfsb");
-        final Callable<Void> callable = () -> {
+        try {
             ITestResultsSingleton results = this.getResultsSingleton();
             IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/sfsb//" + SFSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName() + "?stateful");
             log.trace("Stateful bean returns: " + bean.get());
@@ -231,10 +227,6 @@ public class GetCallerPrincipalTestCase {
             bean.remove();
 
             Assert.assertEquals(LOCAL_USER +  "stop", results.getSfsb("predestroy"));
-            return null;
-        };
-        try {
-            Util.switchIdentitySCF("user1", "password1", callable);
         } finally {
             deployer.undeploy("sfsb");
         }

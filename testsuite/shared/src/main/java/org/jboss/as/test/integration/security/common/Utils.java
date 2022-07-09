@@ -56,6 +56,11 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
@@ -112,7 +117,6 @@ import org.jboss.as.test.integration.security.common.negotiation.JBossNegotiateS
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.security.auth.callback.UsernamePasswordHandler;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -1164,13 +1168,13 @@ public class Utils extends CoreUtils {
      */
     public static LoginContext loginWithKerberos(final Krb5LoginConfiguration krb5Configuration, final String user,
             final String pass) throws LoginException {
-        LoginContext lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordHandler(user, pass));
+        LoginContext lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordCBH(user, pass.toCharArray()));
         if (IBM_JDK) {
             // workaround for IBM JDK on RHEL5 issue described in https://bugzilla.redhat.com/show_bug.cgi?id=1206177
             // The first negotiation always fail, so let's do a dummy login/logout round.
             lc.login();
             lc.logout();
-            lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordHandler(user, pass));
+            lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordCBH(user, pass.toCharArray()));
         }
         lc.login();
         return lc;
@@ -1242,5 +1246,41 @@ public class Utils extends CoreUtils {
         file.delete();
         file.mkdir();
         return file;
+    }
+
+    private static class UsernamePasswordCBH implements CallbackHandler {
+
+        /*
+         * Note: We use CallbackHandler implementations like this in test cases as test cases need to run unattended, a true
+         * CallbackHandler implementation should interact directly with the current user to prompt for the username and
+         * password.
+         *
+         * i.e. In a client app NEVER prompt for these values in advance and provide them to a CallbackHandler like this.
+         */
+
+        private final String username;
+        private final char[] password;
+
+        private UsernamePasswordCBH(final String username, final char[] password) {
+            this.username = username;
+            this.password = password;
+        }
+
+        @Override
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            for (Callback current : callbacks) {
+                if (current instanceof NameCallback) {
+                    NameCallback ncb = (NameCallback) current;
+                    ncb.setName(username);
+                } else if (current instanceof PasswordCallback) {
+                    PasswordCallback pcb = (PasswordCallback) current;
+                    pcb.setPassword(password);
+                } else {
+                    throw new UnsupportedCallbackException(current);
+                }
+            }
+
+        }
+
     }
 }

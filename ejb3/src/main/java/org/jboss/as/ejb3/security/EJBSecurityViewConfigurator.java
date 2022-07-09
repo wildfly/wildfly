@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.security;
 
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT;
 
 import java.lang.reflect.Method;
@@ -39,11 +40,10 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -53,9 +53,8 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * {@link ViewConfigurator} responsible for setting up necessary security interceptors on an EJB view.
@@ -85,7 +84,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         // then we now have 2 views with the same view name. In such cases, it's fine to skip one of those views and register this service only once, since essentially, the service is expected to return the same data
         // for both these views. So here we skip the @WebService view if the bean also has a @LocalBean (no-interface) view and let the EJBViewMethodSecurityAttributesService be built when the no-interface view is processed
         // note that we always install this service for SERVICE_ENDPOINT views, even if security is not enabled
-        if (MethodIntf.SERVICE_ENDPOINT == ejbViewDescription.getMethodIntf()) {
+        if (MethodInterfaceType.ServiceEndpoint == ejbViewDescription.getMethodIntf()) {
             viewMethodSecurityAttributesServiceBuilder = new EJBViewMethodSecurityAttributesService.Builder();
             viewMethodSecurityAttributesServiceName =  EJBViewMethodSecurityAttributesService.getServiceName(ejbComponentDescription.getApplicationName(), ejbComponentDescription.getModuleName(), ejbComponentDescription.getEJBName(), viewClassName);
         } else {
@@ -136,10 +135,10 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             }
             // setup the authorization interceptor
             final ApplicableMethodInformation<EJBMethodSecurityAttribute> permissions = ejbComponentDescription.getDescriptorMethodPermissions();
-            boolean methodHasSecurityMetadata = handlePermissions(contextID, componentConfiguration, viewConfiguration, deploymentReflectionIndex, viewClassName, ejbViewDescription, viewMethod, permissions, false, viewMethodSecurityAttributesServiceBuilder, ejbComponentDescription, elytronSecurityDomain);
+            boolean methodHasSecurityMetadata = handlePermissions(contextID, componentConfiguration, viewConfiguration, deploymentReflectionIndex, viewClassName, ejbViewDescription, viewMethod, permissions, false, viewMethodSecurityAttributesServiceBuilder, ejbComponentDescription, elytronSecurityDomain, resolvedSecurityDomain);
             if (!methodHasSecurityMetadata) {
                 //if it was not handled by the descriptor processor we look for annotation basic info
-                methodHasSecurityMetadata = handlePermissions(contextID, componentConfiguration, viewConfiguration, deploymentReflectionIndex, viewClassName, ejbViewDescription, viewMethod, ejbComponentDescription.getAnnotationMethodPermissions(), true, viewMethodSecurityAttributesServiceBuilder, ejbComponentDescription, elytronSecurityDomain);
+                methodHasSecurityMetadata = handlePermissions(contextID, componentConfiguration, viewConfiguration, deploymentReflectionIndex, viewClassName, ejbViewDescription, viewMethod, ejbComponentDescription.getAnnotationMethodPermissions(), true, viewMethodSecurityAttributesServiceBuilder, ejbComponentDescription, elytronSecurityDomain, resolvedSecurityDomain);
             }
             // if any method has security metadata then the bean has method level security metadata
             if (methodHasSecurityMetadata) {
@@ -158,8 +157,8 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         if (elytronSecurityDomain) {
             final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = ejbComponentDescription.getElytronInterceptorFactories(contextID, ejbComponentDescription.requiresJacc(), true);
             elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> viewConfiguration.addViewInterceptor(elytronInterceptorFactory, priority));
-        } else {
-            viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(securityRequired, true, contextID), InterceptorOrder.View.SECURITY_CONTEXT);
+        } else if (securityRequired) {
+            throw ROOT_LOGGER.legacySecurityUnsupported(resolvedSecurityDomain);
         }
         // now add the authorization interceptor if the bean has *any* security metadata applicable
         if (securityRequired) {
@@ -178,8 +177,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
                     if (elytronSecurityDomain) {
                         viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(RolesAllowedInterceptor.DENY_ALL), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
                     } else {
-                        final Interceptor authorizationInterceptor = new AuthorizationInterceptor(EJBMethodSecurityAttribute.denyAll(), viewClassName, viewMethod, contextID);
-                        viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(authorizationInterceptor), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
+                        throw ROOT_LOGGER.legacySecurityUnsupported(resolvedSecurityDomain);
                     }
                 }
             }
@@ -200,15 +198,16 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
     }
 
     private boolean handlePermissions(String contextID, ComponentConfiguration componentConfiguration, ViewConfiguration viewConfiguration, DeploymentReflectionIndex deploymentReflectionIndex, String viewClassName, EJBViewDescription ejbViewDescription, Method viewMethod, ApplicableMethodInformation<EJBMethodSecurityAttribute> permissions, boolean annotations,
-                                      final EJBViewMethodSecurityAttributesService.Builder viewMethodSecurityAttributesServiceBuilder, EJBComponentDescription componentDescription, boolean elytronSecurityDomain) {
+                                      final EJBViewMethodSecurityAttributesService.Builder viewMethodSecurityAttributesServiceBuilder, EJBComponentDescription componentDescription, boolean elytronSecurityDomain,
+                                      final String resolvedSecurityDomain) {
         EJBMethodSecurityAttribute ejbMethodSecurityMetaData = permissions.getViewAttribute(ejbViewDescription.getMethodIntf(), viewMethod);
         final List<EJBMethodSecurityAttribute> allAttributes = new ArrayList<EJBMethodSecurityAttribute>();
         allAttributes.addAll(permissions.getAllAttributes(ejbViewDescription.getMethodIntf(), viewMethod));
 
         if (ejbMethodSecurityMetaData == null) {
-            ejbMethodSecurityMetaData = permissions.getViewAttribute(MethodIntf.BEAN, viewMethod);
+            ejbMethodSecurityMetaData = permissions.getViewAttribute(MethodInterfaceType.Bean, viewMethod);
         }
-        allAttributes.addAll(permissions.getAllAttributes(MethodIntf.BEAN, viewMethod));
+        allAttributes.addAll(permissions.getAllAttributes(MethodInterfaceType.Bean, viewMethod));
 
         final Method classMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, componentConfiguration.getComponentClass(), viewMethod);
         if (ejbMethodSecurityMetaData == null
@@ -216,12 +215,12 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             // if this is null we try with the corresponding bean method
             ejbMethodSecurityMetaData = permissions.getAttribute(ejbViewDescription.getMethodIntf(), classMethod);
             if (ejbMethodSecurityMetaData == null) {
-                ejbMethodSecurityMetaData = permissions.getAttribute(MethodIntf.BEAN, classMethod);
+                ejbMethodSecurityMetaData = permissions.getAttribute(MethodInterfaceType.Bean, classMethod);
             }
         }
         if (classMethod != null) {
             allAttributes.addAll(permissions.getAllAttributes(ejbViewDescription.getMethodIntf(), classMethod));
-            allAttributes.addAll(permissions.getAllAttributes(MethodIntf.BEAN, classMethod));
+            allAttributes.addAll(permissions.getAllAttributes(MethodInterfaceType.Bean, classMethod));
         }
 
 
@@ -260,7 +259,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
                     }
                 }
             } else {
-                authorizationInterceptor = new AuthorizationInterceptor(ejbMethodSecurityMetaData, viewClassName, viewMethod, contextID);
+                throw ROOT_LOGGER.legacySecurityUnsupported(resolvedSecurityDomain);
             }
             viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(authorizationInterceptor), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
 

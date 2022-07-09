@@ -113,8 +113,8 @@
                                scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
                                thread-pool-max-size="${thread.pool.max.size:48}"
                                group-id="${group.id:myGroup}"
-                               deserialization-black-list="org.foo.Bar org.foo.Baz"
-                               deserialization-white-list="org.bar.Bar org.baz.Baz"
+                               deserialization-block-list="org.foo.Bar org.foo.Baz"
+                               deserialization-allow-list="org.bar.Bar org.baz.Baz"
                                statistics-enabled="${pcf.statistics-enabled:true}">
         <inbound-config
             use-jndi="${use.jndi:false}"
@@ -135,11 +135,14 @@
     </pooled-connection-factory>
 
     <external-jms-queue name="testQueue"
-                   entries="${jms-queue.entry:queue/client-test}"/>
+                   entries="${jms-queue.entry:queue/client-test}"
+                   enable-amq1-prefix="true"/>
     <external-jms-queue name="testQueue2"
-                   entries="java:/global/queue/test java:/global/queue/client-test2"/>
+                   entries="java:/global/queue/test java:/global/queue/client-test2"
+                   enable-amq1-prefix="true"/>
     <external-jms-topic name="testTopic"
-                   entries="${jms-topic.entry:topic/client-test}"/>
+                   entries="${jms-topic.entry:topic/client-test}"
+                   enable-amq1-prefix="true"/>
 
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"
@@ -151,7 +154,8 @@
             thread-pool-max-size="${messaging.thread.pool.max.size:5}"
             wild-card-routing-enabled="${wild.card.routing.enabled:false}"
             connection-ttl-override="${connection.ttl.override:5432}"
-            async-connection-execution-enabled="${async.connection.execution.enabled:false}">
+            async-connection-execution-enabled="${async.connection.execution.enabled:false}"
+            address-queue-scan-period="${address.queue.scan.period:30000}">
 
         <incoming-interceptors>
             <class name="org.foo.incoming.myInterceptor" module="org.foo" />
@@ -501,8 +505,8 @@
                             scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
                             thread-pool-max-size="${thread.pool.max.size:48}"
                             group-id="${group.id:myGroup}"
-                            deserialization-black-list="org.foo.Bar org.foo.Baz"
-                            deserialization-white-list="org.bar.Bar org.baz.Baz"
+                            deserialization-block-list="org.foo.Bar org.foo.Baz"
+                            deserialization-allow-list="org.bar.Bar org.baz.Baz"
                             initial-message-packet-size="${initial.message.packet.size:456}" />
         <legacy-connection-factory name="legacyConnectionFactory-discovery"
                                    entries="legacy/RemoteConnectionFactory java:/global/jms/legacy/RemoteConnectionFactory"
@@ -603,8 +607,8 @@
                                    scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
                                    thread-pool-max-size="${thread.pool.max.size:48}"
                                    group-id="${group.id:myGroup}"
-                                   deserialization-black-list="org.foo.Bar org.foo.Baz"
-                                   deserialization-white-list="org.bar.Bar org.baz.Baz"
+                                   deserialization-block-list="org.foo.Bar org.foo.Baz"
+                                   deserialization-allow-list="org.bar.Bar org.baz.Baz"
                                    statistics-enabled="${pcf.statistics-enabled:true}">
             <inbound-config
                 use-jndi="${use.jndi:false}"

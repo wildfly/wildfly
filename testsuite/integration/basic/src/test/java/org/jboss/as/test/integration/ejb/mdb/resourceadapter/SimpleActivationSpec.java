@@ -52,7 +52,7 @@ public class SimpleActivationSpec implements ActivationSpec, Serializable {
     }
 
     public void setSomeProp(String prop) {
-        this.someProp = someProp;
+        this.someProp = prop;
     }
 }
 

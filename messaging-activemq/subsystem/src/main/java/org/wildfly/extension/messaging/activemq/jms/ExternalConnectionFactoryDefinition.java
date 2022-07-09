@@ -16,6 +16,10 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.wildfly.extension.messaging.activemq.AbstractTransportDefinition.CONNECTOR_CAPABILITY_NAME;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -78,8 +82,8 @@ public class ExternalConnectionFactoryDefinition extends PersistentResourceDefin
         Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
         Common.THREAD_POOL_MAX_SIZE,
         Common.GROUP_ID,
-        Common.DESERIALIZATION_BLACKLIST,
-        Common.DESERIALIZATION_WHITELIST,
+        Common.DESERIALIZATION_BLOCKLIST,
+        Common.DESERIALIZATION_ALLOWLIST,
         Common.INITIAL_MESSAGE_PACKET_SIZE,
         Common.USE_TOPOLOGY};
 
@@ -105,5 +109,12 @@ public class ExternalConnectionFactoryDefinition extends PersistentResourceDefin
         if (registerRuntimeOnly) {
             ConnectionFactoryUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
         }
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
+        ConnectionFactoryAttributes.registerAliasAttribute(resourceRegistration, false, DESERIALIZATION_WHITELIST, DESERIALIZATION_ALLOWLIST.getName());
+        ConnectionFactoryAttributes.registerAliasAttribute(resourceRegistration, false, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST.getName());
     }
 }

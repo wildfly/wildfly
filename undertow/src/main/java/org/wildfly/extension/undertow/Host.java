@@ -384,6 +384,10 @@ public class Host implements Service<Host>, FilterLocation {
         rootHandler = null;
     }
 
+    public SuspendController.State getSuspendState() {
+        return this.suspendController.get().getState();
+    }
+
     protected void setupDefaultResponseCodeHandler(){
         if(this.defaultHandler != null){
             this.registerHandler("/", this.defaultHandler);

@@ -19,7 +19,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -46,11 +46,6 @@
             <scope>test</scope>
         </dependency>
         <!-- While provided by the server the seem to be required for tests annotated with @WrapThreadContextClassLoader -->
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-databinding-jaxb</artifactId>
@@ -127,6 +122,16 @@
             <artifactId>wss4j-ws-security-dom</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-cli</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-discovery</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Required for Java 11 (maybe 10 too) -->
         <dependency>
             <groupId>com.sun.activation</groupId>
@@ -156,11 +161,6 @@
         <dependency>
             <groupId>org.jvnet.staxex</groupId>
             <artifactId>stax-ex</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -461,7 +461,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-webservices</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
@@ -516,7 +515,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-webservices-ejb</JBOSS_HOME>
                                     </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>

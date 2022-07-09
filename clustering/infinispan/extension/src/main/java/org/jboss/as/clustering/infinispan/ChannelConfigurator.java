@@ -25,8 +25,10 @@ package org.jboss.as.clustering.infinispan;
 import java.util.List;
 
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
+import org.jgroups.ChannelListener;
 import org.jgroups.JChannel;
 import org.jgroups.conf.ProtocolConfiguration;
+import org.jgroups.util.SocketFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
@@ -58,7 +60,17 @@ public class ChannelConfigurator implements JGroupsChannelConfigurator {
     }
 
     @Override
-    public JChannel createChannel() throws Exception {
+    public JChannel createChannel(String name) throws Exception {
         return this.factory.createChannel(this.name);
+    }
+
+    @Override
+    public void setSocketFactory(SocketFactory socketFactory) {
+        // Do nothing
+    }
+
+    @Override
+    public void addChannelListener(ChannelListener listener) {
+        // Do nothing
     }
 }

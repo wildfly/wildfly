@@ -1,0 +1,11 @@
+package org.jboss.weld.annotated.slim;
+
+/**
+ * @TypeId(430)
+ */
+message AnnotatedTypeIdentifier {
+	optional	bytes	manager	 = 1;
+	optional	bytes	className	 = 2;
+	optional	bytes	modifiedClassName	 = 3;
+	optional	string	suffix	 = 4;
+}

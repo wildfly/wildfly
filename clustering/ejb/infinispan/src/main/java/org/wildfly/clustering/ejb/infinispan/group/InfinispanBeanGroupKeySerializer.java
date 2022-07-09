@@ -29,8 +29,8 @@ import java.io.IOException;
 import org.jboss.ejb.client.SessionID;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ejb.client.SessionIDSerializer;
-import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
+import org.wildfly.clustering.marshalling.spi.BinaryFormatter;
+import org.wildfly.clustering.marshalling.spi.Formatter;
 import org.wildfly.clustering.marshalling.spi.Serializer;
 
 /**
@@ -50,10 +50,10 @@ public enum InfinispanBeanGroupKeySerializer implements Serializer<InfinispanBea
         return new InfinispanBeanGroupKey<>(SessionIDSerializer.INSTANCE.read(input));
     }
 
-    @MetaInfServices(KeyFormat.class)
-    public static class InfinispanBeanGroupKeyFormat extends BinaryKeyFormat<InfinispanBeanGroupKey<SessionID>> {
+    @MetaInfServices(Formatter.class)
+    public static class InfinispanBeanGroupKeyFormatter extends BinaryFormatter<InfinispanBeanGroupKey<SessionID>> {
         @SuppressWarnings("unchecked")
-        public InfinispanBeanGroupKeyFormat() {
+        public InfinispanBeanGroupKeyFormatter() {
             super((Class<InfinispanBeanGroupKey<SessionID>>) (Class<?>) InfinispanBeanGroupKey.class, INSTANCE);
         }
     }

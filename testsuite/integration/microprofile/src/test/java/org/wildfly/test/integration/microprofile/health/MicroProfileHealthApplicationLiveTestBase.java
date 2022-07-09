@@ -48,7 +48,7 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,7 +67,7 @@ public abstract class MicroProfileHealthApplicationLiveTestBase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthTestCase.war")
                 .addClasses(TestApplication.class, TestApplication.Resource.class, MyLiveProbe.class, HealthConfigSource.class)
                 .addAsServiceProvider(ConfigSource.class, HealthConfigSource.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         return war;
     }
 

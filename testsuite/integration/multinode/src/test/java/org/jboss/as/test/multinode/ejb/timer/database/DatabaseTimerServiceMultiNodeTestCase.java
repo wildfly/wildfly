@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.multinode.ejb.timer.database.DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.getRemoteContext;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FilePermission;
@@ -103,7 +104,8 @@ public class DatabaseTimerServiceMultiNodeTestCase {
 
             if(server == null) {
                 //we need a TCP server that can be shared between the two servers
-                server = Server.createTcpServer().start();
+                //To allow remote connections, start the TCP server using the option -tcpAllowOthers
+                server = Server.createTcpServer("-tcpAllowOthers").start();
             }
 
             final ModelNode compositeOp = new ModelNode();
@@ -177,7 +179,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
 
     private static Archive<?> createDeployment(boolean client) {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
-        war.addClasses(Collector.class, RemoteTimedBean.class, TimedObjectTimerServiceBean.class, TimerData.class, FileUtils.class);
+        war.addClasses(Collector.class, RemoteTimedBean.class, TimedObjectTimerServiceBean.class, TimerData.class, FileUtils.class, StartupSingleton.class);
         war.addAsWebInfResource(DatabaseTimerServiceMultiNodeTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         if(!client) {
             war.addClass(CollectionSingleton.class);
@@ -228,6 +230,26 @@ public class DatabaseTimerServiceMultiNodeTestCase {
                 remoteContext.close();
             }
         } finally {
+            clientContext.close();
+        }
+    }
+
+    /**
+     * Verifies that auto timers in a startup singleton bean are properly started,
+     * and that different nodes should not create duplicate auto timers.
+     */
+    @Test
+    public void testAutoTimersInSingletonBean() throws Exception {
+        Context clientContext = getRemoteContext(clientClient);
+        Context serverContext = getRemoteContext(serverClient);
+        try {
+            final String lookupName = ARCHIVE_NAME + "/" + StartupSingleton.class.getSimpleName() + "!" + RemoteTimedBean.class.getName();
+            RemoteTimedBean clientBean = (RemoteTimedBean) clientContext.lookup(lookupName);
+            assertTrue(clientBean.hasTimerRun());
+            RemoteTimedBean serverBean = (RemoteTimedBean) serverContext.lookup(lookupName);
+            assertTrue(serverBean.hasTimerRun());
+        } finally {
+            serverContext.close();
             clientContext.close();
         }
     }

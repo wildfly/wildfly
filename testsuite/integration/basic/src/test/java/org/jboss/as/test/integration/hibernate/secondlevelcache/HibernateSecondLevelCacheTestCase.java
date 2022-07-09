@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.hibernate.secondlevelcache;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.sql.Connection;
 import javax.naming.InitialContext;
@@ -84,6 +85,9 @@ public class HibernateSecondLevelCacheTestCase {
     public static void beforeClass() throws NamingException {
         // TODO This can be re-looked at once HHH-13188 is resolved. This may require further changes in Hibernate.
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
+        // This test needs to be recompiled against Hibernate ORM 6 (WFLY-16178) in order to pass.
+        assumeTrue(System.getProperty("ts.ee9") == null && System.getProperty("ts.bootable.ee9") == null);
+
         iniCtx = new InitialContext();
     }
 

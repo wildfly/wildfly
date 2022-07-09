@@ -32,52 +32,149 @@ import org.junit.Test;
  * @author jdenise@redhat.com
  */
 public class LayersTestCase {
-    // Packages that are provisioned but not used (not injected nor referenced).
+    // Packages that are provisioned by the test-standalone-reference installation
+    // but not used in the test-all-layers installation.
     // This is the expected set of not provisioned modules when all layers are provisioned.
     private static final String[] NOT_USED = {
-        // discovery not configured in default config
-        "org.wildfly.discovery",
-        // discovery not configured in default config
-        "org.wildfly.extension.discovery",
-        // deprecated
-        "org.jboss.as.threads",
-        // Un-used
-        "org.apache.xerces",
-        // Un-used
-        "org.codehaus.woodstox",
-        // Un-used
-        "org.apache.xml-resolver",
-        // Un-used
-        "org.jboss.metadata",
-        // Un-used
-        "javax.sql.api",
-        // Un-used
-        "javax.xml.stream.api",
-        // Un-used
-        "javax.validation.api",
-        // Un-used
-        "javax.activation.api",
-        // Un-used
-        "javax.transaction.api",
+        // TODO  WFLY-16452 we need to add a mod_cluster layer
+        "org.wildfly.extension.mod_cluster",
+        "org.wildfly.mod_cluster.undertow",
+        "org.jboss.mod_cluster.container.spi",
+        "org.jboss.mod_cluster.core",
+        "org.jboss.mod_cluster.load.spi",
+        // TODO we need to add an rts layer
+        "org.wildfly.extension.rts",
+        "org.jboss.narayana.rts",
+        // TODO we need to add an xts layer
+        "org.jboss.as.xts",
+        // TODO  WFLY-16453 we need to add a clustering singleton layer
+        "org.wildfly.extension.clustering.singleton",
+        // TODO we need to add an agroal layer
+        "org.wildfly.extension.datasources-agroal",
+        "io.agroal",
+        // TODO we need to add an elytron-oidc-client layer
+        "org.wildfly.extension.elytron-oidc-client",
+        "org.wildfly.security.elytron-http-oidc",
+        "org.wildfly.security.elytron-jose-jwk",
+        "org.wildfly.security.elytron-jose-util",
+        // Messaging broker not included in the messaging-activemq layer
+        "org.jboss.xnio.netty.netty-xnio-transport",
+        "org.apache.activemq.artemis.protocol.amqp",
+        "org.apache.activemq.artemis.protocol.hornetq",
+        "org.apache.activemq.artemis.protocol.stomp",
+        "org.apache.qpid.proton",
+        "org.hornetq.client",
         // No patching modules in layers
         "org.jboss.as.patching",
         "org.jboss.as.patching.cli",
-        // Not currently used internally
+        // TODO should an undertow layer specify this?
         "org.wildfly.event.logger",
-        // Removed legacy security
+        // Legacy subsystem modules are not available via layers
         "org.jboss.as.security",
-        "org.jboss.as.security-integration",
-        "org.jboss.as.security-plugins",
-        "org.picketbox",
-        "org.apache.commons.cli",
-        "org.apache.commons.lang3",
-        "org.wildfly.security.elytron-tool",
-        "org.wildfly.security.http.sfbasic"
+        "org.wildfly.extension.picketlink",
+        "org.jboss.as.jacorb",
+        "org.jboss.as.jsr77",
+        "org.jboss.as.messaging",
+        "org.jboss.as.web",
+        // TODO nothing references this
+        "org.wildfly.security.http.sfbasic",
+        // TODO Legacy Seam integration. Does it even work with EE 10?
+        "org.jboss.integration.ext-content",
+        // Misc alternative variants of things that we don't provide via layers
+        "org.jboss.as.jpa.hibernate:4",
+        "org.hibernate:5.0",
+        "org.hibernate.jipijapa-hibernate5",
+        "org.eclipse.persistence",
+        "org.jboss.as.jpa.openjpa",
+        "org.apache.openjpa",
+        "org.jboss.genericjms",
+        // Appclient support is not provided by a layer
+        "org.jboss.as.appclient",
+        "org.jboss.metadata.appclient",
+        // TODO WFLY-16576 -- cruft?
+        "org.bouncycastle",
+        // TODO WFLY-16583 -- cruft
+        "javax.management.j2ee.api",
+        // TODO possible cruft? https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
+        "org.jboss.resteasy.jose-jwt",
+        "org.jboss.resteasy.resteasy-rxjava2",
+        // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
+        "org.wildfly.reactive.dep.jts",
+        // Used by Hibernate Search 6 TODO remove these entries as part of the big-bang, as they are used, just not in javax Hibernate Search
+        "com.carrotsearch.hppc",
+        "org.elasticsearch.client.rest-client",
+        // Used by Hibernate Search 5 but not part of the jpa layer (aiui they are optional aspects of Hibernate Search)
+        // These modules are dropped with Hibernate Search 6 so no point evaluating whether they should be provisioned
+        // by the jpa layer
+        "org.hibernate.search.backend-jms",
+        "org.hibernate.search.serialization-avro",
+        "org.apache.avro",
+        // Optionally used by Hibernate Search 6 but not provided by the jpa layer
+        // TODO determine if they should be
+        "org.hibernate.search.backend.elasticsearch",
+        "org.hibernate.search.backend.lucene",
+        "org.apache.lucene",
+        "org.apache.lucene.internal",
+        // TODO these implement SPIs from RESTEasy or JBoss WS but I don't know how they integrate
+        // as there is no ref to them in any module.xml nor any in WF java code.
+        // Perhaps via deployment descriptor? In any case, no layer provides them
+        "org.wildfly.security.jakarta.client.resteasy",
+        "org.wildfly.security.jakarta.client.webservices",
+        "org.jboss.resteasy.microprofile.config",
+        // TODO remove in the big-bang. No longer referenced by org.hibernate in Hibernate 6
+        "org.javassist",
+        // TODO no longer referenced by org.jboss.as.clustering.infinispan in WildFly Preview. Remove this as part of the big bang.
+        "internal.jakarta.transaction.api",
     };
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning
     // the default configuration.
     private static final String[] NOT_REFERENCED = {
+        // Standard configs don't include various MP subsystems
+        "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
+        "org.wildfly.extension.microprofile.health-smallrye",
+        "org.wildfly.extension.microprofile.metrics-smallrye",
+        "org.wildfly.extension.microprofile.openapi-smallrye",
+        "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
+        "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
+        "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
+        "io.jaegertracing",
+        "io.grpc",
+        "io.smallrye.health",
+        "io.smallrye.openapi",
+        "io.vertx.client",
+        "org.eclipse.microprofile.health.api",
+        "org.eclipse.microprofile.openapi.api",
+        "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
+        "com.google.protobuf",
+        "org.jboss.resteasy.resteasy-client-microprofile",
+        "io.netty.netty-codec-dns",
+        "io.netty.netty-codec-http2",
+        "io.netty.netty-resolver-dns",
+        "io.reactivex.rxjava2.rxjava",
+        "io.smallrye.common.vertx-context",
+        "io.smallrye.reactive.messaging",
+        "io.smallrye.reactive.messaging.connector",
+        "io.smallrye.reactive.messaging.connector.kafka",
+        "io.smallrye.reactive.messaging.connector.kafka.api",
+        "io.smallrye.reactive.mutiny",
+        "io.smallrye.reactive.mutiny.reactive-streams-operators",
+        "io.smallrye.reactive.mutiny.vertx-core",
+        "io.smallrye.reactive.mutiny.vertx-kafka-client",
+        "io.smallrye.reactive.mutiny.vertx-runtime",
+        "io.vertx.client.kafka",
+        "io.vertx.core",
+        "org.apache.kafka.client",
+        "org.eclipse.microprofile.reactive-messaging.api",
+        "org.eclipse.microprofile.reactive-streams-operators.api",
+        "org.eclipse.microprofile.reactive-streams-operators.core",
+        "org.wildfly.reactive.messaging.common",
+        "org.wildfly.reactive.messaging.config",
+        "org.wildfly.reactive.messaging.kafka",
+        // Opentelemetry is not included in the default config
+        "org.wildfly.extension.opentelemetry",
+        "org.wildfly.extension.opentelemetry-api",
+        "io.opentelemetry.trace",
         // injected by server in UndertowHttpManagementService
         "org.jboss.as.domain-http-error-context",
         // injected by logging
@@ -88,7 +185,14 @@ public class LayersTestCase {
         "org.jboss.logmanager.log4j2",
         // tooling
         "org.jboss.as.domain-add-user",
+        "org.jboss.ws.tools.common",
+        "org.jboss.ws.tools.wsconsume",
+        "org.jboss.ws.tools.wsprovide",
+        "gnu.getopt",
+        "org.jboss.weld.probe",
+        "org.wildfly.security.elytron-tool",
         // Brought by galleon FP config
+        "org.jboss.as.product",
         "org.jboss.as.product:wildfly-web",
         // Brought by galleon FP config
         "org.jboss.as.standalone",
@@ -98,13 +202,35 @@ public class LayersTestCase {
         "org.eclipse.yasson",
         // injected by ee
         "org.wildfly.naming",
+        // Injected by jaxrs
+        "org.jboss.resteasy.resteasy-json-binding-provider",
+        // injected by jpa
+        "org.hibernate.search.orm",
+        "org.hibernate.search.backend.lucene",
+        "org.hibernate.search.backend.elasticsearch",
+        // Used by the hibernate search that's injected by jpa
+        "org.hibernate.search.serialization-avro",
+        "org.hibernate.search.backend-jms",
+        "org.apache.avro",
+        "org.apache.lucene",
+        "org.apache.lucene.internal",
+        // injected by jsf
+        "org.jboss.as.jsf-injection",
+        // injected by sar
+        "org.jboss.as.system-jmx",
+        // Loaded reflectively by the jboss fork impl of jakarta.xml.soap.FactoryFinder
+        "org.jboss.ws.saaj-impl",
         // Brought by galleon ServerRootResourceDefinition
         "wildflyee.api",
         // bootable jar runtime
         "org.wildfly.bootable-jar",
+        // The console ui content is not part of the kernel nor is it provided by an extension
+        "org.jboss.as.console",
         // May be needed by deployments if running on IBM JDK.
-        "ibm.jdk"
-        };
+        "ibm.jdk",
+        // TODO just a testsuite utility https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
+        "org.jboss.ws.cxf.sts",
+    };
 
     /**
      * A HashMap to configure a banned module.
@@ -119,12 +245,10 @@ public class LayersTestCase {
     }};
 
     public static String root;
-    public static String servletRoot;
 
     @BeforeClass
     public static void setUp() {
         root = System.getProperty("layers.install.root");
-        servletRoot = System.getProperty("servlet.layers.install.root");
     }
 
     @AfterClass
@@ -135,37 +259,18 @@ public class LayersTestCase {
             for(File f : installations) {
                 LayersTest.recursiveDelete(f.toPath());
             }
-            if (servletRoot != null && servletRoot.length() > 0) {
-                installations = new File(servletRoot).listFiles(File::isDirectory);
-                for (File f : installations) {
-                    LayersTest.recursiveDelete(f.toPath());
-                }
-            }
         }
     }
 
     @Test
-    public void testServlet() throws Exception {
-        org.junit.Assume.assumeTrue("Servlet testing disabled", servletRoot != null && servletRoot.length() > 0);
-        LayersTest.test(servletRoot, new HashSet<>(Arrays.asList(NOT_REFERENCED)),
-                new HashSet<>(Arrays.asList(NOT_USED)));
-    }
-
-    @Test
     public void test() throws Exception {
-        // TODO, no more testing than provisioning and execution of layers for now.
-        String root = System.getProperty("layers.install.root");
-        LayersTest.testExecution(root);
+        LayersTest.test(root, new HashSet<>(Arrays.asList(NOT_REFERENCED)),
+                new HashSet<>(Arrays.asList(NOT_USED)));
     }
 
     @Test
     public void checkBannedModules() throws Exception {
         final HashMap<String, String> results = LayersTest.checkBannedModules(root, BANNED_MODULES_CONF);
-        if (servletRoot != null && servletRoot.length() > 0) {
-            HashMap<String, String> servletResults = LayersTest.checkBannedModules(servletRoot, BANNED_MODULES_CONF);
-
-            results.putAll(servletResults);
-        }
         Assert.assertTrue("The following banned modules were provisioned " + results.toString(), results.isEmpty());
     }
 }

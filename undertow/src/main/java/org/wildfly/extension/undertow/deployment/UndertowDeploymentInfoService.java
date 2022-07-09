@@ -27,7 +27,6 @@ import io.undertow.jsp.JspFileHandler;
 import io.undertow.jsp.JspServletBuilder;
 import io.undertow.predicate.Predicate;
 import io.undertow.security.api.AuthenticationMechanism;
-import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.security.api.AuthenticationMode;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
@@ -72,7 +71,6 @@ import org.apache.jasper.servlet.JspServlet;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
@@ -113,36 +111,16 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.security.AuthenticationManager;
-import org.jboss.security.audit.AuditManager;
-import org.jboss.security.auth.login.JASPIAuthenticationInfo;
-import org.jboss.security.authorization.config.AuthorizationModuleEntry;
-import org.jboss.security.authorization.modules.JACCAuthorizationModule;
-import org.jboss.security.config.ApplicationPolicy;
-import org.jboss.security.config.AuthorizationInfo;
-import org.jboss.security.config.SecurityConfiguration;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.JSPConfig;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.SessionCookieConfig;
-import org.wildfly.extension.undertow.SingleSignOnService;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.Registration;
-import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
-import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
-import org.wildfly.extension.undertow.security.JbossAuthorizationManager;
-import org.wildfly.extension.undertow.security.LogoutNotificationReceiver;
-import org.wildfly.extension.undertow.security.RunAsLifecycleInterceptor;
-import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
-import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
-import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
 import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
-import org.wildfly.extension.undertow.security.jaspi.JASPICAuthenticationMechanism;
-import org.wildfly.extension.undertow.security.jaspi.JASPICSecureResponseHandler;
-import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.MechanismConfiguration;
@@ -187,7 +165,6 @@ import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
 
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.security.authentication.JBossCachedAuthenticationManager;
 
 /**
  * Service that builds up the undertow metadata.
@@ -231,7 +208,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final Supplier<UndertowService> undertowService;
     private final Supplier<SessionManagerFactory> sessionManagerFactory;
     private final Supplier<SessionIdentifierCodec> sessionIdentifierCodec;
-    private final Supplier<SecurityDomainContext> securityDomainContext;
     private final Supplier<ServletContainerService> container;
     private final Supplier<ComponentRegistry> componentRegistry;
     private final Supplier<Host> host;
@@ -252,7 +228,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final Supplier<UndertowService> undertowService,
             final Supplier<SessionManagerFactory> sessionManagerFactory,
             final Supplier<SessionIdentifierCodec> sessionIdentifierCodec,
-            final Supplier<SecurityDomainContext> securityDomainContext,
             final Supplier<ServletContainerService> container,
             final Supplier<ComponentRegistry> componentRegistry,
             final Supplier<Host> host,
@@ -267,7 +242,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.undertowService = undertowService;
         this.sessionManagerFactory = sessionManagerFactory;
         this.sessionIdentifierCodec = sessionIdentifierCodec;
-        this.securityDomainContext = securityDomainContext;
         this.container = container;
         this.componentRegistry = componentRegistry;
         this.host = host;
@@ -315,17 +289,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             handleDistributable(deploymentInfo);
             if (!isElytronActive()) {
-                if (securityDomain != null) {
-                    handleIdentityManager(deploymentInfo);
-                    handleJASPIMechanism(deploymentInfo);
-                    handleJACCAuthorization(deploymentInfo);
-                    handleAuthManagerLogout(deploymentInfo, mergedMetaData);
+                if (securityDomain != null || mergedMetaData.isUseJBossAuthorization()) {
+                    throw UndertowLogger.ROOT_LOGGER.legacySecurityUnsupported();
                 } else {
                     deploymentInfo.setSecurityDisabled(true);
-                }
-
-                if(mergedMetaData.isUseJBossAuthorization()) {
-                    deploymentInfo.setAuthorizationManager(new JbossAuthorizationManager(deploymentInfo.getAuthorizationManager()));
                 }
             }
             handleAdditionalAuthenticationMechanisms(deploymentInfo);
@@ -451,11 +418,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 deploymentInfo.addOuterHandlerChainWrapper(GlobalRequestControllerHandler.wrapper(controlPoint, allowSuspendedRequests));
             }
 
-            for (Map.Entry<String, AuthenticationMechanismFactory> e : container.get().getAuthenticationMechanisms().entrySet()) {
-                deploymentInfo.addAuthenticationMechanism(e.getKey(), e.getValue());
-            }
-            deploymentInfo.setUseCachedAuthenticationMechanism(!deploymentInfo.getAuthenticationMechanisms().containsKey(SingleSignOnService.AUTHENTICATION_MECHANISM_NAME));
-
             deploymentInfoConsumer.accept(this.deploymentInfo = deploymentInfo);
         } finally {
             Thread.currentThread().setContextClassLoader(oldTccl);
@@ -463,25 +425,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     }
 
-    private void handleAuthManagerLogout(DeploymentInfo deploymentInfo, JBossWebMetaData mergedMetaData) {
-        AuthenticationManager manager = securityDomainContext.get().getAuthenticationManager();
-        deploymentInfo.addNotificationReceiver(new LogoutNotificationReceiver(manager, securityDomain));
-        if(mergedMetaData.isFlushOnSessionInvalidation()) {
-            LogoutSessionListener listener = new LogoutSessionListener(manager);
-            deploymentInfo.addListener(Servlets.listener(LogoutSessionListener.class, new ImmediateInstanceFactory<EventListener>(listener)));
-        }
-    }
-
     @Override
     public synchronized void stop(final StopContext stopContext) {
         deploymentInfoConsumer.accept(null);
         IoUtils.safeClose(this.deploymentInfo.getResourceManager());
-        if (securityDomain != null && !isElytronActive()) {
-            AuthenticationManager authManager = securityDomainContext.get().getAuthenticationManager();
-            if (authManager != null && authManager instanceof JBossCachedAuthenticationManager) {
-                ((JBossCachedAuthenticationManager) authManager).releaseModuleEntries(module.getClassLoader());
-            }
-        }
         this.deploymentInfo.setConfidentialPortManager(null);
         this.deploymentInfo = null;
         if (registration != null) {
@@ -494,63 +441,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return deploymentInfo;
     }
 
-    /**
-     * <p>Adds to the deployment the {@link org.wildfly.extension.undertow.security.jaspi.JASPICAuthenticationMechanism}, if necessary. The handler will be added if the security domain
-     * is configured with JASPI authentication.</p>
-     *
-     * @param deploymentInfo
-     */
-    private void handleJASPIMechanism(final DeploymentInfo deploymentInfo) {
-        ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
-
-        if (applicationPolicy != null && JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
-            String authMethod = null;
-            LoginConfig loginConfig = deploymentInfo.getLoginConfig();
-            if (loginConfig != null && !loginConfig.getAuthMethods().isEmpty()) {
-                authMethod = loginConfig.getAuthMethods().get(0).getName();
-            }
-            deploymentInfo.setJaspiAuthenticationMechanism(new JASPICAuthenticationMechanism(securityDomain, authMethod));
-            deploymentInfo.setSecurityContextFactory(new JASPICSecurityContextFactory(this.securityDomain));
-            deploymentInfo.addOuterHandlerChainWrapper(next -> new JASPICSecureResponseHandler(next));
-        }
-    }
-
-    /**
-     * <p>
-     * Sets the {@link JACCAuthorizationManager} in the specified {@link DeploymentInfo} if the webapp security domain
-     * has defined a JACC authorization module.
-     * </p>
-     *
-     * @param deploymentInfo the {@link DeploymentInfo} instance.
-     */
-    private void handleJACCAuthorization(final DeploymentInfo deploymentInfo) {
-        // TODO make the authorization manager implementation configurable in Undertow or jboss-web.xml
-        ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
-        if (applicationPolicy != null) {
-            AuthorizationInfo authzInfo = applicationPolicy.getAuthorizationInfo();
-            if (authzInfo != null) {
-                for (AuthorizationModuleEntry entry : authzInfo.getModuleEntries()) {
-                    if (JACCAuthorizationModule.class.getName().equals(entry.getPolicyModuleName())) {
-                        deploymentInfo.setAuthorizationManager(JACCAuthorizationManager.INSTANCE);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
     private void handleAdditionalAuthenticationMechanisms(final DeploymentInfo deploymentInfo) {
         for (Map.Entry<String, AuthenticationMechanism> am : host.get().getAdditionalAuthenticationMechanisms().entrySet()) {
             deploymentInfo.addFirstAuthenticationMechanism(am.getKey(), am.getValue());
-        }
-    }
-
-    private void handleIdentityManager(final DeploymentInfo deploymentInfo) {
-        SecurityDomainContext sdc = securityDomainContext.get();
-        deploymentInfo.setIdentityManager(new JAASIdentityManagerImpl(sdc));
-        AuditManager auditManager = sdc.getAuditManager();
-        if (auditManager != null && !mergedMetaData.isDisableAudit()) {
-            deploymentInfo.addNotificationReceiver(new AuditNotificationReceiver(auditManager));
         }
     }
 
@@ -994,12 +887,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 applyElytronSecurity(d, runAsIdentityMap::get);
             } else {
                 if (securityDomain != null) {
-                    d.addThreadSetupAction(new SecurityContextThreadSetupAction(securityDomain, securityDomainContext.get(), principalVersusRolesMap));
-
-                    d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getRunAsIdentity()));
-                    d.addOuterHandlerChainWrapper(JACCContextIdHandler.wrapper(jaccContextId));
-
-                    d.addLifecycleInterceptor(new RunAsLifecycleInterceptor(mergedMetaData.getRunAsIdentity()));
+                    throw UndertowLogger.ROOT_LOGGER.legacySecurityUnsupported();
                 }
             }
 
@@ -1508,7 +1396,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 final Supplier<UndertowService> undertowService,
                 final Supplier<SessionManagerFactory> sessionManagerFactory,
                 final Supplier<SessionIdentifierCodec> sessionIdentifierCodec,
-                final Supplier<SecurityDomainContext> securityDomainContext,
                 final Supplier<ServletContainerService> container,
                 final Supplier<ComponentRegistry> componentRegistry,
                 final Supplier<Host> host,
@@ -1520,7 +1407,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 final Supplier<BiFunction> applySecurityFunction
         ) {
             return new UndertowDeploymentInfoService(deploymentInfoConsumer, undertowService, sessionManagerFactory,
-                    sessionIdentifierCodec, securityDomainContext, container, componentRegistry, host, controlPoint,
+                    sessionIdentifierCodec, container, componentRegistry, host, controlPoint,
                     suspendController, serverEnvironment, rawSecurityDomain, rawMechanismFactory, applySecurityFunction, mergedMetaData, deploymentName, tldInfo, module,
                     scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays,
                     expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers,

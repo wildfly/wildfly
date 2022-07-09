@@ -24,6 +24,8 @@ import java.util.List;
 import org.aesh.complete.AeshCompleteOperation;
 import org.aesh.readline.completion.Completion;
 import org.aesh.readline.terminal.formatting.TerminalString;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
@@ -48,7 +50,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
@@ -57,7 +58,6 @@ import org.junit.runner.RunWith;
  *
  * @author jdenise@redhat.com
  */
-@Ignore("[WFCORE-5522] / [WFLY-15057] The security commands will need to be revisted for the new configuration.")
 @RunWith(Arquillian.class)
 public class SecurityAuthCommandsTestCase {
 
@@ -373,6 +373,16 @@ public class SecurityAuthCommandsTestCase {
     public void testOOBHTTP() throws Exception {
         ctx.handle("security enable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN);
         Assert.assertEquals(ElytronUtil.OOTB_APPLICATION_DOMAIN, getReferencedSecurityDomain(ctx, TEST_UNDERTOW_DOMAIN));
+
+        try {
+            // enabling the same domain using mechanism should fail now
+            ctx.handle("security enable-http-auth-http-server --no-reload --mechanism=BASIC "
+                    + "--file-system-realm-name=" + TEST_FS_REALM + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
+            Assert.fail("Enabling using mechanism should have failed");
+        } catch (Exception e) {
+            MatcherAssert.assertThat(e.getMessage(), CoreMatchers.containsString("Can't mix mechanism and referenced security domain"));
+        }
+
         ctx.handle("security disable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN);
         Assert.assertFalse(domainExists(TEST_UNDERTOW_DOMAIN));
     }
@@ -403,6 +413,15 @@ public class SecurityAuthCommandsTestCase {
         List<String> realms = getDomainRealms(TEST_DOMAIN);
         Assert.assertTrue(realms.contains("ApplicationRealm"));
         Assert.assertTrue(realms.contains(TEST_FS_REALM));
+
+        try {
+            // enabling the same domain using referenced domain should fail now
+            ctx.handle("security enable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN
+                    + " --referenced-security-domain=" + ElytronUtil.OOTB_APPLICATION_DOMAIN);
+            Assert.fail("Enabling using referenced domain should have failed");
+        } catch (Exception e) {
+            MatcherAssert.assertThat(e.getMessage(), CoreMatchers.containsString("Can't mix mechanism and referenced security domain"));
+        }
     }
 
     @Test

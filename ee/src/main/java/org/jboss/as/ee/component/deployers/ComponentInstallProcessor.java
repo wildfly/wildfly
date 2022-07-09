@@ -22,11 +22,15 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY;
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.server.deployment.Attachments.MODULE;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentCreateService;
@@ -46,6 +50,7 @@ import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewService;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -68,11 +73,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
-import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY;
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
-import static org.jboss.as.server.deployment.Attachments.MODULE;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Eduardo Martins
@@ -80,6 +80,26 @@ import static org.jboss.as.server.deployment.Attachments.MODULE;
 public final class ComponentInstallProcessor implements DeploymentUnitProcessor {
 
     private static final ServiceName JNDI_BINDINGS_SERVICE = ServiceName.of("JndiBindingsService");
+
+    private static final List<String> SPEC_COMPONENTS = List.of(
+            "BeanManager",
+            "DefaultContextService",
+            "DefaultDataSource",
+            "DefaultJMSConnectionFactory",
+            "DefaultManagedExecutorService",
+            "DefaultManagedScheduledExecutorService",
+            "DefaultManagedThreadFactory",
+            "EJBContext",
+            "HandleDelegate",
+            "InAppClientContainer",
+            "InstanceName",
+            "ModuleName",
+            "ORB",
+            "TimerService",
+            "TransactionSynchronizationRegistry",
+            "Validator",
+            "ValidatorFactory"
+    );
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -193,7 +213,13 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
                 serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
-                serviceBuilder.install();
+                try {
+                    serviceBuilder.install();
+                } catch (DuplicateServiceException e) {
+                    handleDuplicateService(configuration, bindInfo.getAbsoluteJndiName());
+                    throw e;
+                }
+
             }
         }
 
@@ -273,6 +299,15 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     throw EeLogger.ROOT_LOGGER.circularDependency(bindingName);
                 }
             }
+        }
+    }
+
+    private void handleDuplicateService(ComponentConfiguration configuration, String bindingName) {
+        String name = configuration.getComponentName();
+        if (SPEC_COMPONENTS.contains(name)) {
+            Class conflict = configuration.getComponentClass();
+
+            ROOT_LOGGER.duplicateJndiBindingFound(name, bindingName, conflict);
         }
     }
 }

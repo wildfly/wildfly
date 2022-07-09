@@ -30,7 +30,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.LockingResourceDefini
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.util.concurrent.IsolationLevel;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -65,7 +64,7 @@ public class LockingServiceConfigurator extends ComponentServiceConfigurator<Loc
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.timeout = ACQUIRE_TIMEOUT.resolveModelAttribute(context, model).asLong();
         this.concurrency = CONCURRENCY.resolveModelAttribute(context, model).asInt();
-        this.isolation = ModelNodes.asEnum(ISOLATION.resolveModelAttribute(context, model), IsolationLevel.class);
+        this.isolation = IsolationLevel.valueOf(ISOLATION.resolveModelAttribute(context, model).asString());
         this.striping = STRIPING.resolveModelAttribute(context, model).asBoolean();
         return this;
     }

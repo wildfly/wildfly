@@ -61,6 +61,5 @@ public class InfinispanExtension implements Extension {
         for (InfinispanSchema schema : EnumSet.allOf(InfinispanSchema.class)) {
             context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new InfinispanSubsystemXMLReader(schema));
         }
-        context.setProfileParsingCompletionHandler(new InfinispanProfileParsingCompletionHandler());
     }
 }

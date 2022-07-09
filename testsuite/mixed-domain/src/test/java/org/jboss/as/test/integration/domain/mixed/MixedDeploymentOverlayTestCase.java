@@ -33,9 +33,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.TEST;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -148,14 +147,14 @@ public class MixedDeploymentOverlayTestCase {
         }
         try {
             performHttpCall(DomainTestSupport.slaveAddress, 8380, "main-deployment/index.html", "Hello World");
-            fail(TEST + " is available on slave server-two");
+            fail("'test' is available on slave server-two");
         } catch (IOException good) {
             // good
         }
         executeAsyncForResult(masterClient, deployOnServerGroup(OTHER_SERVER_GROUP, OTHER_RUNTIME_NAME));
         try {
             performHttpCall(DomainTestSupport.slaveAddress, 8280, "other-deployment/index.html", "Hello World");
-            fail(TEST + " is available on master server-one");
+            fail("'test' is available on master server-one");
         } catch (IOException good) {
             // good
         }

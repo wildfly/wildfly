@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.domain.suites;
 
+import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -144,7 +145,6 @@ public class GlobalDirectoryDomainTestCase {
     }
 
     private static DomainTestSupport testSupport;
-    private static WebArchive webArchive;
     private static File tmpDir;
 
     @BeforeClass
@@ -157,7 +157,7 @@ public class GlobalDirectoryDomainTestCase {
             GLOBAL_DIRECTORY_PATH.toFile().mkdirs();
         }
 
-        webArchive = ShrinkWrap.create(WebArchive.class, TEST).addClasses(GlobalDirectoryDeployment.class)
+        WebArchive webArchive = ShrinkWrap.create(WebArchive.class, TEST).addClasses(GlobalDirectoryDeployment.class)
                 .addAsWebInfResource(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?><web-app><servlet-mapping>\n" +
                         "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
                         "        <url-pattern>/*</url-pattern>\n" +
@@ -172,7 +172,14 @@ public class GlobalDirectoryDomainTestCase {
         tmpDir = new File("target/deployments/" + GlobalDirectoryDomainTestCase.class.getSimpleName());
         new File(tmpDir, "archives").mkdirs();
         new File(tmpDir, "exploded").mkdirs();
-        webArchive.as(ZipExporter.class).exportTo(new File(tmpDir, "archives/" + TEST), true);
+
+        File archiveFile = new File(tmpDir, "archives/" + TEST);
+        jakartaTransform(webArchive.as(ZipExporter.class), archiveFile);
+
+        //webArchive.as(ZipExporter.class).exportTo(new File(tmpDir, "archives/" + TEST), true);
+
+        // Recreating means we detect the transformed version if needed.
+        webArchive = ShrinkWrap.createFromZipFile(WebArchive.class, archiveFile);
         webArchive.as(ExplodedExporter.class).exportExploded(new File(tmpDir, "exploded"));
 
         testSupport = DomainTestSuite.createSupport(GlobalDirectoryDomainTestCase.class.getSimpleName());

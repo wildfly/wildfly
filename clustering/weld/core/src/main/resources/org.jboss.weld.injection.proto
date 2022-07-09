@@ -1,0 +1,50 @@
+package org.jboss.weld.injection;
+
+/**
+ * @TypeId(450)
+ */
+message ConstructorInjectionPoint {
+	optional	bytes	constructor	 = 1;
+	optional	bytes	bean	 = 2;
+}
+
+/**
+ * @TypeId(451)
+ */
+message EmptyInjectionPoint {
+}
+
+/**
+ * @TypeId(452)
+ */
+message FieldInjectionPoint {
+	optional	bytes	field	 = 1;
+	optional	bytes	bean	 = 2;
+}
+
+/**
+ * @TypeId(453)
+ */
+message MethodInjectionPoint {
+	optional	MethodInjectionPointType	type	 = 1;
+	optional	bytes	method	 = 2;
+	optional	bytes	bean	 = 3;
+}
+
+/**
+ * @TypeId(454)
+ */
+message ParameterInjectionPointImpl {
+	optional	bytes	parameter	 = 1;
+	optional	bytes	bean	 = 2;
+}
+
+/**
+ * @TypeId(455)
+ */
+enum MethodInjectionPointType {
+	INITIALIZER	 = 0;
+	PRODUCER	 = 1;
+	DISPOSER	 = 2;
+	OBSERVER	 = 3;
+}

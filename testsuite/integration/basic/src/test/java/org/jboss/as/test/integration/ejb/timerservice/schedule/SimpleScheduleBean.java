@@ -21,12 +21,18 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.schedule;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
+import javax.annotation.Resource;
 import javax.ejb.Schedule;
+import javax.ejb.ScheduleExpression;
 import javax.ejb.Stateless;
+import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
 
 import org.jboss.logging.Logger;
 
@@ -35,6 +41,9 @@ import org.jboss.logging.Logger;
  */
 @Stateless
 public class SimpleScheduleBean {
+    @Resource
+    private TimerService timerService;
+
     private static final Logger log = Logger.getLogger(SimpleScheduleBean.class);
     private static final CountDownLatch latch = new CountDownLatch(1);
     private static final int TIMER_CALL_WAITING_S = 30;
@@ -82,4 +91,51 @@ public class SimpleScheduleBean {
         return timerServiceCalled;
     }
 
+    @Timeout
+    private void noop(Timer timer) {
+    }
+
+    /**
+     * Verifies that changing timezone in a schedule expression after the timer creation
+     * should not affect the previously created timer.
+     */
+    public void verifyTimezone() {
+        final String[] zoneIds = {
+                "Europe/Andorra",
+                "Asia/Dubai",
+                "Asia/Kabul",
+                "America/Antigua",
+                "America/Anguilla",
+                "Africa/Johannesburg",
+                "Africa/Lusaka",
+                "Africa/Harare"
+        };
+        final ScheduleExpression exp = new ScheduleExpression().year(9999);
+        final ArrayList<Timer> timers = new ArrayList<>();
+        for (String z : zoneIds) {
+            exp.timezone(z);
+            timers.add(timerService.createCalendarTimer(exp, new TimerConfig(z, false)));
+        }
+
+        RuntimeException e = null;
+        for (Timer t : timers) {
+            final Serializable info = t.getInfo();
+            final String timezone = t.getSchedule().getTimezone();
+            if (!info.equals(timezone)) {
+                e = new RuntimeException(
+                    String.format("Expecting schedule expression timezone: %s, but got: %s", info, timezone));
+                break;
+            }
+        }
+
+        for (Timer t : timers) {
+            try {
+                t.cancel();
+            } catch (Exception ignore) {
+            }
+        }
+        if (e != null) {
+            throw e;
+        }
+    }
 }

@@ -1,0 +1,47 @@
+package org.jboss.weld.annotated.slim.backed;
+
+import "java.lang.proto";
+import "org.jboss.weld.annotated.slim.proto";
+
+/**
+ * @TypeId(431)
+ */
+message BackedAnnotatedConstructor {
+	optional	BackedAnnotatedType	type	 = 1;
+	optional	java.lang.Class	declaringType	 = 2;
+	optional	uint32	position	 = 3;
+}
+
+/**
+ * @TypeId(432)
+ */
+message BackedAnnotatedField {
+	optional	BackedAnnotatedType	type	 = 1;
+	optional	java.lang.Class	declaringType	 = 2;
+	optional	string	fieldName	 = 3;
+}
+
+/**
+ * @TypeId(433)
+ */
+message BackedAnnotatedMethod {
+	optional	BackedAnnotatedType	type	 = 1;
+	optional	java.lang.Class	declaringType	 = 2;
+	optional	uint32	position	 = 3;
+}
+
+/**
+ * @TypeId(434)
+ */
+message BackedAnnotatedParameter {
+	optional	BackedAnnotatedConstructor	constructor	 = 1;
+	optional	BackedAnnotatedMethod	method	 = 2;
+	optional	uint32	position	 = 3;
+}
+
+/**
+ * @TypeId(435)
+ */
+message BackedAnnotatedType {
+	optional	org.jboss.weld.annotated.slim.AnnotatedTypeIdentifier	identifier	 = 1;
+}

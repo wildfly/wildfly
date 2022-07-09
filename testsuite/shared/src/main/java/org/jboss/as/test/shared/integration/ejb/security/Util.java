@@ -23,30 +23,15 @@ package org.jboss.as.test.shared.integration.ejb.security;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Properties;
+import java.util.concurrent.Callable;
+
 import javax.ejb.EJBAccessException;
 import javax.ejb.EJBException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.Configuration;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.Callable;
 
-import org.jboss.security.ClientLoginModule;
-import org.jboss.security.client.SecurityClient;
-import org.jboss.security.client.SecurityClientFactory;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
@@ -57,47 +42,6 @@ import org.wildfly.security.evidence.PasswordGuessEvidence;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class Util {
-
-    /**
-     * Obtain a LoginContext configured for use with the ClientLoginModule.
-     *
-     * @return the configured LoginContext.
-     */
-    public static LoginContext getCLMLoginContext(final String username, final String password) throws LoginException {
-        final String configurationName = "Testing";
-
-        CallbackHandler cbh = new CallbackHandler() {
-            public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                for (Callback current : callbacks) {
-                    if (current instanceof NameCallback) {
-                        ((NameCallback) current).setName(username);
-                    } else if (current instanceof PasswordCallback) {
-                        ((PasswordCallback) current).setPassword(password.toCharArray());
-                    } else {
-                        throw new UnsupportedCallbackException(current);
-                    }
-                }
-            }
-        };
-        Configuration config = new Configuration() {
-
-            @Override
-            public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
-                if (configurationName.equals(name) == false) {
-                    throw new IllegalArgumentException("Unexpected configuration name '" + name + "'");
-                }
-                Map<String, String> options = new HashMap<String, String>();
-                options.put("multi-threaded", "true");
-                options.put("restore-login-identity", "true");
-
-                AppConfigurationEntry clmEntry = new AppConfigurationEntry(ClientLoginModule.class.getName(), AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options);
-
-                return new AppConfigurationEntry[]{clmEntry};
-            }
-        };
-
-        return new LoginContext(configurationName, new Subject(), cbh, config);
-    }
 
     /**
      * Creates JNDI context string based on given parameters.
@@ -142,8 +86,7 @@ public class Util {
     }
 
     /**
-     * Switch the user's identity using either ClientLoginModule or Elytron depending on whether or not the Elytron
-     * profile is enabled.
+     * Switch the user's identity using Elytron.
      *
      * @param username the new username
      * @param password the new password
@@ -153,12 +96,11 @@ public class Util {
      * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
      */
     public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable) throws Exception {
-        return switchIdentity(username, password, callable, false, true);
+        return switchIdentity(username, password, callable, false);
     }
 
     /**
-     * Switch the user's identity using either ClientLoginModule or Elytron depending on whether or not the Elytron
-     * profile is enabled.
+     * Switch the user's identity using Elytron.
      *
      * @param username the new username
      * @param password the new password
@@ -169,28 +111,11 @@ public class Util {
      * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
      */
     public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable, final ClassLoader classLoader) throws Exception {
-        return switchIdentity(username, password, callable, false, true, classLoader);
+        return switchIdentity(username, password, callable, false, classLoader);
     }
 
     /**
-     * Switch the user's identity using either ClientLoginModule or Elytron depending on whether or not the Elytron
-     * profile is enabled.
-     *
-     * @param username the new username
-     * @param password the new password
-     * @param callable the callable task to execute under the new identity
-     * @param validateException whether or not to validate an exception thrown by the callable task
-     * @param <T> the result type of the callable task
-     * @return the result of the callable task
-     * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
-     */
-    public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable, boolean validateException) throws Exception {
-        return switchIdentity(username, password, callable, validateException, true);
-    }
-
-    /**
-     * Switch the user's identity using either ClientLoginModule or SecurityClientFactory or Elytron depending on whether or not the Elytron
-     * profile is enabled.
+     * Switch the user's identity using Elytron.
      *
      * @param username the new username
      * @param password the new password
@@ -202,26 +127,24 @@ public class Util {
      * @return the result of the callable task
      * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
      */
-    public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable, boolean validateException, boolean useClientLoginModule) throws Exception {
-        return switchIdentity(username, password, callable, validateException, useClientLoginModule, null);
+    public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable, boolean validateException) throws Exception {
+        return switchIdentity(username, password, callable, validateException,  null);
     }
 
     /**
-     * Switch the user's identity using either ClientLoginModule or SecurityClientFactory or Elytron depending on whether or not the Elytron
-     * profile is enabled.
+     * Switch the user's identity using Elytron.
      *
      * @param username the new username
      * @param password the new password
      * @param callable the callable task to execute under the new identity
      * @param validateException whether or not to validate an exception thrown by the callable task
-     * @param useClientLoginModule {@code true} if {@link ClientLoginModule} should be used for legacy security,
      * {@code false} if {@link SecurityClientFactory} should be used for legacy security instead
      * @param classLoader the class loader to use when checking for a security domain association
      * @param <T> the result type of the callable task
      * @return the result of the callable task
      * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
      */
-    public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable, boolean validateException, boolean useClientLoginModule, final ClassLoader classLoader) throws Exception {
+    public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable, boolean validateException, final ClassLoader classLoader) throws Exception {
         boolean initialAuthSucceeded = false;
         try {
             if (username != null && password != null) {
@@ -244,24 +167,7 @@ public class Util {
                     return securityIdentity.runAs(callable);
                 } else {
                     // legacy security is enabled, use the ClientLoginModule or SecurityClientFactory to switch the identity
-                    if (useClientLoginModule) {
-                        LoginContext lc = getCLMLoginContext(username, password);
-                        lc.login();
-                        try {
-                            return callable.call();
-                        } finally {
-                            lc.logout();
-                        }
-                    } else {
-                        SecurityClient client = SecurityClientFactory.getSecurityClient();
-                        client.setSimple(username, password);
-                        client.login();
-                        try {
-                            return callable.call();
-                        } finally {
-                            client.logout();
-                        }
-                    }
+                    throw new IllegalStateException("Legacy security is no longer supported.");
                 }
             }
             return callable.call();
@@ -288,8 +194,7 @@ public class Util {
     }
 
     /**
-     * Switch the user's identity using either SecurityClientFactory or Elytron depending on whether or not the Elytron
-     * profile is enabled.
+     * Switch the user's identity using Elytron.
      *
      * @param username the new username
      * @param password the new password
@@ -299,6 +204,6 @@ public class Util {
      * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
      */
     public static <T> T switchIdentitySCF(final String username, final String password, final Callable<T> callable) throws Exception {
-        return switchIdentity(username, password, callable, false, false);
+        return switchIdentity(username, password, callable, false);
     }
 }

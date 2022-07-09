@@ -23,8 +23,8 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.UncheckedIOException;
-import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
@@ -37,8 +37,12 @@ public class CompositeSerializationContextInitializer implements SerializationCo
 
     private final Iterable<? extends SerializationContextInitializer> initializers;
 
+    public CompositeSerializationContextInitializer(SerializationContextInitializer initializer1, SerializationContextInitializer initializer2) {
+        this(List.of(initializer1, initializer2));
+    }
+
     public CompositeSerializationContextInitializer(SerializationContextInitializer... initializers) {
-        this(Arrays.asList(initializers));
+        this(List.of(initializers));
     }
 
     public <E extends Enum<E> & SerializationContextInitializer> CompositeSerializationContextInitializer(Class<E> enumClass) {

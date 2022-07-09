@@ -57,9 +57,6 @@ import org.jboss.dmr.ModelType;
 public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceConfiguratorFactory {
 
     DEFAULT("default", 0, 200, 0, 60000L, null),
-    @Deprecated OOB("oob", 20, 200, 0, 60000L, JGroupsModel.VERSION_6_0_0),
-    @Deprecated INTERNAL("internal", 5, 20, 0, 60000L, JGroupsModel.VERSION_6_0_0),
-    @Deprecated TIMER("timer", 2, 4, 0, 5000L, JGroupsModel.VERSION_6_0_0),
     ;
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
@@ -72,7 +69,6 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     private final JGroupsModel deprecation;
     private final Attribute minThreads;
     private final Attribute maxThreads;
-    private final Attribute queueLength;
     private final Attribute keepAliveTime;
 
     ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime, JGroupsModel deprecation) {
@@ -80,7 +76,6 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
         this.deprecation = deprecation;
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0), deprecation).build());
         this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0), deprecation).build());
-        this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0), deprecation).setDeprecated(JGroupsModel.VERSION_6_0_0.getVersion()).build());
         this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepAliveTime), new LongRangeValidatorBuilder().min(0), deprecation).build());
     }
 
@@ -110,7 +105,6 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
 
         ResourceDescriptor descriptor = new ResourceDescriptor(resolver)
                 .addAttributes(this.minThreads, this.maxThreads, this.keepAliveTime)
-                .addIgnoredAttributes(this.queueLength)
                 ;
         ResourceServiceHandler handler = (this.deprecation == null) ? new SimpleResourceServiceHandler(this) : null;
         new SimpleResourceRegistration(descriptor, handler).register(registration);
@@ -138,10 +132,6 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     @Override
     public Attribute getKeepAliveTime() {
         return this.keepAliveTime;
-    }
-
-    Attribute getQueueLength() {
-        return this.queueLength;
     }
 
     @Override

@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-clustering</artifactId>
@@ -45,8 +45,8 @@
         <surefire.forked.process.timeout>5400</surefire.forked.process.timeout>
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
         <version.org.jboss.byteman>4.0.6</version.org.jboss.byteman>
-        <version.org.infinispan.server>13.0.2.Final</version.org.infinispan.server>
-        <version.org.infinispan.server.driver>13.0.0.Dev03</version.org.infinispan.server.driver>
+        <version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
+        <version.org.infinispan.server.driver>${version.org.infinispan}</version.org.infinispan.server.driver>
         <ts.surefire.clustering.ha.additionalExcludes>nothing-by-default</ts.surefire.clustering.ha.additionalExcludes>
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable-jar-cloud-profile-packaging.phase>none</bootable-jar-cloud-profile-packaging.phase>
@@ -145,6 +145,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.infinispan.protostream</groupId>
+            <artifactId>protostream-processor</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- Arquillian extension for Byteman -->
         <dependency>
             <groupId>org.jboss.arquillian.extension</groupId>
@@ -190,10 +195,21 @@
             <artifactId>resteasy-core-spi</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Clustered Messaging -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-core-client</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Tooling dependencies -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-selector</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -1032,10 +1048,10 @@
                                         <!-- Skip byteman tests -->
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
                                         <!-- Skip modcluster tests -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/modcluster/ModClusterProxyListOptionTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/modcluster/*TestCase.java</exclude>
                                         <!-- Uses TopologyChangeListener EJB -->
                                         <exclude>org/jboss/as/test/clustering/cluster/affinity/RankedAffinityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/cdi/CdiFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/cdi/**</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/singleton/SingletonPartitionTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/CoarseImmutableWebFailoverTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/CoarseWebFailoverTestCase.java</exclude>
@@ -1746,8 +1762,8 @@
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <!-- EJB tests -->
-                                        <include>**/ejb/**/*TestCase.java</include>
-                                        <include>**/ejb2/**/*TestCase.java</include>
+                                        <include>${test-group}/**/ejb/**/*TestCase.java</include>
+                                        <include>${test-group}/**/ejb2/**/*TestCase.java</include>
                                     </includes>
                                     <excludes>
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
@@ -2088,7 +2104,6 @@
                                         <bootable.jar.load.balancer>${project.build.directory}/test-wildfly-cloud-profile-load-balancer.jar</bootable.jar.load.balancer>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
@@ -2113,7 +2128,6 @@
                                         <bootable.jar.load.balancer>${project.build.directory}/test-wildfly-cloud-profile-load-balancer.jar</bootable.jar.load.balancer>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
@@ -2133,7 +2147,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-web-passivation.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
@@ -2317,7 +2330,6 @@
                                         <bootable.jar.load.balancer>${project.build.directory}/test-wildfly-cloud-profile-load-balancer.jar</bootable.jar.load.balancer>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
@@ -2342,7 +2354,6 @@
                                         <bootable.jar.load.balancer>${project.build.directory}/test-wildfly-cloud-profile-load-balancer.jar</bootable.jar.load.balancer>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
@@ -2362,7 +2373,6 @@
                                         <bootable.jar>${project.build.directory}/test-wildfly-web-passivation.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
@@ -2408,7 +2418,7 @@
                                         <!-- TODO see why these aren't working and fix or exclude with a clear explanation -->
                                         <exclude>${test-group}/ejb/remote/GlobalAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
                                         <exclude>${test-group}/ejb/remote/ThreadAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
-                                        <exclude>${test-group}/jsf/JSFFailoverTestCase.java</exclude> <!-- test hard-codes javax package; need to parameterize -->
+                                        <exclude>${test-group}/jsf/**</exclude> <!-- test hard-codes javax package; need to parameterize -->
                                     </excludes>
                                 </configuration>
                             </execution>

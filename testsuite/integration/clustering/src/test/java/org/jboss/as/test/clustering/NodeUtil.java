@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.clustering;
 
+import java.util.Set;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
@@ -35,7 +37,7 @@ public final class NodeUtil {
 
     private static final Logger log = Logger.getLogger(NodeUtil.class);
 
-    public static void deploy(Deployer deployer, String... deployments) {
+    public static void deploy(Deployer deployer, Set<String> deployments) {
         for (String deployment : deployments) {
             deploy(deployer, deployment);
         }
@@ -47,7 +49,7 @@ public final class NodeUtil {
         log.tracef("Deployed %s", deployment);
     }
 
-    public static void undeploy(Deployer deployer, String... deployments) {
+    public static void undeploy(Deployer deployer, Set<String> deployments) {
         for (String deployment : deployments) {
             undeploy(deployer, deployment);
         }
@@ -59,7 +61,7 @@ public final class NodeUtil {
         log.tracef("Undeployed %s", deployment);
     }
 
-    public static void start(ContainerController controller, String... containers) {
+    public static void start(ContainerController controller, Set<String> containers) {
         // TODO do this in parallel.
         for (String container : containers) {
             start(controller, container);
@@ -76,7 +78,7 @@ public final class NodeUtil {
         }
     }
 
-    public static void stop(ContainerController controller, String... containers) {
+    public static void stop(ContainerController controller, Set<String> containers) {
         for (String container : containers) {
             stop(controller, container);
         }
@@ -96,13 +98,13 @@ public final class NodeUtil {
         return controller.isStarted(container);
     }
 
-    public static void stop(WildFlyContainerController controller, int timeout, String... containers) {
+    public static void stop(WildFlyContainerController controller, Set<String> containers, int timeout) {
         for (String container : containers) {
-            stop(controller, timeout, container);
+            stop(controller, container, timeout);
         }
     }
 
-    public static void stop(WildFlyContainerController controller, int timeout, String container) {
+    public static void stop(WildFlyContainerController controller, String container, int timeout) {
         if (controller.isStarted(container)) {
             log.tracef("Stopping container %s", container);
             controller.stop(container, timeout);

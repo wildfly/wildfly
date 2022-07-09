@@ -48,7 +48,7 @@ public class ResourceAdaptersExtension implements Extension {
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 1, 0);
 
     private static final String RESOURCE_NAME = ResourceAdaptersExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -78,7 +78,8 @@ public class ResourceAdaptersExtension implements Extension {
                     new SimpleResourceDefinition.Parameters(SUBSYSTEM_PATH,
                             new StandardResourceDescriptionResolver(Constants.STATISTICS_NAME,
                                     CommonAttributes.RESOURCE_NAME, CommonAttributes.class.getClassLoader()))
-                            .setFeature(false)));
+                            .setFeature(false)
+                            .setRuntime()));
             deployments.registerSubModel(new IronJacamarResourceDefinition());
         }
     }
@@ -92,6 +93,7 @@ public class ResourceAdaptersExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_4_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_5_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_6_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_6_1.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
     }
 
 }

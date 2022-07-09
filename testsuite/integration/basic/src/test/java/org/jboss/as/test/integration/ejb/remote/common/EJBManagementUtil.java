@@ -23,6 +23,28 @@
 package org.jboss.as.test.integration.ejb.remote.common;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_REF;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -44,33 +66,6 @@ import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.remoting.RemotingExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_REF;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
  * @author Jaikiran Pai
@@ -262,32 +257,34 @@ public class EJBManagementUtil {
                     PathElement.pathElement("remote-outbound-connection", connectionName));
             addRemoteOutboundConnection.get(OP_ADDR).set(address.toModelNode());
 
-
-            final ModelNode addPasswordRealm = new ModelNode();
-            addPasswordRealm.get(OP).set(ADD);
-            ModelNode realmAddress = new ModelNode();
-            realmAddress.add(CORE_SERVICE, MANAGEMENT);
-            realmAddress.add(SECURITY_REALM, "PasswordRealm");
-            addPasswordRealm.get(OP_ADDR).set(realmAddress);
-
-            final ModelNode addServerIdentity = new ModelNode();
-            addServerIdentity.get(OP).set(ADD);
-            ModelNode secretAddress = realmAddress.clone().add(SERVER_IDENTITY, SECRET);
-            addServerIdentity.get(OP_ADDR).set(secretAddress);
-            addServerIdentity.get(VALUE).set("cGFzc3dvcmQx");
-
             // set the other properties
             addRemoteOutboundConnection.get("outbound-socket-binding-ref").set(outboundSocketRef);
-            addRemoteOutboundConnection.get(SECURITY_REALM).set("PasswordRealm");
-            addRemoteOutboundConnection.get("username").set("user1");
-            addRemoteOutboundConnection.get("protocol").set("remote+http");
+            addRemoteOutboundConnection.get("authentication-context").set("outbound");
 
             final ModelNode op = Util.getEmptyOperation(COMPOSITE, new ModelNode());
             final ModelNode steps = op.get(STEPS);
-            steps.add(addPasswordRealm);
-            steps.add(addServerIdentity);
-            steps.add(addRemoteOutboundConnection);
 
+            final ModelNode addAuthConfig = Util.createAddOperation(
+                    PathAddress.pathAddress(
+                            PathElement.pathElement(SUBSYSTEM, "elytron"),
+                            PathElement.pathElement("authentication-configuration", "outbound")));
+            addAuthConfig.get("authentication-name").set("user1");
+            final ModelNode credentialReference = new ModelNode();
+            credentialReference.get("clear-text").set("password1");
+            addAuthConfig.get("credential-reference").set(credentialReference);
+            addAuthConfig.get("protocol").set("remote+http");
+
+            final ModelNode addAuthContext = Util.createAddOperation(
+                    PathAddress.pathAddress(
+                            PathElement.pathElement(SUBSYSTEM, "elytron"),
+                            PathElement.pathElement("authentication-context", "outbound")));
+            final ModelNode matchRule = new ModelNode();
+            matchRule.get("authentication-configuration").set("outbound");
+            addAuthContext.get("match-rules").add(matchRule);
+
+            steps.add(addAuthConfig);
+            steps.add(addAuthContext);
+            steps.add(addRemoteOutboundConnection);
 
             // execute the add operation
             if (!connectionCreationOptions.isEmpty()) {
@@ -316,17 +313,20 @@ public class EJBManagementUtil {
                     PathElement.pathElement("remote-outbound-connection", connectionName));
             removeRemoteOutboundConnection.get(OP_ADDR).set(address.toModelNode());
 
-            final ModelNode removeRealm = new ModelNode();
-            removeRealm.get(OP).set(REMOVE);
-            ModelNode realmAddress = new ModelNode();
-            realmAddress.add(CORE_SERVICE, MANAGEMENT);
-            realmAddress.add(SECURITY_REALM, "PasswordRealm");
-            removeRealm.get(OP_ADDR).set(realmAddress);
+            final ModelNode removeAuthConfig = Util.createRemoveOperation(
+                    PathAddress.pathAddress(
+                            PathElement.pathElement(SUBSYSTEM, "elytron"),
+                            PathElement.pathElement("authentication-configuration", "outbound")));
+            final ModelNode removeAuthContext = Util.createRemoveOperation(
+                    PathAddress.pathAddress(
+                            PathElement.pathElement(SUBSYSTEM, "elytron"),
+                            PathElement.pathElement("authentication-context", "outbound")));
 
             final ModelNode op = Util.getEmptyOperation(COMPOSITE, new ModelNode());
             final ModelNode steps = op.get(STEPS);
             steps.add(removeRemoteOutboundConnection);
-            steps.add(removeRealm);
+            steps.add(removeAuthContext);
+            steps.add(removeAuthConfig);
 
             // execute the remove operation
             execute(modelControllerClient, op);
@@ -456,8 +456,19 @@ public class EJBManagementUtil {
         }
     }
 
-    public static void enablePassByValueForRemoteInterfaceInvocations(ManagementClient managementClient) {
-        editPassByValueForRemoteInterfaceInvocations(managementClient, true);
+    public static void undefinePassByValueForRemoteInterfaceInvocations(ManagementClient managementClient) {
+        final ModelControllerClient modelControllerClient = managementClient.getControllerClient();
+        try {
+            final ModelNode undefineAttribute = Util.getUndefineAttributeOperation(
+                    PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME)),
+                    "in-vm-remote-interface-invocation-pass-by-value");
+
+            // execute the operations
+            execute(modelControllerClient, undefineAttribute);
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
     }
 
     public static void disablePassByValueForRemoteInterfaceInvocations(ManagementClient managementClient) {

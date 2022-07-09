@@ -4,67 +4,6 @@
     <!-- import shared ant targets -->
     <import file="common-targets.xml" as="common"/>
 
-    <target name="build-iiop" description="Builds server configurations for IIOP tests">
-
-        <basename property="keystore.filename" file="${keystore.file}"/>
-
-        <echo message="Building config jbossas-iiop-client"/>
-        <copy todir="target/jbossas-iiop-client">
-            <fileset dir="target/wildfly"/>
-        </copy>
-        <ts.config-as.add-jts name="jbossas-iiop-client"/>
-        <ts.config-as.ip-with-multicast name="jbossas-iiop-client"
-            node="${node0}"
-            mcast="${mcast}"
-        />
-        <echo message="Building config jbossas-iiop-server"/>
-        <copy todir="target/jbossas-iiop-server">
-            <fileset dir="target/wildfly"/>
-        </copy>
-        <ts.config-as.add-jts name="jbossas-iiop-server"/>
-        <ts.config-as.ip-with-multicast name="jbossas-iiop-server"
-            node="${node1}"
-            mcast="${mcast}"
-        />
-        <!-- Build configs for SSL tests -->
-
-        <!-- SSL Client w Sec Domain -->
-        <echo message="Building config jbossas-iiop-ssl-client"/>
-        <copy todir="target/jbossas-iiop-ssl-client">
-            <fileset dir="target/wildfly"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-client"
-                                        node="${node0}"
-                                        mcast="${mcast}"
-        />
-        <copy todir="target/jbossas-iiop-ssl-client/standalone/configuration">
-            <fileset file="${keystore.file}"/>
-        </copy>
-        <ts.config-as.iiop.enable-ssl-jsse-domain name="jbossas-iiop-ssl-client"/>
-        <ts.config-as.iiop.enable-server-requires-ssl name="jbossas-iiop-ssl-client"/>
-        <ts.config-as.iiop.create-jsse-security-domain name="jbossas-iiop-ssl-client"
-                                                 keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
-                                                 password="${keystore.password}"/>
-
-        <!-- SSL Server with ior-settings transport config -->
-        <echo message="Building config jbossas-iiop-ssl-server"/>
-        <copy todir="target/jbossas-iiop-ssl-server">
-            <fileset dir="target/wildfly"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-server"
-                                        node="${node1}"
-                                        mcast="${mcast}"
-        />
-        <copy todir="target/jbossas-iiop-ssl-server/standalone/configuration">
-            <fileset file="${keystore.file}"/>
-        </copy>
-        <ts.config-as.iiop.enable-ssl-jsse-domain name="jbossas-iiop-ssl-server"/>
-        <ts.config-as.iiop.enable-server-requires-ssl name="jbossas-iiop-ssl-server"/>
-        <ts.config-as.iiop.create-jsse-security-domain name="jbossas-iiop-ssl-server"
-                                                       keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
-                                                       password="${keystore.password}"/>
-    </target>
-
     <target name="build-iiop-elytron" description="Builds server configurations for IIOP tests with Elytron">
 
     <echo message="Building config jbossas-iiop-client"/>
@@ -76,6 +15,8 @@
             node="${node0}"
             mcast="${mcast}"
         />
+        <ts.config-as.iiop.add-auth-context name="jbossas-iiop-client"/>
+
         <echo message="Building config jbossas-iiop-server"/>
         <copy todir="target/jbossas-iiop-server">
             <fileset dir="target/wildfly"/>

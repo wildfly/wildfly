@@ -1,0 +1,44 @@
+<subsystem xmlns="urn:jboss:domain:datasources:7.0">
+    <datasources>
+        <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS"
+                    use-java-context="true">
+            <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+            <driver>h2</driver>
+            <security>
+                <user-name>sa</user-name>
+                <password>sa</password>
+            </security>
+            <validation>
+                <valid-connection-checker class-name="someClass2" module="someModule2"/>
+                <stale-connection-checker class-name="someClass3" module="someModule3"/>
+                <exception-sorter class-name="someClass4" module="someModule4"/>
+            </validation>
+        </datasource>
+        <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool"
+                       use-java-context="true" spy="false" use-ccm="true" connectable="false" statistics-enabled="true" tracking="true">
+            <xa-datasource-property name="URL">
+                jdbc:h2:mem:test
+            </xa-datasource-property>
+            <xa-datasource-class>
+                org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource
+            </xa-datasource-class>
+            <driver>h2</driver>
+            <security>
+                <user-name>sa</user-name>
+                <password>sa</password>
+            </security>
+            <validation>
+                <valid-connection-checker class-name="someClass2" module="someModule2"/>
+                <stale-connection-checker class-name="someClass3" module="someModule3"/>
+                <exception-sorter class-name="someClass4" module="someModule4"/>
+            </validation>
+        </xa-datasource>
+        <drivers>
+            <driver name="h2" module="com.h2database.h2">
+                <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+                <datasource-class>org.h2.jdbcx.JdbcDataSource</datasource-class>
+            </driver>
+        </drivers>
+    </datasources>
+
+</subsystem>

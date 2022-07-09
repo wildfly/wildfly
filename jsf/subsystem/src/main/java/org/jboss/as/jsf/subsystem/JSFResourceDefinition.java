@@ -18,19 +18,22 @@
  */
 package org.jboss.as.jsf.subsystem;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.weld.Capabilities;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * Defines attributes and operations for the Jakarta Server Faces Subsystem
@@ -42,6 +45,9 @@ public class JSFResourceDefinition extends PersistentResourceDefinition {
     public static final String DEFAULT_SLOT_ATTR_NAME = "default-jsf-impl-slot";
     public static final String DISALLOW_DOCTYPE_DECL_ATTR_NAME = "disallow-doctype-decl";
     public static final String DEFAULT_SLOT = "main";
+    private static final RuntimeCapability<Void> FACES_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.faces")
+            .addRequirements(Capabilities.WELD_CAPABILITY_NAME)
+            .build();
 
     public static final JSFResourceDefinition INSTANCE = new JSFResourceDefinition();
 
@@ -60,10 +66,11 @@ public class JSFResourceDefinition extends PersistentResourceDefinition {
                     .build();
 
     private JSFResourceDefinition() {
-        super(JSFExtension.PATH_SUBSYSTEM,
-                JSFExtension.getResourceDescriptionResolver(),
-                JSFSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(JSFExtension.PATH_SUBSYSTEM, JSFExtension.getResourceDescriptionResolver())
+                .setAddHandler(JSFSubsystemAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .addCapabilities(FACES_CAPABILITY)
+        );
     }
 
     @Override

@@ -18,7 +18,6 @@
 package org.jboss.as.weld;
 
 import java.util.function.Supplier;
-
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InterceptionType;
@@ -72,6 +71,10 @@ public class WeldCapabilityImpl implements WeldCapability {
 
     public boolean isWeldDeployment(final DeploymentUnit unit) {
         return WeldDeploymentMarker.isWeldDeployment(unit);
+    }
+
+    public void markAsWeldDeployment(DeploymentUnit unit) {
+        WeldDeploymentMarker.mark(unit);
     }
 
     @Override

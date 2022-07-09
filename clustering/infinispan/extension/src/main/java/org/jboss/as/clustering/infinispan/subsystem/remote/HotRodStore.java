@@ -71,7 +71,7 @@ import io.reactivex.rxjava3.core.Flowable;
  */
 @ConfiguredBy(HotRodStoreConfiguration.class)
 public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
-    private static final Set<Characteristic> CHARACTERISTICS = EnumSet.of(Characteristic.SHAREABLE, Characteristic.BULK_READ, Characteristic.EXPIRATION, Characteristic.SEGMENTABLE);
+    private static final Set<Characteristic> CHARACTERISTICS = EnumSet.of(Characteristic.SHAREABLE, Characteristic.BULK_READ, Characteristic.EXPIRATION);
 
     private RemoteCache<ByteBuffer, ByteBuffer> cache;
     private BlockingManager blockingManager;
@@ -94,7 +94,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
         this.entryFactory = context.getMarshallableEntryFactory();
 
         String templateName = (cacheConfiguration != null) ? cacheConfiguration : DefaultTemplate.DIST_SYNC.getTemplateName();
-        Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<RemoteCacheConfigurationBuilder>() {
+        Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<>() {
             @Override
             public void accept(RemoteCacheConfigurationBuilder builder) {
                 builder.forceReturnValues(false).transactionMode(TransactionMode.NONE).nearCacheMode(NearCacheMode.DISABLED).templateName(templateName);
@@ -141,17 +141,29 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
 
     @Override
     public CompletionStage<MarshallableEntry<K, V>> load(int segment, Object key) {
-        return this.cache.getAsync(this.marshalKey(key)).thenApply(value -> (value != null) ? this.entryFactory.create(key, this.unmarshalValue(value)) : null);
+        try {
+            return this.cache.getAsync(this.marshalKey(key)).thenApply(value -> (value != null) ? this.entryFactory.create(key, this.unmarshalValue(value)) : null);
+        } catch (PersistenceException e) {
+            return CompletableFutures.completedExceptionFuture(e);
+        }
     }
 
     @Override
     public CompletionStage<Void> write(int segment, MarshallableEntry<? extends K, ? extends V> entry) {
-        return this.cache.putAsync(entry.getKeyBytes(), this.marshalValue(entry.getMarshalledValue())).thenAccept(Functions.discardingConsumer());
+        try {
+            return this.cache.putAsync(entry.getKeyBytes(), this.marshalValue(entry.getMarshalledValue())).thenAccept(Functions.discardingConsumer());
+        } catch (PersistenceException e) {
+            return CompletableFutures.completedExceptionFuture(e);
+        }
     }
 
     @Override
     public CompletionStage<Boolean> delete(int segment, Object key) {
-        return this.cache.withFlags(Flag.FORCE_RETURN_VALUE).removeAsync(this.marshalKey(key)).thenApply(Objects::nonNull);
+        try {
+            return this.cache.withFlags(Flag.FORCE_RETURN_VALUE).removeAsync(this.marshalKey(key)).thenApply(Objects::nonNull);
+        } catch (PersistenceException e) {
+            return CompletableFutures.completedExceptionFuture(e);
+        }
     }
 
     @Override
@@ -167,9 +179,13 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
 
     @Override
     public Flowable<K> publishKeys(IntSet segments, Predicate<? super K> filter) {
-        Stream<K> keys = this.cache.keySet().stream().map(this::unmarshalKey);
-        Stream<K> filteredKeys = (filter != null) ? keys.filter(filter) : keys;
-        return Flowable.fromPublisher(this.blockingManager.blockingPublisher(Flowable.defer(() -> Flowable.fromStream(filteredKeys).doFinally(filteredKeys::close))));
+        try {
+            Stream<K> keys = this.cache.keySet().stream().map(this::unmarshalKey);
+            Stream<K> filteredKeys = (filter != null) ? keys.filter(filter) : keys;
+            return Flowable.fromPublisher(this.blockingManager.blockingPublisher(Flowable.defer(() -> Flowable.fromStream(filteredKeys).doFinally(filteredKeys::close))));
+        } catch (PersistenceException e) {
+            return Flowable.fromCompletionStage(CompletableFutures.completedExceptionFuture(e));
+        }
     }
 
     @Override
@@ -178,9 +194,13 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
     }
 
     private Flowable<MarshallableEntry<K, V>> publishEntries(IntSet segments, Predicate<? super K> filter) {
-        Stream<MarshallableEntry<K, V>> entries = this.cache.entrySet().stream().map(this::unmarshalEntry);
-        Stream<MarshallableEntry<K, V>> filteredEntries = (filter != null) ? entries.filter(entry -> filter.test(entry.getKey())) : entries;
-        return Flowable.fromPublisher(this.blockingManager.blockingPublisher(Flowable.defer(() -> Flowable.fromStream(filteredEntries).doFinally(filteredEntries::close))));
+        try {
+            Stream<MarshallableEntry<K, V>> entries = this.cache.entrySet().stream().map(this::unmarshalEntry);
+            Stream<MarshallableEntry<K, V>> filteredEntries = (filter != null) ? entries.filter(entry -> filter.test(entry.getKey())) : entries;
+            return Flowable.fromPublisher(this.blockingManager.blockingPublisher(Flowable.defer(() -> Flowable.fromStream(filteredEntries).doFinally(filteredEntries::close))));
+        } catch (PersistenceException e) {
+            return Flowable.fromCompletionStage(CompletableFutures.completedExceptionFuture(e));
+        }
     }
 
     @Override
@@ -190,7 +210,11 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
 
     @Override
     public CompletionStage<Boolean> containsKey(int segment, Object key) {
-        return this.cache.containsKeyAsync(this.marshalKey(key));
+        try {
+            return this.cache.containsKeyAsync(this.marshalKey(key));
+        } catch (PersistenceException e) {
+            return CompletableFutures.completedExceptionFuture(e);
+        }
     }
 
     @Override

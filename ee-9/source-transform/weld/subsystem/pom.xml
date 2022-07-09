@@ -31,7 +31,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -72,15 +72,15 @@
             <artifactId>jboss-metadata-ear</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.spec.jakarta.el</groupId>
+            <artifactId>jboss-el-api_5.0_spec</artifactId>
+        </dependency>
+
         <!-- Needed for @Resource(lookup=) -->
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
         </dependency>
 
         <dependency>
@@ -118,13 +118,6 @@
             <groupId>org.kohsuke.metainf-services</groupId>
             <artifactId>metainf-services</artifactId>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox</artifactId>
-            <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -173,6 +166,11 @@
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-core-impl</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-lite-extension-translator</artifactId>
         </dependency>
 
         <dependency>
@@ -226,12 +224,6 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>picketbox</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>

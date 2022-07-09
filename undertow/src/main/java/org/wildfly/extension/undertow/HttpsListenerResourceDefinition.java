@@ -75,7 +75,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<>(SslClientAuthMode.class, true, true))
+            .setValidator(EnumValidator.create(SslClientAuthMode.class))
             .setDefaultValue(new ModelNode(SslClientAuthMode.NOT_REQUESTED.name()))
             .setDeprecated(ModelVersion.create(4, 0, 0))
             .setAlternatives(Constants.SSL_CONTEXT)

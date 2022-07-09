@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.CLUSTERING_CAPABILITIES;
 import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.Capability.FORK_CHANNEL;
 import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.Capability.FORK_CHANNEL_CLUSTER;
 import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.Capability.FORK_CHANNEL_FACTORY;
@@ -30,10 +29,8 @@ import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.C
 import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.Capability.FORK_CHANNEL_SOURCE;
 
 import java.util.EnumSet;
-import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.Capability;
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.naming.BinderServiceConfigurator;
@@ -43,12 +40,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.server.service.ProvidedIdentityGroupServiceConfigurator;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
-import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.service.ServiceNameRegistry;
-import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
-import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.IdentityGroupServiceConfiguratorProvider;
 
 /**
  * @author Paul Ferraro
@@ -78,13 +71,7 @@ public class ForkServiceHandler extends SimpleResourceServiceHandler {
         new BinderServiceConfigurator(JGroupsBindingFactory.createChannelBinding(name), JGroupsRequirement.CHANNEL.getServiceName(context, name)).build(target).install();
         new BinderServiceConfigurator(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name)).build(target).install();
 
-        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
-
-        for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
-            for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, name, channel)) {
-                configurator.configure(context).build(target).install();
-            }
-        }
+        new ProvidedIdentityGroupServiceConfigurator(name, channel).configure(context).build(target).install();
     }
 
     @Override
@@ -94,13 +81,7 @@ public class ForkServiceHandler extends SimpleResourceServiceHandler {
         String name = context.getCurrentAddressValue();
         String channel = address.getParent().getLastElement().getValue();
 
-        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
-
-        for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
-            for (ServiceNameProvider configurator : provider.getServiceConfigurators(registry, name, channel)) {
-                context.removeService(configurator.getServiceName());
-            }
-        }
+        new ProvidedIdentityGroupServiceConfigurator(name, channel).remove(context);
 
         context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());

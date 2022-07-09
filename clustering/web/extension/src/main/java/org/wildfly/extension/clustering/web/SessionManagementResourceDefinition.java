@@ -40,10 +40,11 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.web.WebProviderRequirement;
-import org.wildfly.clustering.web.WebRequirement;
+import org.wildfly.clustering.web.service.WebProviderRequirement;
+import org.wildfly.clustering.web.service.WebRequirement;
 
 /**
  * Base definition for session management resources.
@@ -73,19 +74,26 @@ public class SessionManagementResourceDefinition extends ChildResourceDefinition
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        GRANULARITY("granularity", ModelType.STRING) {
+        GRANULARITY("granularity", ModelType.STRING, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new EnumValidator<>(SessionGranularity.class));
             }
         },
+        MARSHALLER("marshaller", ModelType.STRING, new ModelNode(SessionMarshallerFactory.JBOSS.name())) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new EnumValidator<>(SessionMarshallerFactory.class));
+            }
+        }
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type) {
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setRequired(true)
+                    .setRequired(defaultValue == null)
+                    .setDefaultValue(defaultValue)
                     .setFlags(Flag.RESTART_RESOURCE_SERVICES)
                 ).build();
         }

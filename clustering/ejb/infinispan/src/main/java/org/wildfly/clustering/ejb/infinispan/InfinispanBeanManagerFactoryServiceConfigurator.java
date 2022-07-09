@@ -34,23 +34,23 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
-import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
-import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
+import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.group.Group;
+import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
+import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.spi.group.Group;
 
 /**
  * @author Paul Ferraro
@@ -81,7 +81,7 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
         String containerName = this.configuration.getContainerName();
         ServiceName deploymentUnitServiceName = this.beanConfiguration.getDeploymentUnitServiceName();
-        String cacheName = InfinispanBeanManagerFactoryServiceConfiguratorFactory.getCacheName(deploymentUnitServiceName, this.name);
+        String cacheName = InfinispanBeanManagementProvider.getCacheName(deploymentUnitServiceName, this.name);
         this.cache = new ServiceSupplierDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, cacheName));
         this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, containerName));
         this.dispatcherFactory = new ServiceSupplierDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, containerName));

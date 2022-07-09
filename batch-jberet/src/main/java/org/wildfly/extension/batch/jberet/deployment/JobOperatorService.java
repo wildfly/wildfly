@@ -29,7 +29,6 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -38,7 +37,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
-
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionIsRunningException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
@@ -163,13 +161,9 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
     @Override
     public Set<String> getJobNames() throws JobSecurityException {
         checkState();
-        Set<String> set = new HashSet<>();
-        for (String s : super.getJobNames()) {
-            if (resolver.isValidJobName(s)) {
-                set.add(s);
-            }
-        }
-        return set;
+        // job repository does not know a job if it has not been started.
+        // So we rely on the resolver to provide complete job names for the deployment.
+        return resolver.getJobNames();
     }
 
     @Override
@@ -496,23 +490,29 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
                 try {
                     // Use the deployment's class loader to stop jobs
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-                    final Collection<String> jobNames = getJobNames();
+
+                    // getJobNames() returns both active and inactive job names, so use
+                    // jobRepository.getJobNames() to get all active job names, which will
+                    // be filtered in the loop below for valid job names for the current deployment.
+                    final Collection<String> jobNames = getJobRepository().getJobNames();
                     // Look for running jobs and attempt to stop each one
                     for (String jobName : jobNames) {
-                        // Casting to (Supplier<List<Long>>) is done here on purpose as a workaround for a bug in 1.8.0_45
-                        final List<Long> runningJobs = allowMissingJob((Supplier<List<Long>>) () -> getRunningExecutions(jobName), Collections.emptyList());
-                        for (Long id : runningJobs) {
-                            try {
-                                BatchLogger.LOGGER.stoppingJob(id, jobName, deploymentName);
-                                // We want to skip the permissions check, we need to stop jobs regardless of the
-                                // permissions
-                                stop(id);
-                                // Queue for a restart on resume if required
-                                if (queueForRestart) {
-                                    stoppedIds.add(id);
+                        if (resolver.isValidJobName(jobName)) {
+                            // Casting to (Supplier<List<Long>>) is done here on purpose as a workaround for a bug in 1.8.0_45
+                            final List<Long> runningJobs = allowMissingJob((Supplier<List<Long>>) () -> getRunningExecutions(jobName), Collections.emptyList());
+                            for (Long id : runningJobs) {
+                                try {
+                                    BatchLogger.LOGGER.stoppingJob(id, jobName, deploymentName);
+                                    // We want to skip the permissions check, we need to stop jobs regardless of the
+                                    // permissions
+                                    stop(id);
+                                    // Queue for a restart on resume if required
+                                    if (queueForRestart) {
+                                        stoppedIds.add(id);
+                                    }
+                                } catch (Exception e) {
+                                    BatchLogger.LOGGER.stoppingJobFailed(e, id, jobName, deploymentName);
                                 }
-                            } catch (Exception e) {
-                                BatchLogger.LOGGER.stoppingJobFailed(e, id, jobName, deploymentName);
                             }
                         }
                     }

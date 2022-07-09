@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-feature-pack-common</artifactId>
@@ -201,30 +201,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox-commons</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox-infinispan</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -235,7 +213,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
+            <artifactId>wildfly-clustering-context</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -314,17 +292,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-security</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-security-plugins</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

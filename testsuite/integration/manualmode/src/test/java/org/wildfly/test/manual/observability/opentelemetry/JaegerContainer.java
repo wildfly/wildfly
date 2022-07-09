@@ -10,7 +10,7 @@ import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 
 public class JaegerContainer extends GenericContainer<JaegerContainer> {
-    private static final String JAEGER_IMAGE = "jaegertracing/all-in-one:latest";
+    private static final String JAEGER_IMAGE = "quay.io/jaegertracing/all-in-one:latest";
 
     public JaegerContainer() {
         super(JAEGER_IMAGE);

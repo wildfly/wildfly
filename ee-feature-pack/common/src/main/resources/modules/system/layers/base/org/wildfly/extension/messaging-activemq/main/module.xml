@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-messaging-activemq-subsystem}"/>
+        <artifact name="\${org.wildfly:wildfly-messaging-activemq-subsystem@module.jakarta.suffix@}"/>
         <artifact name="\${org.jboss.activemq.artemis.integration:artemis-wildfly@module.jakarta.suffix@-integration}"/>
         <resource-root path="META-INF"/>
     </resources>
@@ -40,10 +40,22 @@
         <module name="java.management"/>
         <module name="java.naming"/>
         <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
 
         <!-- io.undertow.core is required only if http-acceptor are used -->
         <module name="io.undertow.core" optional="true" />
-        <module name="io.netty"/>
+        <!--<module name="io.netty"/>-->
+        <module name="io.netty.netty-buffer"/>
+        <module name="io.netty.netty-transport"/>
+        <module name="io.netty.netty-handler"/>
+        <module name="io.netty.netty-handler-proxy"/>
+        <module name="io.netty.netty-codec"/>
+        <module name="io.netty.netty-codec-socks"/>
+        <module name="io.netty.netty-common"/>
+        <module name="io.netty.netty-resolver"/>
+        <module name="io.netty.netty-transport-native-epoll"/>
+        <module name="io.netty.netty-transport-native-kqueue"/>
+        <module name="io.netty.netty-codec-http"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
         <module name="javax.jms.api"/>
@@ -77,7 +89,6 @@
         <module name="org.jboss.as.security" optional="true"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.jts"/>
-        <module name="org.picketbox" optional="true"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.wildfly.naming-client" services="import"/>
         <module name="org.jboss.threads"/>
@@ -86,12 +97,13 @@
         <module name="org.jboss.xnio" optional="true"/>
         <!-- org.jboss.xnio.netty.netty-xnio-transport is required only if http-acceptor are used -->
         <module name="org.jboss.xnio.netty.netty-xnio-transport" optional="true"/>
-        <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
+        <module name="org.wildfly.clustering.server.api"/>
+        <module name="org.wildfly.clustering.server.service"/>
+        <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
-        <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.transaction.client"/>
         <!-- Use the HornetQ client module to create the legacy connection factory and destination resources -->
         <module name="org.hornetq.client" optional="true"/>

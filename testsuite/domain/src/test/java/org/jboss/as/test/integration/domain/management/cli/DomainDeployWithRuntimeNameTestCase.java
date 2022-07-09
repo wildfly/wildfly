@@ -20,8 +20,11 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
-import org.jboss.as.domain.controller.logging.DomainControllerLogger;
-import org.jboss.as.test.integration.management.util.SimpleHelloWorldServlet;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -29,20 +32,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
 
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
+import org.jboss.as.test.integration.management.util.SimpleHelloWorldServlet;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertThat;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -75,7 +77,8 @@ public class DomainDeployWithRuntimeNameTestCase extends AbstractCliTestBase {
         war.addAsWebInfResource(SimpleHelloWorldServlet.class.getPackage(), "web.xml", "web.xml");
         war.addAsWebResource(new StringAsset(content), "page.html");
         File tempFile = new File(System.getProperty("java.io.tmpdir"), "HelloServlet.war");
-        new ZipExporterImpl(war).exportTo(tempFile, true);
+        //new ZipExporterImpl(war).exportTo(tempFile, true);
+        jakartaTransform(war.as(ZipExporter.class), tempFile);
         return tempFile;
     }
 

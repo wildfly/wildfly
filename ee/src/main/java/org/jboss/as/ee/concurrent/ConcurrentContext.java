@@ -26,13 +26,13 @@ import org.jboss.as.ee.concurrent.handle.ResetContextHandle;
 import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
-import org.jboss.as.naming.util.ThreadLocalStack;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.common.function.ThreadLocalStack;
 
 import javax.enterprise.concurrent.ContextService;
 import java.io.IOException;
