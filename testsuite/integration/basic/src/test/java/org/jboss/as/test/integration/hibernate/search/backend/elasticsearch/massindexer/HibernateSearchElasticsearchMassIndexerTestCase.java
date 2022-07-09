@@ -65,7 +65,7 @@ public class HibernateSearchElasticsearchMassIndexerTestCase {
     @Deployment
     public static WebArchive createArchive() {
 
-        if (!AssumeTestGroupUtil.isDockerAvailable()) {
+        if (!AssumeTestGroupUtil.isDockerAvailable() || !AssumeTestGroupUtil.isSecurityManagerDisabled()) {
             return AssumeTestGroupUtil.emptyWar(WAR_ARCHIVE_NAME);
         }
 

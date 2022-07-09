@@ -78,7 +78,7 @@ public class HibernateSearchElasticsearchGsonDependencyTestCase {
     @Deployment
     public static Archive<?> createTestArchive() throws Exception {
 
-        if (!AssumeTestGroupUtil.isDockerAvailable()) {
+        if (!AssumeTestGroupUtil.isDockerAvailable() || !AssumeTestGroupUtil.isSecurityManagerDisabled()) {
             return AssumeTestGroupUtil.emptyWar(HibernateSearchElasticsearchGsonDependencyTestCase.class.getSimpleName());
         }
 
