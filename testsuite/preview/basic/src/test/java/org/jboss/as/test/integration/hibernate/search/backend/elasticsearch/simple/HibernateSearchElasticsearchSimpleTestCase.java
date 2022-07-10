@@ -67,10 +67,16 @@ public class HibernateSearchElasticsearchSimpleTestCase {
 
     @Deployment
     public static WebArchive createArchive() {
+
+        if (!AssumeTestGroupUtil.isDockerAvailable()) {
+            return AssumeTestGroupUtil.emptyWar(WAR_ARCHIVE_NAME);
+        }
+
         return ShrinkWrap
                 .create(WebArchive.class, WAR_ARCHIVE_NAME)
                 .addClasses(HibernateSearchElasticsearchSimpleTestCase.class,
-                        SearchBean.class, Book.class, HibernateSearchElasticsearchSimpleTestCase.class, AnalysisConfigurer.class)
+                        SearchBean.class, Book.class, HibernateSearchElasticsearchSimpleTestCase.class,
+                        AnalysisConfigurer.class, AssumeTestGroupUtil.class)
                 .addAsResource(persistenceXml(), "META-INF/persistence.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
     }

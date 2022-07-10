@@ -29,17 +29,31 @@ import org.testcontainers.DockerClientFactory;
 public class AssumeTestGroupUtil {
 
     /**
-     * An empty deployment archive that can be returned from an @Deployment method in the normal deployment
+     * An empty deployment archive that can be returned from an @Deployment method if the normal deployment
      * returned from the method cannot be successfully deployed under certain conditions. Arquillian will deploy
-     * managed deployments <strong>before executing any @BeforeClass method</strong>, so if your @BeforeClass
+     * managed deployments <strong>before executing any @BeforeClass method</strong>, so if a @BeforeClass
      * method conditionally disables running the tests with an AssumptionViolatedException, the deployment will
      * still get deployed and may fail the test. So have it deploy this instead so your @BeforeClass gets called.
+     * <p>
+     * This is private so it can be lazy initialized when needed, in case this class is used for other reasons
+     * in-container where Shrinkwrap is not available.
+     * </p>
      */
-    public static final JavaArchive EMPTY_JAR = emptyJar("empty");
+    private static JavaArchive EMPTY_JAR;
     /** Same as {@link #EMPTY_JAR} but is a {@link WebArchive}. */
-    public static final WebArchive EMPTY_WAR = emptyWar("empty");
+    private static WebArchive EMPTY_WAR;
     /** Same as {@link #EMPTY_JAR} but is an {@link EnterpriseArchive}. */
-    public static final EnterpriseArchive EMPTY_EAR = emptyEar("empty");
+    private static EnterpriseArchive EMPTY_EAR;
+    /**
+     * Creates an empty (except for a manifest) JavaArchive with the name {@code empty.jar}.
+     * @return the archive
+     */
+    public static JavaArchive emptyJar() {
+        if (EMPTY_JAR == null) {
+            EMPTY_JAR = emptyJar("empty");
+        }
+        return EMPTY_JAR;
+    }
     /**
      * Creates an empty (except for a manifest) JavaArchive with the given name.
      * @param name the jar name. Can end with the '.jar' extension, but if not it will be added
@@ -49,6 +63,16 @@ public class AssumeTestGroupUtil {
         String jarName = name.endsWith(".jar") ? name : name + ".jar";
         return ShrinkWrap.create(JavaArchive.class, jarName)
                 .addManifest();
+    }
+    /**
+     * Creates an empty (except for a manifest) WebArchive with the name {@code empty.war}.
+     * @return the archive
+     */
+    public static WebArchive emptyWar() {
+        if (EMPTY_WAR == null) {
+            EMPTY_WAR = emptyWar("empty");
+        }
+        return EMPTY_WAR;
     }
     /**
      * Creates an empty (except for a manifest)  WebArchive with the given name.
@@ -61,7 +85,17 @@ public class AssumeTestGroupUtil {
                 .addManifest();
     }
     /**
-     * Creates an empty (except for a manifest)  EnterpriseArchive with the given name.
+     * Creates an empty (except for a manifest) EnterpriseArchive with the name {@code empty.ear}.
+     * @return the archive
+     */
+    public static EnterpriseArchive emptyEar() {
+        if (EMPTY_EAR == null) {
+            EMPTY_EAR = emptyEar("empty");
+        }
+        return EMPTY_EAR;
+    }
+    /**
+     * Creates an empty (except for a manifest) EnterpriseArchive with the given name.
      * @param name the jar name. Can end with the '.ear' extension, but if not it will be added
      * @return the archive
      */
