@@ -21,91 +21,58 @@
  */
 package org.jboss.as.test.shared;
 
+import static org.jboss.as.test.shared.ManagementServerSetupTask.createContainerConfigurationBuilder;
+import static org.jboss.as.test.shared.ManagementServerSetupTask.createScriptBuilder;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.batch.Batch;
-import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.as.test.integration.management.util.CLITestUtil;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
+import org.jboss.as.test.shared.ManagementServerSetupTask.ContainerConfigurationBuilder;
+import org.jboss.as.test.shared.ManagementServerSetupTask.CommandSet;
+import org.jboss.as.test.shared.ManagementServerSetupTask.ContainerConfiguration;
+import org.jboss.as.test.shared.ManagementServerSetupTask.ScriptBuilder;
 
 /**
  * Implementation of {@link ServerSetupTask} which runs provided CLI commands. Since the API is based around class instances, the extending
  * class implementations need to configure the {@link CLIServerSetupTask#builder}.
  *
  * @author Radoslav Husar
+ * @deprecated Use {@link ManagementServerSetupTask} instead
  */
+@Deprecated
 public class CLIServerSetupTask implements ServerSetupTask {
 
-    private static final Logger LOG = Logger.getLogger(CLIServerSetupTask.class);
     protected final Builder builder = new Builder();
 
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        NodeBuilder node = builder.configuration.get(containerId);
-        if (node != null && !node.setupCommands.isEmpty()) {
-            this.executeCommands(managementClient, node.setupCommands, node.batch, node.reloadOnSetup);
-        }
+        new ManagementServerSetupTask(containerId, this.createContainerConfiguration(containerId, ContainerConfigurationBuilder::setupScript, NodeBuilder::getSetupCommands)).setup(managementClient, containerId);
     }
 
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        NodeBuilder node = builder.configuration.get(containerId);
-        if (node != null && !node.teardownCommands.isEmpty()) {
-            this.executeCommands(managementClient, node.teardownCommands, node.batch, node.reloadOnTearDown);
-        }
+        new ManagementServerSetupTask(containerId, this.createContainerConfiguration(containerId, ContainerConfigurationBuilder::tearDownScript, NodeBuilder::getTearDownCommands)).tearDown(managementClient, containerId);
     }
 
-    private void executeCommands(ManagementClient managementClient, List<String> commands, boolean useBatch, boolean reload) throws Exception {
-        if (commands.isEmpty()) return;
-
-        CommandContext context = CLITestUtil.getCommandContext();
-        context.connectController();
-
-        if (useBatch) {
-            context.getBatchManager().activateNewBatch();
-            Batch batch = context.getBatchManager().getActiveBatch();
-            for (String command : commands) {
-                batch.add(context.toBatchedCommand(command));
+    private ContainerConfiguration createContainerConfiguration(String containerId, BiFunction<ContainerConfigurationBuilder, List<List<String>>, ContainerConfigurationBuilder> scriptFunction, Function<NodeBuilder, List<String>> batch) {
+        ContainerConfigurationBuilder containerBuilder = createContainerConfigurationBuilder();
+        NodeBuilder builder = this.builder.configuration.get(containerId);
+        if (builder != null) {
+            ScriptBuilder scriptBuilder = createScriptBuilder();
+            CommandSet<?> commands = (builder.isBatched()) ? scriptBuilder.startBatch() : scriptBuilder;
+            for (String command : batch.apply(builder)) {
+                commands.add(command);
             }
-            ModelNode commandModel = batch.toRequest();
-
-            // Add {allow-resource-service-restart=true} operation flag manually since its not exposed on the Batch
-            // Currently fails with: https://issues.jboss.org/browse/ARQ-1135
-            //commandModel.get(ModelDescriptionConstants.OPERATION_HEADERS).get(ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-
-            ModelNode result = managementClient.getControllerClient().execute(commandModel);
-
-            LOG.debugf("Executed batch %s with result %s", commands, result.toJSONString(true));
-            this.checkResult(result);
-        } else {
-            for (String command : commands) {
-                ModelNode commandModel = context.buildRequest(command);
-                ModelNode result = managementClient.getControllerClient().execute(commandModel);
-
-                LOG.debugf("Executed single command %s with result %s", commands, result.toJSONString(true));
-                this.checkResult(result);
-            }
+            scriptFunction.apply(containerBuilder, scriptBuilder.build());
         }
-
-        if (reload) {
-            LOG.debugf("Reloading server %s if its in a 'reload-required' state.", managementClient.getMgmtAddress());
-            ServerReload.reloadIfRequired(managementClient);
-        }
-    }
-
-    private void checkResult(ModelNode result) {
-        if (result.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
-            String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).toString();
-            throw new RuntimeException("CLIServerSetupTask failed! Failed with: " + failureDesc);
-        }
+        return containerBuilder.build();
     }
 
     public static class Builder {
@@ -148,11 +115,21 @@ public class CLIServerSetupTask implements ServerSetupTask {
         private final List<String> setupCommands = new LinkedList<>();
         private final List<String> teardownCommands = new LinkedList<>();
         private boolean batch = true;
-        private boolean reloadOnSetup = true;
-        private boolean reloadOnTearDown = true;
 
         NodeBuilder(Builder parentBuilder) {
             this.parentBuilder = parentBuilder;
+        }
+
+        List<String> getSetupCommands() {
+            return this.setupCommands;
+        }
+
+        List<String> getTearDownCommands() {
+            return this.teardownCommands;
+        }
+
+        boolean isBatched() {
+            return this.batch;
         }
 
         /**
@@ -197,7 +174,6 @@ public class CLIServerSetupTask implements ServerSetupTask {
          * Configure whether to reload the server after setup if it's in a 'reload-required' state.
          */
         public NodeBuilder reloadOnSetup(boolean reloadOnSetup) {
-            this.reloadOnSetup = reloadOnSetup;
             return this;
         }
 
@@ -205,7 +181,6 @@ public class CLIServerSetupTask implements ServerSetupTask {
          * Configure whether to reload the server on teardown if it's in a 'reload-required' state.
          */
         public NodeBuilder reloadOnTearDown(boolean reloadOnTearDown) {
-            this.reloadOnTearDown = reloadOnTearDown;
             return this;
         }
 
