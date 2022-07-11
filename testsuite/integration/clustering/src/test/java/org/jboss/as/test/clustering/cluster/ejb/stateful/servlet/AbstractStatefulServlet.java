@@ -25,12 +25,12 @@ package org.jboss.as.test.clustering.cluster.ejb.stateful.servlet;
 import java.io.IOException;
 import java.util.function.BiConsumer;
 
-import javax.ejb.NoSuchEJBException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.ejb.NoSuchEJBException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 import org.wildfly.common.function.ExceptionFunction;

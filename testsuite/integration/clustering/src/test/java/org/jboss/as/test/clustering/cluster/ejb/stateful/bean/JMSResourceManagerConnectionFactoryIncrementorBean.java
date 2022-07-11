@@ -23,10 +23,10 @@ package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateful;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnectionFactory;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateful;
+import jakarta.jms.QueueConnectionFactory;
+import jakarta.jms.TopicConnectionFactory;
 
 @Stateful
 public class JMSResourceManagerConnectionFactoryIncrementorBean implements Incrementor {

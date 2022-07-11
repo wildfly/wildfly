@@ -24,12 +24,12 @@ package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.PostActivate;
-import javax.ejb.PrePassivate;
-import javax.ejb.Stateful;
-import javax.ejb.StatefulTimeout;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.PostActivate;
+import jakarta.ejb.PrePassivate;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.StatefulTimeout;
 
 @Stateful
 @StatefulTimeout(value = 1, unit = TimeUnit.SECONDS)

@@ -22,17 +22,17 @@
 
 package org.jboss.as.test.clustering.cluster.jpa;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.persistence.CacheRetrieveMode;
-import javax.persistence.CacheStoreMode;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.UserTransaction;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.UserTransaction;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 
 /**
  * @author Jan Martiska
@@ -62,8 +62,8 @@ public class DummyEntityRESTResource {
     public void addToCacheByQuerying(@PathParam(value = "id") Long id) {
         em.createQuery("select b from DummyEntity b where b.id=:id", DummyEntity.class)
                 .setParameter("id", id)
-                .setHint("javax.persistence.cache.storeMode", CacheStoreMode.USE)
-                .setHint("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS)
+                .setHint("jakarta.persistence.cache.storeMode", CacheStoreMode.USE)
+                .setHint("jakarta.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS)
                 .getSingleResult();
     }
 

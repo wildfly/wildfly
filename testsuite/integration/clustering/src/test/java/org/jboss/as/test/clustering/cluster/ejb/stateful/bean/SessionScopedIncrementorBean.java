@@ -24,8 +24,8 @@ package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.ejb.Stateful;
-import javax.enterprise.context.SessionScoped;
+import jakarta.ejb.Stateful;
+import jakarta.enterprise.context.SessionScoped;
 
 /**
  * @author Paul Ferraro

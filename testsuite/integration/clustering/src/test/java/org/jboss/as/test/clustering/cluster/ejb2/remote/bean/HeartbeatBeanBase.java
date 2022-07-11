@@ -1,7 +1,7 @@
 package org.jboss.as.test.clustering.cluster.ejb2.remote.bean;
 
-import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.SessionContext;
 import java.rmi.RemoteException;
 import java.util.Date;
 
