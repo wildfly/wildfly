@@ -24,4 +24,6 @@
         </feature>
     </feature>
 
+    <feature spec="subsystem.elytron-oidc-client"/>
+
 </feature-group-spec>
