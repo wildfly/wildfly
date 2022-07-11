@@ -24,30 +24,11 @@
 
 <module xmlns="urn:jboss:module:1.9" name="javax.xml.rpc.api.internal">
     <!--
-      This module providing the Jakarta XML RPC API classes is meant only for internal use
-      by WildFly modules that have a compile time dependency on Jakarta XML RPC classes.
-      WildFly does not provide a Jakarta XML RPC implementation and Jakarta XML RPC has been
-      removed from EE 9.
+      TODO remove the ref to this from the org.jboss.as.ejb3 module and then remove this module.
 
-      See https://issues.redhat.com/browse/WFLY-14008
+      See https://issues.redhat.com/browse/WFLY-14008 and https://issues.redhat.com/browse/WFLY-16626
     -->
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
-
-    <!-- Limit what this module provides to classes that we know
-         are used. -->
-    <exports>
-        <!-- EJB's SessionContext has a 'MessageContext getMessageContext' method -->
-        <include path="javax/xml/rpc/handler/MessageContext*"/>
-    </exports>
-
-    <resources>
-        <artifact name="${org.jboss.spec.javax.xml.rpc:jboss-jaxrpc-api_1.1_spec}"/>
-    </resources>
-
-    <dependencies>
-        <module name="java.rmi"/>
-        <module name="java.xml"/>
-    </dependencies>
 </module>
