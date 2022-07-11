@@ -30,7 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -38,9 +38,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.impl.client.HttpClients;
-import org.jboss.as.test.integration.domain.util.EENamespaceTransformer;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.junit.Assert;
 
 import org.apache.http.HttpResponse;
@@ -99,7 +98,7 @@ public class ReadEnvironmentVariablesTestCase {
             archive.addAsResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.dmr \n"),"META-INF/MANIFEST.MF");
             archive.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("getenv.*")), "permissions.xml");
 
-            final InputStream contents = EENamespaceTransformer.jakartaTransform(new ZipExporterImpl(archive).exportAsInputStream() ,archiveName);
+            final InputStream contents = archive.as(ZipExporter.class).exportAsInputStream();
             try {
                 DeploymentPlan plan = manager.newDeploymentPlan()
                                           .add("env-test.war", contents)
