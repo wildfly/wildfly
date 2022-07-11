@@ -31,8 +31,8 @@
 
     <container qualifier="single">
         <configuration>
-            <property name="jbossHome">${basedir}/target/wildfly-1</property>
-            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-1 -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+            <property name="jbossHome">${basedir}/target/${wildfly1}</property>
+            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/${wildfly1} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
             <property name="serverConfig">${jboss.server.config.file.name}</property>
             <property name="jbossArguments">${jboss.args}</property>
             <property name="managementAddress">${node0}</property>

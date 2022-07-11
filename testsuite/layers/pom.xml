@@ -38,12 +38,12 @@
             <artifactId>wildfly-launcher</artifactId>
         </dependency>
     </dependencies>
-    
+
     <properties>
         <layers.install.dir>${project.build.directory}/layers-results</layers.install.dir>
         <layers.delete.installations>true</layers.delete.installations>
         <jbossas.project.dir>${jbossas.ts.dir}/../..</jbossas.project.dir>
-        
+
         <!-- GAVs to use for feature packs. Profiles can reset to trigger provisioning
              using alternative feature packs. -->
         <ee.feature.pack.groupId>${testsuite.ee.galleon.pack.groupId}</ee.feature.pack.groupId>
@@ -104,7 +104,7 @@
             </properties>
         </profile>
     </profiles>
-    
+
             <build>
                 <plugins>
                     <plugin>
@@ -1249,7 +1249,7 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-                            <execution>   
+                            <execution>
                                 <id>h2-default-datasource-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -1279,7 +1279,7 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-                            <execution>   
+                            <execution>
                                 <id>h2-driver-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -1728,6 +1728,62 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>sar</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>singleton-local-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/singleton-local</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>singleton-local</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>singleton-ha-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/singleton-ha</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>singleton-ha</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -2220,6 +2276,7 @@
                                                 <layer>resource-adapters</layer>
                                                 <layer>sar</layer>
                                                 <layer>security-manager</layer>
+                                                <layer>singleton-local</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>
                                                 <layer>undertow-https</layer>
@@ -2251,7 +2308,7 @@
 
                            <!-- This is an all layers variant excluding jpa and adding jpa-distributed -->
                             <execution>
-                                <id>all-layers-jpa-distributed-provisioning-full</id>
+                                <id>all-layers-distributed-provisioning-full</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
@@ -2321,6 +2378,7 @@
                                                 <layer>resource-adapters</layer>
                                                 <layer>sar</layer>
                                                 <layer>security-manager</layer>
+                                                <layer>singleton-ha</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>
                                                 <layer>undertow-https</layer>
@@ -2398,5 +2456,5 @@
                     </plugin>
                 </plugins>
             </build>
-    
+
 </project>
