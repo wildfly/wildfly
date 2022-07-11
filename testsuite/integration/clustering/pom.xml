@@ -571,6 +571,7 @@
                                     <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
                                         <module.path>${jboss.dist}/modules</module.path>
                                     </system-properties>
                                 </configuration>
@@ -590,6 +591,7 @@
                                     <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
                                         <module.path>${jboss.dist}/modules</module.path>
                                     </system-properties>
                                 </configuration>
@@ -1699,6 +1701,7 @@
                                     <stdout>${project.build.directory}/wildfly-ejb-xpc-plugin.log</stdout>
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
                                         <module.path>${project.build.directory}/wildfly-clustering-ejb/modules</module.path>
                                     </system-properties>
                                 </configuration>
@@ -1718,6 +1721,7 @@
                                     <stdout>${project.build.directory}/wildfly-jpa-dist-plugin.log</stdout>
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
                                         <module.path>${project.build.directory}/wildfly-jpa-dist/modules</module.path>
                                     </system-properties>
                                 </configuration>
@@ -1737,6 +1741,7 @@
                                     <stdout>${project.build.directory}/wildfly-clustering-jsf-plugin.log</stdout>
                                     <java-opts>${modular.jdk.args}</java-opts>
                                     <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
                                         <module.path>${project.build.directory}/wildfly-clustering-jsf/modules</module.path>
                                     </system-properties>
                                 </configuration>
