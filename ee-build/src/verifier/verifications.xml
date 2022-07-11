@@ -92,10 +92,6 @@ limitations under the License.
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/bitbucket/jose4j/main</location>
-      <exists>false</exists>
-    </file>
-    <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/jwt/auth/api/main</location>
       <exists>false</exists>
     </file>

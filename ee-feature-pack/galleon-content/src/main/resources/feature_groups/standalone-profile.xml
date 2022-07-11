@@ -7,4 +7,6 @@
     <feature-group name="health"/>
     <feature-group name="metrics" />
 
+    <feature spec="subsystem.elytron-oidc-client"/>
+
 </feature-group-spec>

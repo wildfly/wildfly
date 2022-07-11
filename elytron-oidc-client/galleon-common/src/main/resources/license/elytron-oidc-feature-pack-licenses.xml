@@ -2,6 +2,17 @@
 <licenseSummary>
   <dependencies>
     <dependency>
+      <groupId>org.bitbucket.b_c</groupId>
+      <artifactId>jose4j</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.wildfly.security</groupId>
       <artifactId>wildfly-elytron-http-oidc</artifactId>
       <licenses>
