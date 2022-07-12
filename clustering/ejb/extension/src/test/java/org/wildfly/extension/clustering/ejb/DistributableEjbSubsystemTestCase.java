@@ -141,16 +141,22 @@ public class DistributableEjbSubsystemTestCase extends ClusteringSubsystemTest<D
      * @throws Exception for any test failures
      */
     @Test
-    public void testExpressionInAttributeValue() throws Exception {
+    public void testExpressions() throws Exception {
         final String subsystemXml = getSubsystemXml();
         final KernelServices ks = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(subsystemXml).build();
         assertTrue("Subsystem boot failed!", ks.isSuccessfulBoot());
 
-        final ModelNode distributableEjbSubsystem = ks.readWholeModel().get(DistributableEjbResourceDefinition.PATH.getKeyValuePair());
-        final ModelNode defaultBeanManagement = distributableEjbSubsystem.get(InfinispanBeanManagementResourceDefinition.pathElement("default").getKeyValuePair());
+        final ModelNode subsystem = ks.readWholeModel().get(DistributableEjbResourceDefinition.PATH.getKeyValuePair());
+        final ModelNode beanManagement = subsystem.get(InfinispanBeanManagementResourceDefinition.pathElement("default").getKeyValuePair());
 
         // default within the expression should be 10000
-        final int maxActiveBeans = defaultBeanManagement.get(InfinispanBeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName()).resolve().asInt();
+        final int maxActiveBeans = beanManagement.get(InfinispanBeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName()).resolve().asInt();
         assertEquals(10000, maxActiveBeans);
+
+        ModelNode persistentTimerManagement = subsystem.get(InfinispanTimerManagementResourceDefinition.pathElement("distributed").getKeyValuePair());
+        assertEquals(100, persistentTimerManagement.get(InfinispanTimerManagementResourceDefinition.Attribute.MAX_ACTIVE_TIMERS.getName()).resolve().asInt());
+
+        ModelNode transientTimerManagement = subsystem.get(InfinispanTimerManagementResourceDefinition.pathElement("transient").getKeyValuePair());
+        assertEquals(1000, transientTimerManagement.get(InfinispanTimerManagementResourceDefinition.Attribute.MAX_ACTIVE_TIMERS.getName()).resolve().asInt());
     }
 }

@@ -49,7 +49,10 @@ import org.wildfly.clustering.service.UnaryRequirement;
  */
 public class InfinispanTimerManagementResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
-    static final PathElement WILDCARD_PATH = PathElement.pathElement("infinispan-timer-management");
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement("infinispan-timer-management", name);
+    }
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     enum Capability implements CapabilityProvider {
         TIMER_MANAGEMENT_PROVIDER(TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER),
