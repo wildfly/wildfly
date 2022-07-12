@@ -322,6 +322,7 @@
             </activation>
             <modules>
                 <module>basic</module>
+                <module>legacy</module>
                 <module>ws</module>
                 <module>clustering</module>
                 <module>microprofile</module>
