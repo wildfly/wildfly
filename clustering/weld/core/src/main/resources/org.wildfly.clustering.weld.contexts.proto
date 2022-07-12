@@ -7,6 +7,7 @@ message PassivationCapableSerializableBean {
 	optional	bytes	contextId	= 1;
 	optional	bytes	contextual	= 2;
 	optional	bytes	identifier	= 3;
+	optional	uint32	beanIndex	= 4;
 }
 
 /**
@@ -16,4 +17,5 @@ message PassivationCapableSerializableContextual {
 	optional	bytes	contextId	= 1;
 	optional	bytes	contextual	= 2;
 	optional	bytes	identifier	= 3;
+	optional	uint32	beanIndex	= 4;
 }

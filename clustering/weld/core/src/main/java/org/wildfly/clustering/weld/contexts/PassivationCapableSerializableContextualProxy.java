@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,34 +22,25 @@
 
 package org.wildfly.clustering.weld.contexts;
 
-import java.io.Serializable;
+import java.io.ObjectStreamException;
 
 import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.PassivationCapable;
 
-import org.jboss.weld.Container;
-import org.jboss.weld.serialization.spi.ContextualStore;
-import org.jboss.weld.util.reflection.Reflections;
+import org.jboss.weld.serialization.spi.BeanIdentifier;
 
 /**
- * Serialization proxy for passivation capable contextuals that are not serializable.
  * @author Paul Ferraro
  */
-public class PassivationCapableSerializableContextualProxy<C extends Contextual<I> & PassivationCapable, I> implements Serializable {
-    private static final long serialVersionUID = 4906800089125597758L;
+public class PassivationCapableSerializableContextualProxy<C extends Contextual<I> & PassivationCapable, I> extends PassivationCapableSerializableProxy {
+    private static final long serialVersionUID = -5640463865738900184L;
 
-    private final String contextId;
-    private final String id;
-
-    PassivationCapableSerializableContextualProxy(String contextId, C contextual) {
-        this.contextId = contextId;
-        this.id = contextual.getId();
+    PassivationCapableSerializableContextualProxy(String contextId, BeanIdentifier identifier) {
+        super(contextId, identifier);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private Object readResolve() {
-        C contextual = Container.instance(this.contextId).services().get(ContextualStore.class).getContextual(this.id);
-        return (contextual instanceof Bean) ? new PassivationCapableSerializableBean(this.contextId, Reflections.<Bean<I>>cast(contextual)) : new PassivationCapableSerializableContextual(this.contextId, contextual);
+    @SuppressWarnings("unused")
+    private Object readResolve() throws ObjectStreamException {
+        return new PassivationCapableSerializableContextual<>(this.getContextId(), this.getIdentifier());
     }
 }
