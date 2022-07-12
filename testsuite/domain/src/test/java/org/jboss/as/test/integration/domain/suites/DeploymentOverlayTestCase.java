@@ -41,7 +41,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.cleanFile;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
-import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -136,12 +135,7 @@ public class DeploymentOverlayTestCase {
         new File(tmpDir, "archives").mkdirs();
         new File(tmpDir, "exploded").mkdirs();
         File archiveTarget = new File(tmpDir, "archives/" + TEST);
-        jakartaTransform(webArchive.as(ZipExporter.class), archiveTarget);
-        //webArchive.as(ZipExporter.class).exportTo(new File(tmpDir, "archives/" + TEST), true);
-
-        // If the archive was transformed above by creating from the zipFile our reference is transformed as
-        // well so no further changes needed.
-        webArchive = ShrinkWrap.createFromZipFile(WebArchive.class, archiveTarget);
+        webArchive.as(ZipExporter.class).exportTo(archiveTarget, true);
         webArchive.as(ExplodedExporter.class).exportExploded(new File(tmpDir, "exploded"));
 
         // Launch the domain

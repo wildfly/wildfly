@@ -50,6 +50,27 @@
 
         <jbossas.ts.dir>${basedir}/..</jbossas.ts.dir>
 
+        <!-- Disable the default surefire test execution. -->
+        <surefire.default-test.phase>none</surefire.default-test.phase>
+
+        <!-- Use the WildFly Preview dependencies until standard WildFly moves to EE 10 -->
+        <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
+
+        <!-- Use the WildFly Preview feature pack for Galleon provisioning until standard WildFly moves to EE 10 -->
+        <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+        <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
+        <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
+
+        <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
+        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared-jakarta</wildfly-testsuite-shared.artifactId>
+
+        <!-- No separate web dist -->
+        <wildfly.web.build.output.dir>${wildfly.build.output.dir}</wildfly.web.build.output.dir>
+
+        <!-- WildFly Arquillian Adapter with Jakarta EE Support -->
+        <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
+        <version.org.wildfly.arquillian>5.0.0.Alpha1</version.org.wildfly.arquillian>
+        <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
     </properties>
 
     <!--
@@ -62,27 +83,15 @@
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
             <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
+            <artifactId>${wildfly-testsuite-shared.artifactId}</artifactId>
             <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.javax.servlet</groupId>
-            <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -118,13 +127,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>*</artifactId>
-                    <groupId>*</groupId>
-                </exclusion>
-            </exclusions>
+            <artifactId>wildfly-messaging-activemq-subsystem-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -190,26 +193,21 @@
             <artifactId>woodstox-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
-            <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
+            <groupId>jakarta.enterprise.concurrent</groupId>
+            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.javax.annotation</groupId>
-            <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.javax.ws.rs</groupId>
-            <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>xom</groupId>
             <artifactId>xom</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.galleon-plugins</groupId>
-            <artifactId>transformer</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
