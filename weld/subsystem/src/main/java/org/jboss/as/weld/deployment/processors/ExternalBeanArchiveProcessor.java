@@ -76,7 +76,6 @@ import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.xml.BeansXmlParser;
-import org.wildfly.common.iteration.CompositeIterable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -121,9 +120,16 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
         // This set is used for external bean archives with annotated discovery mode
         final Set<AnnotationType> beanDefiningAnnotations = new HashSet<>(deploymentUnit.getAttachment(WeldAttachments.BEAN_DEFINING_ANNOTATIONS));
 
-        final List<DeploymentUnit> deploymentUnits = new ArrayList<DeploymentUnit>();
+        List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+        List<DeploymentUnit> deploymentUnits = new ArrayList<>(subDeployments.size() + 1);
         deploymentUnits.add(deploymentUnit);
-        deploymentUnits.addAll(deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS));
+        deploymentUnits.addAll(subDeployments);
+
+        List<ClassLoader> loaders = new ArrayList<>(deploymentUnits.size() + 1);
+        loaders.add(WildFlySecurityManager.getClassLoaderPrivileged(WeldDeploymentProcessor.class));
+        for (DeploymentUnit unit : deploymentUnits) {
+            loaders.add(unit.getAttachment(Attachments.MODULE).getClassLoader());
+        }
 
         BeansXmlParser parser = BeansXmlParserFactory.getPropertyReplacingParser(deploymentUnit,
                 Utils.getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY)
@@ -163,8 +169,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        final ServiceLoader<ModuleServicesProvider> moduleServicesProviders = ServiceLoader.load(ModuleServicesProvider.class,
-                WildFlySecurityManager.getClassLoaderPrivileged(WeldDeploymentProcessor.class));
+        Iterable<ModuleServicesProvider> moduleServicesProviders = ServiceLoader.load(ModuleServicesProvider.class, new CompositeClassLoader(loaders));
 
         Set<String> skipPrecalculatedJandexModules = getSkipPrecalculatedJandexModules(deploymentUnit);
 
@@ -176,7 +181,6 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             if (module == null) {
                 return;
             }
-            Iterable<ModuleServicesProvider> providers = new CompositeIterable<>(moduleServicesProviders, module.loadService(ModuleServicesProvider.class));
 
             for (DependencySpec dep : module.getDependencies()) {
                 if (!(dep instanceof ModuleDependencySpec)) {
@@ -245,7 +249,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
 
                         // Add module services to external bean deployment archive
                         for (Entry<Class<? extends Service>, Service> moduleService : ServiceLoaders
-                                .loadModuleServices(providers, deploymentUnit, deployment, module, null).entrySet()) {
+                                .loadModuleServices(moduleServicesProviders, deploymentUnit, deployment, module, null).entrySet()) {
                             bda.getServices().add(moduleService.getKey(), Reflections.cast(moduleService.getValue()));
                         }
 
