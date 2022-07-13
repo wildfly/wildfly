@@ -21,10 +21,6 @@
  */
 package org.jboss.as.test.integration.hibernate.search.coordination;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -43,14 +39,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import jakarta.inject.Inject;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
+
 import java.io.File;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -70,6 +60,12 @@ public class HibernateSearchOutboxPollingTestCase {
 
     @Deployment
     public static Archive<?> createTestArchive() {
+
+        // TODO maybe just use managed=false and deploy in the @BeforeClass / undeploy in an @AfterClass
+        if (AssumeTestGroupUtil.isSecurityManagerEnabled()) {
+            return AssumeTestGroupUtil.emptyWar(HibernateSearchOutboxPollingTestCase.class.getSimpleName());
+        }
+
         return ShrinkWrap.create(WebArchive.class, HibernateSearchOutboxPollingTestCase.class.getSimpleName() + ".war")
                 .addClass(HibernateSearchOutboxPollingTestCase.class)
                 .addClasses(SearchBean.class, IndexedEntity.class, TimeoutUtil.class)
@@ -134,45 +130,6 @@ public class HibernateSearchOutboxPollingTestCase {
         while (System.currentTimeMillis() < end);
 
         throw lastError;
-    }
-
-    @ApplicationScoped
-    @Transactional
-    public static class SearchBean {
-
-        @PersistenceContext
-        EntityManager em;
-
-        @SuppressWarnings("unchecked")
-        public List<String> findAgentNames() {
-            return em.createNativeQuery("select name from HSEARCH_AGENT")
-                    .getResultList();
-        }
-
-        public void create(String text) {
-            IndexedEntity entity = new IndexedEntity();
-            entity.text = text;
-            em.persist(entity);
-        }
-
-        public List<IndexedEntity> search(String keyword) {
-            return Search.session(em).search(IndexedEntity.class)
-                    .where(f -> f.match().field("text").matching(keyword))
-                    .fetchAllHits();
-        }
-    }
-
-    @Entity
-    @Indexed
-    public static class IndexedEntity {
-
-        @Id
-        @GeneratedValue
-        Long id;
-
-        @FullTextField
-        String text;
-
     }
 
 }

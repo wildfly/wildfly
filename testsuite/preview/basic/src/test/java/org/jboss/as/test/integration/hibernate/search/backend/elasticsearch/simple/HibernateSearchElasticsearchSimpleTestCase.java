@@ -68,7 +68,8 @@ public class HibernateSearchElasticsearchSimpleTestCase {
     @Deployment
     public static WebArchive createArchive() {
 
-        if (!AssumeTestGroupUtil.isDockerAvailable()) {
+        // TODO maybe just use managed=false and deploy in the @BeforeClass / undeploy in an @AfterClass
+        if (!AssumeTestGroupUtil.isDockerAvailable() || AssumeTestGroupUtil.isSecurityManagerEnabled()) {
             return AssumeTestGroupUtil.emptyWar(WAR_ARCHIVE_NAME);
         }
 

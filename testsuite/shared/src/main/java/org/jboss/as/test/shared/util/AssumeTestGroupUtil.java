@@ -121,7 +121,21 @@ public class AssumeTestGroupUtil {
     }
 
     /**
-     * Check if the JDK Security Manager is <strong>not</strong> enabled.
+     * Check if the JDK Security Manager is <strong>enabled/strong>.
+     * <p>
+     * Note that this checks the {@code security.manager} system property and <strong>not</strong> that the
+     * {@link System#getSecurityManager()} is not {@code null}. The property is checked so that the assumption check can be
+     * done in a {@link org.junit.Before @Before} or {@link org.junit.BeforeClass @BeforeClass} method.
+     * </p>
+     *
+     * @return {@code true} if the {@code security.manager} system property is null.
+     */
+    public static boolean isSecurityManagerEnabled() {
+        return !isSecurityManagerDisabled();
+    }
+
+    /**
+     * Check if the JDK Security Manager is <strong>disabled</strong>.
      * <p>
      * Note that this checks the {@code security.manager} system property and <strong>not</strong> that the
      * {@link System#getSecurityManager()} is {@code null}. The property is checked so that the assumption check can be
