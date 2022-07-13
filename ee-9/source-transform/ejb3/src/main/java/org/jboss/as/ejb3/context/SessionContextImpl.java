@@ -21,9 +21,6 @@
  */
 package org.jboss.as.ejb3.context;
 
-import javax.xml.rpc.handler.MessageContext;
-
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 
 /**
@@ -38,10 +35,5 @@ public class SessionContextImpl extends AbstractSessionContextImpl {
 
     public SessionContextImpl(SessionBeanComponentInstance instance) {
         super(instance);
-    }
-
-    public MessageContext getMessageContext() throws IllegalStateException {
-        // Jakarta XML RPC is not supported
-        throw EjbLogger.ROOT_LOGGER.cannotCall("getMessageContext()", "MessageContext");
     }
 }
