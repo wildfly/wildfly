@@ -21,8 +21,8 @@
  */
 package org.wildfly.test.manual.elytron.seccontext;
 
-import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static org.jboss.as.test.integration.security.common.Utils.REDIRECT_STRATEGY;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -36,7 +36,7 @@ import static org.wildfly.test.manual.elytron.seccontext.SeccontextUtil.WAR_ENTR
 
 import java.net.URL;
 import java.util.concurrent.Callable;
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJBAccessException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.as.test.integration.security.common.Utils;

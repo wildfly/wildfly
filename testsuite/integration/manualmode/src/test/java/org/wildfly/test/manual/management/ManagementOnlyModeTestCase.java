@@ -30,7 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 import java.net.URL;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.as.test.shared.TestSuiteEnvironment;

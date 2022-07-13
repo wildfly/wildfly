@@ -5,15 +5,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
+import jakarta.inject.Inject;
 import javax.sql.DataSource;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.logging.Logger;
 import org.junit.Assert;

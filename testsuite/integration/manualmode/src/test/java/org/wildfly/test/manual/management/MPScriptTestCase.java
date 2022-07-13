@@ -37,7 +37,7 @@ import org.wildfly.core.testrunner.ServerControl;
 import org.wildfly.core.testrunner.ServerController;
 import org.wildfly.core.testrunner.WildflyTestRunner;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.controller.PathAddress;

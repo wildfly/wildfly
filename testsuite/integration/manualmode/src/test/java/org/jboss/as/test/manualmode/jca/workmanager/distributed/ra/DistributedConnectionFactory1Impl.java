@@ -23,8 +23,8 @@ package org.jboss.as.test.manualmode.jca.workmanager.distributed.ra;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionManager;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionManager;
 
 public class DistributedConnectionFactory1Impl implements DistributedConnectionFactory1 {
 

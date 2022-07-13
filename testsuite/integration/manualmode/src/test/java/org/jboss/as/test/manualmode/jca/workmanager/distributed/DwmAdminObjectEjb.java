@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.manualmode.jca.workmanager.distributed;
 
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkException;
+import jakarta.resource.spi.work.Work;
+import jakarta.resource.spi.work.WorkException;
 
 public interface DwmAdminObjectEjb {
     int getDoWorkAccepted();

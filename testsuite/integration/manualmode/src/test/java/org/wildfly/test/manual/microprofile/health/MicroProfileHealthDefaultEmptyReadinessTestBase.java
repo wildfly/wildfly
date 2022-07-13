@@ -43,6 +43,7 @@ import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,7 +83,7 @@ public abstract class MicroProfileHealthDefaultEmptyReadinessTestBase {
     public static Archive<?> deploySuccessful() {
             WebArchive war = ShrinkWrap.create(WebArchive.class, MICRO_PROFILE_HEALTH_APPLICATION_WITH_SUCCESSFUL_READINESS_TEST_BASE + ".war")
             .addClasses(SuccessfulReadinessCheck.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+            .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         return war;
     }
 

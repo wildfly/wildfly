@@ -16,7 +16,7 @@
 package org.wildfly.test.manual.elytron.seccontext;
 
 import java.security.Principal;
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface WhoAmI {

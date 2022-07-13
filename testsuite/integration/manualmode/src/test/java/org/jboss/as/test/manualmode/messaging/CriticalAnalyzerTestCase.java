@@ -24,11 +24,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSContext;
-import javax.jms.JMSProducer;
-import javax.jms.Queue;
-import javax.jms.TextMessage;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSProducer;
+import jakarta.jms.Queue;
+import jakarta.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -162,7 +162,7 @@ public class CriticalAnalyzerTestCase {
                 producer.send(queue, message);
             }
             Assert.fail("Critical analyzer should have kicked in");
-        } catch (javax.jms.JMSRuntimeException ex) {
+        } catch (jakarta.jms.JMSRuntimeException ex) {
             Assert.assertTrue("Log should contains ActiveMQ connection failure error log message: [AMQ219016]", ex.getMessage().contains("AMQ219016"));
             Assert.assertTrue("Log should contains ActiveMQ critical measure ", LoggingUtil.hasLogMessage(managementClient, "artemis-log", "",
                     (line) -> (line.contains("[org.apache.activemq.artemis.utils.critical.CriticalMeasure]"))));
