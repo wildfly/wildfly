@@ -77,9 +77,14 @@ public class HibernateSearchElasticsearchGsonDependencyTestCase {
 
     @Deployment
     public static Archive<?> createTestArchive() throws Exception {
+
+        if (!AssumeTestGroupUtil.isDockerAvailable()) {
+            return AssumeTestGroupUtil.emptyWar(HibernateSearchElasticsearchGsonDependencyTestCase.class.getSimpleName());
+        }
+
         return ShrinkWrap.create(WebArchive.class, HibernateSearchElasticsearchGsonDependencyTestCase.class.getSimpleName() + ".war")
                 .addClass(HibernateSearchElasticsearchGsonDependencyTestCase.class)
-                .addClasses(SearchBean.class, IndexedEntity.class)
+                .addClasses(SearchBean.class, IndexedEntity.class, AssumeTestGroupUtil.class)
                 .addAsResource(manifest(), "META-INF/MANIFEST.MF")
                 .addAsResource(persistenceXml(), "META-INF/persistence.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");

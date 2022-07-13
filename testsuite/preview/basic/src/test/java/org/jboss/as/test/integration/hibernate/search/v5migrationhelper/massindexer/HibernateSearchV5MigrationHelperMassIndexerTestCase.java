@@ -65,6 +65,12 @@ public class HibernateSearchV5MigrationHelperMassIndexerTestCase {
 
     @Deployment
     public static WebArchive createArchive() {
+
+        // TODO maybe just use managed=false and deploy in the @BeforeClass / undeploy in an @AfterClass
+        if (AssumeTestGroupUtil.isSecurityManagerEnabled()) {
+            return AssumeTestGroupUtil.emptyWar(WAR_ARCHIVE_NAME);
+        }
+
         return ShrinkWrap
                 .create(WebArchive.class, WAR_ARCHIVE_NAME)
                 .addClasses(HibernateSearchV5MigrationHelperMassIndexerTestCase.class,
