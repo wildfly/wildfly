@@ -50,9 +50,6 @@
 
         <jbossas.ts.dir>${basedir}/..</jbossas.ts.dir>
 
-        <!-- Disable the default surefire test execution. -->
-        <surefire.default-test.phase>none</surefire.default-test.phase>
-
         <!-- Use the WildFly Preview dependencies until standard WildFly moves to EE 10 -->
         <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
 
