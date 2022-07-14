@@ -36,12 +36,6 @@ public class LayersTestCase {
     // but not used in the test-all-layers installation.
     // This is the expected set of not provisioned modules when all layers are provisioned.
     private static final String[] NOT_USED = {
-        // TODO  WFLY-16452 we need to add a mod_cluster layer
-        "org.wildfly.extension.mod_cluster",
-        "org.wildfly.mod_cluster.undertow",
-        "org.jboss.mod_cluster.container.spi",
-        "org.jboss.mod_cluster.core",
-        "org.jboss.mod_cluster.load.spi",
         // TODO we need to add an rts layer
         "org.wildfly.extension.rts",
         "org.jboss.narayana.rts",
