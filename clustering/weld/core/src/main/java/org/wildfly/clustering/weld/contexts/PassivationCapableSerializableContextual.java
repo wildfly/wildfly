@@ -81,7 +81,6 @@ public class PassivationCapableSerializableContextual<C extends Contextual<I> & 
             Container container = Container.instance(this.contextId);
             ContextualStore store = container.services().get(ContextualStore.class);
             this.instance = store.getContextual(this.identifier);
-            System.out.println("Contextual lazily resolved to " + this.instance.getClass().getName());
         }
         return this.instance;
     }
