@@ -725,6 +725,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-client-all</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-clustering-el-glassfish</artifactId>
                 </exclusion>
                 <exclusion>
