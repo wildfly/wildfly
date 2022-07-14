@@ -54,6 +54,20 @@
     <build>
         <plugins>
             <plugin>
+                <!-- Source transformation is vulnerable to leftover files in the target
+                     folder from previous builds, so always clean even if the clean lifecycle is not invoked -->
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.wildfly.extras.batavia</groupId>
                 <artifactId>transformer-tools-mvn</artifactId>
                 <version>${version.org.wildfly.extras.batavia}</version>
