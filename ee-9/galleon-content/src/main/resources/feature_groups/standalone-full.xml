@@ -4,9 +4,4 @@
     <feature-group name="standalone-full-x-messaging"/>
     <feature-group name="messaging-remote-activemq"/>
 
-    <feature spec="socket-binding-group">
-        <param name="socket-binding-group" value="standard-sockets" />
-        <feature-group name="messaging-remote-sockets"/>
-    </feature>
-
 </feature-group-spec>

@@ -950,10 +950,6 @@
                                         <include>${test-group}/**/group/*TestCase.java</include>
                                         <include>${test-group}/**/jms/*TestCase.java</include>
                                     </includes>
-                                    <excludes>
-                                        <!-- Requires the /subsystem=messaging-activemq/server=default to exist for it's setup tasks -->
-                                        <exclude>${test-group}/jms/ClusteredMessagingTestCase.java</exclude>
-                                    </excludes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <!-- required by arquillian.xml -->

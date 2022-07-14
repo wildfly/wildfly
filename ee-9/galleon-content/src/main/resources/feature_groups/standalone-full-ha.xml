@@ -21,7 +21,7 @@
     <!-- TODO go back to a non-embedded-broker config
     <feature-group name="messaging-remote-activemq"/>
     -->
-    <feature-group name="messaging-activemq"/>
+    <feature-group name="messaging-activemq-ha"/>
 
     <feature spec="subsystem.ejb3">
         <feature spec="subsystem.ejb3.service.iiop">
