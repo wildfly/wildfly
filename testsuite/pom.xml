@@ -405,17 +405,6 @@
         </profile>
 
         <profile>
-            <id>compat.module.profile</id>
-            <activation><property><name>compat.module</name></property></activation>
-            <modules><module>compat</module></modules>
-        </profile>
-        <profile>
-            <id>compat_.module.profile</id>
-            <activation><property><name>ts.compat</name></property></activation>
-            <modules><module>compat</module></modules>
-        </profile>
-
-        <profile>
             <id>domain.module.profile</id>
             <activation><property><name>domain.module</name></property></activation>
             <modules><module>domain</module></modules>
