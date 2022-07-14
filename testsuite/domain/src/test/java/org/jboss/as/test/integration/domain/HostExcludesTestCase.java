@@ -36,7 +36,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -205,17 +204,14 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         ), getCurrentRemovedExtenstions());
 
         private static List<String> getCurrentRemovedExtenstions() {
-            if (System.getProperty("ts.ee9") != null || System.getProperty("ts.bootable.ee9") != null) {
-                return Arrays.asList(
-                        "org.jboss.as.messaging",
-                        "org.jboss.as.jacorb",
-                        "org.jboss.as.jsr77",
-                        "org.jboss.as.web",
-                        "org.wildfly.extension.picketlink",
-                        "org.jboss.as.security"
-                        );
-            }
-            return Collections.emptyList();
+            return Arrays.asList(
+                    "org.jboss.as.messaging",
+                    "org.jboss.as.jacorb",
+                    "org.jboss.as.jsr77",
+                    "org.jboss.as.web",
+                    "org.wildfly.extension.picketlink",
+                    "org.jboss.as.security"
+            );
         }
 
         private final String name;
