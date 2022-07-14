@@ -313,7 +313,7 @@
         <version.com.h2database>1.4.197</version.com.h2database>
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
         <version.com.microsoft.azure>8.6.6</version.com.microsoft.azure>
-        <version.com.nimbus.jose-jwt>8.23</version.com.nimbus.jose-jwt>
+        <version.com.nimbus.jose-jwt>9.23</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp3>3.14.9</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.17.5</version.com.squareup.okio>
         <version.com.sun.activation.jakarta.activation>1.2.2</version.com.sun.activation.jakarta.activation>
@@ -546,7 +546,7 @@
         <preview.version.jakarta.xml.ws.jakarta.xml.ws-api>4.0.0</preview.version.jakarta.xml.ws.jakarta.xml.ws-api>
         <preview.version.jakarta.persistence>3.1.0</preview.version.jakarta.persistence>
         <preview.version.jakarta.resource.jakarta-resource-api>2.1.0</preview.version.jakarta.resource.jakarta-resource-api>
-        <preview.version.jakarta.security.enterprise>2.0.0</preview.version.jakarta.security.enterprise>
+        <preview.version.jakarta.security.enterprise>3.0.0</preview.version.jakarta.security.enterprise>
         <preview.version.jakarta.servlet.jakarta-servlet-api>6.0.0</preview.version.jakarta.servlet.jakarta-servlet-api>
         <preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.1.0</preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
         <preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
@@ -599,7 +599,7 @@
          pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
         <preview.version.org.glassfish.jaxb>4.0.0</preview.version.org.glassfish.jaxb>
         <preview.version.org.glassfish.jaxb.jaxb-xjc>${preview.version.org.glassfish.jaxb}</preview.version.org.glassfish.jaxb.jaxb-xjc>
-        <preview.version.org.glassfish.soteria>2.0.1</preview.version.org.glassfish.soteria>
+        <preview.version.org.glassfish.soteria>3.0.0</preview.version.org.glassfish.soteria>
         <preview.version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.0</preview.version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <preview.version.org.hibernate>6.0.2.Final</preview.version.org.hibernate>
         <preview.version.org.hibernate.commons.annotations>6.0.1.Final</preview.version.org.hibernate.commons.annotations>
