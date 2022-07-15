@@ -61,11 +61,10 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
     @Test
     public void testOrderedChildResources() throws Exception {
         final WildFlyManagedConfiguration masterConfig = createConfiguration("domain.xml", "host-primary.xml", getClass().getSimpleName());
-        final DomainLifecycleUtil masterUtils = new DomainLifecycleUtil(masterConfig);
         final WildFlyManagedConfiguration slaveConfig = createConfiguration("domain.xml", "host-secondary.xml", getClass().getSimpleName(),
                 SECONDARY_HOST_NAME, slaveAddress, 19990);
-        final DomainLifecycleUtil slaveUtils = new DomainLifecycleUtil(slaveConfig);
-        try {
+        try (DomainLifecycleUtil masterUtils = new DomainLifecycleUtil(masterConfig);
+                DomainLifecycleUtil slaveUtils = new DomainLifecycleUtil(slaveConfig)) {
             masterUtils.start();
             slaveUtils.start();
 
@@ -118,12 +117,6 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
             rodOp.get(NAME).set(ADD);
             ModelNode result = DomainTestUtils.executeForResult(rodOp, masterUtils.getDomainClient());
             Assert.assertTrue(result.get(REQUEST_PROPERTIES).hasDefined(ADD_INDEX));
-        } finally {
-            try {
-                slaveUtils.stop();
-            } finally {
-                masterUtils.stop();
-            }
         }
     }
 
