@@ -354,11 +354,11 @@
         <version.io.smallrye.smallrye-health>3.2.1</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>3.1.1</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>3.0.4</version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.smallrye-mutiny>1.1.2</version.io.smallrye.smallrye-mutiny>
-        <version.io.smallrye.smallrye-mutiny-vertx>2.16.2</version.io.smallrye.smallrye-mutiny-vertx>
-        <version.io.smallrye.smallrye-reactive-messaging>3.17.0</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.smallrye.smallrye-mutiny>1.6.0</version.io.smallrye.smallrye-mutiny>
+        <version.io.smallrye.smallrye-mutiny-vertx>2.23.0</version.io.smallrye.smallrye-mutiny-vertx>
+        <version.io.smallrye.smallrye-reactive-messaging>3.18.0</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.undertow.jastow>2.0.10.Final</version.io.undertow.jastow>
-        <version.io.vertx.vertx>4.2.7</version.io.vertx.vertx>
+        <version.io.vertx.vertx>4.3.1</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
         <version.jakarta.json.bind.api>1.0.2</version.jakarta.json.bind.api>
