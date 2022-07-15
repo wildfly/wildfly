@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,11 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.massindexer;
+package org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.simple;
 
+import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.core.api.annotation.Observer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.massindexer.Singer;
 import org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.util.ElasticsearchServerSetupObserver;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -33,23 +35,24 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import jakarta.inject.Inject;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
- * @author Hardy Ferentschik
+ * Verify deployed applications can use the default Hibernate Search module via Jakarta Persistence APIs.
+ *
+ * @author Sanne Grinovero <sanne@hibernate.org> (C) 2014 Red Hat Inc.
  */
 @RunWith(Arquillian.class)
 @Observer(ElasticsearchServerSetupObserver.class)
-public class HibernateSearchElasticsearchMassIndexerTestCase {
-    private static final String NAME = HibernateSearchElasticsearchMassIndexerTestCase.class.getSimpleName();
+public class HibernateSearchElasticsearchSimpleTestCase {
+
+    private static final String NAME = HibernateSearchElasticsearchSimpleTestCase.class.getSimpleName();
     private static final String WAR_ARCHIVE_NAME = NAME + ".war";
 
     @BeforeClass
@@ -64,10 +67,17 @@ public class HibernateSearchElasticsearchMassIndexerTestCase {
 
     @Deployment
     public static WebArchive createArchive() {
+
+        // TODO maybe just use managed=false and deploy in the @BeforeClass / undeploy in an @AfterClass
+        if (!AssumeTestGroupUtil.isDockerAvailable() || AssumeTestGroupUtil.isSecurityManagerEnabled()) {
+            return AssumeTestGroupUtil.emptyWar(WAR_ARCHIVE_NAME);
+        }
+
         return ShrinkWrap
                 .create(WebArchive.class, WAR_ARCHIVE_NAME)
-                .addClasses(HibernateSearchElasticsearchMassIndexerTestCase.class,
-                        Singer.class, SingersSingleton.class)
+                .addClasses(HibernateSearchElasticsearchSimpleTestCase.class,
+                        SearchBean.class, Book.class, HibernateSearchElasticsearchSimpleTestCase.class,
+                        AnalysisConfigurer.class, AssumeTestGroupUtil.class)
                 .addAsResource(persistenceXml(), "META-INF/persistence.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
     }
@@ -76,36 +86,51 @@ public class HibernateSearchElasticsearchMassIndexerTestCase {
         String persistenceXml = Descriptors.create(PersistenceDescriptor.class)
                 .version("2.0")
                 .createPersistenceUnit()
-                .name("cmt-test")
+                .name("jpa-search-test-pu")
                 .jtaDataSource("java:jboss/datasources/ExampleDS")
                 .clazz(Singer.class.getName())
                 .getOrCreateProperties()
                 .createProperty().name("hibernate.hbm2ddl.auto").value("create-drop").up()
                 .createProperty().name("hibernate.search.schema_management.strategy").value("drop-and-create-and-drop").up()
-                .createProperty().name("hibernate.search.automatic_indexing.enabled").value("false").up()
+                .createProperty().name("hibernate.search.automatic_indexing.synchronization.strategy").value("sync").up()
                 .createProperty().name("hibernate.search.backend.type").value("elasticsearch").up()
                 .createProperty().name("hibernate.search.backend.hosts").value(ElasticsearchServerSetupObserver.getHttpHostAddress()).up()
+                .createProperty().name("hibernate.search.backend.analysis.configurer").value(AnalysisConfigurer.class.getName()).up()
                 .up().up()
                 .exportAsString();
         return new StringAsset(persistenceXml);
     }
 
     @Inject
-    private SingersSingleton singersEjb;
+    private SearchBean searchBean;
+
+    @Before
+    @After
+    public void cleanupDatabase() {
+        searchBean.deleteAll();
+    }
 
     @Test
-    public void testMassIndexerWorks() throws Exception {
-        assertNotNull(singersEjb);
-        singersEjb.insertContact("John", "Lennon");
-        singersEjb.insertContact("Paul", "McCartney");
-        singersEjb.insertContact("George", "Harrison");
-        singersEjb.insertContact("Ringo", "Starr");
-
-        assertEquals("Don't you know the Beatles?", 4, singersEjb.listAllContacts().size());
-        assertEquals("Beatles should not yet be indexed", 0, singersEjb.searchAllContacts().size());
-        assertTrue("Indexing the Beatles failed.", singersEjb.rebuildIndex());
-        assertEquals("Now the Beatles should be indexed", 4, singersEjb.searchAllContacts().size());
+    public void testFullTextQuery() {
+        searchBean.storeNewBook("Hello");
+        searchBean.storeNewBook("Hello world");
+        searchBean.storeNewBook("Hello planet Mars");
+        assertEquals(3, searchBean.findByKeyword("hello").size());
+        assertEquals(1, searchBean.findByKeyword("mars").size());
+        // Search should be case-insensitive thanks to the default analyzer
+        assertEquals(3, searchBean.findByKeyword("HELLO").size());
     }
+
+    @Test
+    public void testAnalysisConfiguration() {
+        searchBean.storeNewBook("Hello");
+        searchBean.storeNewBook("Hello world");
+        searchBean.storeNewBook("Hello planet Mars");
+        // This search relies on a custom analyzer configured in AnalysisConfigurationProvider;
+        // if it works, then our custom analysis configuration was taken into account.
+        assertEquals(3, searchBean.findAutocomplete("he").size());
+        assertEquals(1, searchBean.findAutocomplete("he wo").size());
+        assertEquals(1, searchBean.findAutocomplete("he pl").size());
+    }
+
 }
-
-
