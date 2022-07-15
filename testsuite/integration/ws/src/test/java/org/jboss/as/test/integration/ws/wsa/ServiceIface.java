@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ws.wsa;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 @WebService(targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wsaddressing")
 public interface ServiceIface {

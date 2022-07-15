@@ -21,15 +21,15 @@
  */
 package org.jboss.as.test.integration.ws.basic;
 
-import javax.ejb.Stateless;
-import javax.jws.WebService;
+import jakarta.ejb.Stateless;
+import jakarta.jws.WebService;
 import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPConstants;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPFactory;
-import javax.xml.soap.SOAPFault;
-import javax.xml.ws.BindingType;
-import javax.xml.ws.soap.SOAPFaultException;
+import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPFactory;
+import jakarta.xml.soap.SOAPFault;
+import jakarta.xml.ws.BindingType;
+import jakarta.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.ws.api.annotation.WebContext;
 
@@ -47,7 +47,7 @@ import org.jboss.ws.api.annotation.WebContext;
         urlPattern = "/EJB3Service",
         contextRoot = "/jaxws-basic-ejb3"
 )
-@BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
+@BindingType(jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 @Stateless
 public class EJBEndpoint implements EndpointIface {
 

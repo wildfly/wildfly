@@ -21,14 +21,14 @@
  */
 package org.jboss.as.test.integration.ws.basic;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPConstants;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPFactory;
-import javax.xml.soap.SOAPFault;
-import javax.xml.ws.BindingType;
-import javax.xml.ws.soap.SOAPFaultException;
+import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPFactory;
+import jakarta.xml.soap.SOAPFault;
+import jakarta.xml.ws.BindingType;
+import jakarta.xml.ws.soap.SOAPFaultException;
 
 /**
  * Simple POJO endpoint
@@ -40,7 +40,7 @@ import javax.xml.ws.soap.SOAPFaultException;
         targetNamespace = "http://jbossws.org/basic",
         endpointInterface = "org.jboss.as.test.integration.ws.basic.EndpointIface"
 )
-@BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
+@BindingType(jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class PojoEndpoint implements EndpointIface {
 
     public String helloString(String input) {

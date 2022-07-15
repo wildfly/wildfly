@@ -23,12 +23,12 @@ package org.jboss.as.test.integration.ws.serviceref;
 
 import java.io.IOException;
 import javax.naming.InitialContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.Service;
-import javax.xml.ws.WebServiceRef;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.WebServiceRef;
 
 import org.jboss.logging.Logger;
 

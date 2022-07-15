@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ws.basic;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 /**
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>

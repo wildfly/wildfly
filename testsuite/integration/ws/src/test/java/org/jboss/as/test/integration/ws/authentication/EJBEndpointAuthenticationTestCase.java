@@ -26,9 +26,9 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
-import javax.xml.ws.WebServiceException;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.WebServiceException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -352,7 +352,7 @@ public class EJBEndpointAuthenticationTestCase {
     }
 
     private void checkMessage(final Throwable t, final String methodName) {
-        final Pattern pattern = Pattern.compile("(WFLYEJB0364:.*" + methodName + ".*EJBEndpoint.*)");
+        final Pattern pattern = Pattern.compile("(.*WFLYEJB0364:.*" + methodName + ".*EJBEndpoint.*)");
         final String foundMsg = t.getMessage();
         Assert.assertTrue(String.format("Expected to find method name %s in error: %s", methodName, foundMsg),
                 pattern.matcher(t.getMessage()).matches());

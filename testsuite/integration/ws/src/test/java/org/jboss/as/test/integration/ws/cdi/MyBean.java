@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ws.cdi;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 /**
  * @author Stuart Douglas

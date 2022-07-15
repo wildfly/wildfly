@@ -24,8 +24,8 @@ package org.jboss.as.test.integration.ws.wsse.sign;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.Service;
 
 import org.junit.Assert;
 import org.apache.cxf.ws.security.SecurityConstants;

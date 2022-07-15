@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ws.schemalocations;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 /**
  * Simple WS endpoint

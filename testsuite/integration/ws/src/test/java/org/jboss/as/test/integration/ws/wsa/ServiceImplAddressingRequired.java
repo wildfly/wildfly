@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ws.wsa;
 
-import javax.jws.HandlerChain;
-import javax.jws.WebService;
-import javax.xml.ws.soap.Addressing;
+import jakarta.jws.HandlerChain;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.soap.Addressing;
 
 @WebService
         (
