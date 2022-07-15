@@ -147,7 +147,6 @@
             <properties>
                 <!-- Turn off provisioning since it is enabled by default-->
                 <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
 
@@ -161,9 +160,6 @@
                     <name>ts.ee9</name>
                 </property>
             </activation>
-            <properties>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
-            </properties>
         </profile>
     </profiles>
 </project>
