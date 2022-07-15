@@ -32,6 +32,6 @@ public class PassivationCapableSerializableContextualMarshaller<C extends Contex
 
     @SuppressWarnings("unchecked")
     PassivationCapableSerializableContextualMarshaller() {
-        super((Class<PassivationCapableSerializableContextual<C, I>>) (Class<?>) PassivationCapableSerializableContextual.class, PassivationCapableSerializableContextual::new, PassivationCapableSerializableContextual::getContextId);
+        super((Class<PassivationCapableSerializableContextual<C, I>>) (Class<?>) PassivationCapableSerializableContextual.class, PassivationCapableSerializableContextual::new, PassivationCapableSerializableContextual::new, PassivationCapableSerializableContextual::getContextId);
     }
 }

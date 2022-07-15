@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,16 +22,14 @@
 
 package org.wildfly.clustering.weld.contexts;
 
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.PassivationCapable;
+import org.jboss.weld.serialization.spi.BeanIdentifier;
 
 /**
  * @author Paul Ferraro
  */
-public class PassivationCapableSerializableBeanMarshaller<B extends Bean<I> & PassivationCapable, I> extends PassivationCapableSerializableMarshaller<PassivationCapableSerializableBean<B, I>, B, I> {
+public interface MarshallableContextual<C> {
 
-    @SuppressWarnings("unchecked")
-    PassivationCapableSerializableBeanMarshaller() {
-        super((Class<PassivationCapableSerializableBean<B, I>>) (Class<?>) PassivationCapableSerializableBean.class, PassivationCapableSerializableBean::new, PassivationCapableSerializableBean::new, PassivationCapableSerializableBean::getContextId);
-    }
+    BeanIdentifier getIdentifier();
+
+    C getInstance();
 }
