@@ -22,7 +22,7 @@
 package org.jboss.as.test.multinode.transaction.async;
 
 import java.util.concurrent.Future;
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Remote interface for testing beans being called.

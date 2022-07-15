@@ -36,7 +36,7 @@ import java.security.SecurityPermission;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import javax.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.BatchStatus;
 import javax.naming.Context;
 
 import org.h2.tools.Server;

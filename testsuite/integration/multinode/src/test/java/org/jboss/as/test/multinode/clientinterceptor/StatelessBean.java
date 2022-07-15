@@ -24,8 +24,8 @@ package org.jboss.as.test.multinode.clientinterceptor;
 
 import org.jboss.logging.Logger;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>

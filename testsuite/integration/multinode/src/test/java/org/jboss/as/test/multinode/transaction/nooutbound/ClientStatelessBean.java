@@ -27,7 +27,7 @@ import java.util.Properties;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

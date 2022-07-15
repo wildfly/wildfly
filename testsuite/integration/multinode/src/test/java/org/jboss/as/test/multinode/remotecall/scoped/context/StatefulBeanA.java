@@ -24,14 +24,14 @@ package org.jboss.as.test.multinode.remotecall.scoped.context;
 
 import org.jboss.ejb3.annotation.Cache;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.CreateException;
-import javax.ejb.LocalBean;
-import javax.ejb.PostActivate;
-import javax.ejb.PrePassivate;
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.PostActivate;
+import jakarta.ejb.PrePassivate;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.util.Properties;
