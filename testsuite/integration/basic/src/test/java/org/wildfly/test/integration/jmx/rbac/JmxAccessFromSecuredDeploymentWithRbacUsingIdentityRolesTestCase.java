@@ -28,8 +28,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({JmxAccessFromSecuredDeploymentWithRbacUsingIdentityRoles.RbacWithUseIdenityRolesSetup.class})
-public class JmxAccessFromSecuredDeploymentWithRbacUsingIdentityRoles extends AbstractJmxAccessFromDeploymentWithRbacTest {
+@ServerSetup({JmxAccessFromSecuredDeploymentWithRbacUsingIdentityRolesTestCase.RbacWithUseIdenityRolesSetup.class})
+public class JmxAccessFromSecuredDeploymentWithRbacUsingIdentityRolesTestCase extends AbstractJmxAccessFromDeploymentWithRbacTest {
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
