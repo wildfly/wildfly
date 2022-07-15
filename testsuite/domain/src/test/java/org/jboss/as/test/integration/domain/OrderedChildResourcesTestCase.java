@@ -79,12 +79,10 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
             Assert.assertEquals(originalMasterStack, originalSlaveStack);
 
             int index = -1;
-            ModelNode value = null;
             Iterator<Property> it = originalMasterStack.get(PROTOCOL).asPropertyList().iterator();
             for (int i = 0; it.hasNext(); i++) {
                 Property property = it.next();
                 if (property.getName().equals(TARGET_PROTOCOL)) {
-                    value = property.getValue();
                     index = i;
                     break;
                 }
@@ -101,10 +99,7 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
 
             //Reload the master into admin-only and re-add the protocol
             reloadMaster(masterUtils, true);
-            ModelNode add = value.clone();
-            add.get(OP).set(ADD);
-            add.get(OP_ADDR).set(targetProtocolAddress.toModelNode());
-            add.get(ADD_INDEX).set(index);
+            ModelNode add = Util.createAddOperation(targetProtocolAddress, index);
             DomainTestUtils.executeForResult(add, masterUtils.getDomainClient());
 
             //Reload the master into normal mode and check the protocol is in the right place on the slave
