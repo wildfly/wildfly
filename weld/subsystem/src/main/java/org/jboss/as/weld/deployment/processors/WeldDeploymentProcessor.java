@@ -90,7 +90,6 @@ import org.jboss.weld.configuration.spi.helpers.ExternalConfigurationBuilder;
 import org.jboss.weld.manager.api.ExecutorServices;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
-import org.wildfly.common.iteration.CompositeIterable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -164,8 +163,13 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final ServiceLoader<DeploymentUnitDependenciesProvider> dependenciesProviders = ServiceLoader.load(DeploymentUnitDependenciesProvider.class,
                 WildFlySecurityManager.getClassLoaderPrivileged(WeldDeploymentProcessor.class));
-        final ServiceLoader<ModuleServicesProvider> moduleServicesProviders = ServiceLoader.load(ModuleServicesProvider.class,
-                WildFlySecurityManager.getClassLoaderPrivileged(WeldDeploymentProcessor.class));
+        List<ClassLoader> loaders = new ArrayList<>(subDeployments.size() + 2);
+        loaders.add(WildFlySecurityManager.getClassLoaderPrivileged(WeldDeploymentProcessor.class));
+        loaders.add(module.getClassLoader());
+        for (DeploymentUnit subDeployment : subDeployments) {
+            loaders.add(subDeployment.getAttachment(Attachments.MODULE).getClassLoader());
+        }
+        Iterable<ModuleServicesProvider> moduleServicesProviders = ServiceLoader.load(ModuleServicesProvider.class, new CompositeClassLoader(loaders));
 
         getDependencies(deploymentUnit, dependencies, dependenciesProviders);
 
@@ -191,9 +195,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             //we have to do this here as the aggregate components are not available in earlier phases
             final ResourceRoot subDeploymentRoot = subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
-            Iterable<ModuleServicesProvider> providers = new CompositeIterable<>(moduleServicesProviders, subDeploymentModule.loadService(ModuleServicesProvider.class));
             // Add module services to bean deployment module
-            for (Entry<Class<? extends Service>, Service> entry : ServiceLoaders.loadModuleServices(providers, deploymentUnit, subDeployment, subDeploymentModule, subDeploymentRoot).entrySet()) {
+            for (Entry<Class<? extends Service>, Service> entry : ServiceLoaders.loadModuleServices(moduleServicesProviders, deploymentUnit, subDeployment, subDeploymentModule, subDeploymentRoot).entrySet()) {
                 bdm.addService(entry.getKey(), Reflections.cast(entry.getValue()));
             }
         }
@@ -212,8 +215,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        Iterable<ModuleServicesProvider> providers = new CompositeIterable<>(moduleServicesProviders, module.loadService(ModuleServicesProvider.class));
-        Map<Class<? extends Service>, Service> rootModuleServices = ServiceLoaders.loadModuleServices(providers, deploymentUnit, deploymentUnit,
+        Map<Class<? extends Service>, Service> rootModuleServices = ServiceLoaders.loadModuleServices(moduleServicesProviders, deploymentUnit, deploymentUnit,
                 module, deploymentRoot);
 
         // Add root module services to root bean deployment module
