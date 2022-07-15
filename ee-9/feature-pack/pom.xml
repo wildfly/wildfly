@@ -613,6 +613,8 @@
                                      in the near future.
                                   -->
                                 <exclude>org.jboss.logmanager:log4j-jboss-logmanager\z</exclude>
+                                <!-- Don't transform the shaded jar -->
+                                <exclude>org.wildfly:wildfly-client-all-jakarta\z</exclude>
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
@@ -859,6 +861,10 @@
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-bean-validation</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-client-all</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
