@@ -121,8 +121,8 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
     }
 
     private void reloadMaster(DomainLifecycleUtil domainMasterLifecycleUtil, boolean adminOnly) throws Exception{
-        ModelNode restartAdminOnly = Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, PRIMARY_HOST_NAME));
-        restartAdminOnly.get("admin-only").set(adminOnly);
+        ModelNode restartAdminOnly = Util.createEmptyOperation(RELOAD, PathAddress.pathAddress(HOST, PRIMARY_HOST_NAME));
+        restartAdminOnly.get(ADMIN_ONLY).set(adminOnly);
         domainMasterLifecycleUtil.executeAwaitConnectionClosed(restartAdminOnly);
         domainMasterLifecycleUtil.connect();
         domainMasterLifecycleUtil.awaitHostController(System.currentTimeMillis());
