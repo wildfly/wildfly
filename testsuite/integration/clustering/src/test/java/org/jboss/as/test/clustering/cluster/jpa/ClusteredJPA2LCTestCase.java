@@ -106,12 +106,14 @@ public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
         final String entityId = "1";
         createEntity(node0, entityId);
         Assert.assertTrue(isInCache(node0, entityId));
+        Thread.sleep(GRACE_TIME_TO_REPLICATE);
         Assert.assertTrue(isInCache(node1, entityId));
         evictFromCache(node1, entityId);
         Assert.assertFalse(isInCache(node0, entityId));
         Assert.assertFalse(isInCache(node1, entityId));
         addToCache(node0, entityId);
         Assert.assertTrue(isInCache(node0, entityId));
+        Thread.sleep(GRACE_TIME_TO_REPLICATE);
         Assert.assertTrue(isInCache(node1, entityId));
     }
 
