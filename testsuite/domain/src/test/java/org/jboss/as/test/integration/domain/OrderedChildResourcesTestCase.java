@@ -56,6 +56,7 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
     public static final String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
     private static final String SECONDARY_HOST_NAME = "secondary";
     private static final int ADJUSTED_SECOND = TimeoutUtil.adjust(1000);
+    private static final String TARGET_PROTOCOL = "pbcast.STABLE";
 
     @Test
     public void testOrderedChildResources() throws Exception {
@@ -68,24 +69,22 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
             masterUtils.start();
             slaveUtils.start();
 
-            PathAddress jgroupsTcpAddr = PathAddress.pathAddress(PROFILE, "full-ha")
+            PathAddress stackAddress = PathAddress.pathAddress(PROFILE, "full-ha")
                     .append(SUBSYSTEM, "jgroups")
                     .append("stack", "tcp");
 
-            final ModelNode originalMasterStack = readResource(masterUtils.getDomainClient(), jgroupsTcpAddr);
+            final ModelNode originalMasterStack = readResource(masterUtils.getDomainClient(), stackAddress);
             originalMasterStack.protect();
-            final ModelNode originalSlaveStack = readResource(slaveUtils.getDomainClient(), jgroupsTcpAddr);
+            final ModelNode originalSlaveStack = readResource(slaveUtils.getDomainClient(), stackAddress);
             originalSlaveStack.protect();
             Assert.assertEquals(originalMasterStack, originalSlaveStack);
 
-            //FD_ALL is normally in the middle somewhere
-            final String protocolName = "FD_ALL";
             int index = -1;
             ModelNode value = null;
             Iterator<Property> it = originalMasterStack.get(PROTOCOL).asPropertyList().iterator();
             for (int i = 0; it.hasNext(); i++) {
                 Property property = it.next();
-                if (property.getName().equals(protocolName)) {
+                if (property.getName().equals(TARGET_PROTOCOL)) {
                     value = property.getValue();
                     index = i;
                     break;
@@ -96,25 +95,26 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
             Assert.assertTrue(0 <= index);
             Assert.assertTrue(index < originalMasterStack.get(PROTOCOL).keys().size() - 2);
 
+            PathAddress targetProtocolAddress = stackAddress.append(PROTOCOL, TARGET_PROTOCOL);
             //Remove the protocol
-            DomainTestUtils.executeForResult(Util.createRemoveOperation(jgroupsTcpAddr.append(PROTOCOL, protocolName)),
+            DomainTestUtils.executeForResult(Util.createRemoveOperation(targetProtocolAddress),
                     masterUtils.getDomainClient());
 
             //Reload the master into admin-only and re-add the protocol
             reloadMaster(masterUtils, true);
             ModelNode add = value.clone();
             add.get(OP).set(ADD);
-            add.get(OP_ADDR).set(jgroupsTcpAddr.append(PROTOCOL, protocolName).toModelNode());
+            add.get(OP_ADDR).set(targetProtocolAddress.toModelNode());
             add.get(ADD_INDEX).set(index);
             DomainTestUtils.executeForResult(add, masterUtils.getDomainClient());
 
             //Reload the master into normal mode and check the protocol is in the right place on the slave
             reloadMaster(masterUtils, false);
-            ModelNode slaveStack = readResource(slaveUtils.getDomainClient(), jgroupsTcpAddr);
+            ModelNode slaveStack = readResource(slaveUtils.getDomainClient(), stackAddress);
             Assert.assertEquals(originalMasterStack, slaveStack);
 
             //Check that :read-operation-description has add-index defined; WFLY-6782
-            ModelNode rodOp = Util.createOperation(READ_OPERATION_DESCRIPTION_OPERATION, jgroupsTcpAddr.append(PROTOCOL, protocolName));
+            ModelNode rodOp = Util.createOperation(READ_OPERATION_DESCRIPTION_OPERATION, targetProtocolAddress);
             rodOp.get(NAME).set(ADD);
             ModelNode result = DomainTestUtils.executeForResult(rodOp, masterUtils.getDomainClient());
             Assert.assertTrue(result.get(REQUEST_PROPERTIES).hasDefined(ADD_INDEX));
