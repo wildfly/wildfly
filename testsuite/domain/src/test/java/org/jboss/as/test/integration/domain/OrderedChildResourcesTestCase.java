@@ -54,7 +54,7 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
 
 
     public static final String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
-
+    private static final String SECONDARY_HOST_NAME = "secondary";
     private static final int ADJUSTED_SECOND = TimeoutUtil.adjust(1000);
 
     @Test
@@ -62,7 +62,7 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
         final WildFlyManagedConfiguration masterConfig = createConfiguration("domain.xml", "host-primary.xml", getClass().getSimpleName());
         final DomainLifecycleUtil masterUtils = new DomainLifecycleUtil(masterConfig);
         final WildFlyManagedConfiguration slaveConfig = createConfiguration("domain.xml", "host-secondary.xml", getClass().getSimpleName(),
-                "secondary", slaveAddress, 19990);
+                SECONDARY_HOST_NAME, slaveAddress, 19990);
         final DomainLifecycleUtil slaveUtils = new DomainLifecycleUtil(slaveConfig);
         try {
             masterUtils.start();
@@ -159,7 +159,7 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
             List<ModelNode> list = ret.asList();
             if (list.size() == 2) {
                 for (ModelNode entry : list) {
-                    if ("slave".equals(entry.asString())){
+                    if (SECONDARY_HOST_NAME.equals(entry.asString())){
                         return true;
                     }
                 }
