@@ -43,11 +43,11 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 public abstract class BuildConfigurationTestBase {
 
     static final String masterAddress = System.getProperty("jboss.test.host.master.address", "localhost");
-
+    static final String PRIMARY_HOST_NAME = "primary";
     static final File CONFIG_DIR = new File("target/wildfly/domain/configuration/");
 
     static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
-        return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "primary", masterAddress, 9990);
+        return createConfiguration(domainXmlName, hostXmlName, testConfiguration, PRIMARY_HOST_NAME, masterAddress, 9990);
     }
 
     static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName,
