@@ -35,6 +35,7 @@ import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
@@ -47,10 +48,11 @@ import org.junit.runner.RunWith;
 public class ProtoStreamCDIFailoverTestCase extends AbstractWebFailoverTestCase {
 
     private static final String MODULE_NAME = CDIFailoverTestCase.class.getSimpleName();
-    private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
+    private static final String DEPLOYMENT_NAME = MODULE_NAME + ".ear";
+    private static final String WEB_DEPLOYMENT_NAME = MODULE_NAME + ".war";
 
     public ProtoStreamCDIFailoverTestCase() {
-        super(DEPLOYMENT_NAME, TransactionMode.TRANSACTIONAL);
+        super(DEPLOYMENT_NAME + '.' + WEB_DEPLOYMENT_NAME, TransactionMode.TRANSACTIONAL);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -72,13 +74,15 @@ public class ProtoStreamCDIFailoverTestCase extends AbstractWebFailoverTestCase 
     }
 
     private static Archive<?> createDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, WEB_DEPLOYMENT_NAME);
         war.addPackage(IncrementorBean.class.getPackage());
         war.addClasses(Incrementor.class, SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         war.setWebXML(CDIFailoverTestCase.class.getPackage(), "web.xml");
         war.addAsWebInfResource(CDIFailoverTestCase.class.getPackage(), "distributable-web.xml", "distributable-web.xml");
         war.addAsServiceProvider(SerializationContextInitializer.class.getName(), CDISerializationContextInitializer.class.getName() + "Impl");
-        return war;
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, DEPLOYMENT_NAME);
+        ear.addAsModule(war);
+        return ear;
     }
 }
