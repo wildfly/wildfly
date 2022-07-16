@@ -23,8 +23,8 @@
 package org.jboss.as.test.multinode.batch.stoprestart;
 
 import java.util.Properties;
-import javax.batch.runtime.BatchStatus;
-import javax.ejb.Remote;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface BatchClientIF {

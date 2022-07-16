@@ -29,8 +29,8 @@ import java.net.SocketPermission;
 import java.util.Arrays;
 import java.util.PropertyPermission;
 
-import javax.ejb.EJBException;
-import javax.inject.Inject;
+import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;

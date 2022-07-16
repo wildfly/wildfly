@@ -21,15 +21,15 @@
  */
 package org.jboss.as.test.multinode.transaction;
 
-import javax.annotation.Resource;
-import javax.ejb.EJBException;
-import javax.ejb.Remote;
-import javax.ejb.SessionContext;
-import javax.ejb.SessionSynchronization;
-import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Remote;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.SessionSynchronization;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 import java.rmi.RemoteException;
 
 /**
