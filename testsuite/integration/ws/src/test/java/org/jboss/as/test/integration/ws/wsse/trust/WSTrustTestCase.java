@@ -56,8 +56,8 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.Service;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;

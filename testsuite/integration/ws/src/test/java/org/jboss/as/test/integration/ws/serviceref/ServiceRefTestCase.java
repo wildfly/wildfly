@@ -86,7 +86,7 @@ public class ServiceRefTestCase {
                 .addAsManifestResource(ServiceRefTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl, properties)), "wsdl/TestService.wsdl")
                 .addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
-                // all the following permissions are needed because EndpointService directly extends javax.xml.ws.Service class
+                // all the following permissions are needed because EndpointService directly extends jakarta.xml.ws.Service class
                 // and CXF guys are not willing to add more privileged blocks into their code, thus deployments need to have
                 // the following permissions (note that the wsdl.properties permission is needed by wsdl4j)
                 .addAsManifestResource(createPermissionsXmlAsset(

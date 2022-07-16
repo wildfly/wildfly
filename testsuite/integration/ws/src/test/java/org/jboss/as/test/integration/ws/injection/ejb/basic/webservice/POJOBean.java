@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ws.injection.ejb.basic.webservice;
 
-import javax.jws.HandlerChain;
-import javax.jws.WebService;
+import jakarta.jws.HandlerChain;
+import jakarta.jws.WebService;
 
 /**
  * POJO bean published as WebService injecting other EJB3 bean.

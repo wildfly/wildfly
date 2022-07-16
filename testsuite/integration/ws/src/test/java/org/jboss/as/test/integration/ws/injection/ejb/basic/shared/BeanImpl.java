@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ws.injection.ejb.basic.shared;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * The EJB3 implementation

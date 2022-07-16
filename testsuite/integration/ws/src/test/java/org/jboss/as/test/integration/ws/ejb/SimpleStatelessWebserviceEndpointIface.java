@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ws.ejb;
 
-import javax.ejb.Remote;
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
+import jakarta.ejb.Remote;
+import jakarta.jws.WebService;
+import jakarta.jws.soap.SOAPBinding;
 
 /**
  * Webservice endpoint interface.

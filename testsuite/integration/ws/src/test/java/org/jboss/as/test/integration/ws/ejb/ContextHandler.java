@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ws.ejb;
 
-import javax.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.handler.MessageContext;
 
 import org.jboss.ws.api.handler.GenericSOAPHandler;
 

@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ws.wsrm;
 
-import javax.jws.HandlerChain;
-import javax.jws.Oneway;
-import javax.jws.WebService;
+import jakarta.jws.HandlerChain;
+import jakarta.jws.Oneway;
+import jakarta.jws.WebService;
 
 import org.jboss.logging.Logger;
 

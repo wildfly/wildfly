@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.ws.ejb;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.jws.HandlerChain;
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceContext;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.jws.HandlerChain;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.WebServiceContext;
 
 /**
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>

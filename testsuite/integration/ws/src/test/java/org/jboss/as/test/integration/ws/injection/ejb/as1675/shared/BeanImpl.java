@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ws.injection.ejb.as1675.shared;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * Shared EJB3 implementation.

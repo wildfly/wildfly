@@ -26,11 +26,11 @@ import org.jboss.ws.api.annotation.AuthMethod;
 import org.jboss.ws.api.annotation.TransportGuarantee;
 import org.jboss.ws.api.annotation.WebContext;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
-import javax.jws.WebService;
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Stateless;
+import jakarta.jws.WebService;
 
 /**
  * Simple EJB3 endpoint

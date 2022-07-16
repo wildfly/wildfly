@@ -12,7 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
+import jakarta.xml.ws.Service;
 import java.net.URL;
 
 //import org.jboss.shrinkwrap.api.spec.JavaArchive;

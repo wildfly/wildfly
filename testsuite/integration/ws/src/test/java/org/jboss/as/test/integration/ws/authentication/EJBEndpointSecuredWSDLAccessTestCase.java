@@ -25,8 +25,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
-import javax.xml.ws.WebServiceException;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.WebServiceException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
