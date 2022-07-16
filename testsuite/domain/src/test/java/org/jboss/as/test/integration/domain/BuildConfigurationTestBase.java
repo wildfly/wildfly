@@ -42,12 +42,12 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
  */
 public abstract class BuildConfigurationTestBase {
 
-    static final String masterAddress = System.getProperty("jboss.test.host.master.address", "localhost");
-
+    static final String PRIMARY_ADDRESS = System.getProperty("jboss.test.host.master.address", "localhost");
+    static final String PRIMARY_HOST_NAME = "primary";
     static final File CONFIG_DIR = new File("target/wildfly/domain/configuration/");
 
     static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
-        return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "primary", masterAddress, 9990);
+        return createConfiguration(domainXmlName, hostXmlName, testConfiguration, PRIMARY_HOST_NAME, PRIMARY_ADDRESS, 9990);
     }
 
     static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName,
@@ -58,7 +58,7 @@ public abstract class BuildConfigurationTestBase {
         configuration.setHostControllerManagementAddress(hostAddress);
         configuration.setHostControllerManagementPort(hostPort);
         configuration.setHostControllerManagementProtocol("remote+http");
-        configuration.setHostCommandLineProperties("-Djboss.domain.primary.address=" + masterAddress +
+        configuration.setHostCommandLineProperties("-Djboss.domain.primary.address=" + PRIMARY_ADDRESS +
                 " -Djboss.management.http.port=" + hostPort);
         configuration.setDomainConfigFile(hackFixDomainConfig(new File(CONFIG_DIR, domainXmlName)).getAbsolutePath());
         configuration.setHostConfigFile(hackFixHostConfig(new File(CONFIG_DIR, hostXmlName), hostName, hostAddress).getAbsolutePath());
