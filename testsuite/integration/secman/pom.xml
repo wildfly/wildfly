@@ -24,6 +24,10 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        
+        <!-- Use the WildFly Preview dependencies until standard WildFly moves to EE 10 -->
+        <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
+        <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
     </properties>
 
     <dependencies>
@@ -34,7 +38,17 @@
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client</artifactId>
+            <artifactId>jboss-ejb-client-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.transaction</groupId>
+            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-transaction-spi-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -60,6 +74,22 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-security-manager</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Jakarta Dependencies -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 import java.net.URI;
 import java.net.URL;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.testsuite.integration.secman.PermissionUtil;
