@@ -59,7 +59,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.mixed.jsf.Bean;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -93,7 +92,6 @@ public abstract class MixedDomainDeploymentTest {
 
     private WebArchive webArchive;
     private WebArchive webArchive2;
-    private WebArchive jsfTestArchive;
     private MixedDomainTestSupport testSupport;
     private File tmpDir;
 
@@ -120,15 +118,6 @@ public abstract class MixedDomainDeploymentTest {
         new File(tmpDir, "exploded").mkdirs();
         webArchive.as(ZipExporter.class).exportTo(new File(tmpDir, "archives/" + TEST), true);
         webArchive.as(ExplodedExporter.class).exportExploded(new File(tmpDir, "exploded"));
-
-        //Make the jsf war to test that jsf works on the older secondary hosts that did not have the jsf subsystem
-        jsfTestArchive = ShrinkWrap.create(WebArchive.class, "jsf-test.war");
-        jsfTestArchive.addClass(Bean.class);
-        jsfTestArchive.addAsWebResource("jsf-test/index.html");
-        jsfTestArchive.addAsWebResource("jsf-test/home.xhtml");
-        jsfTestArchive.addAsWebInfResource("jsf-test/WEB-INF/beans.xml");
-        jsfTestArchive.addAsWebInfResource("jsf-test/WEB-INF/faces-config.xml");
-
 
         // Launch the domain
         testSupport = MixedDomainTestSuite.getSupport(this.getClass());
@@ -338,20 +327,6 @@ public abstract class MixedDomainDeploymentTest {
         executeOnMaster(builder.build());
 
         performHttpCall(DomainTestSupport.slaveAddress, 8080);
-    }
-
-    @Test
-    public void testJsfWorks() throws Exception {
-        ModelNode content = new ModelNode();
-        content.get(INPUT_STREAM_INDEX).set(0);
-        //Just be lazy here and deploy the jsf-test.war with the same name as the other deployments we tried
-        ModelNode composite = createDeploymentOperation(content, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        OperationBuilder builder = new OperationBuilder(composite, true);
-        builder.addInputStream(jsfTestArchive.as(ZipExporter.class).exportAsInputStream());
-
-        executeOnMaster(builder.build());
-
-        performHttpCall(DomainTestSupport.slaveAddress, 8080, "test/home.jsf", "Bean Works");
     }
 
     private void redeployTest() throws IOException {
