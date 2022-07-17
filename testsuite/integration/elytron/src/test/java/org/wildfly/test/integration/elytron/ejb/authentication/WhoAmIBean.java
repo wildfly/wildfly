@@ -21,7 +21,7 @@
  */
 package org.wildfly.test.integration.elytron.ejb.authentication;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 import org.wildfly.test.integration.elytron.ejb.WhoAmI;
 import org.jboss.ejb3.annotation.SecurityDomain;

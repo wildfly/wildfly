@@ -23,7 +23,7 @@ package org.wildfly.test.integration.elytron.principaltransformers;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

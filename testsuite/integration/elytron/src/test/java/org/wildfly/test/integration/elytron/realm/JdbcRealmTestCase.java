@@ -16,12 +16,13 @@
 
 package org.wildfly.test.integration.elytron.realm;
 
-import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.sql.Connection;
@@ -65,7 +66,6 @@ import org.wildfly.test.security.common.elytron.MappedRegexRealmMapper;
 import org.wildfly.test.security.common.elytron.RegexPrincipalTransformer;
 import org.wildfly.test.security.common.elytron.SimpleSecurityDomain;
 import org.wildfly.test.undertow.common.UndertowApplicationSecurityDomain;
-import com.nimbusds.jose.util.StandardCharset;
 
 /**
  * A test case to test the {@link JdbcSecurityRealm} within the Elytron subsystem.
@@ -387,7 +387,7 @@ public class JdbcRealmTestCase {
         }
 
         private void addBCryptUser(final Connection conn, final String username, final String password, final String eMail, String tableName,  final boolean hexEncoded,final String... colours) throws Exception {
-            addBCryptUser(conn, username, password, eMail, tableName,  hexEncoded, StandardCharset.UTF_8, colours);
+            addBCryptUser(conn, username, password, eMail, tableName,  hexEncoded, StandardCharsets.UTF_8, colours);
         }
 
         private void addBCryptUser(final Connection conn, final String username, final String password, final String eMail, String tableName, final boolean hexEncoded, final Charset hashCharset, final String... colours) throws Exception {

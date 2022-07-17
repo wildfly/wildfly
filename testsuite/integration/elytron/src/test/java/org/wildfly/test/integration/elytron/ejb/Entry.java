@@ -21,7 +21,7 @@
  */
 package org.wildfly.test.integration.elytron.ejb;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * Interface for the bean used as the entry point to verify Enterprise Beans 3 security behaviour.

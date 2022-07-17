@@ -22,8 +22,8 @@
 
 package org.wildfly.test.integration.elytron.batch;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 

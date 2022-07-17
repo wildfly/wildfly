@@ -33,10 +33,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.batch.operations.JobOperator;
-import javax.batch.operations.JobSecurityException;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.BatchStatus;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.operations.JobSecurityException;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.BatchStatus;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
