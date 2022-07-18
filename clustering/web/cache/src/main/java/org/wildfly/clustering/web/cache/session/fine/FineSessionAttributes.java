@@ -29,12 +29,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
+import org.wildfly.clustering.ee.UUIDFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
@@ -105,7 +105,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
 
         synchronized (this.mutations) {
             if (attributeId == null) {
-                UUID newAttributeId = createUUID();
+                UUID newAttributeId = UUIDFactory.INSECURE.get();
                 this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteSessionAttributeMapPutFunction(name, newAttributeId) : new ConcurrentSessionAttributeMapPutFunction(name, newAttributeId)));
                 attributeId = this.names.get().get(name);
             }
@@ -212,23 +212,5 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
             // This should not happen here, since attributes were pre-activated during session construction
             throw new IllegalStateException(e);
         }
-    }
-
-    private static UUID createUUID() {
-        byte[] data = new byte[16];
-        ThreadLocalRandom.current().nextBytes(data);
-        data[6] &= 0x0f; /* clear version */
-        data[6] |= 0x40; /* set to version 4 */
-        data[8] &= 0x3f; /* clear variant */
-        data[8] |= 0x80; /* set to IETF variant */
-        long msb = 0;
-        long lsb = 0;
-        for (int i = 0; i < 8; i++) {
-           msb = (msb << 8) | (data[i] & 0xff);
-        }
-        for (int i = 8; i < 16; i++) {
-           lsb = (lsb << 8) | (data[i] & 0xff);
-        }
-        return new UUID(msb, lsb);
     }
 }

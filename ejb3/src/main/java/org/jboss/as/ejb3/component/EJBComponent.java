@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
-import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import javax.naming.Context;
@@ -63,7 +62,8 @@ import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.security.JaccInterceptor;
 import org.jboss.as.ejb3.subsystem.EJBStatistics;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
-import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
+import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
+import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactory;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.context.NamespaceContextSelector;
@@ -108,7 +108,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final ServiceName ejbObjectViewServiceName;
     private final ServiceName ejbLocalObjectViewServiceName;
 
-    private final TimerService timerService;
+    private final ManagedTimerServiceFactory timerServiceFactory;
     private final Map<Method, InterceptorFactory> timeoutInterceptors;
     private final Method timeoutMethod;
     private final String applicationName;
@@ -131,6 +131,8 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final boolean securityRequired;
     private final EJBComponentDescription componentDescription;
     private final boolean legacyCompliantPrincipalPropagation;
+
+    private volatile ManagedTimerService timerService;
 
     /**
      * Construct a new instance.
@@ -159,7 +161,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         // security metadata
         this.securityMetaData = ejbComponentCreateService.getSecurityMetaData();
         this.viewServices = ejbComponentCreateService.getViewServices();
-        this.timerService = ejbComponentCreateService.getTimerService();
+        this.timerServiceFactory = ejbComponentCreateService.getTimerServiceFactory();
         this.timeoutMethod = ejbComponentCreateService.getTimeoutMethod();
         this.ejbLocalHomeViewServiceName = ejbComponentCreateService.getEjbLocalHome();
         this.ejbHomeViewServiceName = ejbComponentCreateService.getEjbHome();
@@ -364,8 +366,8 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         }
     }
 
-    public TimerService getTimerService() throws IllegalStateException {
-        return timerService;
+    public ManagedTimerService getTimerService() {
+        return this.timerService;
     }
 
     public TransactionAttributeType getTransactionAttributeType(final MethodInterfaceType methodIntf, final Method method) {
@@ -581,17 +583,15 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     public synchronized void init() {
         getShutDownInterceptorFactory().start();
         super.init();
-        if(this.timerService instanceof TimerServiceImpl) {
-            ((TimerServiceImpl) this.timerService).activate();
-        }
+
+        this.timerService = this.timerServiceFactory.createTimerService(this);
+        this.timerService.start();
     }
 
     @Override
     public final void stop() {
         getShutDownInterceptorFactory().shutdown();
-        if(this.timerService instanceof TimerServiceImpl) {
-            ((TimerServiceImpl) this.timerService).deactivate();
-        }
+        this.timerService.stop();
         this.done();
     }
 

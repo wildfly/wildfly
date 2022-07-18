@@ -2343,6 +2343,7 @@
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>
+                                                <layer>ejb-local-cache</layer>
                                             </excluded-layers>
                                         </config>
                                     </configurations>

@@ -41,12 +41,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import javax.ejb.EJBLocalObject;
-import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.Component;
@@ -91,8 +91,7 @@ import org.jboss.as.ejb3.security.SecurityDomainInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityRolesAddingInterceptor;
 import org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
-import org.jboss.as.ejb3.timerservice.AutoTimer;
-import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
+import org.jboss.as.ejb3.timerservice.spi.AutoTimer;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -203,10 +202,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * The ejb local home view
      */
     private EjbHomeViewDescription ejbHomeView;
+
     /**
-     * TODO: this should not be part of the description
+     * The management resource for the associated timer service, if present
      */
-    private TimerService timerService = NonFunctionalTimerService.DISABLED;
+    private Resource timerServiceResource;
 
     /**
      * If true this component is accessible via CORBA
@@ -973,13 +973,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         }
     }
 
-
-    public TimerService getTimerService() {
-        return timerService;
+    public Resource getTimerServiceResource() {
+        return this.timerServiceResource;
     }
 
-    public void setTimerService(final TimerService timerService) {
-        this.timerService = timerService;
+    public void setTimerServiceResource(Resource timerServiceResource) {
+        this.timerServiceResource = timerServiceResource;
     }
 
     public EnterpriseBeanMetaData getDescriptorData() {

@@ -20,6 +20,39 @@
                     <unset param="relative-to"/>
                 </feature>
             </feature>
+            <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <param name="local-cache" value="persistent"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.locking">
+                    <param name="isolation" value="REPEATABLE_READ"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.transaction">
+                    <param name="mode" value="BATCH"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
+                    <param name="passivation" value="false"/>
+                    <param name="purge" value="false"/>
+                    <unset param="relative-to"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <param name="local-cache" value="transient"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.locking">
+                    <param name="isolation" value="REPEATABLE_READ"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.transaction">
+                    <param name="mode" value="BATCH"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
+                    <param name="purge" value="true"/>
+                    <unset param="relative-to"/>
+                </feature>
+            </feature>
         </feature>
     </feature>
 

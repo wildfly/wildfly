@@ -2234,7 +2234,7 @@ public interface EjbLogger extends BasicLogger {
      * @return an {@link NoMoreTimeoutsException} for the error.
      */
     @Message(id = 328, value = "No more timeouts for timer %s")
-    NoMoreTimeoutsException noMoreTimeoutForTimer(TimerImpl timer);
+    NoMoreTimeoutsException noMoreTimeoutForTimer(Timer timer);
 
     /**
      * Creates an exception indicating the timer is not a calendar based timer"
@@ -2242,7 +2242,7 @@ public interface EjbLogger extends BasicLogger {
      * @return an {@link IllegalStateException for the error.
      */
     @Message(id = 329, value = "Timer %s is not a calendar based timer")
-    IllegalStateException invalidTimerNotCalendarBaseTimer(final TimerImpl timer);
+    IllegalStateException invalidTimerNotCalendarBaseTimer(final Timer timer);
 
     /**
      * Creates an exception indicating the Timer has expired

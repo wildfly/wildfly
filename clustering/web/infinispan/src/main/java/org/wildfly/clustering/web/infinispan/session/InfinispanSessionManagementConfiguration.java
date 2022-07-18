@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.web.infinispan.InfinispanCacheConfiguration;
+import org.wildfly.clustering.ee.infinispan.InfinispanCacheConfiguration;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**

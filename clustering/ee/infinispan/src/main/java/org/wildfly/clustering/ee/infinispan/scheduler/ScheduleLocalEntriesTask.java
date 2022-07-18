@@ -43,9 +43,9 @@ import org.wildfly.clustering.infinispan.distribution.Locality;
 public class ScheduleLocalEntriesTask<I, M, K extends Key<I>, V extends M> implements BiConsumer<Locality, Locality> {
     private final Cache<K, V> cache;
     private final Predicate<Map.Entry<? super K, ? super V>> filter;
-    private final Scheduler<I, M> scheduler;
+    private final CacheEntryScheduler<I, M> scheduler;
 
-    public ScheduleLocalEntriesTask(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, Scheduler<I, M> scheduler) {
+    public ScheduleLocalEntriesTask(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<I, M> scheduler) {
         this.cache = cache;
         this.filter = filter;
         this.scheduler = scheduler;

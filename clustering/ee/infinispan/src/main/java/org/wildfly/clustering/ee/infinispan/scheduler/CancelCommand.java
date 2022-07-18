@@ -28,7 +28,7 @@ import org.wildfly.clustering.dispatcher.Command;
  * Command that cancels a previously scheduled item.
  * @author Paul Ferraro
  */
-public class CancelCommand<I, M> implements Command<Void, Scheduler<I, M>> {
+public class CancelCommand<I, M> implements Command<Void, CacheEntryScheduler<I, M>> {
     private static final long serialVersionUID = 7990530622481705411L;
 
     private final I id;
@@ -42,7 +42,7 @@ public class CancelCommand<I, M> implements Command<Void, Scheduler<I, M>> {
     }
 
     @Override
-    public Void execute(Scheduler<I, M> scheduler) {
+    public Void execute(CacheEntryScheduler<I, M> scheduler) {
         scheduler.cancel(this.id);
         return null;
     }

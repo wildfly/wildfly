@@ -55,6 +55,10 @@
             <artifactId>wildfly-clustering-ee-spi</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client</artifactId>
         </dependency>

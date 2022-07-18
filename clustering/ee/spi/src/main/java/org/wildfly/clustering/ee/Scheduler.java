@@ -22,6 +22,8 @@
 
 package org.wildfly.clustering.ee;
 
+import java.util.stream.Stream;
+
 /**
  * A task scheduler.
  * @author Paul Ferraro
@@ -39,6 +41,20 @@ public interface Scheduler<I, M> extends AutoCloseable {
      * @param id an object identifier
      */
     void cancel(I id);
+
+    /**
+     * Returns a stream of scheduled item identifiers.
+     * @return a stream of scheduled item identifiers.
+     */
+    Stream<I> stream();
+
+    /**
+     * Indicates whether the object with the specified identifier is scheduled.
+     * @param id an object identifier
+     */
+    default boolean contains(I id) {
+        return this.stream().anyMatch(id::equals);
+    }
 
     /**
      * Closes any resources used by this scheduler.

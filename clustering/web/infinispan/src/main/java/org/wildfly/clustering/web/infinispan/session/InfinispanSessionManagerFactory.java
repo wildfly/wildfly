@@ -48,7 +48,7 @@ import org.wildfly.clustering.ee.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleLocalKeysTask;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithMetaDataCommand;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
-import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
+import org.wildfly.clustering.ee.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerListener;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerTopologyChangeListener;
 import org.wildfly.clustering.group.Group;
@@ -125,7 +125,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, LC> implements SessionMa
         this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
         ExpiredSessionRemover<SC, ?, ?, LC> remover = new ExpiredSessionRemover<>(this.factory);
         this.expirationRegistrar = remover;
-        Scheduler<String, SessionExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(this.batcher, this.factory.getMetaDataFactory(), remover, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()));
+        CacheEntryScheduler<String, SessionExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(this.batcher, this.factory.getMetaDataFactory(), remover, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()));
         CommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
         Group group = dispatcherFactory.getGroup();
         this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(dispatcherFactory, this.cache.getName(), localScheduler, new PrimaryOwnerLocator<>(this.cache, config.getMemberFactory()), SessionCreationMetaDataKey::new, this.properties.isTransactional() ? ScheduleWithMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new);

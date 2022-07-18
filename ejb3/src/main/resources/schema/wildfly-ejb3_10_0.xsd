@@ -380,8 +380,10 @@
         <xs:sequence>
             <xs:element name="data-stores" type="dataStoresType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
-        <xs:attribute name="thread-pool-name" type="xs:token" use="required"/>
-        <xs:attribute name="default-data-store" type="xs:token" use="required" />
+        <xs:attribute name="thread-pool-name" type="xs:token"/>
+        <xs:attribute name="default-data-store" type="xs:token"/>
+        <xs:attribute name="default-persistent-timer-management" type="xs:token"/>
+        <xs:attribute name="default-transient-timer-management" type="xs:token"/>
     </xs:complexType>
 
     <xs:complexType name="dataStoresType">

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:t="urn:timer-service:2.0"
+        xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
+                http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd
+                http://www.jboss.org/j2ee/schema/jboss_5_0.xsd"
+        version="3.1"
+        impl-version="2.0">
+    <assembly-descriptor>
+        <t:timer-service>
+            <ejb-name>*</ejb-name>
+            <t:persistent-timer-management>hotrod</t:persistent-timer-management>
+            <t:transient-timer-management>transient</t:transient-timer-management>
+        </t:timer-service>
+    </assembly-descriptor>
+</jboss:ejb-jar>
