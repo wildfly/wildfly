@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.legacy.ejb.remote.client.api;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author Stuart Douglas
