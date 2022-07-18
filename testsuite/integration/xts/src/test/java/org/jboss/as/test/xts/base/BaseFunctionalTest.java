@@ -54,7 +54,7 @@ public abstract class BaseFunctionalTest {
         }
     }
 
-    public void rollbackIfActive(javax.transaction.UserTransaction ut) {
+    public void rollbackIfActive(jakarta.transaction.UserTransaction ut) {
         try {
             ut.rollback();
         } catch (Throwable th2) {

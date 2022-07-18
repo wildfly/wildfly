@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 
 import org.jboss.logging.Logger;
 

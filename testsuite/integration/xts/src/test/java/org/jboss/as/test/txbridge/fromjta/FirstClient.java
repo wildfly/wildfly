@@ -23,7 +23,7 @@
 package org.jboss.as.test.txbridge.fromjta;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
+import jakarta.xml.ws.Service;
 
 import org.jboss.as.test.txbridge.fromjta.service.FirstServiceAT;
 

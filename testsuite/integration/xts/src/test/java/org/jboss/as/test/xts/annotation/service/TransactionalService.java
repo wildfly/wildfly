@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.xts.annotation.service;
 
-import javax.jws.WebMethod;
+import jakarta.jws.WebMethod;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>

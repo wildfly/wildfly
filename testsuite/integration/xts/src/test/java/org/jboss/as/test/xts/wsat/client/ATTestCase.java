@@ -41,8 +41,8 @@ import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
 
-import javax.inject.Inject;
-import javax.xml.ws.soap.SOAPFaultException;
+import jakarta.inject.Inject;
+import jakarta.xml.ws.soap.SOAPFaultException;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;

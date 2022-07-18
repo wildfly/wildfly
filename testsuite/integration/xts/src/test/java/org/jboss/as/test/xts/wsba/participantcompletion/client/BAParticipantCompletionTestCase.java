@@ -30,7 +30,7 @@ import static org.jboss.as.test.xts.util.ServiceCommand.APPLICATION_EXCEPTION;
 import static org.jboss.as.test.xts.util.ServiceCommand.CANNOT_COMPLETE;
 import static org.jboss.as.test.xts.util.ServiceCommand.DO_COMPLETE;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -185,7 +185,7 @@ public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
             client3.saveData(DO_COMPLETE);
 
             Assert.fail("Exception should have been thrown by now");
-        } catch (javax.xml.ws.soap.SOAPFaultException sfe) {
+        } catch (jakarta.xml.ws.soap.SOAPFaultException sfe) {
             // Exception is expected - enlisting participant #3 can't be done
         }
 

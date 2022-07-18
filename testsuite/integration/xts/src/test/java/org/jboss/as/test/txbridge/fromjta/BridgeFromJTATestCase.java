@@ -30,7 +30,7 @@ import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
 
 import javax.naming.InitialContext;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;

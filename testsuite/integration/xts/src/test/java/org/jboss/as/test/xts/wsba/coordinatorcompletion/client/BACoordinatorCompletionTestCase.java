@@ -37,7 +37,7 @@ import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -160,7 +160,7 @@ public class BACoordinatorCompletionTestCase extends BaseFunctionalTest {
             client3.saveData();
 
             Assert.fail("Exception should have been thrown by now");
-        } catch (javax.xml.ws.soap.SOAPFaultException sfe) {
+        } catch (jakarta.xml.ws.soap.SOAPFaultException sfe) {
             // This is OK - exception expected
             // P2 set transaction status to ABORT_ONLY
             // P3 enlist is failed with WrongStateException and can't be done
