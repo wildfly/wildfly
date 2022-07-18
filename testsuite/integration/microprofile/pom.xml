@@ -62,9 +62,6 @@
         <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared-jakarta</wildfly-testsuite-shared.artifactId>
         <!-- No separate web dist -->
         <wildfly.web.build.output.dir>${wildfly.build.output.dir}</wildfly.web.build.output.dir>
-        <!-- WildFly Arquillian Adapter with Jakarta EE Support -->
-        <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
-        <version.org.wildfly.arquillian>5.0.0.Alpha1</version.org.wildfly.arquillian>
     </properties>
 
     <dependencies>

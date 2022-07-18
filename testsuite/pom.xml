@@ -170,9 +170,6 @@
 
         <!-- If servers should be killed before the test suite is run-->
         <org.wildfly.test.kill-servers-before-test>false</org.wildfly.test.kill-servers-before-test>
-
-        <!-- Arquillian dependency versions -->
-        <version.arquillian_wildfly>${project.parent.version}</version.arquillian_wildfly>
         
         <!-- Don't try to deploy the testsuite modules because they don't build jars -->
         <maven.deploy.skip>true</maven.deploy.skip>
