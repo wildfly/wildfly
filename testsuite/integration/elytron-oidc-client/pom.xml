@@ -50,7 +50,6 @@
         <bootable-jar-packaging.phase>none</bootable-jar-packaging.phase>
         <!-- Use the WildFly Preview dependencies until standard WildFly moves to EE 10 -->
         <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
-        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared-jakarta</wildfly-testsuite-shared.artifactId>
         <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
         <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
     </properties>

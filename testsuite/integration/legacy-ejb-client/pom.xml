@@ -32,6 +32,8 @@
         <!-- Use the WildFly Preview dependencies until standard WildFly moves to EE 10 -->
         <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
         <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
+        <!-- Use the legacy javax.* testsuite/shared as it's used client-side and client-side is currently javax.* -->
+        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared</wildfly-testsuite-shared.artifactId>
 
     </properties>
 

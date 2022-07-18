@@ -309,6 +309,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client-jakarta</artifactId>
             <scope>test</scope>
@@ -368,6 +373,11 @@
         <dependency>
             <groupId>wsdl4j</groupId>
             <artifactId>wsdl4j</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

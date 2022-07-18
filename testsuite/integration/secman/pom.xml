@@ -76,6 +76,11 @@
             <artifactId>wildfly-security-manager</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Jakarta Dependencies -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -90,6 +95,11 @@
         <dependency>
             <groupId>jakarta.transaction</groupId>
             <artifactId>jakarta.transaction-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

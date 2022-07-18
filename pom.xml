@@ -975,6 +975,19 @@
                 <version>${ee.maven.version}</version>
                 <scope>test</scope>
             </dependency>
+			
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-testsuite-shared-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
