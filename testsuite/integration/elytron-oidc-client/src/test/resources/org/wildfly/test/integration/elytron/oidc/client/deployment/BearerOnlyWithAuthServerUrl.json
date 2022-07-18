@@ -1,0 +1,7 @@
+{
+    "realm" : "WildFly",
+    "resource" : "AuthServerUrlBearerOnlyApp",
+    "auth-server-url" : "${oidc.auth.server.url}",
+    "ssl-required" : "EXTERNAL",
+    "bearer-only" : "true"
+}

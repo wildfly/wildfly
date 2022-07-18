@@ -1,0 +1,7 @@
+{
+    "client-id" : "ProviderUrlBearerOnlyApp",
+    "public-client" : "false",
+    "provider-url" : "${oidc.provider.url}",
+    "ssl-required" : "EXTERNAL",
+    "bearer-only" : "true"
+}
