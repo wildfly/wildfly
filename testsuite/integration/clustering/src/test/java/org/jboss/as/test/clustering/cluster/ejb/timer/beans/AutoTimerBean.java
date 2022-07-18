@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.timer.beans;
 
-import javax.ejb.Timer;
+import jakarta.ejb.Timer;
 
 /**
  * @author Paul Ferraro

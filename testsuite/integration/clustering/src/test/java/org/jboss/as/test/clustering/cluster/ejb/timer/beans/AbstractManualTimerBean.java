@@ -24,10 +24,10 @@ package org.jboss.as.test.clustering.cluster.ejb.timer.beans;
 
 import java.util.function.Function;
 
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
+import jakarta.ejb.NoSuchObjectLocalException;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
 
 /**
  * @author Paul Ferraro

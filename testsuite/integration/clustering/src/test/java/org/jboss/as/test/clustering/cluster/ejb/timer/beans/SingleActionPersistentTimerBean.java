@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb.timer.beans;
 
-import javax.ejb.Local;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.ejb.Local;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 /**
  * @author Paul Ferraro

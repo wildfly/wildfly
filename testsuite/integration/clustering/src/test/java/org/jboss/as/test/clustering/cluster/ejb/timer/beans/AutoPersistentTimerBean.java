@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.timer.beans;
 
-import javax.ejb.Local;
-import javax.ejb.Schedule;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.Timer;
+import jakarta.ejb.Local;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.ejb.Timer;
 
 /**
  * @author Paul Ferraro
