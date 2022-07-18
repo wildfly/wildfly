@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.hibernate.search.v5migrationhelper.simple;
 
+import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.hibernate.search.backend.lucene.simple.HibernateSearchLuceneSimpleTestCase;
@@ -38,8 +39,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import jakarta.ejb.EJB;
 
 import java.io.File;
 
@@ -65,6 +64,12 @@ public class HibernateSearchV5MigrationHelperTestCase {
 
     @Deployment
     public static WebArchive createArchive() {
+
+        // TODO maybe just use managed=false and deploy in the @BeforeClass / undeploy in an @AfterClass
+        if (AssumeTestGroupUtil.isSecurityManagerEnabled()) {
+            return AssumeTestGroupUtil.emptyWar(WAR_ARCHIVE_NAME);
+        }
+
         return ShrinkWrap
                 .create(WebArchive.class, WAR_ARCHIVE_NAME)
                 .addClasses(HibernateSearchV5MigrationHelperTestCase.class,
@@ -108,7 +113,7 @@ public class HibernateSearchV5MigrationHelperTestCase {
         return new StringAsset(persistenceXml);
     }
 
-    @EJB(mappedName = "java:module/SearchBean")
+    @Inject
     private SearchBean searchBean;
 
     @Before

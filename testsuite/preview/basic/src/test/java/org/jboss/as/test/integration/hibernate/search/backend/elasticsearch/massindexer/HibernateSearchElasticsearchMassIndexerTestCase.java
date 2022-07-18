@@ -64,10 +64,15 @@ public class HibernateSearchElasticsearchMassIndexerTestCase {
 
     @Deployment
     public static WebArchive createArchive() {
+
+        if (!AssumeTestGroupUtil.isDockerAvailable()) {
+            return AssumeTestGroupUtil.emptyWar(WAR_ARCHIVE_NAME);
+        }
+
         return ShrinkWrap
                 .create(WebArchive.class, WAR_ARCHIVE_NAME)
                 .addClasses(HibernateSearchElasticsearchMassIndexerTestCase.class,
-                        Singer.class, SingersSingleton.class)
+                        Singer.class, SingersSingleton.class, AssumeTestGroupUtil.class)
                 .addAsResource(persistenceXml(), "META-INF/persistence.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
     }
