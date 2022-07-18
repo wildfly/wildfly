@@ -329,6 +329,7 @@
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
                 <module>vdx</module>
+                <module>rbac</module>
             </modules>
         </profile>
 
