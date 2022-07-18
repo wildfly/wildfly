@@ -18,11 +18,11 @@ package org.wildfly.test.integration.elytron.securityapi;
 
 import java.security.Principal;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.security.enterprise.SecurityContext;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import jakarta.security.enterprise.SecurityContext;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 

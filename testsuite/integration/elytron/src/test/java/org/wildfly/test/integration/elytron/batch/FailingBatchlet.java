@@ -22,10 +22,10 @@
 
 package org.wildfly.test.integration.elytron.batch;
 
-import javax.batch.api.BatchProperty;
-import javax.batch.api.Batchlet;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.Batchlet;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * @author Jan Martiska

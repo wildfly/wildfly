@@ -22,7 +22,7 @@
 
 package org.wildfly.test.integration.elytron.ejb;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * A simple unsecured stateless bean with simple echo method

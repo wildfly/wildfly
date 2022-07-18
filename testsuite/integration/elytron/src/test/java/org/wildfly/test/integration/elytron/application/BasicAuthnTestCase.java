@@ -22,9 +22,9 @@
 
 package org.wildfly.test.integration.elytron.application;
 
-import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -54,10 +54,10 @@ import org.wildfly.test.integration.elytron.util.ClientConfigProviderBearerToken
 import org.wildfly.test.integration.elytron.util.ClientConfigProviderNoBasicAuthorizationHeaderFilter;
 import org.wildfly.test.integration.elytron.util.HttpAuthorization;
 
-import javax.ws.rs.Priorities;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Priorities;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.Response;
 
 /**
  * Smoke test for web application authentication using Elytron with default server configuration.

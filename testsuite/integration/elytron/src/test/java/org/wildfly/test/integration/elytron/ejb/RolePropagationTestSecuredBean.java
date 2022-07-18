@@ -23,11 +23,11 @@ package org.wildfly.test.integration.elytron.ejb;
 
 import org.junit.Assert;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.security.RunAs;
-import javax.ejb.Startup;
-import javax.inject.Inject;
-import javax.ejb.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.security.RunAs;
+import jakarta.ejb.Startup;
+import jakarta.inject.Inject;
+import jakarta.ejb.Singleton;
 
 /**
  * EJB that uses RunAs and PostConstruct annotation to successfully call another secured bean without specifying security domain explicitly.
