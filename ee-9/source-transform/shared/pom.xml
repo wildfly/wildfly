@@ -188,15 +188,19 @@
 
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-transaction-spi</artifactId>
+            <artifactId>jboss-transaction-spi-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.openjdk-orb</groupId>
+            <artifactId>openjdk-orb-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-idlj</artifactId>
+            <artifactId>narayana-jts-idlj-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>

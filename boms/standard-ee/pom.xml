@@ -35,31 +35,42 @@
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>27.0.0.Alpha4-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-ee-feature-pack-parent</artifactId>
-    <description>Parent for various legacy and Galleon feature pack modules</description>
+    <artifactId>wildfly-ee-bom</artifactId>
+    <description>
+		Build of materials that can be used to build standard WildFly maven modules 
+		that provide traditional capabilities like Jakarta EE.
+	</description>
     <packaging>pom</packaging>
-
-    <modules>
-        <module>common</module>
-        <module>ee-8-api</module>
-        <module>galleon-common</module>
-        <module>galleon-content</module>
-        <module>galleon-feature-pack</module>
-        <module>pruned</module>
-    </modules>
 
     <dependencyManagement>
         <dependencies>
-            <!-- Just import the ee bom -->
+
+            <!--
+                Inherit the common deps.
+                TODO WFLY-16652 Uncomment this and move the WF Preview deps here.
+             -->
+            <!--<dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-common-dependency-management</artifactId>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>-->
+
+            <!--
+                Inherit the legacy ee deps.
+                TODO WFLY-16652 Remove this and move the WF Preview deps here.
+             -->
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-bom</artifactId>
+                <artifactId>wildfly-legacy-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
