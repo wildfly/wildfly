@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.PropertyPermission;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
