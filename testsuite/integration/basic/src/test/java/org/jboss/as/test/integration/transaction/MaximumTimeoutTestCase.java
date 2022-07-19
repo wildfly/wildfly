@@ -22,8 +22,6 @@
 package org.jboss.as.test.integration.transaction;
 
 
-import java.io.FilePermission;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -32,8 +30,9 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -46,14 +45,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.annotation.Resource;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.util.List;
 
@@ -80,11 +74,11 @@ public class MaximumTimeoutTestCase {
     private static final int DEFAULT_TIMEOUT = 100;
     private static final int NO_TIMEOUT = 0;
 
-    private static final PathAddress TX_ADDRESS = PathAddress.pathAddress().append(SUBSYSTEM, "transactions");
+    private static final PathAddress TXN_SUBSYSTEM_ADDRESS = PathAddress.pathAddress().append(SUBSYSTEM, "transactions");
     private static final PathAddress LOG_FILE_ADDRESS = PathAddress.pathAddress()
             .append(SUBSYSTEM, "logging")
             .append("log-file", "server.log");
-    private static Logger LOGGER = Logger.getLogger(MaximumTimeoutTestCase.class);
+    private static final Logger LOGGER = Logger.getLogger(MaximumTimeoutTestCase.class);
 
     @Resource(mappedName = "java:/TransactionManager")
     private static TransactionManager txm;
@@ -95,54 +89,39 @@ public class MaximumTimeoutTestCase {
     @Deployment
     public static JavaArchive createDeployment() {
         return ShrinkWrap.create(JavaArchive.class)
-                .addClasses(MaximumTimeoutTestCase.class, MaximumTimeoutTestCase.TimeoutSetup.class)
+                .addClasses(MaximumTimeoutTestCase.class, MaximumTimeoutTestCase.TimeoutSetup.class,
+                        ManagementOperations.class, MgmtOperationException.class)
                 .addPackage(TestXAResource.class.getPackage())
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.remoting\n"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
-                    // ManagementClient needs the following permissions and a dependency on 'org.jboss.remoting3' module
-                    new RemotingPermission("createEndpoint"),
-                    new RemotingPermission("connect"),
-                    new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
+                        // ManagementClient needs the following permissions and a dependency on 'org.jboss.remoting3' module
+                        new RemotingPermission("createEndpoint"),
+                        new RemotingPermission("connect"),
+                        new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
                 ), "permissions.xml");
     }
 
-    static void setMaximumTimeout(final ModelControllerClient client, int timeout) {
-        ModelNode writeMaxTimeout = Util.getWriteAttributeOperation(TX_ADDRESS, MAX_TIMEOUT_ATTR, timeout);
-        executeForResult(client, writeMaxTimeout);
+    static void setMaximumTimeout(final ModelControllerClient client, int timeout) throws IOException, MgmtOperationException {
+        ModelNode writeMaxTimeout = Util.getWriteAttributeOperation(TXN_SUBSYSTEM_ADDRESS, MAX_TIMEOUT_ATTR, timeout);
+        ManagementOperations.executeOperation(client, writeMaxTimeout);
     }
 
-    static void setDefaultTimeout(final ModelControllerClient client, int timeout) {
-        ModelNode writeMaxTimeout = Util.getWriteAttributeOperation(TX_ADDRESS, DEF_TIMEOUT_ATTR, timeout);
-        executeForResult(client, writeMaxTimeout);
+    static void setDefaultTimeout(final ModelControllerClient client, int timeout) throws IOException, MgmtOperationException {
+        ModelNode writeMaxTimeout = Util.getWriteAttributeOperation(TXN_SUBSYSTEM_ADDRESS, DEF_TIMEOUT_ATTR, timeout);
+        ManagementOperations.executeOperation(client, writeMaxTimeout);
     }
 
-    static List<ModelNode> getLogs(final ModelControllerClient client) {
+    static List<ModelNode> getLogs(final ModelControllerClient client) throws IOException, MgmtOperationException {
         // /subsystem=logging/log-file=server.log:read-log-file(lines=-1)
         ModelNode op = Util.createEmptyOperation("read-log-file", LOG_FILE_ADDRESS);
         op.get("lines").set(-1);
-        return executeForResult(client, op).asList();
-
+        return ManagementOperations.executeOperation(client, op).asList();
     }
 
-    static ModelNode executeForResult(final ModelControllerClient client, final ModelNode operation) {
-        try {
-            final ModelNode result = client.execute(operation);
-            checkSuccessful(result, operation);
-            return result.get(ClientConstants.RESULT);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
-    static void checkSuccessful(final ModelNode result, final ModelNode operation) {
-        if (!ClientConstants.SUCCESS.equals(result.get(ClientConstants.OUTCOME).asString())) {
-            LOGGER.error("Operation " + operation + " did not succeed. Result was " + result);
-            throw new RuntimeException("operation has failed: " + result.get(ClientConstants.FAILURE_DESCRIPTION).toString());
-        }
-    }
 
     @Test
-    public void testMaximumTimeout() throws IOException, SystemException, NotSupportedException, RollbackException, HeuristicRollbackException, HeuristicMixedException, XAException {
+    public void testMaximumTimeout() throws Exception {
         setDefaultTimeout(managementClient.getControllerClient(), NO_TIMEOUT);
         setMaximumTimeout(managementClient.getControllerClient(), MAX_TIMEOUT1);
         txm.setTransactionTimeout(NO_TIMEOUT);
@@ -164,7 +143,7 @@ public class MaximumTimeoutTestCase {
     }
 
     @Test
-    public void testDefaultTimeout() throws IOException, SystemException, NotSupportedException, RollbackException, HeuristicRollbackException, HeuristicMixedException, XAException {
+    public void testDefaultTimeout() throws Exception {
         setMaximumTimeout(managementClient.getControllerClient(), MAX_TIMEOUT1);
         setDefaultTimeout(managementClient.getControllerClient(), DEFAULT_TIMEOUT);
 
@@ -194,7 +173,7 @@ public class MaximumTimeoutTestCase {
     }
 
     @Test
-    public void testLogFile() {
+    public void testLogFile() throws Exception {
         setMaximumTimeout(managementClient.getControllerClient(), MAX_TIMEOUT1);
         setDefaultTimeout(managementClient.getControllerClient(), NO_TIMEOUT);
         setMaximumTimeout(managementClient.getControllerClient(), MAX_TIMEOUT2);
@@ -225,10 +204,10 @@ public class MaximumTimeoutTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String s) throws Exception {
-            ModelNode op = executeForResult(managementClient.getControllerClient(), Util.getReadAttributeOperation(TX_ADDRESS, MAX_TIMEOUT_ATTR));
+            ModelNode op = ManagementOperations.executeOperation(managementClient.getControllerClient(), Util.getReadAttributeOperation(TXN_SUBSYSTEM_ADDRESS, MAX_TIMEOUT_ATTR));
             maxTimeout = op.asInt();
 
-            op = executeForResult(managementClient.getControllerClient(), Util.getReadAttributeOperation(TX_ADDRESS, DEF_TIMEOUT_ATTR));
+            op = ManagementOperations.executeOperation(managementClient.getControllerClient(), Util.getReadAttributeOperation(TXN_SUBSYSTEM_ADDRESS, DEF_TIMEOUT_ATTR));
             defaultTimeout = op.asInt();
             LOGGER.debug("max timeout: " + maxTimeout);
             LOGGER.debug("default timeout: " + defaultTimeout);

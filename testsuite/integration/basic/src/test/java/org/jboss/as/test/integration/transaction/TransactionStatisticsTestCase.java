@@ -30,6 +30,8 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
@@ -49,6 +51,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 import java.io.FilePermission;
+import java.io.IOException;
 import java.util.PropertyPermission;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
@@ -77,13 +80,13 @@ public class TransactionStatisticsTestCase {
     private static final String AVERAGE_COMMIT_TIME_ATTR = "average-commit-time";
 
     int numberBefore, numberCommittedBefore, numberAbortedBefore, numberAppAbortedBefore, numberNestedBefore,
-        numberHeuristicsBefore, numberInflightBefore, numberTimedOutBefore, numberResourceRollbackBefore, numberSystemRollbackBefore;
+            numberHeuristicsBefore, numberInflightBefore, numberTimedOutBefore, numberResourceRollbackBefore, numberSystemRollbackBefore;
 
     static class TransactionEnabledSetup implements ServerSetupTask {
         private ModelNode statisticsEnabledOriginValue;
         @Override
         public void setup(ManagementClient managementClient, String s) throws Exception {
-            ModelNode opResult = MaximumTimeoutTestCase.executeForResult(
+            ModelNode opResult = ManagementOperations.executeOperation(
                     managementClient.getControllerClient(), Util.getReadAttributeOperation(TX_SUBSYSTEM_ADDRESS, STATISTICS_ENABLED_ATTR));
             // value can be either expression or boolean, let's tackle it with try/catch
             try {
@@ -100,9 +103,9 @@ public class TransactionStatisticsTestCase {
         public void tearDown(ManagementClient managementClient, String s) throws Exception {
             writeStatisticsEnabled(managementClient, statisticsEnabledOriginValue);
         }
-        private void writeStatisticsEnabled(ManagementClient client, ModelNode modelNodeWriteData) {
+        private void writeStatisticsEnabled(ManagementClient client, ModelNode modelNodeWriteData) throws IOException, MgmtOperationException {
             ModelNode op = Util.getWriteAttributeOperation(TX_SUBSYSTEM_ADDRESS, STATISTICS_ENABLED_ATTR, modelNodeWriteData);
-            MaximumTimeoutTestCase.executeForResult(client.getControllerClient(), op);
+            ManagementOperations.executeOperation(client.getControllerClient(), op);
         }
     }
 
@@ -116,21 +119,21 @@ public class TransactionStatisticsTestCase {
     public static JavaArchive createDeployment() {
         return ShrinkWrap.create(JavaArchive.class)
                 .addClasses(TransactionStatisticsTestCase.class, TransactionStatisticsTestCase.TransactionEnabledSetup.class,
-                        MaximumTimeoutTestCase.class, TimeoutUtil.class)
+                        ManagementOperations.class, MgmtOperationException.class, TimeoutUtil.class)
                 .addPackage(TestXAResource.class.getPackage())
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.remoting\n"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
-                    // ManagementClient needs the following permissions and a dependency on 'org.jboss.remoting3' module
-                    new RemotingPermission("createEndpoint"),
-                    new RemotingPermission("connect"),
-                    new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read"),
-                    // TimeoutUtil.adjust needs permission for system property reading
-                    new PropertyPermission("ts.timeout.factor", "read")
+                        // ManagementClient needs the following permissions and a dependency on 'org.jboss.remoting3' module
+                        new RemotingPermission("createEndpoint"),
+                        new RemotingPermission("connect"),
+                        new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read"),
+                        // TimeoutUtil.adjust needs permission for system property reading
+                        new PropertyPermission("ts.timeout.factor", "read")
                 ), "permissions.xml");
     }
 
     @Before
-    public void readStatisticsBeforeTest() {
+    public void readStatisticsBeforeTest() throws Exception {
         numberBefore = readInt(NUMBER_OF_TRANSACTIONS_ATTR);
         numberCommittedBefore = readInt(NUMBER_OF_COMMITTED_TRANSACTIONS_ATTR);
         numberAbortedBefore = readInt(NUMBER_OF_ABORTED_TRANSACTIONS_ATTR);
@@ -275,22 +278,22 @@ public class TransactionStatisticsTestCase {
                 numberAbortedBefore + 1, grouped.get(NUMBER_OF_ABORTED_TRANSACTIONS_ATTR).asInt());
     }
 
-    private int readInt(String attributeName) {
-        ModelNode opResult = MaximumTimeoutTestCase.executeForResult(
+    private int readInt(String attributeName) throws IOException, MgmtOperationException {
+        ModelNode opResult = ManagementOperations.executeOperation(
                 managementClient.getControllerClient(), Util.getReadAttributeOperation(TX_SUBSYSTEM_ADDRESS, attributeName));
         return opResult.asInt();
     }
 
-    private long readAverage() {
-        ModelNode opResult = MaximumTimeoutTestCase.executeForResult(
+    private long readAverage() throws IOException, MgmtOperationException {
+        ModelNode opResult = ManagementOperations.executeOperation(
                 managementClient.getControllerClient(), Util.getReadAttributeOperation(TX_SUBSYSTEM_ADDRESS, AVERAGE_COMMIT_TIME_ATTR));
         return opResult.asLong();
     }
 
-    private ModelNode readGrouped() {
+    private ModelNode readGrouped() throws IOException, MgmtOperationException {
         ModelNode groupReadOp = Util.createEmptyOperation(READ_ATTRIBUTE_GROUP_OPERATION, TX_SUBSYSTEM_ADDRESS);
         groupReadOp.get(NAME).set(GROUP_STATISTICS_ATTR);
         groupReadOp.get(INCLUDE_RUNTIME).set(true);
-        return MaximumTimeoutTestCase.executeForResult(managementClient.getControllerClient(), groupReadOp).asObject();
+        return ManagementOperations.executeOperation(managementClient.getControllerClient(), groupReadOp).asObject();
     }
 }

@@ -52,17 +52,16 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class TransactionExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "transactions";
-    /**
-     * The operation name to resolve the object store path
-     */
+
+    // The operation name to resolve the object store path
     public static final String RESOLVE_OBJECT_STORE_PATH = "resolve-object-store-path";
 
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 1, 0);
 
 
-    private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
+    public static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
     static final PathElement LOG_STORE_PATH = PathElement.pathElement(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
     static final PathElement PARTICIPANT_PATH = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
@@ -77,7 +76,7 @@ public class TransactionExtension implements Extension {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, TransactionExtension.class.getClassLoader(), true, false);
     }
 
-    static MBeanServer getMBeanServer(OperationContext context) {
+    public static MBeanServer getMBeanServer(OperationContext context) {
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
         final ServiceController<?> serviceController = serviceRegistry.getService(MBEAN_SERVER_SERVICE_NAME);
         if (serviceController == null) {
@@ -103,9 +102,9 @@ public class TransactionExtension implements Extension {
         if (context.getProcessType().isServer()) {
             // It's less than ideal to create a separate operation here, but this extension contains two relative-to attributes
             final ResolvePathHandler objectStorePathHandler = ResolvePathHandler.Builder.of(RESOLVE_OBJECT_STORE_PATH, context.getPathManager())
-                   .setPathAttribute(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH)
-                   .setRelativeToAttribute(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO)
-                   .build();
+                    .setPathAttribute(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH)
+                    .setRelativeToAttribute(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO)
+                    .build();
             registration.registerOperationHandler(objectStorePathHandler.getOperationDefinition(), objectStorePathHandler);
         }
 
@@ -135,5 +134,6 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_4_0.getUriString(), TransactionSubsystem40Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_5_0.getUriString(), TransactionSubsystem50Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_6_0.getUriString(), TransactionSubsystem60Parser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_6_1.getUriString(), TransactionSubsystem61Parser::new);
     }
 }

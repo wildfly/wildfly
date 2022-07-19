@@ -58,19 +58,29 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
 
         TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.marshallAsAttribute(node, writer);
 
+        if (TransactionSubsystemRootResourceDefinition.ORPHAN_SAFETY_INTERVAL.isMarshallable(node)) {
+            TransactionSubsystemRootResourceDefinition.ORPHAN_SAFETY_INTERVAL.marshallAsAttribute(node, writer);
+        }
+
         writeProcessId(writer, node);
 
         writer.writeEndElement();
 
         if (TransactionSubsystemRootResourceDefinition.BINDING.isMarshallable(node) ||
                 TransactionSubsystemRootResourceDefinition.STATUS_BINDING.isMarshallable(node) ||
-                TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.isMarshallable(node)) {
+                TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.isMarshallable(node) ||
+                TransactionSubsystemRootResourceDefinition.RECOVERY_PERIOD.isMarshallable(node) ||
+                TransactionSubsystemRootResourceDefinition.RECOVERY_BACKOFF_PERIOD.isMarshallable(node) ||
+                TransactionSubsystemRootResourceDefinition.DISABLE_RECOVERY_BEFORE_SUSPEND.isMarshallable(node) ) {
+
             writer.writeStartElement(Element.RECOVERY_ENVIRONMENT.getLocalName());
+
             TransactionSubsystemRootResourceDefinition.BINDING.marshallAsAttribute(node, writer);
-
             TransactionSubsystemRootResourceDefinition.STATUS_BINDING.marshallAsAttribute(node, writer);
-
             TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.marshallAsAttribute(node, writer);
+            TransactionSubsystemRootResourceDefinition.RECOVERY_PERIOD.marshallAsAttribute(node, writer);
+            TransactionSubsystemRootResourceDefinition.RECOVERY_BACKOFF_PERIOD.marshallAsAttribute(node, writer);
+            TransactionSubsystemRootResourceDefinition.DISABLE_RECOVERY_BEFORE_SUSPEND.marshallAsAttribute(node, writer);
 
             writer.writeEndElement();
         }

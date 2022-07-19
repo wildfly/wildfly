@@ -24,6 +24,8 @@ package org.jboss.as.test.integration.transactions;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Singleton
 @LocalBean
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class TransactionCheckerSingleton implements TransactionCheckerSingletonRemote {
     private final AtomicInteger committed = new AtomicInteger();
     private final AtomicInteger prepared = new AtomicInteger();

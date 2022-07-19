@@ -41,7 +41,21 @@ import java.util.Collection;
  */
 public class PersistentTestXAResource extends TestXAResource implements XAResource {
     private static final Logger log = Logger.getLogger(PersistentTestXAResource.class);
-    private XidsPersister xidsPersister = new XidsPersister(PersistentTestXAResource.class.getSimpleName());
+
+    public static final String XIDS_PERSISTER_FILE_NAME = PersistentTestXAResource.class.getSimpleName();
+    private final XidsPersister xidsPersister = new XidsPersister(XIDS_PERSISTER_FILE_NAME);
+    private PersistentTestAction persistentTestAction = PersistentTestAction.NONE;
+
+    /**
+     * Defines test actions for the persistent {@link XAResource}. This is additional behaviour to
+     * what the {@link org.jboss.as.test.integration.transactions.TestXAResource.TestAction} provides.
+     * The test actions for the persistent XAResource makes first persistent of the resource and then do some action.
+     */
+    public enum PersistentTestAction {
+        NONE,
+        AFTER_PREPARE_THROW_RMFAIL, AFTER_PREPARE_CRASH_JVM,
+        AFTER_COMMIT_THROW_RMFAIL, AFTER_COMMIT_CRASH_JVM
+    }
 
     public PersistentTestXAResource() {
         super();
@@ -55,34 +69,56 @@ public class PersistentTestXAResource extends TestXAResource implements XAResour
         super(testAction);
     }
 
+    public PersistentTestXAResource(PersistentTestAction persistentTestAction) {
+        super();
+        this.persistentTestAction = persistentTestAction;
+    }
+
     public PersistentTestXAResource(TestAction testAction, TransactionCheckerSingleton checker) {
         super(testAction, checker);
     }
 
     @Override
     public int prepare(Xid xid) throws XAException {
-        int prepareResult = super.prepare(xid);
-        xidsPersister.writeToDisk(super.getPreparedXids());
+        int testXAResourcePrepareResult = super.prepare(xid);
+        xidsPersister.writeToDisk(super.getPreparedXids().values());
         log.debugf("Prepared xid [%s] was persisted", xid);
-        return prepareResult;
+
+        switch (persistentTestAction) {
+            case AFTER_PREPARE_THROW_RMFAIL:
+                throw new XAException(XAException.XAER_RMFAIL);
+            case AFTER_PREPARE_CRASH_JVM:
+                Runtime.getRuntime().halt(0);
+            default:
+                return testXAResourcePrepareResult;
+        }
     }
 
     @Override
     public void commit(Xid xid, boolean onePhase) throws XAException {
         super.commit(xid, onePhase);
-        xidsPersister.writeToDisk(super.getPreparedXids());
+        xidsPersister.writeToDisk(super.getPreparedXids().values());
+
+        switch (persistentTestAction) {
+            case AFTER_COMMIT_THROW_RMFAIL:
+                throw new XAException(XAException.XAER_RMFAIL);
+            case AFTER_COMMIT_CRASH_JVM:
+                Runtime.getRuntime().halt(0);
+            default:
+                return;
+        }
     }
 
     @Override
     public void rollback(Xid xid) throws XAException {
         super.rollback(xid);
-        xidsPersister.writeToDisk(super.getPreparedXids());
+        xidsPersister.writeToDisk(super.getPreparedXids().values());
     }
 
     @Override
     public void forget(Xid xid) throws XAException {
         super.forget(xid);
-        xidsPersister.writeToDisk(super.getPreparedXids());
+        xidsPersister.writeToDisk(super.getPreparedXids().values());
     }
 
     @Override

@@ -36,12 +36,16 @@ enum Attribute {
     BINDING("socket-binding"),
     STATUS_BINDING("status-socket-binding"),
     NODE_IDENTIFIER("node-identifier"),
+    ORPHAN_SAFETY_INTERVAL("orphan-safety-interval"),
     SOCKET_PROCESS_ID_MAX_PORTS("socket-process-id-max-ports"),
     ENABLE_STATISTICS("enable-statistics"),
     ENABLE_TSM_STATUS("enable-tsm-status"),
     DEFAULT_TIMEOUT("default-timeout"),
     MAXIMUM_TIMEOUT("maximum-timeout"),
     RECOVERY_LISTENER("recovery-listener"),
+    RECOVERY_PERIOD("recovery-period"),
+    RECOVERY_BACKOFF_PERIOD("recovery-backoff-period"),
+    DISABLE_RECOVERY_BEFORE_SUSPEND("disable-recovery-before-suspend"),
     RELATIVE_TO("relative-to"),
     STATISTICS_ENABLED("statistics-enabled"),
     PATH("path"),
@@ -73,7 +77,7 @@ enum Attribute {
     private static final Map<String, Attribute> MAP;
 
     static {
-        final Map<String, Attribute> map = new HashMap<String, Attribute>();
+        final Map<String, Attribute> map = new HashMap<>();
         for (Attribute element : values()) {
             final String name = element.getLocalName();
             if (name != null) map.put(name, element);

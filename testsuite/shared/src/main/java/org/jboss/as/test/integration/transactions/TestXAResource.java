@@ -27,16 +27,15 @@ import org.jboss.logging.Logger;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Test {@link XAResource} class.
- *
- * @author Ondra Chaloupka <ochaloup@redhat.com>
+ * {@link XAResource} class that could be used in various transaction test scenarios.
+ * If you need a persistent variant of the resource consider {@link PersistentTestXAResource}.
  */
 public class TestXAResource implements XAResource {
-    private static Logger log = Logger.getLogger(TestXAResource.class);
+    private static final Logger log = Logger.getLogger(TestXAResource.class);
 
     public enum TestAction {
         NONE,
@@ -44,12 +43,12 @@ public class TestXAResource implements XAResource {
         COMMIT_THROW_XAER_RMERR, COMMIT_THROW_XAER_RMFAIL, COMMIT_THROW_XA_RBROLLBACK, COMMIT_THROW_UNKNOWN_XA_EXCEPTION, COMMIT_CRASH_VM,
     }
 
-    // prepared xids are shared over all the TestXAResource instances in the JVM
-    // used for the recovery purposes as the XAResourceRecoveryHelper works with a different instance
-    // of the XAResource than the one which is used during 2PC processing
-    private static final List<Xid> preparedXids = new ArrayList<>();
+    // this variable is used concurrently by recovery manager thread and by transaction manager processing threads
+    // on recovery the XAResourceRecoveryHelper provides a single instance of the TestXAResource
+    // and the TestXAResource#recover call then returns all prepared Xids from this global in-VM storage
+    private static final Map<Xid,Xid> preparedXids = new ConcurrentHashMap<>();
 
-    private TransactionCheckerSingleton checker;
+    private final TransactionCheckerSingleton checker;
     private int transactionTimeout;
 
     protected TestAction testAction;
@@ -90,7 +89,7 @@ public class TestXAResource implements XAResource {
                 Runtime.getRuntime().halt(0);
             case NONE:
             default:
-                preparedXids.add(xid);
+                preparedXids.put(xid, xid);
                 return XAResource.XA_OK;
         }
     }
@@ -150,7 +149,7 @@ public class TestXAResource implements XAResource {
     @Override
     public Xid[] recover(int flag) throws XAException {
         log.debugf("recover with flags: %s", flag);
-        return preparedXids.toArray(new Xid[0]);
+        return preparedXids.values().toArray(new Xid[0]);
     }
 
     @Override
@@ -165,7 +164,16 @@ public class TestXAResource implements XAResource {
         log.debugf("start xid: [%s], flags: %s", xid, flags);
     }
 
-    public List<Xid> getPreparedXids() {
+    /**
+     * Returns modifiable map of prepared Xids.
+     * This is in-memory only map.
+     *
+     * If it's desirable to work with {@link Xid} persistent storage in tests
+     * then consider using {@link PersistentTestXAResource} instead.
+     *
+     * @return collection of the prepared {@link Xid}s for {@link TestXAResource} and its variants
+     */
+    static Map<Xid,Xid> getPreparedXids() {
         return preparedXids;
     }
 }

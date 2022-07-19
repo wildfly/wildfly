@@ -25,6 +25,7 @@ package org.jboss.as.txn.service;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTAActionStatusServiceXAResourceOrphanFilter;
+import com.arjuna.ats.internal.jta.recovery.arjunacore.RecoveryXids;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.SubordinateJTAXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.SubordinationManagerXAResourceOrphanFilter;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
@@ -49,9 +50,11 @@ public class JTAEnvironmentBeanService implements Service<JTAEnvironmentBean> {
 
     private final String nodeIdentifier;
     private boolean useActionStatusServiceRecoveryFilter;
+    private final int orphanSafetyInterval;
 
-    public JTAEnvironmentBeanService(final String nodeIdentifier) {
+    public JTAEnvironmentBeanService(final String nodeIdentifier, final int orphanSafetyInterval) {
         this.nodeIdentifier = nodeIdentifier;
+        this.orphanSafetyInterval = orphanSafetyInterval;
         this.useActionStatusServiceRecoveryFilter = Boolean.valueOf(System.getProperty("org.jboss.narayana.wildfly.useActionStatusServiceRecoveryFilter.deprecated", "true"));
     }
 
@@ -71,6 +74,9 @@ public class JTAEnvironmentBeanService implements Service<JTAEnvironmentBean> {
         jtaEnvironmentBean.setTransactionManagerJNDIContext("java:jboss/TransactionManager");
         jtaEnvironmentBean.setTransactionSynchronizationRegistryJNDIContext("java:jboss/TransactionSynchronizationRegistry");
         jtaEnvironmentBean.setUserTransactionOperationsProviderClassName(LocalUserTransactionOperationsProvider.class.getName());
+
+        jtaEnvironmentBean.setOrphanSafetyInterval(orphanSafetyInterval);
+        RecoveryXids.setSafetyIntervalMillis(orphanSafetyInterval);
     }
 
     @Override

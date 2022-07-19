@@ -39,11 +39,12 @@ import java.util.Map;
  * @author @author <a href="stefano.maestri@redhat.com">Stefano Maestri</a> 2011 Red Hat Inc.
  */
 
-class LogStoreConstants {
+public class LogStoreConstants {
     static final String PROBE = "probe";
     static final String RECOVER = "recover";
     static final String DELETE = "delete";
     static final String REFRESH = "refresh";
+    static final String PROCESS_RECOVERY = "process-recovery";
 
     public static final String LOG_STORE = "log-store";
     public static final String TRANSACTIONS = "transactions";
@@ -51,7 +52,7 @@ class LogStoreConstants {
 
 
 
-    static enum ParticipantStatus {
+    enum ParticipantStatus {
         PENDING,
         PREPARED,
         FAILED,
