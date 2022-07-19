@@ -19,11 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.txn.ee.concurrency;
+package org.jboss.as.ee.concurrent;
 
 import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
-import org.jboss.as.txn.logging.TransactionLogger;
+import org.jboss.as.ee.logging.EeLogger;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 import javax.enterprise.concurrent.ManagedTask;
 import javax.transaction.Transaction;
@@ -39,10 +40,9 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
     private final transient TransactionManager transactionManager;
 
     /**
-     * @param transactionManager
      */
-    public TransactionSetupProviderImpl(TransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
+    public TransactionSetupProviderImpl() {
+        this.transactionManager = ContextTransactionManager.getInstance();
     }
 
     @Override
@@ -52,7 +52,7 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
             try {
                 transaction = transactionManager.suspend();
             } catch (Throwable e) {
-                TransactionLogger.ROOT_LOGGER.debug("failed to suspend transaction",e);
+                EeLogger.ROOT_LOGGER.debug("failed to suspend transaction",e);
             }
         }
         return new TransactionHandleImpl(transaction);
@@ -65,7 +65,7 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
             try {
                 transactionManager.resume(transaction);
             } catch (Throwable e) {
-                TransactionLogger.ROOT_LOGGER.debug("failed to resume transaction",e);
+                EeLogger.ROOT_LOGGER.debug("failed to resume transaction",e);
             }
         }
     }

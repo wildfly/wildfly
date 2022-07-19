@@ -41,8 +41,6 @@ public class ConcurrentServiceNames {
 
     private static final ServiceName CONTEXT_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("context");
 
-    public static final ServiceName TRANSACTION_SETUP_PROVIDER_SERVICE_NAME = BASE_SERVICE_NAME.append("tsp");
-
     public static final ServiceName CONCURRENT_CONTEXT_BASE_SERVICE_NAME = CONTEXT_BASE_SERVICE_NAME.append("config");
 
     public static final ServiceName HUNG_TASK_PERIODIC_TERMINATION_SERVICE_NAME = BASE_SERVICE_NAME.append("hung-task-periodic-termination");
