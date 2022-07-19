@@ -32,18 +32,23 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.security.ControllerPermission;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.integration.jmx.rbac.deployment.JmxResource;
 
+import java.io.FilePermission;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,6 +75,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import javax.management.MBeanServerPermission;
+
 public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
 
     @ArquillianResource
@@ -89,7 +96,19 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
     static Archive<?> deploy(boolean securedApplication) {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jmx-access-rbac.war");
         war.addPackage(JmxResource.class.getPackage());
-        war.addAsManifestResource(AbstractJmxAccessFromDeploymentWithRbacTest.class.getResource("jboss-deployment-structure.xml"), "jboss-deployment-structure.xml");
+        war.addAsManifestResource(AbstractJmxAccessFromDeploymentWithRbacTest.class.getResource("jboss-deployment-structure.xml"), "jboss-deployment-structure.xml")
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        // Required for JMXConnectorFactory.connect()
+                        new RuntimePermission("shutdownHooks"),
+                        new ElytronPermission("getSecurityDomain"),
+                        new MBeanServerPermission("findMBeanServer,createMBeanServer"),
+                        ControllerPermission.CAN_ACCESS_MODEL_CONTROLLER,
+                        ControllerPermission.CAN_ACCESS_IMMUTABLE_MANAGEMENT_RESOURCE_REGISTRATION,
+                        // Required for the service loader to load remoting-jmx
+                        new FilePermission("<<ALL FILES>>", "read"),
+                        new RemotingPermission("createEndpoint"),
+                        new RemotingPermission("connect")
+                ), "permissions.xml");
         if (securedApplication) {
             war.addAsWebInfResource(AbstractJmxAccessFromDeploymentWithRbacTest.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
             war.addAsWebInfResource(AbstractJmxAccessFromDeploymentWithRbacTest.class.getPackage(), "web.xml", "web.xml");
@@ -102,8 +121,9 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
             HttpGet httpget = new HttpGet(url.toExternalForm() + urlPattern);
             HttpResponse response = httpclient.execute(httpget);
             assertNotNull("Response is 'null', we expected non-null response!", response);
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            return Utils.getContent(response);
+            final String text = Utils.getContent(response);
+            assertEquals(text, 200, response.getStatusLine().getStatusCode());
+            return text;
         }
     }
 

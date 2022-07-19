@@ -1272,6 +1272,7 @@
                         <!-- Narayana transaction data storage for transaction started at client side -->
                         <ObjectStoreEnvironmentBean.objectStoreDir>target/NarayanaObjectStore</ObjectStoreEnvironmentBean.objectStoreDir>
                         <ObjectStoreEnvironmentBean.communicationStore.objectStoreDir>target/NarayanaObjectStore</ObjectStoreEnvironmentBean.communicationStore.objectStoreDir>
+                        <server.jvm.args>${server.jvm.args} -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</server.jvm.args>
                     </systemPropertyVariables>
                 </configuration>
                 <executions>

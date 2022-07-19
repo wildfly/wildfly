@@ -31,11 +31,11 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +46,7 @@ import java.util.Map;
 public class JmxResource {
     private static final String MBEAN_NAME = "jboss.as:subsystem=datasources,data-source=ExampleDS,statistics=pool";
 
-    String HOST_NAME = "127.0.0.1";
+    String HOST_NAME = "localhost";
     String PORT = "9990";
 
 
