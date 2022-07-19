@@ -17,8 +17,8 @@ package org.wildfly.test.manual.elytron.seccontext;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -512,7 +512,7 @@ public abstract class AbstractSecurityContextPropagationTestBase {
     protected static org.hamcrest.Matcher<java.lang.String> isEjbAuthenticationError() {
         // different behavior for stateless and stateful beans
         // is reported under https://issues.jboss.org/browse/JBEAP-12439
-        return anyOf(startsWith("javax.ejb.NoSuchEJBException: EJBCLIENT000079"),
+        return anyOf(startsWith("jakarta.ejb.NoSuchEJBException: EJBCLIENT000079"),
                 startsWith("javax.naming.CommunicationException: EJBCLIENT000062"), containsString("JBREM000308"),
                 containsString("javax.security.sasl.SaslException: Authentication failed"));
     }
@@ -522,7 +522,7 @@ public abstract class AbstractSecurityContextPropagationTestBase {
     }
 
     protected static org.hamcrest.Matcher<java.lang.String> isClassNotFoundException_Server2Exception() {
-        return allOf(startsWith("javax.ejb.EJBException"),
+        return allOf(startsWith("jakarta.ejb.EJBException"),
                 containsString("ClassNotFoundException: org.wildfly.test.manual.elytron.seccontext.Server2Exception"));
     }
 
@@ -531,7 +531,7 @@ public abstract class AbstractSecurityContextPropagationTestBase {
     }
 
     protected static org.hamcrest.Matcher<java.lang.String> isEjbAccessException() {
-        return startsWith("javax.ejb.EJBAccessException");
+        return startsWith("jakarta.ejb.EJBAccessException");
     }
 
     protected String createJwtToken(String userName) {

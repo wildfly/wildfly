@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.PropertyPermission;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
@@ -96,7 +96,7 @@ public class GlobalDirectoryTestCase extends GlobalDirectoryBase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT + ".war");
         war.addClass(GlobalDirectoryDeployment.class);
         war.addAsWebInfResource(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?><web-app><servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/*</url-pattern>\n" +
                 "    </servlet-mapping></web-app>"), "web.xml");
         return war;
@@ -108,7 +108,7 @@ public class GlobalDirectoryTestCase extends GlobalDirectoryBase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT2 + ".war");
         war.addClass(GlobalDirectoryDeployment2.class);
         war.addAsWebInfResource(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?><web-app><servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/*</url-pattern>\n" +
                 "    </servlet-mapping></web-app>"), "web.xml");
         war.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
@@ -121,7 +121,7 @@ public class GlobalDirectoryTestCase extends GlobalDirectoryBase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT3 + ".war");
         war.addClass(GlobalDirectoryDeployment3.class);
         war.addAsWebInfResource(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?><web-app><servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/*</url-pattern>\n" +
                 "    </servlet-mapping></web-app>"), "web.xml");
         war.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("getProtectionDomain"), new PropertyPermission("user.dir", "read")), "permissions.xml");

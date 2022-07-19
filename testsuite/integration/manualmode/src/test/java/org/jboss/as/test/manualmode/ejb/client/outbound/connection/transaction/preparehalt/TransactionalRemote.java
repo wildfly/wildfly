@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.manualmode.ejb.client.outbound.connection.transaction.preparehalt;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface TransactionalRemote {

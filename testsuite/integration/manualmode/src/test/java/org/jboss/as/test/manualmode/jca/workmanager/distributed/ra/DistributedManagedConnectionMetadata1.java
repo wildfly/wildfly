@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.manualmode.jca.workmanager.distributed.ra;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnectionMetaData;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnectionMetaData;
 
 public class DistributedManagedConnectionMetadata1 implements ManagedConnectionMetaData {
 

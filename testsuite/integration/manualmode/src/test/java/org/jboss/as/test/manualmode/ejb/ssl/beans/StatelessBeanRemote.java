@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.manualmode.ejb.ssl.beans;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 import java.util.concurrent.Future;
 
 /**

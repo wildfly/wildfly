@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.manualmode.ejb.ssl.beans;
 
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.Stateless;
+import jakarta.ejb.AsyncResult;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.Stateless;
 import java.util.concurrent.Future;
 
 /**

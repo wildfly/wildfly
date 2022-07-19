@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.manualmode.ejb.interceptor.serverside;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * A simple interceptor that adds string prefix to the intercepted method return value.

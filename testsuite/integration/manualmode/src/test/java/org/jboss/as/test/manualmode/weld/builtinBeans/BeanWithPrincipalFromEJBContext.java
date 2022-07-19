@@ -15,9 +15,9 @@
  */
 package org.jboss.as.test.manualmode.weld.builtinBeans;
 
-import javax.annotation.Resource;
-import javax.ejb.EJBContext;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class BeanWithPrincipalFromEJBContext {

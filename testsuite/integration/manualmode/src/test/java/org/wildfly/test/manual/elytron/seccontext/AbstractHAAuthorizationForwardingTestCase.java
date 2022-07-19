@@ -21,7 +21,7 @@
  */
 package org.wildfly.test.manual.elytron.seccontext;
 
-import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static org.jboss.as.test.integration.security.common.Utils.REDIRECT_STRATEGY;
 import static org.junit.Assert.assertEquals;
 import static org.wildfly.test.manual.elytron.seccontext.AbstractSecurityContextPropagationTestBase.server1;

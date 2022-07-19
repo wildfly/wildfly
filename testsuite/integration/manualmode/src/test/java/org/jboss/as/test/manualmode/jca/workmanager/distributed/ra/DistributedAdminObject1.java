@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.manualmode.jca.workmanager.distributed.ra;
 
-import javax.resource.Referenceable;
+import jakarta.resource.Referenceable;
 import java.io.Serializable;
 
 /**

@@ -15,7 +15,7 @@
  */
 package org.wildfly.test.manual.elytron.seccontext;
 
-import javax.ejb.Stateful;
+import jakarta.ejb.Stateful;
 
 /**
  * Stateful version of the {@link EntryBean}.

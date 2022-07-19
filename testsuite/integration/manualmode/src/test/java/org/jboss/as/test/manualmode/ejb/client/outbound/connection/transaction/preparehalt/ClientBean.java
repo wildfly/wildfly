@@ -24,13 +24,13 @@ package org.jboss.as.test.manualmode.ejb.client.outbound.connection.transaction.
 
 import org.jboss.as.test.integration.transactions.TestXAResource;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionManager;
 import java.util.Hashtable;
 
 /**

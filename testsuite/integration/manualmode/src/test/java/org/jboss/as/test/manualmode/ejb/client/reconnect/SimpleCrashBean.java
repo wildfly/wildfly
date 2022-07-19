@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.manualmode.ejb.client.reconnect;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * Simple SLSB test bean.

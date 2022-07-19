@@ -29,8 +29,8 @@ import java.net.SocketPermission;
 import java.net.URL;
 import java.util.Map;
 
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.util.JacksonFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,7 +88,7 @@ public class ContextPropagationTestCase {
             + "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n"
             + "         metadata-complete=\"false\" version=\"3.0\">\n"
             + "    <servlet-mapping>\n"
-            + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
+            + "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n"
             + "        <url-pattern>/*</url-pattern>\n"
             + "    </servlet-mapping>"
             + "</web-app>";

@@ -21,7 +21,7 @@
  */
 package org.wildfly.test.manual.elytron.seccontext;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Interface for the bean used as first bean in chain of 3 servers for authentication/authorization forwarding testing.
