@@ -444,11 +444,6 @@
             <artifactId>wildfly-naming-client</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -482,11 +477,6 @@
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.ws.rs</groupId>
-            <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -104,6 +104,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
             <scope>test</scope>
@@ -305,7 +310,12 @@
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client</artifactId>
+            <artifactId>jboss-ejb-client-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.transaction</groupId>
+            <artifactId>wildfly-transaction-client-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
