@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.iiopssl.basic;
 
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Bartosz Spyrko-Smietanko

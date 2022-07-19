@@ -1,6 +1,6 @@
 package org.jboss.as.test.iiop.security;
 
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 import java.rmi.RemoteException;
 
 /**

@@ -23,7 +23,7 @@
 package org.jboss.as.test.iiop.client;
 
 import java.rmi.RemoteException;
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 
 public interface IIOPTestBeanHome extends EJBHome {
 

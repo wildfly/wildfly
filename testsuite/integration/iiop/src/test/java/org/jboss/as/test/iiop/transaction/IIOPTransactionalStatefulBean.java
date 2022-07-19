@@ -2,15 +2,15 @@ package org.jboss.as.test.iiop.transaction;
 
 import java.rmi.RemoteException;
 
-import javax.annotation.Resource;
-import javax.ejb.EJBException;
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionContext;
-import javax.ejb.SessionSynchronization;
-import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.SessionSynchronization;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 /**
  * @author Stuart Douglas

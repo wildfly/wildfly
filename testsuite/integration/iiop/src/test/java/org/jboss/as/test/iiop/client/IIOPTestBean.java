@@ -23,14 +23,14 @@
 package org.jboss.as.test.iiop.client;
 
 import java.rmi.RemoteException;
-import javax.annotation.Resource;
-import javax.ejb.Remote;
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Remote;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 @Remote(IIOPTestRemote.class)
 @RemoteHome(IIOPTestBeanHome.class)

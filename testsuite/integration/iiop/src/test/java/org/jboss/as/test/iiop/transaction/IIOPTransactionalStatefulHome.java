@@ -2,7 +2,7 @@ package org.jboss.as.test.iiop.transaction;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 
 /**
  * @author Stuart Douglas

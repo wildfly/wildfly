@@ -1,9 +1,9 @@
 package org.jboss.as.test.iiop.security;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 
