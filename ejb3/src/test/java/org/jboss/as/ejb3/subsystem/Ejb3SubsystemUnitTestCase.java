@@ -38,6 +38,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
+import org.wildfly.clustering.ejb.timer.TimerServiceRequirement;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 
 /**
@@ -55,7 +56,10 @@ import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities(
-            SingletonDefaultRequirement.POLICY.getName());
+            TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.resolve("transient"),
+            TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.resolve("persistent"),
+            SingletonDefaultRequirement.POLICY.getName()
+            );
 
     public Ejb3SubsystemUnitTestCase() {
         super(EJB3Extension.SUBSYSTEM_NAME, new EJB3Extension());

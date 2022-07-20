@@ -64,7 +64,7 @@ public class SimpleTimerServiceBean {
         if (first) {
             timerEntry.countDown();
             try {
-                timerExit.await();
+                timerExit.await(10, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

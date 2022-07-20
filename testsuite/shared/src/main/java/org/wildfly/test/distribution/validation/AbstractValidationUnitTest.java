@@ -114,6 +114,7 @@ public class AbstractValidationUnitTest {
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security_1_1.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security-role_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-timer-service_2_0.xsd");
 
         String coreVersion = System.getProperty("version.org.wildfly.core");
         if (coreVersion != null) {

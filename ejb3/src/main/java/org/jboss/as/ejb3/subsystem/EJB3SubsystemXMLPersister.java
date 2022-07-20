@@ -642,8 +642,9 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
 
     private void writeTimerService(final XMLExtendedStreamWriter writer, final ModelNode timerServiceModel) throws XMLStreamException {
 
-        TimerServiceResourceDefinition.THREAD_POOL_NAME.marshallAsAttribute(timerServiceModel, writer);
-        TimerServiceResourceDefinition.DEFAULT_DATA_STORE.marshallAsAttribute(timerServiceModel, writer);
+        for (AttributeDefinition attribute : TimerServiceResourceDefinition.ATTRIBUTES) {
+            attribute.getMarshaller().marshallAsAttribute(attribute, timerServiceModel, false, writer);
+        }
 
         writer.writeStartElement(EJB3SubsystemXMLElement.DATA_STORES.getLocalName());
         writeFileDataStores(writer, timerServiceModel);

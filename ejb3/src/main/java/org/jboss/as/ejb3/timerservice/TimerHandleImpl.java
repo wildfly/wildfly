@@ -21,103 +21,66 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
-import java.security.AccessController;
-
-import javax.ejb.EJBException;
-import javax.ejb.Timer;
 import javax.ejb.TimerHandle;
 
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
+ * Serializable handle for an EJB timer.
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @author Paul Ferraro
  */
 public class TimerHandleImpl implements TimerHandle {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Id of the target {@link org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker}
-     */
-    private final String timedObjectId;
+    // Unused, but remains in order to retain serialization compatibility
+    // We can use this field to determine if this handle instance was serialized from a legacy handle
+    private final String timedObjectId = null;
 
-    /**
-     * The service name of the timer service
-     */
     private final String serviceName;
 
-    /**
-     * Each {@link org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker} can have multiple timer instances.
-     * This id corresponds to one such <i>instance</i>
-     */
     private final String id;
 
-    /**
-     * The {@link TimerServiceImpl} to which this timer handle belongs to
-     */
-    private transient TimerServiceImpl service;
+    private transient EJBComponent component;
+    private transient ManagedTimer timer;
 
     /**
      * Creates a {@link TimerHandleImpl}
      *
-     * @param id            The id of the timer instance
-     * @param timedObjectId The id of the target {@link org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker}
-     * @param service       The timer service to which this timer handle belongs to
+     * @param timer     The managed timer instance
+     * @param component The EJB component associated with the timer
      */
-    public TimerHandleImpl(final String id, final String timedObjectId, final TimerServiceImpl service) {
-        this.timedObjectId = timedObjectId;
-        this.id = id;
-        this.service = service;
-        this.serviceName = service.getServiceName().getCanonicalName();
+    public TimerHandleImpl(ManagedTimer timer, EJBComponent component) {
+        this.timer = timer;
+        this.component = component;
+        this.id = timer.getId();
+        this.serviceName = component.getCreateServiceName().getCanonicalName();
     }
 
-    /**
-     * Returns the {@link javax.ejb.Timer} corresponding to this timer handle
-     * <p/>
-     * {@inheritDoc}
-     */
-    public Timer getTimer() throws IllegalStateException, EJBException {
-        if (service == null) {
-            // get hold of the timer service through the use of timed object id
-            service = (TimerServiceImpl) currentServiceContainer().getRequiredService(ServiceName.parse(serviceName)).getValue();
-            if (service == null) {
-                throw EjbLogger.EJB3_TIMER_LOGGER.timerServiceWithIdNotRegistered(timedObjectId);
-            }
-        }
-        final TimerImpl timer = this.service.getTimer(id, timedObjectId);
-        if (timer == null || !timer.isActive()) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.timerHandleIsNotActive(id, timedObjectId);
-        }
-        return timer;
-    }
-
-    public String getId() {
-        return this.id;
-    }
-
-    public String getTimedObjectId() {
-        return this.timedObjectId;
-    }
-
+    @SuppressWarnings("deprecation")
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    public synchronized javax.ejb.Timer getTimer() {
+        if (this.component == null) {
+            ServiceName serviceName = ServiceName.parse(this.serviceName);
+            // Is this a legacy timer handle?
+            if (this.timedObjectId != null) {
+                // If so, figure out the component create service name from the legacy TimerServiceImpl ServiceName
+                serviceName = serviceName.getParent().getParent().append("CREATE");
+            }
+            this.component = (EJBComponent) WildFlySecurityManager.doUnchecked(CurrentServiceContainer.GET_ACTION).getRequiredService(serviceName).getValue();
         }
-        if (obj instanceof TimerHandleImpl == false) {
-            return false;
+        if (this.timer == null) {
+            this.timer = this.component.getTimerService().findTimer(this.id);
         }
-        TimerHandleImpl other = (TimerHandleImpl) obj;
-        if (this == other) {
-            return true;
+        if ((this.timer == null) || !this.timer.isActive()) {
+            throw EjbLogger.EJB3_TIMER_LOGGER.timerHandleIsNotActive(this.id, this.component.getTimerService().getInvoker().getTimedObjectId());
         }
-        if (this.id.equals(other.id) && this.timedObjectId.equals(other.timedObjectId)) {
-            return true;
-        }
-        return false;
+        return this.timer;
     }
 
     @Override
@@ -125,11 +88,15 @@ public class TimerHandleImpl implements TimerHandle {
         return this.id.hashCode();
     }
 
-    private static ServiceContainer currentServiceContainer() {
-        if(System.getSecurityManager() == null) {
-            return CurrentServiceContainer.getServiceContainer();
-        }
-        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof TimerHandleImpl)) return false;
+        TimerHandleImpl handle = (TimerHandleImpl) object;
+        return this.id.equals(handle.id) && this.serviceName.equals(handle.serviceName);
     }
 
+    @Override
+    public String toString() {
+        return this.id;
+    }
 }

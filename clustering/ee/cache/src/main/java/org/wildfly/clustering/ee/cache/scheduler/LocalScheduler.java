@@ -24,6 +24,7 @@ package org.wildfly.clustering.ee.cache.scheduler;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -31,8 +32,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.DefaultThreadFactory;
@@ -43,17 +44,19 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * Scheduler that uses a single scheduled task in concert with an {@link ScheduledEntries}.
  * @author Paul Ferraro
  */
-public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Runnable {
+public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 
     private final ScheduledExecutorService executor;
     private final ScheduledEntries<T, Instant> entries;
     private final Predicate<T> task;
     private final Duration closeTimeout;
 
-    private volatile Future<?> future = null;
+    private volatile Map.Entry<Map.Entry<T, Instant>, Future<?>> futureEntry = null;
 
     public LocalScheduler(ScheduledEntries<T, Instant> entries, Predicate<T> task, Duration closeTimeout) {
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory(this.getClass()));
+        executor.setKeepAliveTime(1L, TimeUnit.MINUTES);
+        executor.allowCoreThreadTimeOut(true);
         executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
         executor.setRemoveOnCancelPolicy(entries.isSorted());
         this.executor = executor;
@@ -66,7 +69,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Ru
     public void schedule(T id, Instant instant) {
         this.entries.add(id, instant);
         if (this.entries.isSorted()) {
-            this.cancelIfPresent(id);
+            this.rescheduleIfEarlier(instant);
         }
         this.scheduleIfAbsent();
     }
@@ -83,35 +86,13 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Ru
     }
 
     @Override
-    public Iterator<T> iterator() {
-        Iterator<Map.Entry<T, Instant>> entries = this.entries.iterator();
-        return new Iterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return entries.hasNext();
-            }
+    public boolean contains(T id) {
+        return this.entries.contains(id);
+    }
 
-            @Override
-            public T next() {
-                return entries.next().getKey();
-            }
-
-            @Override
-            public void remove() {
-                entries.remove();
-            }
-
-            @Override
-            public void forEachRemaining(Consumer<? super T> action) {
-                Consumer<Map.Entry<T, Instant>> entryAction = new Consumer<Map.Entry<T, Instant>>() {
-                    @Override
-                    public void accept(Map.Entry<T, Instant> entry) {
-                        action.accept(entry.getKey());
-                    }
-                };
-                entries.forEachRemaining(entryAction);
-            }
-        };
+    @Override
+    public Stream<T> stream() {
+        return this.entries.stream().map(Map.Entry::getKey);
     }
 
     @Override
@@ -140,46 +121,64 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Ru
             }
         }
         synchronized (this) {
-            this.future = this.scheduleFirst();
+            this.futureEntry = this.scheduleFirst();
         }
     }
 
-    private Future<?> scheduleFirst() {
+    private Map.Entry<Map.Entry<T, Instant>, Future<?>> scheduleFirst() {
         Map.Entry<T, Instant> entry = this.entries.peek();
         return (entry != null) ? this.schedule(entry) : null;
     }
 
-    private Future<?> schedule(Map.Entry<T, Instant> entry) {
+    private Map.Entry<Map.Entry<T, Instant>, Future<?>> schedule(Map.Entry<T, Instant> entry) {
         Duration delay = Duration.between(Instant.now(), entry.getValue());
         long millis = !delay.isNegative() ? delay.toMillis() + 1 : 0;
         try {
-            return this.executor.schedule(this, millis, TimeUnit.MILLISECONDS);
+            Future<?> future = this.executor.schedule(this, millis, TimeUnit.MILLISECONDS);
+            return new SimpleImmutableEntry<>(entry, future);
         } catch (RejectedExecutionException e) {
             return null;
         }
     }
 
     private void scheduleIfAbsent() {
-        if (this.future == null) {
+        if (this.futureEntry == null) {
             synchronized (this) {
-                if (this.future == null) {
-                    this.future = this.scheduleFirst();
+                if (this.futureEntry == null) {
+                    this.futureEntry = this.scheduleFirst();
+                }
+            }
+        }
+    }
+
+    private void rescheduleIfEarlier(Instant instant) {
+        if (this.futureEntry != null) {
+            synchronized (this) {
+                if (this.futureEntry != null) {
+                    if (instant.isBefore(this.futureEntry.getKey().getValue())) {
+                        this.futureEntry.getValue().cancel(true);
+                        this.futureEntry = this.scheduleFirst();
+                    }
                 }
             }
         }
     }
 
     private void cancelIfPresent(T id) {
-        if (this.future != null) {
+        if (this.futureEntry != null) {
             synchronized (this) {
-                if (this.future != null) {
-                    Map.Entry<T, Instant> entry = this.entries.peek();
-                    if ((entry != null) && entry.getKey().equals(id)) {
-                        this.future.cancel(true);
-                        this.future = null;
+                if (this.futureEntry != null) {
+                    if (this.futureEntry.getKey().getKey().equals(id)) {
+                        this.futureEntry.getValue().cancel(true);
+                        this.futureEntry = null;
                     }
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return this.entries.toString();
     }
 }

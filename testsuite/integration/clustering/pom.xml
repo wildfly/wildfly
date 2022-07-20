@@ -685,6 +685,7 @@
                                         <exclude>${test-group}/**/group/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/jms/*TestCase.java</exclude>
                                         <!-- These are run by ts.clustering.cluster.ha-infinispan-server.profile -->
+                                        <exclude>${test-group}/**/ejb/timer/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/web/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/sso/remote/*TestCase.java</exclude>
                                         <!-- These are run by ts.clustering.cluster.byteman.profile -->
@@ -751,6 +752,7 @@
                                     <runOrder>alphabetical</runOrder>
                                     <!-- Tests to execute. -->
                                     <includes>
+                                        <include>${test-group}/**/ejb/timer/remote/*TestCase.java</include>
                                         <include>${test-group}/**/web/remote/*TestCase.java</include>
                                         <include>${test-group}/**/sso/remote/*TestCase.java</include>
                                     </includes>

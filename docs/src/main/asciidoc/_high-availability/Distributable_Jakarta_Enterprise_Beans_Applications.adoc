@@ -93,11 +93,32 @@ The infinispan-client-mappings-registry provider is a provider based on an Infin
 The client mappings registry provider suitable for a local, non-clustered server.
 
 
-[[ejb-timer]]
-== EJB Timer
+[[timer-management]]
+=== Timer management
 
-WildFly now supports clustered database backed timers. For details have
-a look to the link:Developer_Guide{outfilesuffix}#EJB3_Clustered_Database_Timers[EJB3 reference section].
+The distributable-ejb subsystem defines a set of timer management resources that define behavior for persistent or non-persistent EJB timers.
+
+To use distributable timer management for EJB timers, one must first disable the existing in-memory mechanisms in the ejb3 subsystem.
+See link:Developer_Guide{outfilesuffix}#Jakarta_Enterprise_Beans_Distributed_Persistent_Timers[Jakarta Enterprise Beans Distributed Timer documentation] for details.
+
+==== infinispan-timer-management
+
+This provider stores timer metadata within an embedded Infinispan cache, and utilizes consistent hashing to distribute timer execution between cluster members.
+
+* `cache-container` specifies a cache container defined in the Infinispan subsystem
+* `cache` specifies the a cache configuration within the specified cache-container
+* `max-active-timers` specifies the maximum number active timers to retain in memory at a time, after which the least recently used will passivate
+
+To ensure proper functioning, the associated cache configuration, regardless of type, should use:
+
+* BATCH transaction mode
+* REPEATABLE_READ lock isolation
+
+Generally, persistent timers will leverage a distributed or replicated cache configuration if in a cluster, or a local, persistent cache configuration if on a single server;
+while transient timers will leverage a local, passivating cache configuration.
+
+By default, all cluster members will be eligible for timer execution.
+A given cluster member exclude itself from timer execution by using a cache `capacity-factor` of 0.
 
 [[deploying-clustered-ejbs]]
 == Deploying clustered EJBs

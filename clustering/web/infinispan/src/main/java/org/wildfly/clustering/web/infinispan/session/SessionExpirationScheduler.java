@@ -30,9 +30,7 @@ import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.cache.scheduler.LocalScheduler;
 import org.wildfly.clustering.ee.cache.scheduler.SortedScheduledEntries;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.ee.infinispan.GroupedKey;
-import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
-import org.wildfly.clustering.infinispan.distribution.Locality;
+import org.wildfly.clustering.ee.infinispan.scheduler.AbstractCacheEntryScheduler;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -43,18 +41,13 @@ import org.wildfly.clustering.web.session.SessionExpirationMetaData;
  * If/When Infinispan implements expiration notifications (ISPN-694), this will be obsolete.
  * @author Paul Ferraro
  */
-public class SessionExpirationScheduler<MV> implements Scheduler<String, SessionExpirationMetaData>, Predicate<String> {
+public class SessionExpirationScheduler<MV> extends AbstractCacheEntryScheduler<String, SessionExpirationMetaData> {
 
-    private final LocalScheduler<String> scheduler;
-    private final Batcher<TransactionBatch> batcher;
-    private final Remover<String> remover;
     private final ImmutableSessionMetaDataFactory<MV> metaDataFactory;
 
     public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, ImmutableSessionMetaDataFactory<MV> metaDataFactory, Remover<String> remover, Duration closeTimeout) {
-        this.scheduler = new LocalScheduler<>(new SortedScheduledEntries<>(), this, closeTimeout);
-        this.batcher = batcher;
+        super(new LocalScheduler<>(new SortedScheduledEntries<>(), new SessionRemoveTask(batcher, remover), closeTimeout), SessionExpirationMetaData::getMaxInactiveInterval, Duration::isZero, SessionExpirationMetaData::getLastAccessEndTime);
         this.metaDataFactory = metaDataFactory;
-        this.remover = remover;
     }
 
     @Override
@@ -66,48 +59,30 @@ public class SessionExpirationScheduler<MV> implements Scheduler<String, Session
         }
     }
 
-    @Override
-    public void schedule(String sessionId, SessionExpirationMetaData metaData) {
-        Duration maxInactiveInterval = metaData.getMaxInactiveInterval();
-        if (!maxInactiveInterval.isZero()) {
-            this.scheduler.schedule(sessionId, metaData.getLastAccessEndTime().plus(maxInactiveInterval));
+    private static class SessionRemoveTask implements Predicate<String> {
+        private final Batcher<TransactionBatch> batcher;
+        private final Remover<String> remover;
+
+        SessionRemoveTask(Batcher<TransactionBatch> batcher, Remover<String> remover) {
+            this.batcher = batcher;
+            this.remover = remover;
         }
-    }
 
-    @Override
-    public void cancel(String sessionId) {
-        this.scheduler.cancel(sessionId);
-    }
-
-    @Override
-    public void cancel(Locality locality) {
-        for (String sessionId : this.scheduler) {
-            if (Thread.currentThread().isInterrupted()) break;
-            if (!locality.isLocal(new GroupedKey<>(sessionId))) {
-                this.cancel(sessionId);
-            }
-        }
-    }
-
-    @Override
-    public void close() {
-        this.scheduler.close();
-    }
-
-    @Override
-    public boolean test(String sessionId) {
-        InfinispanWebLogger.ROOT_LOGGER.debugf("Expiring web session %s", sessionId);
-        try (Batch batch = this.batcher.createBatch()) {
-            try {
-                this.remover.remove(sessionId);
-                return true;
+        @Override
+        public boolean test(String sessionId) {
+            InfinispanWebLogger.ROOT_LOGGER.debugf("Expiring web session %s", sessionId);
+            try (Batch batch = this.batcher.createBatch()) {
+                try {
+                    this.remover.remove(sessionId);
+                    return true;
+                } catch (RuntimeException e) {
+                    batch.discard();
+                    throw e;
+                }
             } catch (RuntimeException e) {
-                batch.discard();
-                throw e;
+                InfinispanWebLogger.ROOT_LOGGER.failedToExpireSession(e, sessionId);
+                return false;
             }
-        } catch (RuntimeException e) {
-            InfinispanWebLogger.ROOT_LOGGER.failedToExpireSession(e, sessionId);
-            return false;
         }
     }
 }
