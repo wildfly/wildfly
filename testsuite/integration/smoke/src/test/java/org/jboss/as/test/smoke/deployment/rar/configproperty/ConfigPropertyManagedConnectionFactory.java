@@ -24,13 +24,13 @@ package org.jboss.as.test.smoke.deployment.rar.configproperty;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Set;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionManager;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ResourceAdapterAssociation;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionManager;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
 
 /**
@@ -88,8 +88,8 @@ public class ConfigPropertyManagedConnectionFactory implements ManagedConnection
      * Creates a Connection Factory instance.
      *
      * @param cxManager ConnectionManager to be associated with created EIS connection factory instance
-     * @return EIS-specific Connection Factory instance or javax.resource.cci.ConnectionFactory instance
-     * @throws javax.resource.ResourceException Generic exception
+     * @return EIS-specific Connection Factory instance or jakarta.resource.cci.ConnectionFactory instance
+     * @throws jakarta.resource.ResourceException Generic exception
      */
     public Object createConnectionFactory(ConnectionManager cxManager) throws ResourceException {
         return new ConfigPropertyConnectionFactoryImpl(this, cxManager);
@@ -98,8 +98,8 @@ public class ConfigPropertyManagedConnectionFactory implements ManagedConnection
     /**
      * Creates a Connection Factory instance.
      *
-     * @return EIS-specific Connection Factory instance or javax.resource.cci.ConnectionFactory instance
-     * @throws javax.resource.ResourceException Generic exception
+     * @return EIS-specific Connection Factory instance or jakarta.resource.cci.ConnectionFactory instance
+     * @throws jakarta.resource.ResourceException Generic exception
      */
     public Object createConnectionFactory() throws ResourceException {
         throw new ResourceException("This resource adapter doesn't support non-managed environments");
@@ -111,7 +111,7 @@ public class ConfigPropertyManagedConnectionFactory implements ManagedConnection
      * @param subject       Caller's security information
      * @param cxRequestInfo Additional resource adapter specific connection request information
      * @return ManagedConnection instance
-     * @throws javax.resource.ResourceException generic exception
+     * @throws jakarta.resource.ResourceException generic exception
      */
     public ManagedConnection createManagedConnection(Subject subject,
                                                      ConnectionRequestInfo cxRequestInfo) throws ResourceException {
@@ -125,7 +125,7 @@ public class ConfigPropertyManagedConnectionFactory implements ManagedConnection
      * @param subject       Caller's security information
      * @param cxRequestInfo Additional resource adapter specific connection request information
      * @return ManagedConnection if resource adapter finds an acceptable match otherwise null
-     * @throws javax.resource.ResourceException generic exception
+     * @throws jakarta.resource.ResourceException generic exception
      */
     public ManagedConnection matchManagedConnections(Set connectionSet,
                                                      Subject subject, ConnectionRequestInfo cxRequestInfo) throws ResourceException {
@@ -145,7 +145,7 @@ public class ConfigPropertyManagedConnectionFactory implements ManagedConnection
      * Get the log writer for this ManagedConnectionFactory instance.
      *
      * @return PrintWriter
-     * @throws javax.resource.ResourceException generic exception
+     * @throws jakarta.resource.ResourceException generic exception
      */
     public PrintWriter getLogWriter() throws ResourceException {
         return logwriter;
@@ -155,7 +155,7 @@ public class ConfigPropertyManagedConnectionFactory implements ManagedConnection
      * Set the log writer for this ManagedConnectionFactory instance.
      *
      * @param out PrintWriter - an out stream for error logging and tracing
-     * @throws javax.resource.ResourceException generic exception
+     * @throws jakarta.resource.ResourceException generic exception
      */
     public void setLogWriter(PrintWriter out) throws ResourceException {
         logwriter = out;

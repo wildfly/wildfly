@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.smoke.managedbean;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 import org.jboss.logging.Logger;
 

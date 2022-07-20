@@ -21,14 +21,14 @@
  */
 package org.jboss.as.test.smoke.managedbean;
 
-import javax.annotation.ManagedBean;
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptors;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.ManagedBean;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptors;
+import jakarta.interceptor.InvocationContext;
 
 import org.jboss.logging.Logger;
 

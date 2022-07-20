@@ -33,7 +33,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
+import jakarta.xml.ws.Service;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
