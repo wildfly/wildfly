@@ -22,8 +22,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import javax.websocket.ContainerProvider;
-import javax.websocket.WebSocketContainer;
+import jakarta.websocket.ContainerProvider;
+import jakarta.websocket.WebSocketContainer;
 
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;

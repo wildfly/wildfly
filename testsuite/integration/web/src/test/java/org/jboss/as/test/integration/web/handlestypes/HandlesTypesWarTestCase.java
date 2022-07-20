@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContainerInitializer;
 import java.util.Arrays;
 import java.util.HashSet;
 

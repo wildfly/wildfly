@@ -202,7 +202,7 @@ public class RequestDumpingHandlerTestCase {
                         // Needed for the serverContainer.connectToServer()
                         new SocketPermission("*:" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")), "permissions.xml")
                 .addAsManifestResource(new StringAsset("io.undertow.websockets.jsr.UndertowContainerProvider"),
-                        "services/javax.websocket.ContainerProvider")
+                        "services/jakarta.websocket.ContainerProvider")
                 .addAsWebInfResource(RequestDumpingHandlerTestCase.class.getPackage(), "jboss-web-req-dump.xml",
                         "jboss-web.xml");
         return war;
