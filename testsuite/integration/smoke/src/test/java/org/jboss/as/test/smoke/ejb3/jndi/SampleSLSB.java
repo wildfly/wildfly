@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.smoke.ejb3.jndi;
 
-import javax.ejb.EJB;
-import javax.ejb.Local;
-import javax.ejb.LocalBean;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Local;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Jaikiran Pai

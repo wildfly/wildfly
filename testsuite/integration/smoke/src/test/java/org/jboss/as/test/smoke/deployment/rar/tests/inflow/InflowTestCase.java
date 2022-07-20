@@ -26,7 +26,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 import java.util.Set;
-import javax.resource.spi.ActivationSpec;
+import jakarta.resource.spi.ActivationSpec;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -93,7 +93,7 @@ public class InflowTestCase {
         assertNotNull(controller);
         ResourceAdapterRepository repository = (ResourceAdapterRepository) controller.getValue();
         assertNotNull(repository);
-        Set<String> ids = repository.getResourceAdapters(javax.jms.MessageListener.class);
+        Set<String> ids = repository.getResourceAdapters(jakarta.jms.MessageListener.class);
 
         assertNotNull(ids);
         int pureInflowListener = 0;

@@ -46,9 +46,74 @@
         <bootable-jar-undertow-https-packaging.phase>none</bootable-jar-undertow-https-packaging.phase>
         <bootable-jar-jaxrs-packaging.phase>none</bootable-jar-jaxrs-packaging.phase>
         <bootable-jar-cloud-packaging.phase>none</bootable-jar-cloud-packaging.phase>
+
+
+        <!-- Use the WildFly Preview dependencies until standard WildFly moves to EE 10 -->
+        <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
+        <!-- Use the WildFly Preview feature pack for Galleon provisioning until standard WildFly moves to EE 10 -->
+        <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+        <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
+        <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
+        <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.authentication</groupId>
+            <artifactId>jakarta.authentication-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.enterprise.concurrent</groupId>
+            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-client-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-servlet</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-websockets-jsr</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Other dependencies -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -57,16 +122,6 @@
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-servlet</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -79,36 +134,36 @@
             <artifactId>bcpkix-jdk18on</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
+            <groupId>org.jboss.modules</groupId>
+            <artifactId>jboss-modules</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
-            <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.security.auth.message</groupId>
-            <artifactId>jboss-jaspi-api_1.1_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
-            <artifactId>jboss-jsp-api_2.3_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.websocket</groupId>
-            <artifactId>jboss-websocket-api_1.1_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-naming</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-cli</artifactId>

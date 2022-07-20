@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.smoke.managedbean;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptors;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptors;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author John Bailey

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.smoke.managedbean;
 
-import javax.annotation.ManagedBean;
-import javax.enterprise.inject.Produces;
+import jakarta.annotation.ManagedBean;
+import jakarta.enterprise.inject.Produces;
 
 /**
  * @author Thomas.Diesler@jboss.com

@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.smoke.ejb3.dd;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Jaikiran Pai

@@ -1,6 +1,6 @@
 <%@ page isErrorPage="true"%>
 <%
-    Throwable error = (Throwable) request.getAttribute("javax.servlet.error.exception");
+    Throwable error = (Throwable) request.getAttribute("jakarta.servlet.error.exception");
     response.setHeader("X-CustomErrorPage", "500.jsp");
     if (error != null)
         response.setHeader("X-ExceptionType", error.getClass().getName());
