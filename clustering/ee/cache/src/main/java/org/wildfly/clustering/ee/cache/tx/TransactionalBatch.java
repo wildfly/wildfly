@@ -130,6 +130,6 @@ public class TransactionalBatch<E extends RuntimeException> implements Transacti
 
     @Override
     public String toString() {
-        return this.tx.toString();
+        return String.format("%s[%d]", this.tx, this.count.get());
     }
 }

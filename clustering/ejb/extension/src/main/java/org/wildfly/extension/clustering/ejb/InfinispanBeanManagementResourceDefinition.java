@@ -53,7 +53,10 @@ import java.util.function.UnaryOperator;
  */
 public class InfinispanBeanManagementResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
-    static final PathElement WILDCARD_PATH = PathElement.pathElement("infinispan-bean-management");
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement("infinispan-bean-management", name);
+    }
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     enum Capability implements CapabilityProvider, UnaryOperator<RuntimeCapability.Builder<Void>> {
         BEAN_MANAGEMENT_PROVIDER(EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER),

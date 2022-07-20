@@ -51,6 +51,13 @@
                     </xs:annotation>
                 </xs:element>
             </xs:choice>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element name="infinispan-timer-management" type="tns:infinispan-timer-management">
+                    <xs:annotation>
+                        <xs:documentation>References an existing timer management provider</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
         </xs:sequence>
         <xs:attribute name="default-bean-management" type="xs:string" use="required">
             <xs:annotation>
@@ -92,6 +99,20 @@
             </xs:annotation>
         </xs:attribute>
     </xs:attributeGroup>
+
+    <xs:complexType name="infinispan-timer-management">
+        <xs:attribute name="name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>References the name of an existing bean management provider</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="tns:infinispan"/>
+        <xs:attribute name="max-active-timers" type="xs:integer">
+            <xs:annotation>
+                <xs:documentation>The maximum number active timers to retain in memory at a time, after which the least recently used will passivate.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
 
     <xs:complexType name="empty">
         <xs:sequence/>

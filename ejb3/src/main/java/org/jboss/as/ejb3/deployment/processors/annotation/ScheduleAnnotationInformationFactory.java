@@ -26,7 +26,7 @@ import javax.ejb.Schedules;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.timerservice.AutoTimer;
+import org.jboss.as.ejb3.timerservice.spi.AutoTimer;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.metadata.property.PropertyReplacer;

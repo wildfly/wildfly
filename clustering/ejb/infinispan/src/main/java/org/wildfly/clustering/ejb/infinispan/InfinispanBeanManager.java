@@ -45,7 +45,7 @@ import org.wildfly.clustering.ee.infinispan.PrimaryOwnerLocator;
 import org.wildfly.clustering.ee.infinispan.affinity.AffinityIdentifierFactory;
 import org.wildfly.clustering.ee.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleLocalEntriesTask;
-import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
+import org.wildfly.clustering.ee.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerListener;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerTopologyChangeListener;
 import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
@@ -108,7 +108,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
 
         Duration stopTimeout = Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout());
         Duration timeout = this.expiration.getTimeout();
-        Scheduler<I, ImmutableBeanEntry<I>> localScheduler = (timeout != null) && !timeout.isNegative() ? new BeanExpirationScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.expiration, new ExpiredBeanRemover<>(this.beanFactory, this.expiration), stopTimeout) : null;
+        CacheEntryScheduler<I, ImmutableBeanEntry<I>> localScheduler = (timeout != null) && !timeout.isNegative() ? new BeanExpirationScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.expiration, new ExpiredBeanRemover<>(this.beanFactory, this.expiration), stopTimeout) : null;
 
         String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
         this.scheduler = (localScheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, dispatcherName, localScheduler, this.primaryOwnerLocator, InfinispanBeanKey::new)) : null;

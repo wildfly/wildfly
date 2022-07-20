@@ -33,10 +33,9 @@ import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
  */
 public class BeanSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @SuppressWarnings("unchecked")
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalMarshaller<>((Class<InfinispanBeanKey<SessionID>>) (Class<?>) InfinispanBeanKey.class, SessionID.class, InfinispanBeanKey::getId, InfinispanBeanKey::new));
+        context.registerMarshaller(new FunctionalMarshaller<>(InfinispanBeanKey.class, SessionID.class, InfinispanBeanKey<SessionID>::getId, InfinispanBeanKey::new));
         context.registerMarshaller(new InfinispanBeanEntryMarshaller());
     }
 }

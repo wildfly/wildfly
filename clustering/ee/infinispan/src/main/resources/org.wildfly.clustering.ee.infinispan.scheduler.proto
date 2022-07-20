@@ -23,3 +23,16 @@ message ScheduleWithMetaDataCommand {
 	optional	bytes	id	 = 1;
 	optional	bytes	metaData	 = 2;
 }
+
+/**
+ * @TypeId(183)
+ */
+message EntriesCommand {
+}
+
+/**
+ * @TypeId(184)
+ */
+message ContainsCommand {
+	optional	bytes	id	 = 1;
+}

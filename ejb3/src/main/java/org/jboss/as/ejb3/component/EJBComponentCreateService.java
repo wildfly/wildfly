@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-import javax.ejb.TimerService;
+
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -48,6 +48,7 @@ import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescripti
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
+import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -78,8 +79,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final EJBSecurityMetaData securityMetaData;
 
-    private final TimerService timerService;
-
     private final Map<Method, InterceptorFactory> timeoutInterceptors;
 
     private final Method timeoutMethod;
@@ -101,6 +100,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final InjectedValue<SecurityDomain> securityDomain = new InjectedValue<>();
     private final InjectedValue<Function> identityOutflowFunction = new InjectedValue<>();
     private final InjectedValue<EJBSuspendHandlerService> ejbSuspendHandler = new InjectedValue<>();
+    private final InjectedValue<ManagedTimerServiceFactory> timerServiceFactory = new InjectedValue<>();
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
@@ -121,8 +121,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.applicationExceptions = applicationExceptions;
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
         this.transactionManagementType = ejbComponentDescription.getTransactionManagementType();
-
-        this.timerService = ejbComponentDescription.getTimerService();
 
         // CMTTx
         if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
@@ -291,10 +289,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return timeoutInterceptors;
     }
 
-    public TimerService getTimerService() {
-        return timerService;
-    }
-
     public Method getTimeoutMethod() {
         return timeoutMethod;
     }
@@ -397,5 +391,13 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public boolean isSecurityRequired() {
         return securityRequired;
+    }
+
+    public ManagedTimerServiceFactory getTimerServiceFactory() {
+        return this.timerServiceFactory.getValue();
+    }
+
+    public Injector<ManagedTimerServiceFactory> getTimerServiceFactoryInjector() {
+        return this.timerServiceFactory;
     }
 }

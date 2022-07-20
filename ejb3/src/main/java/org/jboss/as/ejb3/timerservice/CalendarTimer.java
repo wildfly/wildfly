@@ -84,7 +84,7 @@ public class CalendarTimer extends TimerImpl {
      */
     @Override
     public ScheduleExpression getSchedule() throws IllegalStateException, EJBException {
-        this.assertTimerState();
+        this.validateInvocationContext();
         return this.calendarTimeout.getScheduleExpression();
     }
 
@@ -104,7 +104,7 @@ public class CalendarTimer extends TimerImpl {
      */
     @Override
     public boolean isCalendarTimer() throws IllegalStateException, EJBException {
-        this.assertTimerState();
+        this.validateInvocationContext();
         return true;
     }
 
