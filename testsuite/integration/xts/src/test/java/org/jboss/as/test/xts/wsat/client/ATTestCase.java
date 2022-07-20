@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.xts.wsat.client;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.as.test.xts.util.EventLogEvent.BEFORE_PREPARE;
 import static org.jboss.as.test.xts.util.EventLogEvent.COMMIT;
 import static org.jboss.as.test.xts.util.EventLogEvent.PREPARE;
@@ -36,15 +35,9 @@ import static org.jboss.as.test.xts.util.ServiceCommand.VOTE_READONLY_VOLATILE;
 import static org.jboss.as.test.xts.util.ServiceCommand.VOTE_ROLLBACK;
 import static org.jboss.as.test.xts.util.ServiceCommand.VOTE_ROLLBACK_PRE_PREPARE;
 
-import java.io.File;
-import java.io.FilePermission;
-import java.lang.reflect.ReflectPermission;
-import java.util.PropertyPermission;
-
 import jakarta.inject.Inject;
 import jakarta.xml.ws.soap.SOAPFaultException;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.xts.base.BaseFunctionalTest;
@@ -84,7 +77,7 @@ public class ATTestCase extends BaseFunctionalTest {
 
     @Deployment
     public static WebArchive createTestArchive() {
-        final WebArchive archive = DeploymentHelper.getInstance().getWebArchiveWithPermissions(ARCHIVE_NAME)
+        return DeploymentHelper.getInstance().getWebArchiveWithPermissions(ARCHIVE_NAME)
                 .addPackage(AT.class.getPackage())
                 .addPackage(ATClient.class.getPackage())
                 .addPackage(EventLog.class.getPackage())
@@ -92,30 +85,6 @@ public class ATTestCase extends BaseFunctionalTest {
                 // needed to setup the server-side handler chain
                 .addAsResource("context-handlers.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"), "MANIFEST.MF");
-        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
-                archive.addAsManifestResource(
-                        createPermissionsXmlAsset(
-                                //This is not catastrophic if absent
-                                ///.../testsuite/integration/xts/xcatalog
-                                //$JAVA_HOME/jre/conf/jaxm.properties
-                                //$JAVA_HOME/jre/lib/jaxws.properties
-                                //$JAVA_HOME/jre/conf/jaxws.properties
-                                new FilePermission(System.getProperties().getProperty("jbossas.ts.integ.dir") + File.separator + "xts" + File.separator
-                                        + "xcatalog", "read"),
-                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                        + "conf" + File.separator + "jaxm.properties", "read"),
-                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                        + "conf" + File.separator + "jaxws.properties", "read"),
-                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                        + "lib" + File.separator + "jaxws.properties", "read"),
-                                new ReflectPermission("suppressAccessChecks"),
-                                new RuntimePermission("accessDeclaredMembers"),
-                                new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp"),
-                                new PropertyPermission("arquillian.debug", "read"),
-                                new PropertyPermission("node0", "read")),
-                        "permissions.xml");
-        }
-        return archive;
     }
 
     @Before

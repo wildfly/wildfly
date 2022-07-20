@@ -22,17 +22,9 @@
 
 package org.jboss.as.test.txbridge.fromjta;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
-import java.io.File;
-import java.io.FilePermission;
-import java.lang.reflect.ReflectPermission;
-import java.util.PropertyPermission;
-
 import javax.naming.InitialContext;
 import jakarta.transaction.UserTransaction;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.txbridge.fromjta.service.FirstServiceAT;
@@ -40,7 +32,6 @@ import org.jboss.as.test.xts.util.DeploymentHelper;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -75,30 +66,10 @@ public class BridgeFromJTATestCase {
 
     @Deployment(name = DEPLOYMENT)
     public static Archive<?> createDeployment() {
-        final WebArchive archive = DeploymentHelper.getInstance().getWebArchiveWithPermissions("test")
+        return DeploymentHelper.getInstance().getWebArchiveWithPermissions("test")
             .addPackages(true, BridgeFromJTATestCase.class.getPackage())
             .addAsManifestResource(new StringAsset(ManifestMF), "MANIFEST.MF")
             .addAsWebInfResource(new StringAsset(persistentXml), "classes/META-INF/persistence.xml" );
-            if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
-                archive.addAsManifestResource(
-                    createPermissionsXmlAsset(
-                            //This is not catastrophic if absent
-                            //$JAVA_HOME/jre/conf/jaxm.properties
-                            //$JAVA_HOME/jre/lib/jaxws.properties
-                            //$JAVA_HOME/jre/conf/jaxws.properties
-                            new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                    + "conf" + File.separator + "jaxm.properties", "read"),
-                            new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                    + "conf" + File.separator + "jaxws.properties", "read"),
-                            new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                    + "lib" + File.separator + "jaxws.properties", "read"),
-                            new PropertyPermission("arquillian.debug", "read"),
-                            new ReflectPermission("suppressAccessChecks"),
-                            new RuntimePermission("accessDeclaredMembers"),
-                            new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp")),
-                    "permissions.xml");
-            }
-        return archive;
     }
 
     @Before

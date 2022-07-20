@@ -21,14 +21,6 @@
  */
 package org.jboss.as.test.xts.annotation.client;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
-import java.io.File;
-import java.io.FilePermission;
-import java.lang.reflect.ReflectPermission;
-import java.util.PropertyPermission;
-
-import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -58,38 +50,12 @@ public class TransactionalTestCase {
 
     @Deployment
     public static WebArchive getDeployment() {
-        final WebArchive webArchive = DeploymentHelper.getInstance().getWebArchiveWithPermissions(DEPLOYMENT_NAME)
+        return DeploymentHelper.getInstance().getWebArchiveWithPermissions(DEPLOYMENT_NAME)
                 .addClass(TransactionalClient.class)
                 .addClass(TransactionalService.class)
                 .addClass(TransactionalServiceImpl.class)
                 .addClass(TestSuiteEnvironment.class)
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"), "MANIFEST.MF");
-        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
-                webArchive.addAsManifestResource(
-                        createPermissionsXmlAsset(
-                                //This is not catastrophic if absent
-                                ///.../testsuite/integration/xts/xcatalog
-                                //$JAVA_HOME/jre/conf/jaxm.properties
-                                //$JAVA_HOME/jre/lib/jaxws.properties
-                                //$JAVA_HOME/jre/conf/jaxws.properties
-                                new FilePermission(System.getProperties().getProperty("jbossas.ts.integ.dir") + File.separator + "xts" + File.separator
-                                        + "xcatalog", "read"),
-                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                        + "conf" + File.separator + "jaxm.properties", "read"),
-                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                        + "conf" + File.separator + "jaxws.properties", "read"),
-                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                        + "lib" + File.separator + "jaxws.properties", "read"),
-                                new ReflectPermission("suppressAccessChecks"),
-                                new RuntimePermission("accessDeclaredMembers"),
-                                new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp"),
-                                new PropertyPermission("arquillian.debug", "read"),
-                                new PropertyPermission("node0", "read"),
-                                new PropertyPermission("jboss.http.port", "read"),
-                                new PropertyPermission("management.address", "read")),
-                        "permissions.xml");
-        }
-        return webArchive;
     }
 
     @Test
