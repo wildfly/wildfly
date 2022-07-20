@@ -19,13 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.txn.ee.concurrency;
+package org.jboss.as.ee.concurrent.handle;
 
-import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
-import org.jboss.as.ee.concurrent.handle.ResetContextHandle;
-import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
-import org.jboss.as.server.deployment.DelegatingSupplier;
-import org.jboss.as.txn.logging.TransactionLogger;
+import org.jboss.as.ee.logging.EeLogger;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 import javax.enterprise.concurrent.ContextService;
 import javax.transaction.Status;
@@ -47,11 +44,9 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
 
     public static final String NAME = "TRANSACTION_LEAK";
 
-    private final DelegatingSupplier<TransactionManager> transactionManager = new DelegatingSupplier<>();
-
     @Override
     public SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-        return new TransactionLeakSetupContextHandle(transactionManager.get());
+        return new TransactionLeakSetupContextHandle(ContextTransactionManager.getInstance());
     }
 
     @Override
@@ -71,11 +66,7 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
 
     @Override
     public SetupContextHandle readSetupContextHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        return new TransactionLeakSetupContextHandle(transactionManager.get());
-    }
-
-    public DelegatingSupplier<TransactionManager> getTransactionManagerSupplier() {
-        return transactionManager;
+        return new TransactionLeakSetupContextHandle(ContextTransactionManager.getInstance());
     }
 
     private static class TransactionLeakSetupContextHandle implements SetupContextHandle {
@@ -108,11 +99,11 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
         // serialization
 
         private void writeObject(ObjectOutputStream out) throws IOException {
-            throw TransactionLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
 
         private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-            throw TransactionLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
     }
 
@@ -141,22 +132,22 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
                             case Status.STATUS_ROLLING_BACK:
                             case Status.STATUS_PREPARED:
                                 try {
-                                    TransactionLogger.ROOT_LOGGER.rollbackOfTransactionStartedInEEConcurrentInvocation();
+                                    EeLogger.ROOT_LOGGER.rollbackOfTransactionStartedInEEConcurrentInvocation();
                                     transactionManager.rollback();
                                 } catch (Throwable e) {
-                                    TransactionLogger.ROOT_LOGGER.failedToRollbackTransaction(e);
+                                    EeLogger.ROOT_LOGGER.failedToRollbackTransaction(e);
                                 } finally {
                                     try {
                                         transactionManager.suspend();
                                     } catch (Throwable e) {
-                                        TransactionLogger.ROOT_LOGGER.failedToSuspendTransaction(e);
+                                        EeLogger.ROOT_LOGGER.failedToSuspendTransaction(e);
                                     }
                                 }
                         }
                     }
 
                 } catch (SystemException e) {
-                    TransactionLogger.ROOT_LOGGER.systemErrorWhileCheckingForTransactionLeak(e);
+                    EeLogger.ROOT_LOGGER.systemErrorWhileCheckingForTransactionLeak(e);
                 }
             }
         }
@@ -169,11 +160,11 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
         // serialization
 
         private void writeObject(ObjectOutputStream out) throws IOException {
-            throw TransactionLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
 
         private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-            throw TransactionLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
     }
 }
