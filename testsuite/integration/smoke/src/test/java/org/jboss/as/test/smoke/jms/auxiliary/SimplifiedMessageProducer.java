@@ -24,16 +24,16 @@ package org.jboss.as.test.smoke.jms.auxiliary;
 
 import org.jboss.logging.Logger;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateful;
-import javax.enterprise.context.RequestScoped;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateful;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.DeliveryMode;
+import jakarta.jms.Destination;
+import jakarta.jms.Message;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
 
 /**
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2013 Red Hat Inc.

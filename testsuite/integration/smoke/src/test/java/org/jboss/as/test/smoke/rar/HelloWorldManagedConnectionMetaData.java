@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.smoke.rar;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnectionMetaData;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnectionMetaData;
 
 /**
  * HelloWorldManagedConnectionMetaData

@@ -49,7 +49,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.resource.spi.IllegalStateException;
+import jakarta.resource.spi.IllegalStateException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;

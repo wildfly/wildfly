@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.smoke.deployment.rar;
 
-import javax.resource.cci.ResourceAdapterMetaData;
+import jakarta.resource.cci.ResourceAdapterMetaData;
 
 /**
  * MultipleRaMetaData

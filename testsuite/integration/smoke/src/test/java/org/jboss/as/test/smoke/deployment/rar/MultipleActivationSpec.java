@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.smoke.deployment.rar;
 
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.InvalidPropertyException;
-import javax.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.InvalidPropertyException;
+import jakarta.resource.spi.ResourceAdapter;
 
 import org.jboss.logging.Logger;
 

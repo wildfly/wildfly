@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.smoke.property;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
 
 /**
  * @author John Bailey
