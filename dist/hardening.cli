@@ -36,4 +36,11 @@ end-if
 # [P] Enable audit-log records
 /core-service=management/access=audit/logger=audit-log:write-attribute(name=enabled,value=true)
 
+
+# enable http-only and secure for session cookies
+/subsystem=undertow/servlet-container=default/setting=session-cookie:add
+/subsystem=undertow/servlet-container=default/setting=session-cookie:write-attribute(name=http-only,value=true)
+/subsystem=undertow/servlet-container=default/setting=session-cookie:write-attribute(name=secure,value=true)
+
+
 stop-embedded-server
