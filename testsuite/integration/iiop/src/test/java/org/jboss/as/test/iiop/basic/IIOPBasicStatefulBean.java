@@ -1,7 +1,7 @@
 package org.jboss.as.test.iiop.basic;
 
-import javax.ejb.RemoteHome;
-import javax.ejb.Stateful;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.Stateful;
 
 /**
  * @author Stuart Douglas

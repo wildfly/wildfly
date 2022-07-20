@@ -23,7 +23,7 @@
 package org.jboss.as.test.iiop.transaction.timeout;
 
 import java.rmi.RemoteException;
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 
 public interface TestBeanRemote extends EJBObject {
     void testTransaction() throws RemoteException;

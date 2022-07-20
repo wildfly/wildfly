@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.iiopssl.basic;
 
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 import java.rmi.RemoteException;
 
 /**

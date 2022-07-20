@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.naming.NamingException;
-import javax.transaction.TransactionRolledbackException;
+import jakarta.transaction.TransactionRolledbackException;
 
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;

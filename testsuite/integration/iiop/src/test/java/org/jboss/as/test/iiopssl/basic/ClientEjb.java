@@ -23,7 +23,7 @@ package org.jboss.as.test.iiopssl.basic;
 
 import org.jboss.as.network.NetworkUtils;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
