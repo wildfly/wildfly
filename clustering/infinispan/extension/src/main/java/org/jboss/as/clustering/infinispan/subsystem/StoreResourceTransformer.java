@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,28 +25,28 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.function.Consumer;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
- * Transformers for cache resources.
+ * Transformers for cache store resources.
  * @author Paul Ferraro
  */
-public class CacheResourceTransformer implements Consumer<ModelVersion> {
+public class StoreResourceTransformer implements Consumer<ModelVersion> {
 
     final ResourceTransformationDescriptionBuilder builder;
 
-    CacheResourceTransformer(ResourceTransformationDescriptionBuilder builder) {
+    StoreResourceTransformer(ResourceTransformationDescriptionBuilder builder) {
         this.builder = builder;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void accept(ModelVersion version) {
-        new TransactionResourceTransformer(this.builder).accept(version);
-        new CustomStoreResourceTransformer(this.builder).accept(version);
-        new FileStoreResourceTransformer(this.builder).accept(version);
-        new HotRodStoreResourceTransformer(this.builder).accept(version);
-        new JDBCStoreResourceTransformer(this.builder).accept(version);
-        new RemoteStoreResourceTransformer(this.builder).accept(version);
+        if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+            this.builder.getAttributeBuilder()
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, StoreResourceDefinition.Attribute.PASSIVATION.getDefinition())
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, StoreResourceDefinition.Attribute.PURGE.getDefinition())
+                .end();
+        }
     }
 }

@@ -499,7 +499,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="passivation" type="xs:boolean" default="true">
+        <xs:attribute name="passivation" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>
                     If true, data is only written to the cache store when it is evicted from memory, a phenomenon known as 'passivation'.
@@ -514,7 +514,7 @@
                 <xs:documentation>If true, fetch persistent state when joining a cluster.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="purge" type="xs:boolean" default="true">
+        <xs:attribute name="purge" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>If true, purges this cache store when it starts up.</xs:documentation>
             </xs:annotation>
