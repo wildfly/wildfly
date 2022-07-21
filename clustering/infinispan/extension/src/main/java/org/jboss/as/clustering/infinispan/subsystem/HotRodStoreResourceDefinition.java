@@ -20,13 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem.remote;
+package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
-import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
-import org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -44,9 +42,9 @@ import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirem
  */
 public class HotRodStoreResourceDefinition extends StoreResourceDefinition {
 
-    public static final PathElement PATH = pathElement("hotrod");
+    static final PathElement PATH = pathElement("hotrod");
 
-    public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         CACHE_CONFIGURATION("cache-configuration", ModelType.STRING, null),
         REMOTE_CACHE_CONTAINER("remote-cache-container", ModelType.STRING, new CapabilityReference(Capability.PERSISTENCE, InfinispanClientRequirement.REMOTE_CONTAINER)),
         ;
@@ -68,7 +66,7 @@ public class HotRodStoreResourceDefinition extends StoreResourceDefinition {
         }
     }
 
-    public HotRodStoreResourceDefinition() {
+    HotRodStoreResourceDefinition() {
         super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
     }
 

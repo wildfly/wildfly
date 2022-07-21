@@ -35,7 +35,6 @@ import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
-import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.SecurityResourceDefinition;
