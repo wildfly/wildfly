@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.controller.PathAddress;
 
 /**
@@ -32,13 +31,6 @@ import org.jboss.as.controller.PathAddress;
 public class LocalCacheServiceConfigurator extends CacheConfigurationServiceConfigurator {
 
     LocalCacheServiceConfigurator(PathAddress address) {
-        super(address);
-    }
-
-    @Override
-    public void accept(ConfigurationBuilder builder) {
-        super.accept(builder);
-
-        builder.clustering().cacheMode(CacheMode.LOCAL);
+        super(address, CacheMode.LOCAL);
     }
 }

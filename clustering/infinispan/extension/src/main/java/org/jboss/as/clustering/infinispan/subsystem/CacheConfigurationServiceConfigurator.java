@@ -29,6 +29,7 @@ import java.util.function.Consumer;
 
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.configuration.cache.LockingConfiguration;
@@ -63,11 +64,13 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
     private final SupplierDependency<LockingConfiguration> locking;
     private final SupplierDependency<PersistenceConfiguration> persistence;
     private final SupplierDependency<TransactionConfiguration> transaction;
+    private final CacheMode mode;
 
     private volatile boolean statisticsEnabled;
 
-    CacheConfigurationServiceConfigurator(PathAddress address) {
+    CacheConfigurationServiceConfigurator(PathAddress address, CacheMode mode) {
         super(CONFIGURATION, address);
+        this.mode = mode;
         this.memory = new ServiceSupplierDependency<>(CacheComponent.MEMORY.getServiceName(address));
         this.expiration = new ServiceSupplierDependency<>(CacheComponent.EXPIRATION.getServiceName(address));
         this.locking = new ServiceSupplierDependency<>(CacheComponent.LOCKING.getServiceName(address));
@@ -101,6 +104,7 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
     public void accept(ConfigurationBuilder builder) {
         TransactionConfiguration tx = this.transaction.get();
 
+        builder.clustering().cacheMode(this.mode);
         builder.memory().read(this.memory.get());
         builder.expiration().read(this.expiration.get());
         builder.locking().read(this.locking.get());
