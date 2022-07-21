@@ -58,9 +58,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-feature-pack-parent</artifactId>
-                <version>${ee.maven.version}</version>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-legacy-expansion-bom</artifactId>
+                <version>${full.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

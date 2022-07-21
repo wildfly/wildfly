@@ -21,7 +21,7 @@
     <name>WildFly: JPA</name>
 
     <properties>
-        <dependency.management.pom.artifactId>wildfly-ee-feature-pack-parent</dependency.management.pom.artifactId>
+        <dependency.management.pom.artifactId>wildfly-legacy-ee-bom</dependency.management.pom.artifactId>
     </properties>
 
     <dependencyManagement>
