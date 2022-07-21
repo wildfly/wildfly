@@ -650,19 +650,8 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <dependency>
-                <groupId>net.bytebuddy</groupId>
-                <artifactId>byte-buddy</artifactId>
-                <version>${version.org.bytebuddy}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-build</artifactId>
-                <version>${full.maven.version}</version>
-                <type>pom</type>
-            </dependency>
+			
+			<!-- Keep sorted -->
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
@@ -675,13 +664,6 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-common-expansion-dependency-management</artifactId>
                 <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-dist</artifactId>
-                <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
@@ -726,31 +708,31 @@
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
-            
-             <dependency>
+
+            <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-feature-pack-galleon-content</artifactId>
+                <artifactId>wildfly-ee-feature-pack-galleon-common</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-feature-pack-galleon-content</artifactId>
+                <artifactId>wildfly-ee-feature-pack-galleon-common</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-feature-pack-galleon-common</artifactId>
+                <artifactId>wildfly-ee-feature-pack-galleon-content</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-feature-pack-galleon-common</artifactId>
+                <artifactId>wildfly-ee-feature-pack-galleon-content</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
@@ -794,20 +776,6 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-feature-pack</artifactId>
                 <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-galleon-pack</artifactId>
-                <version>${full.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-galleon-pack</artifactId>
-                <version>${full.maven.version}</version>
                 <type>zip</type>
             </dependency>
 
@@ -816,55 +784,6 @@
                 <artifactId>wildfly-legacy-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-legacy-expansion-bom</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
-                <version>${full.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-            
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
-                <version>${full.maven.version}</version>
-                <type>zip/</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-oidc-feature-pack-galleon-common</artifactId>
-                <version>${full.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-oidc-feature-pack-galleon-common</artifactId>
-                <version>${full.maven.version}</version>
-                <type>zip/</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-feature-pack-galleon-content</artifactId>
-                <version>${full.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-            
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-feature-pack-galleon-content</artifactId>
-                <version>${full.maven.version}</version>
-                <type>zip/</type>
             </dependency>
 
             <dependency>
@@ -897,6 +816,20 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-preview-feature-pack-common</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
@@ -919,20 +852,6 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-preview-feature-pack-common-microprofile</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-preview-feature-pack-ee-9-api</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-preview-feature-pack-ee-9-api</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
@@ -967,23 +886,16 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-preview-feature-pack</artifactId>
+                <artifactId>wildfly-preview-feature-pack-ee-9-api</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-preview-feature-pack</artifactId>
+                <artifactId>wildfly-preview-feature-pack-ee-9-api</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-release</artifactId>
-                <version>${full.maven.version}</version>
-                <type>pom</type>
             </dependency>
 
             <dependency>
@@ -1056,7 +968,96 @@
                 <type>pom</type>
             </dependency>
 
-            <!-- External Dependencies -->
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-testsuite-shared</artifactId>
+                <version>${ee.maven.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-build</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-dist</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-feature-pack-galleon-content</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-feature-pack-galleon-content</artifactId>
+                <version>${full.maven.version}</version>
+                <type>zip/</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-galleon-pack</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-galleon-pack</artifactId>
+                <version>${full.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-legacy-expansion-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
+                <version>${full.maven.version}</version>
+                <type>zip/</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-oidc-feature-pack-galleon-common</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-oidc-feature-pack-galleon-common</artifactId>
+                <version>${full.maven.version}</version>
+                <type>zip/</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-release</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+            </dependency>
 
             <dependency>
                 <groupId>com.beust</groupId>
@@ -1065,31 +1066,18 @@
                 <scope>test</scope>
             </dependency>
 
+            <dependency>
+                <groupId>com.github.tomakehurst</groupId>
+                <artifactId>wiremock</artifactId>
+                <version>${version.com.github.tomakehurst.wiremock}</version>
+                <scope>test</scope>
+            </dependency>
+
             <!-- TODO both a testuite/shared dep and used in std and preview but not legacy -->
             <dependency>
                 <groupId>com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
                 <version>${version.com.nimbus.jose-jwt}</version>
-            </dependency>
-
-            <!--
-            TODO used both in both a testuite/integration/basic and in legacy FP.
-            Once legacy FP moves to EE 10, etc structure, this can become a <scope>test</scope> dependency.
-            -->
-            <dependency>
-                <groupId>org.javassist</groupId>
-                <artifactId>javassist</artifactId>
-                <version>${version.org.javassist}</version>
-            </dependency>
-
-            <!--
-            TODO used both in testuite/integration/elytron-oidc-client dep and in legacy FP.
-            Once legacy FP moves to EE 10, etc structure, this can become a <scope>test</scope> dependency.
-            -->
-            <dependency>
-                <groupId>org.jsoup</groupId>
-                <artifactId>jsoup</artifactId>
-                <version>${version.jsoup}</version>
             </dependency>
 
             <dependency>
@@ -1106,274 +1094,22 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-io</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-http</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-server</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-util</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <!--
-            TODO used both in MicroProfile REST Client TCK and in legacy code.
-            Once legacy code use is gone, convert to <scope>test</scope>
-            -->
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet</groupId>
-                <artifactId>jboss-servlet-api_4.0_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec}</version>
-            </dependency>
-            <!-- End requirement -->
-
-            <dependency>
-                <groupId>com.github.tomakehurst</groupId>
-                <artifactId>wiremock</artifactId>
-                <version>${version.com.github.tomakehurst.wiremock}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.weld.se</groupId>
-                <artifactId>weld-se-core</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-all</artifactId>
-                <version>${version.org.hamcrest}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>java-hamcrest</artifactId>
-                <version>${version.org.hamcrest.java-hamcrest}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>jboss-ejb-client-legacy</artifactId>
-                <version>${version.org.jboss.ejb-client-legacy}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.remoting3</groupId>
-                        <artifactId>jboss-remoting</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <!--
-            TODO used both in testsuite/integration/legacy-ejb-client and in legacy code.
-            Once legacy code use is gone, convert to <scope>test</scope>
-            -->
-            <dependency>
-                <groupId>org.jboss.narayana.jts</groupId>
-                <artifactId>narayana-jts-idlj</artifactId>
-                <version>${version.org.jboss.narayana}</version>
-                <exclusions>
-                    <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
-                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <!--
-            TODO used both in testsuite/integration/legacy-ejb-client and in legacy code.
-            Once legacy code use is gone, convert to <scope>test</scope>
-            -->
-            <dependency>
-                <groupId>org.jboss.spec.javax.transaction</groupId>
-                <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec}</version>
-            </dependency>
-
-            <!-- Required by the org.eclipse.microprofile.rest.client:microprofile-rest-client-tck -->
-            <dependency>
-                <groupId>org.reactivestreams</groupId>
-                <artifactId>reactive-streams-tck</artifactId>
-                <version>${version.org.reactivestreams}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.kafka</groupId>
-                <artifactId>spring-kafka-test</artifactId>
-                <version>${version.org.springframework.kafka}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!--
-                        This version pulls in a different version of Kafka from
-                        our version of Kafka Clients
-                    -->
-                    <exclusion>
-                        <groupId>org.apache.kafka</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-common</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-managed</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.sasl</groupId>
-                        <artifactId>jboss-sasl</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-bootable</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.sasl</groupId>
-                        <artifactId>jboss-sasl</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.wildfly.security</groupId>
-                        <artifactId>wildfly-security-manager</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.checkstyle</groupId>
-                <artifactId>wildfly-checkstyle-config</artifactId>
-                <version>${version.org.wildfly.checkstyle-config}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.extras.creaper</groupId>
-                <artifactId>creaper-core</artifactId>
-                <version>${version.org.wildfly.extras.creaper}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.extras.creaper</groupId>
-                <artifactId>creaper-commands</artifactId>
-                <version>${version.org.wildfly.extras.creaper}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.galleon-plugins</groupId>
-                <artifactId>wildfly-galleon-plugins</artifactId>
-                <version>${version.org.wildfly.galleon-plugins}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.galleon-plugins</groupId>
-                <artifactId>wildfly-config-gen</artifactId>
-                <version>${version.org.wildfly.galleon-plugins}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.galleon-plugins</groupId>
-                <artifactId>transformer</artifactId>
-                <version>${version.org.wildfly.galleon-plugins}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-testsuite-shared</artifactId>
-                <version>${ee.maven.version}</version>
-                <scope>test</scope>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${version.org.bytebuddy}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-test-framework</artifactId>
+                <artifactId>apacheds-interceptor-kerberos</artifactId>
                 <version>${version.org.apache.ds}</version>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-interceptor-kerberos</artifactId>
+                <artifactId>apacheds-test-framework</artifactId>
                 <version>${version.org.apache.ds}</version>
                 <scope>test</scope>
             </dependency>
@@ -1398,6 +1134,48 @@
                 <version>${version.groovy-all}</version>
                 <scope>test</scope>
             </dependency>
+            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-http</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-io</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-server</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-util</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-all</artifactId>
+                <version>${version.org.hamcrest}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>java-hamcrest</artifactId>
+                <version>${version.org.hamcrest.java-hamcrest}</version>
+                <scope>test</scope>
+            </dependency>
 
             <dependency>
                 <groupId>org.httpunit</groupId>
@@ -1410,6 +1188,48 @@
                         <artifactId>servlet-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <!--
+            TODO used both in both a testuite/integration/basic and in legacy FP.
+            Once legacy FP moves to EE 10, etc structure, this can become a <scope>test</scope> dependency.
+            -->
+            <dependency>
+                <groupId>org.javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>${version.org.javassist}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-ejb-client-legacy</artifactId>
+                <version>${version.org.jboss.ejb-client-legacy}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.remoting3</groupId>
+                        <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Required for the MicroProfile health TCK that is run as part of the testsuite and the TCK brings in an
+                 older version.
+
+                 It also needs to be a runtime dependency because the shared testsuite requires it.
+             -->
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-container-test-spi</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
@@ -1425,22 +1245,33 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- Required for the MicroProfile health TCK that is run as part of the testsuite and the TCK brings in an
-                 older version.
-
-                 It also needs to be a runtime dependency because the shared testsuite requires it.
-             -->
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-container-test-spi</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.jboss.logmanager</groupId>
                 <artifactId>commons-logging-jboss-logmanager</artifactId>
                 <version>${version.org.jboss.logmanager.commons-logging-jboss-logmanager}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <!--
+            TODO used both in testsuite/integration/legacy-ejb-client and in legacy code.
+            Once legacy code use is gone, convert to <scope>test</scope>
+            -->
+            <dependency>
+                <groupId>org.jboss.narayana.jts</groupId>
+                <artifactId>narayana-jts-idlj</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -1484,6 +1315,85 @@
                 <version>${version.org.jboss.shrinkwrap.descriptors}</version>
                 <scope>test</scope>
             </dependency>
+            <!--
+            TODO used both in MicroProfile REST Client TCK and in legacy code.
+            Once legacy code use is gone, convert to <scope>test</scope>
+            -->
+            <dependency>
+                <groupId>org.jboss.spec.javax.servlet</groupId>
+                <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec}</version>
+            </dependency>
+
+            <!--
+            TODO used both in testsuite/integration/legacy-ejb-client and in legacy code.
+            Once legacy code use is gone, convert to <scope>test</scope>
+            -->
+            <dependency>
+                <groupId>org.jboss.spec.javax.transaction</groupId>
+                <artifactId>jboss-transaction-api_1.3_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.weld.se</groupId>
+                <artifactId>weld-se-core</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!--
+            TODO used both in testuite/integration/elytron-oidc-client dep and in legacy FP.
+            Once legacy FP moves to EE 10, etc structure, this can become a <scope>test</scope> dependency.
+            -->
+            <dependency>
+                <groupId>org.jsoup</groupId>
+                <artifactId>jsoup</artifactId>
+                <version>${version.jsoup}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-admin-client</artifactId>
+                <version>${version.org.keycloak}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-core</artifactId>
+                <version>${version.org.keycloak}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Required by the org.eclipse.microprofile.rest.client:microprofile-rest-client-tck -->
+            <dependency>
+                <groupId>org.reactivestreams</groupId>
+                <artifactId>reactive-streams-tck</artifactId>
+                <version>${version.org.reactivestreams}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.kafka</groupId>
+                <artifactId>spring-kafka-test</artifactId>
+                <version>${version.org.springframework.kafka}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <!--
+                        This version pulls in a different version of Kafka from
+                        our version of Kafka Clients
+                    -->
+                    <exclusion>
+                        <groupId>org.apache.kafka</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>elasticsearch</artifactId>
+                <version>${version.org.testcontainers}</version>
+                <scope>test</scope>
+            </dependency>
 
             <dependency>
                 <groupId>org.testcontainers</groupId>
@@ -1497,23 +1407,115 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>elasticsearch</artifactId>
-                <version>${version.org.testcontainers}</version>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-common</artifactId>
+                <version>${version.org.wildfly.arquillian}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-bootable</artifactId>
+                <version>${version.org.wildfly.arquillian}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.sasl</groupId>
+                        <artifactId>jboss-sasl</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
+                <version>${version.org.wildfly.arquillian}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-managed</artifactId>
+                <version>${version.org.wildfly.arquillian}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.sasl</groupId>
+                        <artifactId>jboss-sasl</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
+                <version>${version.org.wildfly.arquillian}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wildfly.security</groupId>
+                        <artifactId>wildfly-security-manager</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
+                <version>${version.org.wildfly.arquillian}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.checkstyle</groupId>
+                <artifactId>wildfly-checkstyle-config</artifactId>
+                <version>${version.org.wildfly.checkstyle-config}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.extras.creaper</groupId>
+                <artifactId>creaper-commands</artifactId>
+                <version>${version.org.wildfly.extras.creaper}</version>
                 <scope>test</scope>
             </dependency>
+
             <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-admin-client</artifactId>
-                <version>${version.org.keycloak}</version>
+                <groupId>org.wildfly.extras.creaper</groupId>
+                <artifactId>creaper-core</artifactId>
+                <version>${version.org.wildfly.extras.creaper}</version>
                 <scope>test</scope>
             </dependency>
+
             <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-core</artifactId>
-                <version>${version.org.keycloak}</version>
-                <scope>test</scope>
+                <groupId>org.wildfly.galleon-plugins</groupId>
+                <artifactId>transformer</artifactId>
+                <version>${version.org.wildfly.galleon-plugins}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.galleon-plugins</groupId>
+                <artifactId>wildfly-config-gen</artifactId>
+                <version>${version.org.wildfly.galleon-plugins}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.galleon-plugins</groupId>
+                <artifactId>wildfly-galleon-plugins</artifactId>
+                <version>${version.org.wildfly.galleon-plugins}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
         </dependencies>
