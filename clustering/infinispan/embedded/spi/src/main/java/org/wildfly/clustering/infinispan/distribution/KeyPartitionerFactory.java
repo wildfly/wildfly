@@ -25,12 +25,9 @@ package org.wildfly.clustering.infinispan.distribution;
 import org.infinispan.configuration.cache.HashConfiguration;
 import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.distribution.ch.impl.SingleSegmentKeyPartitioner;
-import org.infinispan.distribution.group.impl.GroupManager;
-import org.infinispan.distribution.group.impl.GroupingPartitioner;
 import org.infinispan.factories.AbstractNamedCacheComponentFactory;
 import org.infinispan.factories.AutoInstantiableFactory;
 import org.infinispan.factories.annotations.DefaultFactoryFor;
-import org.infinispan.factories.annotations.Inject;
 
 /**
  * Custom key partitioner factory that uses the same key partitioner for all clustered caches, including non-tx invalidation caches.
@@ -38,7 +35,6 @@ import org.infinispan.factories.annotations.Inject;
  */
 @DefaultFactoryFor(classes = KeyPartitioner.class)
 public class KeyPartitionerFactory extends AbstractNamedCacheComponentFactory implements AutoInstantiableFactory {
-    @Inject GroupManager groupManager;
 
     @Override
     public Object construct(String componentName) {
@@ -51,6 +47,11 @@ public class KeyPartitionerFactory extends AbstractNamedCacheComponentFactory im
 
         this.basicComponentRegistry.wireDependencies(partitioner, false);
 
-        return (this.groupManager != null) ? new GroupingPartitioner(partitioner, this.groupManager) : partitioner;
+        return new KeyPartitioner() {
+            @Override
+            public int getSegment(Object key) {
+                return partitioner.getSegment((key instanceof KeyGroup) ? ((KeyGroup<?>) key).getId() : key);
+            }
+        };
     }
 }
