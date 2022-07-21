@@ -33,7 +33,6 @@ import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinit
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
@@ -48,7 +47,6 @@ import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -66,8 +64,6 @@ import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.deployment.TransactionDependenciesProcessor;
 import org.jboss.as.txn.deployment.TransactionJndiBindingProcessor;
 import org.jboss.as.txn.deployment.TransactionLeakRollbackProcessor;
-import org.jboss.as.txn.ee.concurrency.EEConcurrencyContextHandleFactoryProcessor;
-import org.jboss.as.txn.ee.concurrency.TransactionSetupProviderService;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
 import org.jboss.as.txn.service.ArjunaRecoveryManagerService;
@@ -268,7 +264,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(final DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(TransactionExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_TRANSACTION_ROLLBACK_ACTION, new TransactionLeakRollbackProcessor());
-                processorTarget.addDeploymentProcessor(TransactionExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_TRANSACTIONS_EE_CONCURRENCY, new EEConcurrencyContextHandleFactoryProcessor());
                 processorTarget.addDeploymentProcessor(TransactionExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_TRANSACTION_BINDINGS, new TransactionJndiBindingProcessor());
                 processorTarget.addDeploymentProcessor(TransactionExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_TRANSACTIONS, new TransactionDependenciesProcessor());
             }
@@ -335,12 +330,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(UserTransactionService.INTERNAL_SERVICE_NAME, UserTransaction.class,
                         new ManagedReferenceInjector<UserTransaction>(userTransactionBindingService.getManagedObjectInjector()));
         utBuilder.install();
-
-        // install the EE Concurrency transaction setup provider's service
-        final TransactionSetupProviderService transactionSetupProviderService = new TransactionSetupProviderService();
-        context.getServiceTarget().addService(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME, transactionSetupProviderService)
-                .addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, TransactionManager.class, transactionSetupProviderService.getTransactionManagerInjectedValue())
-                .install();
     }
 
     private void performObjectStoreBoottime(OperationContext context, ModelNode model) throws OperationFailedException {
