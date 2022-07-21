@@ -46,20 +46,7 @@
 
     <modules>
         <module>glassfish</module>
+        <module>expressly</module>
     </modules>
-
-    <profiles>
-        <profile>
-            <id>include-expressly</id>
-            <activation>
-                <property>
-                    <name>!skip.preview</name>
-                </property>
-            </activation>
-            <modules>
-                <module>expressly</module>
-            </modules>
-        </profile>
-    </profiles>
 
 </project>

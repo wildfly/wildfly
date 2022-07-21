@@ -44,7 +44,6 @@
 
     <dependencyManagement>
         <dependencies>
-
             <!-- Just import the preview-expansion bom -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
@@ -57,6 +56,14 @@
         </dependencies>
     </dependencyManagement>
 
+    <modules>
+        <!--
+             TODO move the source-transform module out of this part of the source tree.
+             Its use is no longer for 'preview'.
+         -->
+        <module>source-transform</module>
+    </modules>
+
 <!--    <profiles>
         <profile>
             <id>skip.preview</id>
@@ -67,7 +74,6 @@
             </activation>-->
 
             <modules>
-                <module>source-transform</module>
                 <module>build</module>
                 <module>deployment-transformer</module>
                 <module>dist</module>

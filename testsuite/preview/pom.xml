@@ -52,18 +52,6 @@
         <dependency.management.import.artifact>wildfly-preview-ee-bom</dependency.management.import.artifact>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-9-parent</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
 
         <!-- Dependencies specific to the integration tests. -->
