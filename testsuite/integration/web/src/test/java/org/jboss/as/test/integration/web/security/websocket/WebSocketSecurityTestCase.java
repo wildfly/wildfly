@@ -27,9 +27,9 @@ import java.net.SocketPermission;
 import java.net.URI;
 import java.util.PropertyPermission;
 
-import javax.websocket.ContainerProvider;
-import javax.websocket.DeploymentException;
-import javax.websocket.WebSocketContainer;
+import jakarta.websocket.ContainerProvider;
+import jakarta.websocket.DeploymentException;
+import jakarta.websocket.WebSocketContainer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -69,7 +69,7 @@ public class WebSocketSecurityTestCase extends WebSecurityPasswordBasedBase {
                                 new SocketPermission("*:" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")
                         ), "permissions.xml")
                 .addAsManifestResource(new StringAsset("io.undertow.websockets.jsr.UndertowContainerProvider"),
-                        "services/javax.websocket.ContainerProvider");
+                        "services/jakarta.websocket.ContainerProvider");
     }
 
     @Override

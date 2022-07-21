@@ -21,12 +21,12 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.configproperty;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ResourceAdapterInternalException;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.BootstrapContext;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.ResourceAdapterInternalException;
+import jakarta.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
 
 /**
@@ -69,7 +69,7 @@ public class ConfigPropertyResourceAdapter implements ResourceAdapter {
      *
      * @param endpointFactory A message endpoint factory instance.
      * @param spec            An activation spec JavaBean instance.
-     * @throws javax.resource.ResourceException generic exception
+     * @throws jakarta.resource.ResourceException generic exception
      */
     public void endpointActivation(MessageEndpointFactory endpointFactory,
                                    ActivationSpec spec) throws ResourceException {
@@ -89,7 +89,7 @@ public class ConfigPropertyResourceAdapter implements ResourceAdapter {
      * This is called when a resource adapter instance is bootstrapped.
      *
      * @param ctx A bootstrap context containing references
-     * @throws javax.resource.spi.ResourceAdapterInternalException indicates bootstrap failure.
+     * @throws jakarta.resource.spi.ResourceAdapterInternalException indicates bootstrap failure.
      */
     public void start(BootstrapContext ctx)
             throws ResourceAdapterInternalException {
@@ -107,7 +107,7 @@ public class ConfigPropertyResourceAdapter implements ResourceAdapter {
      *
      * @param specs An array of ActivationSpec JavaBeans
      * @return An array of XAResource objects
-     * @throws javax.resource.ResourceException generic exception
+     * @throws jakarta.resource.ResourceException generic exception
      */
     public XAResource[] getXAResources(ActivationSpec[] specs)
             throws ResourceException {

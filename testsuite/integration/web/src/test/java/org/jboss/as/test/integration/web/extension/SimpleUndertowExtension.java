@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.web.extension;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import io.undertow.io.IoCallback;
 import io.undertow.server.HandlerWrapper;

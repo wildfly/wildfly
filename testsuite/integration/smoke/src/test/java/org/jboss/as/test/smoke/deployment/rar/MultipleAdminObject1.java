@@ -22,7 +22,7 @@
 package org.jboss.as.test.smoke.deployment.rar;
 
 import java.io.Serializable;
-import javax.resource.Referenceable;
+import jakarta.resource.Referenceable;
 
 /**
  * MultipleAdminObject1

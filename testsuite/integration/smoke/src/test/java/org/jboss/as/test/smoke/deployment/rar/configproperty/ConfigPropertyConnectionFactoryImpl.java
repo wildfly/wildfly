@@ -23,8 +23,8 @@ package org.jboss.as.test.smoke.deployment.rar.configproperty;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionManager;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionManager;
 
 /**
  * ConfigPropertyConnectionFactoryImpl
@@ -74,7 +74,7 @@ public class ConfigPropertyConnectionFactoryImpl implements ConfigPropertyConnec
      * Get connection from factory
      *
      * @return ConfigPropertyConnection instance
-     * @throws javax.resource.ResourceException Thrown if a connection can't be obtained
+     * @throws jakarta.resource.ResourceException Thrown if a connection can't be obtained
      */
     @Override
     public ConfigPropertyConnection getConnection() throws ResourceException {
