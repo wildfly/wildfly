@@ -25,8 +25,8 @@ package org.jboss.as.test.xts.wsba.participantcompletion.service;
 import org.jboss.as.test.xts.base.TestApplicationException;
 import org.jboss.as.test.xts.util.ServiceCommand;
 
-import javax.ejb.Remote;
-import javax.jws.WebMethod;
+import jakarta.ejb.Remote;
+import jakarta.jws.WebMethod;
 
 @Remote
 public interface BAParticipantCompletion {

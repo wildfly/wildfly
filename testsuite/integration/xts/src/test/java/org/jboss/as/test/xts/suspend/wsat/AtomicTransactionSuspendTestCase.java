@@ -24,19 +24,14 @@ package org.jboss.as.test.xts.suspend.wsat;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-import java.io.FilePermission;
-import java.net.SocketPermission;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.as.test.xts.suspend.AbstractTestCase;
+import org.jboss.as.test.xts.util.DeploymentHelper;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
@@ -45,72 +40,20 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class AtomicTransactionSuspendTestCase extends AbstractTestCase {
-
-    static final String serverHostPort = TestSuiteEnvironment.getServerAddress() + ":"
-            + TestSuiteEnvironment.getHttpPort();
-
     @TargetsContainer(EXECUTOR_SERVICE_CONTAINER)
     @Deployment(name = EXECUTOR_SERVICE_ARCHIVE_NAME, testable = false)
     public static WebArchive getExecutorServiceArchive() {
-        WebArchive war = getExecutorServiceArchiveBase().addClasses(AtomicTransactionExecutionService.class,
-                AtomicTransactionRemoteService.class, TransactionParticipant.class);
-
-        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
-            war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
-                    //This is not catastrophic if absent
-                    ///.../testsuite/integration/xts/xcatalog
-                    //$JAVA_HOME/jre/conf/jaxm.properties
-                    //$JAVA_HOME/jre/lib/jaxws.properties
-                    //$JAVA_HOME/jre/conf/jaxws.properties
-                    new FilePermission(System.getProperties().getProperty("jbossas.ts.integ.dir") + File.separator + "xts" + File.separator
-                            + "xcatalog", "read"),
-                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                            + "conf" + File.separator + "jaxm.properties", "read"),
-                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                            + "conf" + File.separator + "jaxws.properties", "read"),
-                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                            + "lib" + File.separator + "jaxws.properties", "read"),
-                    new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp"),
-                    new SocketPermission(serverHostPort, "connect, resolve")
-            ), "permissions.xml");
-        } else {
-            war.addAsManifestResource(
-                    PermissionUtils.createPermissionsXmlAsset(new SocketPermission(serverHostPort, "connect, resolve")),
-                    "permissions.xml");
-        }
-
-        return war;
+        return getExecutorServiceArchiveBase().addClasses(AtomicTransactionExecutionService.class,
+                AtomicTransactionRemoteService.class, TransactionParticipant.class)
+                .addAsManifestResource(DeploymentHelper.createPermissions(), "permissions.xml");
     }
 
     @TargetsContainer(REMOTE_SERVICE_CONTAINER)
     @Deployment(name = REMOTE_SERVICE_ARCHIVE_NAME, testable = false)
     public static WebArchive getRemoteServiceArchive() {
-        WebArchive war = getRemoteServiceArchiveBase().addClasses(AtomicTransactionRemoteService.class,
-                TransactionParticipant.class);
-        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
-            war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
-                    //This is not catastrophic if absent
-                    ///.../testsuite/integration/xts/xcatalog
-                    //$JAVA_HOME/jre/conf/jaxm.properties
-                    //$JAVA_HOME/jre/lib/jaxws.properties
-                    //$JAVA_HOME/jre/conf/jaxws.properties
-                    new FilePermission(System.getProperties().getProperty("jbossas.ts.integ.dir") + File.separator + "xts" + File.separator
-                            + "xcatalog", "read"),
-                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                            + "conf" + File.separator + "jaxm.properties", "read"),
-                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                            + "conf" + File.separator + "jaxws.properties", "read"),
-                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                            + "lib" + File.separator + "jaxws.properties", "read"),
-                    new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp"),
-                    new SocketPermission(serverHostPort, "connect, resolve")
-            ), "permissions.xml");
-        } else {
-            war.addAsManifestResource(
-                    PermissionUtils.createPermissionsXmlAsset(new SocketPermission(serverHostPort, "connect, resolve")),
-                    "permissions.xml");
-        }
-        return war;
+        return getRemoteServiceArchiveBase().addClasses(AtomicTransactionRemoteService.class,
+                TransactionParticipant.class)
+                .addAsManifestResource(DeploymentHelper.createPermissions(), "permissions.xml");
     }
 
     protected void assertParticipantInvocations(List<String> invocations) {

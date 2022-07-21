@@ -37,7 +37,7 @@ import com.arjuna.mw.wst11.BusinessActivityManagerFactory;
 import com.arjuna.wst.SystemException;
 import com.arjuna.wst11.BAParticipantManager;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static org.jboss.as.test.xts.util.ServiceCommand.*;
 

@@ -32,9 +32,9 @@ import org.jboss.as.test.xts.suspend.RemoteService;
 import org.jboss.jbossts.xts.environment.XTSPropertyManager;
 import org.jboss.logging.Logger;
 
-import javax.jws.HandlerChain;
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
+import jakarta.jws.HandlerChain;
+import jakarta.jws.WebService;
+import jakarta.jws.soap.SOAPBinding;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;

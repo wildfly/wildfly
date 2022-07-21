@@ -25,11 +25,11 @@ package org.jboss.as.test.xts.wsba.coordinatorcompletion.service;
 import org.jboss.as.test.xts.base.TestApplicationException;
 import org.jboss.as.test.xts.util.ServiceCommand;
 
-import javax.jws.HandlerChain;
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
-import javax.servlet.annotation.WebServlet;
+import jakarta.jws.HandlerChain;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
+import jakarta.jws.soap.SOAPBinding;
+import jakarta.servlet.annotation.WebServlet;
 
 @WebService(serviceName = "BACoordinatorCompletionService1",
         portName = "BACoordinatorCompletion", name = "BACoordinatorCompletion",
