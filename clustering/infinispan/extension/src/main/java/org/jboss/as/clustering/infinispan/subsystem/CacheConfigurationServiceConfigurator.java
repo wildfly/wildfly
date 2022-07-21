@@ -119,16 +119,4 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
             throw new CacheException(e);
         }
     }
-
-    MemoryConfiguration memory() {
-        return this.memory.get();
-    }
-
-    PersistenceConfiguration persistence() {
-        return this.persistence.get();
-    }
-
-    TransactionConfiguration transaction() {
-        return this.transaction.get();
-    }
 }
