@@ -36,6 +36,7 @@ import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.configuration.cache.MemoryConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.TransactionConfiguration;
+import org.infinispan.distribution.ch.impl.AffinityPartitioner;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
@@ -104,7 +105,7 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
     public void accept(ConfigurationBuilder builder) {
         TransactionConfiguration tx = this.transaction.get();
 
-        builder.clustering().cacheMode(this.mode);
+        builder.clustering().cacheMode(this.mode).hash().keyPartitioner(new AffinityPartitioner());
         builder.memory().read(this.memory.get());
         builder.expiration().read(this.expiration.get());
         builder.locking().read(this.locking.get());
