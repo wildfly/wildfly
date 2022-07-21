@@ -48,8 +48,8 @@
 
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
 
-        <!-- Use the WildFly Preview dependency set -->
-        <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
+        <!-- Use the WildFly Preview EE dependency set. Child modules that test expansion capabilities can override. -->
+        <dependency.management.import.artifact>wildfly-preview-ee-bom</dependency.management.import.artifact>
     </properties>
 
     <dependencyManagement>

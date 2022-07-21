@@ -305,6 +305,8 @@
             <properties>
                 <!-- Re-enable the default surefire execution -->
                 <surefire.default-test.phase>test</surefire.default-test.phase>
+                <!-- Use the WFP dependencyManagement set. -->
+                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
             </properties>
             <modules>
                 <!--<module>basic</module>-->

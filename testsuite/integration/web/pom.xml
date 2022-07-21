@@ -47,9 +47,6 @@
         <bootable-jar-jaxrs-packaging.phase>none</bootable-jar-jaxrs-packaging.phase>
         <bootable-jar-cloud-packaging.phase>none</bootable-jar-cloud-packaging.phase>
 
-
-        <!-- Use the WildFly Preview dependencies until standard WildFly moves to EE 10 -->
-        <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
         <!-- Use the WildFly Preview feature pack for Galleon provisioning until standard WildFly moves to EE 10 -->
         <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
         <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>

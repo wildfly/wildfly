@@ -33,6 +33,8 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <!-- Use the standard WF javax.* dependencies. TODO change to legacy once std WF is jakarta.* -->
+        <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
     </properties>
 
     <dependencies>

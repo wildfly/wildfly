@@ -62,9 +62,8 @@
         <ts.microprofile-tck-provisioning.decorator.layer>FIXME-must-override</ts.microprofile-tck-provisioning.decorator.layer>
 
         <!-- Use the complete WF dependencyManagement set, not just the default EE set -->
-        <dependency.management.import.artifact>wildfly-feature-pack-parent</dependency.management.import.artifact>
+        <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
 
-        
         <!-- Properties used in certification script -->
         <version.config>${version.org.eclipse.microprofile.config.api}</version.config>
         <version.fault-tolerance>${version.org.eclipse.microprofile.fault-tolerance.api}</version.fault-tolerance>
@@ -79,8 +78,6 @@
             Changes to run all test configurations against WF Preview
         -->
         <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
-        <!-- Use the WildFly Preview dependencies until standard WildFly moves to EE 10 -->
-        <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
         <!-- Use the WildFly Preview feature pack for Galleon provisioning until standard WildFly moves to EE 10 -->
         <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
         <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
@@ -283,7 +280,7 @@
                 <!-- Use the WFP dependencyManagement set.
                      This is set in this profile in a parent module, but the explicit global override
                      in this module takes precedence. -->
-                <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
+                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
             </properties>
             <build>
                 <plugins>
@@ -393,10 +390,6 @@
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                <!-- Use the WFP dependencyManagement set.
-                     This is set in this profile in a parent module, but the explicit global override
-                     in this module takes precedence. -->
-                <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
             </properties>
             <build>
                 <plugins>
@@ -438,6 +431,10 @@
             <properties>
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
+                <!-- Use the WFP dependencyManagement set.
+                     This is set in this profile in a parent module, but the explicit global override
+                     in this module takes precedence. -->
+                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
             </properties>
             <build>
                 <plugins>
