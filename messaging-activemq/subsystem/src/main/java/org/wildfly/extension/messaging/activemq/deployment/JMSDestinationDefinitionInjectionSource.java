@@ -117,19 +117,12 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         this.destinationName = destinationName;
     }
 
-    private String uniqueName(InjectionSource.ResolutionContext context) {
+    protected String uniqueName(InjectionSource.ResolutionContext context) {
         if (destinationName != null && !destinationName.isEmpty()) {
             return destinationName;
         }
 
-        StringBuilder uniqueName = new StringBuilder();
-        uniqueName.append(context.getApplicationName()).append("_");
-        uniqueName.append(context.getModuleName()).append("_");
-        if (context.getComponentName() != null) {
-            uniqueName.append(context.getComponentName()).append("_");
-        }
-        uniqueName.append(jndiName);
-        return uniqueName.toString();
+        return super.uniqueName(context);
     }
 
     @Override
