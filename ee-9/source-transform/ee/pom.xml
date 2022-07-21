@@ -41,10 +41,6 @@
 	
     <packaging>jar</packaging>
 
-    <properties>
-        <transformer-input-dir>${project.basedir}/../../../ee</transformer-input-dir>
-    </properties>
-
     <dependencies>
 
         <!-- Jakarta-namespace specific deps -->
@@ -153,6 +149,10 @@
             <artifactId>wildfly-elytron-security-manager-action</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.transaction</groupId>
+            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -164,4 +164,21 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.extras.batavia</groupId>
+                <artifactId>transformer-tools-mvn</artifactId>
+                <version>${version.org.wildfly.extras.batavia}</version>
+                <executions>
+                    <execution>
+                        <id>transform-sources</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

@@ -25,7 +25,11 @@
 <module xmlns="urn:jboss:module:1.9" name="jakarta.enterprise.concurrent.api">
 
     <resources>
-        <!--<artifact name="${org.jboss.spec.javax.enterprise.concurrent:jboss-concurrency-api_1.0_spec}"/>-->
         <artifact name="${jakarta.enterprise.concurrent:jakarta.enterprise.concurrent-api}"/>
     </resources>
+
+    <dependencies>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.transaction.api" optional="true"/>
+    </dependencies>
 </module>

@@ -485,7 +485,7 @@
 
         <server-group name="server-group-three" profile="default">
             <jvm name="default">
-                <heap size="64m" max-size="64m"/>
+                <heap size="64m" max-size="100m"/>
             </jvm>
             <socket-binding-group ref="standard-sockets"/>
         </server-group>
