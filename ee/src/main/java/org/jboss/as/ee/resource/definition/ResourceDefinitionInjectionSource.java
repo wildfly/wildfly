@@ -50,6 +50,16 @@ public abstract class ResourceDefinitionInjectionSource extends InjectionSource 
         return jndiName;
     }
 
+    protected String uniqueName(ResolutionContext context) {
+        final StringBuilder name = new StringBuilder();
+        name.append(context.getApplicationName() + "_");
+        name.append(context.getModuleName() + "_");
+        if (context.getComponentName() != null) {
+            name.append(context.getComponentName() + "_");
+        }
+        name.append(jndiName);
+        return name.toString();
+    }
     /**
      * Add the specified properties.
      * @param annotationProperties an array of propertyName = propertyValue strings
