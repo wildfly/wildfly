@@ -39,7 +39,6 @@ import org.jboss.as.test.clustering.single.ejb.bean.Result;
 import org.jboss.as.test.clustering.single.ejb.bean.StatefulIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.CLIServerSetupTask;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -50,10 +49,8 @@ import org.junit.runner.RunWith;
 
 import javax.naming.Context;
 import java.util.Properties;
-import java.util.PropertyPermission;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_NAME_PROPERTY;
 
 /**
  * Validates legacy operation of EJB deployments when <distributable-ejb/> subsystem is removed.
@@ -72,7 +69,6 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
     public static Archive<?> deployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, APPLICATION_NAME);
         jar.addClasses(Result.class, Incrementor.class, IncrementorBean.class, StatefulIncrementorBean.class);
-        jar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml");
         return jar;
     }
 
@@ -95,10 +91,6 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
                 System.out.println("Invoking on StatefulIncrementor bean");
                 Result<Integer> invResult = bean.increment();
 
-                String target = invResult.getNode();
-                int value = invResult.getValue().intValue();
-
-                System.out.println("Got result " + value + " from node " + target);
                 Assert.assertEquals(i, invResult.getValue().intValue());
             }
         }
