@@ -1095,12 +1095,6 @@
             </dependency>
 
             <dependency>
-                <groupId>net.bytebuddy</groupId>
-                <artifactId>byte-buddy</artifactId>
-                <version>${version.org.bytebuddy}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.apache.directory.server</groupId>
                 <artifactId>apacheds-interceptor-kerberos</artifactId>
                 <version>${version.org.apache.ds}</version>
@@ -1168,6 +1162,7 @@
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-all</artifactId>
                 <version>${version.org.hamcrest}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
