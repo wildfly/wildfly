@@ -50,15 +50,6 @@
 
         <jbossas.ts.dir>${basedir}/..</jbossas.ts.dir>
 
-        <!-- Use the WildFly Preview feature pack for Galleon provisioning until standard WildFly moves to EE 10 -->
-        <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
-        <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
-        <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
-
-        <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
-
-        <!-- No separate web dist -->
-        <wildfly.web.build.output.dir>${wildfly.build.output.dir}</wildfly.web.build.output.dir>
     </properties>
 
     <!--

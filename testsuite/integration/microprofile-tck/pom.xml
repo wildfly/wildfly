@@ -62,7 +62,7 @@
         <ts.microprofile-tck-provisioning.decorator.layer>FIXME-must-override</ts.microprofile-tck-provisioning.decorator.layer>
 
         <!-- Use the complete WF dependencyManagement set, not just the default EE set -->
-        <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+        <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
 
         <!-- Properties used in certification script -->
         <version.config>${version.org.eclipse.microprofile.config.api}</version.config>
@@ -73,16 +73,6 @@
         <version.openapi>${version.org.eclipse.microprofile.openapi}</version.openapi>
         <version.opentracing>${version.org.eclipse.microprofile.opentracing}</version.opentracing>
         <version.rest-client>${version.org.eclipse.microprofile.rest.client.api}</version.rest-client>
-
-        <!--
-            Changes to run all test configurations against WF Preview
-        -->
-        <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
-        <!-- Use the WildFly Preview feature pack for Galleon provisioning until standard WildFly moves to EE 10 -->
-        <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
-        <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
-        <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
-        <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
     </properties>
 
     <modules>

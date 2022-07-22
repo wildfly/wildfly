@@ -29,7 +29,6 @@
         <preview.version.org.jboss.ejb-client>The legacy testsuite is unintentionally including ejb client!
             It MUST be excluded to function properly! See the HACK comment in pom.xml</preview.version.org.jboss.ejb-client>
 
-        <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
         <!-- Use the legacy javax.* testsuite/shared as it's used client-side and client-side is currently javax.* -->
         <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared</wildfly-testsuite-shared.artifactId>
 

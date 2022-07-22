@@ -48,8 +48,6 @@
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable-jar-packaging.phase>none</bootable-jar-packaging.phase>
-        <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
-        <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
     </properties>
 
     <dependencies>
