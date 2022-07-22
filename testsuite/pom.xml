@@ -99,7 +99,7 @@
              Child modules or profiles can override this to use a different dependency set,
              for example to test WildFly Preview or to test microprofile.
              Default is the EE dependency set. -->
-        <dependency.management.import.artifact>wildfly-preview-ee-bom</dependency.management.import.artifact>
+        <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
 
         <!-- IP address defaults. -->
         <node0>127.0.0.1</node0>

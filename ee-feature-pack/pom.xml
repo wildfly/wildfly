@@ -53,11 +53,9 @@
 
     <dependencyManagement>
         <dependencies>
-
-            <!-- Just import the ee bom -->
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>

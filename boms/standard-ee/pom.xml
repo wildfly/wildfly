@@ -2708,7 +2708,6 @@
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-core-impl</artifactId>
                 <version>${preview.version.org.jboss.weld.weld}</version>
-                <scope>provided</scope>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

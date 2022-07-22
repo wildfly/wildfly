@@ -64,14 +64,14 @@
         <module>source-transform</module>
     </modules>
 
-<!--    <profiles>
+    <profiles>
         <profile>
             <id>skip.preview</id>
             <activation>
                 <property>
                     <name>!skip.preview</name>
                 </property>
-            </activation>-->
+            </activation>
 
             <modules>
                 <module>build</module>
@@ -83,7 +83,7 @@
                 <module>galleon-content</module>
                 <module>galleon-content-microprofile</module>
             </modules>
-<!--        </profile>
-    </profiles>-->
+        </profile>
+    </profiles>
 
 </project>

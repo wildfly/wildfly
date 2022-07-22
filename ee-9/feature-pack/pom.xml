@@ -34,8 +34,8 @@
     
     <artifactId>wildfly-preview-feature-pack</artifactId>
 
-    <name>WildFly: EE 9 Preview Galleon Feature Pack</name>
-    <description>Tech Preview Galleon feature pack providing full platform Jakarta EE 9 functionality</description>
+    <name>WildFly Preview: Galleon Feature Pack</name>
+    <description>Tech Preview Galleon feature pack providing possibly experimental functionality</description>
     <packaging>pom</packaging>
 
     <properties>
@@ -163,9 +163,6 @@
                                         <include>modules/**/module.xml</include>
                                         <include>license/*.xml</include>
                                     </includes>
-                                    <excludes>
-                                        <exclude>**/org/jboss/as/security/main/module.xml</exclude>
-                                    </excludes>
                                     <filtering>true</filtering>
                                 </resource>
                             </resources>
@@ -257,12 +254,6 @@
                                         <include>modules/**/module.xml</include>
                                         <include>license/*.xml</include>
                                     </includes>
-                                    <excludes>
-                                        <exclude>modules/**/io/opentracing/contrib/opentracing-interceptors/**/module.xml</exclude>
-                                        <exclude>modules/**/io/opentracing/contrib/opentracing-jaxrs2/**/module.xml</exclude>
-                                        <exclude>modules/**/io/opentracing/contrib/opentracing-tracerresolver/**/module.xml</exclude>
-                                        <exclude>modules/**/io/opentracing/contrib/opentracing-web-servlet-filter/**/module.xml</exclude>
-                                    </excludes>
                                     <filtering>true</filtering>
                                 </resource>
                             </resources>
@@ -355,7 +346,7 @@
                             <overwrite>true</overwrite>
                         </configuration>
                     </execution>
-                    <!-- WildFly preview EE 9 API resources -->
+                    <!-- WildFly EE 10 API resources -->
                     <execution>
                         <id>copy-ee-10-api-feature-pack-resources</id>
                         <phase>process-resources</phase>
@@ -391,7 +382,7 @@
                         </configuration>
                     </execution>
 
-                    <!-- WildFly preview EE 9 Galleon Content -->
+                    <!-- WildFly Preview Galleon Content -->
                     <execution>
                         <id>copy-resources</id>
                         <phase>process-resources</phase>
@@ -409,7 +400,7 @@
                         </configuration>
                     </execution>
 
-                    <!-- WildFly preview EE 9 Galleon Content -->
+                    <!-- WildFly Preview MicroProfile Content -->
                     <execution>
                         <id>copy-content-microprofile-resources</id>
                         <phase>process-resources</phase>
@@ -583,80 +574,10 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-elytron-integration-jakarta</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
             <type>pom</type>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>${full.maven.groupId}</groupId>
-                    <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${full.maven.groupId}</groupId>
-                    <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${full.maven.groupId}</groupId>
-                    <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${full.maven.groupId}</groupId>
-                    <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${full.maven.groupId}</groupId>
-                    <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${full.maven.groupId}</groupId>
-                    <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${full.maven.groupId}</groupId>
-                    <artifactId>wildfly-microprofile-opentracing-extension</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-client-microprofile</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-client-microprofile-base</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${full.maven.groupId}</groupId>
-                    <artifactId>wildfly-microprofile-health-smallrye</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.opentracing.contrib</groupId>
-                    <artifactId>opentracing-jaxrs2</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.opentracing.contrib</groupId>
-                    <artifactId>opentracing-interceptors</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.opentracing.contrib</groupId>
-                    <artifactId>opentracing-tracerresolver</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.opentracing.contrib</groupId>
-                    <artifactId>opentracing-web-servlet-filter</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -672,324 +593,6 @@
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
-            <exclusions>
-                <!-- Exclude non-EE9+ wildfly module deps that have been replaced with -jakarta variant in this FP
-                     We could put these in pruned so they don't get pulled in but then when we change
-                     the standard module source to use jakarta.* and drop the -jakarta artifacts we'll just
-                     have to move back. -->
-                <exclusion>
-                    <groupId>antlr</groupId>
-                    <artifactId>antlr</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.agroal</groupId>
-                    <artifactId>agroal-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.agroal</groupId>
-                    <artifactId>agroal-narayana</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.agroal</groupId>
-                    <artifactId>agroal-pool</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>jipijapa-spi</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>jipijapa-eclipselink</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${ee.maven.groupId}</groupId>
-                    <artifactId>jipijapa-hibernate5-3</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${ee.maven.groupId}</groupId>
-                    <artifactId>wildfly-opentelemetry-api</artifactId>
-                </exclusion>
-
-                <exclusion>
-                    <groupId>${ee.maven.groupId}</groupId>
-                    <artifactId>wildfly-opentelemetry</artifactId>
-                </exclusion>
-
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-batch-jberet</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-bean-validation</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-client-all</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-clustering-el-glassfish</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-clustering-faces-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-clustering-faces-mojarra</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-clustering-weld-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-clustering-weld-ejb</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-clustering-weld-web</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-clustering-web-undertow</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-datasources-agroal</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-ee-security</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-ejb3</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-jaxrs</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-jpa</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-jsf</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-jsf-injection</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-mail</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-messaging-activemq-injection</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-mod_cluster-undertow</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-rts</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-webservices-server-integration</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-weld-bean-validation</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-weld</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-weld-common</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-weld-ejb</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-weld-jpa</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-weld-spi</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-weld-transactions</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-weld-webservices</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-xts</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.istack</groupId>
-                    <artifactId>istack-commons-runtime</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.istack</groupId>
-                    <artifactId>istack-commons-tools</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.ironjacamar</groupId>
-                    <artifactId>ironjacamar-common-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.ironjacamar</groupId>
-                    <artifactId>ironjacamar-common-impl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.ironjacamar</groupId>
-                    <artifactId>ironjacamar-common-spi</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.ironjacamar</groupId>
-                    <artifactId>ironjacamar-core-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.ironjacamar</groupId>
-                    <artifactId>ironjacamar-core-impl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.ironjacamar</groupId>
-                    <artifactId>ironjacamar-deployers-common</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.ironjacamar</groupId>
-                    <artifactId>ironjacamar-jdbc</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.ironjacamar</groupId>
-                    <artifactId>ironjacamar-validator</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss</groupId>
-                    <artifactId>jboss-iiop-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss</groupId>
-                    <artifactId>jboss-ejb-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-envers</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-search-engine</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-search-orm</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-search-backend-jms</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-search-serialization-avro</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jvnet.staxex</groupId>
-                    <artifactId>stax-ex</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-connector</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.wildfly-http-client</groupId>
-                    <artifactId>wildfly-http-ejb-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.wildfly-http-client</groupId>
-                    <artifactId>wildfly-http-transaction-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-iiop-openjdk</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-transactions</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.narayana.jts</groupId>
-                    <artifactId>narayana-jts-idlj</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.narayana.jts</groupId>
-                    <artifactId>narayana-jts-integration</artifactId>
-                </exclusion>
-               <exclusion>
-                    <groupId>org.jboss.narayana.xts</groupId>
-                    <artifactId>jbossxts</artifactId>
-               </exclusion>
-               <exclusion>
-                    <groupId>org.jboss.narayana</groupId>
-                    <artifactId>jbosstxbridge</artifactId>
-               </exclusion>
-               <exclusion>
-                    <groupId>org.jboss.narayana.compensations</groupId>
-                    <artifactId>compensations</artifactId>
-               </exclusion>
-               <exclusion>
-                    <groupId>org.jboss.narayana.txframework</groupId>
-                    <artifactId>txframework</artifactId>
-               </exclusion>
-                <!-- RTS -->
-                <exclusion>
-                    <groupId>org.jboss.narayana.rts</groupId>
-                    <artifactId>restat-bridge</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.narayana.rts</groupId>
-                    <artifactId>restat-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.narayana.rts</groupId>
-                    <artifactId>restat-integration</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.narayana.rts</groupId>
-                    <artifactId>restat-util</artifactId>
-                </exclusion>
-                <!-- end RTS -->
-                <exclusion>
-                    <groupId>org.jboss.openjdk-orb</groupId>
-                    <artifactId>openjdk-orb</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-spring</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Bring in all the WildFly EE 10 API deps in one go -->
@@ -1014,50 +617,6 @@
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
-            <exclusions>
-                <!-- Exclude deps that have been replaced with different artifacts in this FP
-                     TODO perhaps put these in a different maven module that we don't pull in -->
-                <exclusion>
-                    <groupId>io.undertow</groupId>
-                    <artifactId>undertow-servlet</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.undertow</groupId>
-                    <artifactId>undertow-websockets-jsr</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.undertow.jastow</groupId>
-                    <artifactId>jastow</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.glassfish</groupId>
-                    <artifactId>jakarta.el</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.metadata</groupId>
-                    <artifactId>jboss-metadata-common</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.core</groupId>
-                    <artifactId>wildfly-elytron-integration</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-ee</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-undertow</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-web-common</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.security.elytron-web</groupId>
-                    <artifactId>undertow-server-servlet</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -1065,12 +624,6 @@
             <artifactId>wildfly-servlet-feature-pack-galleon-common</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -1082,7 +635,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Bring in all the WildFly Preview 9 Common MicroProfile deps in one go -->
+        <!-- Bring in all the WildFly Preview Common MicroProfile deps in one go -->
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-preview-feature-pack-common-microprofile</artifactId>

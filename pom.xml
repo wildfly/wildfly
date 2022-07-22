@@ -114,7 +114,6 @@
         <module>rts</module>
         <module>testsuite/shared</module>
         <module>testsuite/test-feature-pack</module>
-        <module>testsuite/test-feature-pack-preview</module>
         <module>testsuite</module>
     </modules>
 
@@ -251,9 +250,10 @@
              and WildFly Preview will change it to additional text a project uses to
              identify its jakarta.* namespace artifacts.
              -->
-        <!-- Props that will differ start here-->
-        <module.jakarta.classifier></module.jakarta.classifier>
-        <module.jakarta.suffix></module.jakarta.suffix>
+        <!-- TODO clean this out, as these strings no longer differ between WF and WFP -->
+        <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
+        <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
+        <module.jms.suffix>jakarta</module.jms.suffix>
 
         <!--
             *Plugin* Dependency versions. Please keep alphabetical.
@@ -2092,6 +2092,19 @@
             <properties>
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
+        </profile>
+        <!-- Skip preview builds if specified -->
+        <profile>
+            <id>skip.preview</id>
+            <activation>
+                <property>
+                    <name>!skip.preview</name>
+                </property>
+            </activation>
+
+            <modules>
+                <module>testsuite/test-feature-pack-preview</module>
+            </modules>
         </profile>
 
         <profile>

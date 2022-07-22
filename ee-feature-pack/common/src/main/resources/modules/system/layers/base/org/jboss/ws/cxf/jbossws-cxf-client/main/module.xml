@@ -27,7 +27,7 @@
     <dependencies>
         <!-- JAXB API + REF IMPL -->
         <module name="javax.xml.bind.api" export="true"/>
-        <module name="com.sun.xml.bind" export="true" services="export"/>
+        <module name="org.glassfish.jaxb" export="true" services="export"/>
         <module name="javax.xml.ws.api" export="true"/>
         <module name="javax.jws.api" export="true"/>
         <!-- WSDL4J API -->
@@ -45,7 +45,8 @@
         <module name="org.jboss.jaxbintros" export="true"/>
         <module name="javax.security.auth.message.api" export="true"/>
         <module name="org.apache.ws.security" export="true"/>
-		<!-- Tools support on JDK 9 and later -->
-		<module name="org.jboss.modules"/>
+        <module name="org.eclipse.angus.activation" export="true" services="export"/>
+        <!-- Tools support on JDK 9 and later -->
+        <module name="org.jboss.modules"/>
     </dependencies>
 </module>

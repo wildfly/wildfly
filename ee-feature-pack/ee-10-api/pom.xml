@@ -42,9 +42,6 @@
     <packaging>pom</packaging>
 
     <dependencyManagement>
-        <!--
-        TODO remove this once the parent pom declares the same thing.
-        -->
         <dependencies>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
