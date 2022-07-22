@@ -45,9 +45,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.naming.Context;
-import java.util.Properties;
-
 /**
  * Validates legacy operation of EJB deployments when <distributable-ejb/> subsystem is removed.
  *
@@ -77,7 +74,7 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
         Assert.assertEquals(ModelDescriptionConstants.FAILED, result.get(ModelDescriptionConstants.OUTCOME).asString());
 
         // lookup the deployed stateful session bean
-        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME, getJNDIProperties())) {
+        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
 
             // invoke on the bean to check that state is maintained using legacy cache support
@@ -142,12 +139,5 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
                         .build())
                     .build());
         }
-    }
-
-    private static Properties getJNDIProperties() {
-        Properties props = new Properties();
-        props.put(Context.INITIAL_CONTEXT_FACTORY, org.wildfly.naming.client.WildFlyInitialContextFactory.class.getName());
-        props.put(Context.PROVIDER_URL, String.format("%s://%s:%s", "remote+http", "localhost", 8080));
-        return props;
     }
 }
