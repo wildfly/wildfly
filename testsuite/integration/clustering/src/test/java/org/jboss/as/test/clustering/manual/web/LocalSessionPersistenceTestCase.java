@@ -52,7 +52,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Validates that session passivation in non-HA environment works (on single node).
+ * Validates that session persistence in non-HA environment works (on single node).
  *
  * @author Radoslav Husar
  */
@@ -107,7 +107,7 @@ public class LocalSessionPersistenceTestCase {
             try (CloseableHttpResponse response = client.execute(new HttpGet(url))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
-                Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+                Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
                 Assert.assertEquals(sessionId, response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
 
@@ -119,7 +119,7 @@ public class LocalSessionPersistenceTestCase {
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(url))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("Session passivation was configured but session was lost after restart.",
+                Assert.assertEquals("Session persistence was configured but session was lost after restart.",
                         3, Integer.parseInt(response.getFirstHeader("value").getValue()));
                 Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
                 Assert.assertEquals(sessionId, response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());

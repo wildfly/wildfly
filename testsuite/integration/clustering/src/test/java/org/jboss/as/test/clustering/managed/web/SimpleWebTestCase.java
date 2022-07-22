@@ -42,7 +42,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -97,7 +97,7 @@ public class SimpleWebTestCase {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
                 // This won't be true unless we have somewhere to which to replicate or session persistence is configured (current default)
-                Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+                Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -107,12 +107,16 @@ public class SimpleWebTestCase {
         Assert.assertNotEquals(0, result.get(ModelDescriptionConstants.RESULT).asInt());
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node("single")
-                    .setup("/subsystem=infinispan/cache-container=web/local-cache=passivation:write-attribute(name=statistics-enabled, value=true)")
-                    .teardown("/subsystem=infinispan/cache-container=web/local-cache=passivation:undefine-attribute(name=statistics-enabled)")
-                    ;
+            super(createContainerConfigurationBuilder()
+                        .setupScript(createScriptBuilder()
+                            .add("/subsystem=infinispan/cache-container=web/local-cache=persistent:write-attribute(name=statistics-enabled, value=true)")
+                            .build())
+                        .tearDownScript(createScriptBuilder()
+                            .add("/subsystem=infinispan/cache-container=web/local-cache=persistent:undefine-attribute(name=statistics-enabled)")
+                            .build())
+                    .build());
         }
     }
 }

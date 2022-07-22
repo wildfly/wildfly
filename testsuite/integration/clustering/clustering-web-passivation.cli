@@ -21,4 +21,4 @@
 #
 
 /path=web-passivation-cache-path:add(path="${web-passivation-cache}")
-/subsystem=infinispan/cache-container=web/local-cache=passivation/store=file:add(path=bootable-jar-web-passivation-cache, relative-to=web-passivation-cache-path, passivation=true)
+/subsystem=infinispan/cache-container=web/local-cache=session/store=file:add(path=bootable-jar-web-passivation-cache, relative-to=web-passivation-cache-path)

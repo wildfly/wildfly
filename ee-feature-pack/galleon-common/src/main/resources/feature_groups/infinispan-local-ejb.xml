@@ -8,14 +8,14 @@
             <param name="modules" value="[org.wildfly.clustering.ejb.infinispan]"/>
             <param name="marshaller" value="PROTOSTREAM"/>
             <param name="aliases" value="[sfsb]"/>
-            <param name="default-cache" value="passivation"/>
+            <param name="default-cache" value="sfsb"/>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
-                <param name="local-cache" value="passivation"/>
+                <param name="local-cache" value="sfsb"/>
                 <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
                     <param name="interval" value="0"/>
                 </feature>
                 <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
-                    <param name="passivation" value="true"/>
+                    <param name="preload" value="true"/>
                     <unset param="relative-to"/>
                 </feature>
             </feature>

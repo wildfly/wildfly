@@ -44,7 +44,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.managed.web.SimpleServlet;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -54,6 +56,7 @@ import org.junit.Test;
  * Validates the correctness of session activation/passivation events for a distributed session manager using a local, passivating cache.
  * @author Paul Ferraro
  */
+@ServerSetup(LocalSessionPassivationTestCase.PassivationCacheSetupTask.class)
 public abstract class LocalSessionPassivationTestCase {
 
     private static final Duration MAX_PASSIVATION_DURATION = Duration.ofSeconds(TimeoutUtil.adjust(10));
@@ -202,5 +205,22 @@ public abstract class LocalSessionPassivationTestCase {
             expected = SessionOperationServlet.EventType.values()[(expected.ordinal() + 1) % 2];
         }
         expectedEvents.put(sessionId, expected);
+    }
+
+    public static class PassivationCacheSetupTask extends ManagementServerSetupTask {
+        public PassivationCacheSetupTask() {
+            super(createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                        .startBatch()
+                            .add("/subsystem=infinispan/cache-container=web/local-cache=passivation:add()")
+                            .add("/subsystem=infinispan/cache-container=web/local-cache=passivation/component=expiration:add(interval=0)")
+                            .add("/subsystem=infinispan/cache-container=web/local-cache=passivation/store=file:add(passivation=true)")
+                        .endBatch()
+                        .build())
+                    .tearDownScript(createScriptBuilder()
+                        .add("/subsystem=infinispan/cache-container=web/local-cache=passivation:remove")
+                        .build())
+                    .build());
+        }
     }
 }

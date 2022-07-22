@@ -20,6 +20,6 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<jboss-web version="14.0" xmlns="http://www.jboss.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_6_0.xsd">
+<jboss-web version="14.0" xmlns="http://www.jboss.com/xml/ns/javaee">
     <max-active-sessions>1</max-active-sessions>
 </jboss-web>
