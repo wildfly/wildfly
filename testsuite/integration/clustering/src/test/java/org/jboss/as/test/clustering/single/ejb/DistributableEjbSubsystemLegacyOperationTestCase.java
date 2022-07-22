@@ -91,10 +91,7 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
             Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
 
             // invoke on the bean to check that state is maintained using legacy cache support
-            Result<Integer> invocationResult = null;
-            int count = 1;
-
-            for (int i = 0; i < 5; i++) {
+            for (int i = 1; i <= 5; i++) {
                 System.out.println("Invoking on StatefulIncrementor bean");
                 Result<Integer> invResult = bean.increment();
 
@@ -102,7 +99,7 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
                 int value = invResult.getValue().intValue();
 
                 System.out.println("Got result " + value + " from node " + target);
-                Assert.assertEquals(count++, invResult.getValue().intValue());
+                Assert.assertEquals(i, invResult.getValue().intValue());
             }
         }
     }
