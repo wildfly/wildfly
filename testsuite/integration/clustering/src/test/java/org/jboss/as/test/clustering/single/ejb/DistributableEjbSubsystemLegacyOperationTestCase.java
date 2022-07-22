@@ -87,22 +87,23 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
         Assert.assertEquals(ModelDescriptionConstants.FAILED, result.get(ModelDescriptionConstants.OUTCOME).asString());
 
         // lookup the deployed stateful session bean
-        EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME, getJNDIProperties());
-        Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
+        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME, getJNDIProperties())) {
+            Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
 
-        // invoke on the bean to check that state is maintained using legacy cache support
-        Result<Integer> invocationResult = null;
-        int count = 1;
+            // invoke on the bean to check that state is maintained using legacy cache support
+            Result<Integer> invocationResult = null;
+            int count = 1;
 
-        for (int i = 0; i < 5; i++) {
-            System.out.println("Invoking on StatefulIncrementor bean");
-            Result<Integer> invResult = bean.increment();
+            for (int i = 0; i < 5; i++) {
+                System.out.println("Invoking on StatefulIncrementor bean");
+                Result<Integer> invResult = bean.increment();
 
-            String target = invResult.getNode();
-            int value = invResult.getValue().intValue();
+                String target = invResult.getNode();
+                int value = invResult.getValue().intValue();
 
-            System.out.println("Got result " + value + " from node " + target);
-            Assert.assertEquals(count++, invResult.getValue().intValue());
+                System.out.println("Got result " + value + " from node " + target);
+                Assert.assertEquals(count++, invResult.getValue().intValue());
+            }
         }
     }
 
