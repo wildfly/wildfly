@@ -28,7 +28,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-ee-9-parent</artifactId>
+        <artifactId>wildfly-ee-feature-pack-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -36,14 +36,29 @@
         <version>27.0.0.Alpha4-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-preview-feature-pack-ee-9-api</artifactId>
+    <artifactId>wildfly-ee-feature-pack-ee-10-api</artifactId>
 
-    <name>WildFly: Preview Feature Pack EE 9 API Resources</name>
+    <name>WildFly: Preview Feature Pack EE 10 API Resources</name>
     <packaging>pom</packaging>
+
+    <dependencyManagement>
+        <!--
+        TODO remove this once the parent pom declares the same thing.
+        -->
+        <dependencies>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
-        <!-- EE 9 API - Core -->
+        <!-- EE 10 API - Core -->
 
         <dependency>
             <groupId>jakarta.json</groupId>
@@ -65,7 +80,7 @@
             <artifactId>jakarta.authorization-api</artifactId>
         </dependency>
 
-        <!-- EE 9 API - Servlet -->
+        <!-- EE 10 API - Servlet -->
 
         <dependency>
             <groupId>jakarta.activation</groupId>
@@ -149,7 +164,7 @@
             <artifactId>jakarta.websocket-client-api</artifactId>
         </dependency>
 
-        <!-- EE 9 API - Full -->
+        <!-- EE 10 API - Full -->
 
         <dependency>
             <groupId>jakarta.mail</groupId>

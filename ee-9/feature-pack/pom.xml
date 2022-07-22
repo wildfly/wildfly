@@ -52,7 +52,7 @@
         <ee.galleon-content.resources.directory>${basedir}/../../ee-feature-pack/galleon-content/src/main/resources</ee.galleon-content.resources.directory>
 
         <!-- WildFly Preview modules -->
-        <ee-9-api.resources.directory>${basedir}/../ee-9-api/src/main/resources</ee-9-api.resources.directory>
+        <ee-10-api.resources.directory>${basedir}/../../ee-feature-pack/ee-10-api/src/main/resources</ee-10-api.resources.directory>
         <common.resources.directory>${basedir}/../common/src/main/resources</common.resources.directory>
         <common-microprofile.resources.directory>${basedir}/../common-microprofile/src/main/resources</common-microprofile.resources.directory>
         <content.resources.directory>${basedir}/../galleon-content/src/main/resources</content.resources.directory>
@@ -357,7 +357,7 @@
                     </execution>
                     <!-- WildFly preview EE 9 API resources -->
                     <execution>
-                        <id>copy-ee-9-api-feature-pack-resources</id>
+                        <id>copy-ee-10-api-feature-pack-resources</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -366,7 +366,7 @@
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${ee-9-api.resources.directory}</directory>
+                                    <directory>${ee-10-api.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -435,7 +435,7 @@
                 <configuration>
                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                     <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-elytron\z|wildfly-preview-feature-pack-ee-9-api|wildfly-preview-feature-pack-common|wildfly-preview-feature-pack-common-microprofile</excludedArtifacts>
+                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-elytron\z|wildfly-ee-feature-pack-ee-10-api|wildfly-preview-feature-pack-common|wildfly-preview-feature-pack-common-microprofile</excludedArtifacts>
                 </configuration>
                 <executions>
                     <execution>
@@ -449,10 +449,10 @@
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-common-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/preview-feature-pack-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/elytron-oidc-feature-pack-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/microprofile-feature-pack-licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${basedir}/target/resources/license/preview-feature-pack-ee-9-api-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/preview-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/preview-feature-pack-common-microprofile-licenses.xml</licensesConfigFile>
                             </licensesConfigFiles>
@@ -992,6 +992,14 @@
             </exclusions>
         </dependency>
 
+        <!-- Bring in all the WildFly EE 10 API deps in one go -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-ee-10-api</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee-feature-pack-galleon-common</artifactId>
@@ -1074,14 +1082,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Bring in all the WildFly Preview 9 API deps in one go -->
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-preview-feature-pack-ee-9-api</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Bring in all the WildFly Preview 9 Common MicroProfile deps in one go -->
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
@@ -1157,7 +1157,7 @@
                                                 <exclude>${full.maven.groupId}:wildfly-oidc-feature-pack-galleon-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-servlet-feature-pack-common</exclude>
-                                                <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-ee-9-api</exclude>
+                                                <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-ee-10-api</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-common-microprofile</exclude>
                                             </excludes>
