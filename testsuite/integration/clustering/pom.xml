@@ -878,11 +878,8 @@
                                 <configuration>
                                     <runOrder>alphabetical</runOrder>
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/managed/**</include>
                                     </includes>
-                                    <excludes>
-                                        <exclude>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</exclude>
-                                    </excludes>
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>single</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
@@ -899,7 +896,7 @@
                                 <configuration>
                                     <runOrder>alphabetical</runOrder>
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/manual/**</include>
                                     </includes>
                                     <systemPropertyVariables combine.children="append">
                                         <wildfly1>wildfly-1</wildfly1>
@@ -1088,9 +1085,6 @@
                                         <exclude>org/jboss/as/test/clustering/cluster/sso/remote/*TestCase.java</exclude>
                                         <!-- TODO test setup requires legacy security but it would be better if it could handle elytron as well -->
                                         <exclude>org/jboss/as/test/clustering/cluster/web/authentication/*TestCase.java</exclude>
-                                        <!-- Runs against a non-HA standalone.xml, which isn't what this profile provisions.
-                                             TODO provisioning and testing this may be something to do. -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/NonHaWebSessionPersistenceTestCase.java</exclude>
                                         <!-- Needs jpa replaced with jpa-distributed;
                                              this is tested in the ts.surefire.clustering.all.jpa2lc execution -->
                                         <exclude>org/jboss/as/test/clustering/cluster/jpa/*TestCase.java</exclude>
@@ -1172,7 +1166,7 @@
                                 <configuration>
                                     <runOrder>alphabetical</runOrder>
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/manual/**</include>
                                     </includes>
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>node-non-ha</arquillian.launch>

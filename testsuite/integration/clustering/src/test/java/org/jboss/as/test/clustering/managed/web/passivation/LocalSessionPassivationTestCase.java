@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.single.web.passivation;
+package org.jboss.as.test.clustering.managed.web.passivation;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 import static org.junit.Assert.*;
@@ -46,7 +46,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.clustering.managed.web.SimpleServlet;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;

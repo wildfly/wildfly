@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  */
-package org.jboss.as.test.clustering.single.web.shared;
+package org.jboss.as.test.clustering.managed.web.shared;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
 
@@ -35,8 +35,8 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
-import org.jboss.as.test.clustering.single.web.Mutable;
-import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.clustering.managed.web.Mutable;
+import org.jboss.as.test.clustering.managed.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.Archive;

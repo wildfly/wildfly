@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.single.web;
+package org.jboss.as.test.clustering.managed.web;
 
 import java.io.IOException;
 import java.net.URI;

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.single.registry;
+package org.jboss.as.test.clustering.managed.provider;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
@@ -30,8 +30,8 @@ import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetriever;
-import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetrieverBean;
+import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetriever;
+import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
@@ -41,27 +41,27 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Validates that a registry works in a non-clustered environment.
+ * Validates that a service provider registration works in a non-clustered environment.
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-public class RegistryTestCase {
-    private static final String MODULE_NAME = RegistryTestCase.class.getSimpleName();
+public class ServiceProviderRegistrationTestCase {
+    private static final String MODULE_NAME = ServiceProviderRegistrationTestCase.class.getSimpleName();
 
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
-        war.addPackage(RegistryRetriever.class.getPackage());
+        war.addPackage(ServiceProviderRetriever.class.getPackage());
         war.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read"), new RuntimePermission("getClassLoader")), "permissions.xml");
-        war.setWebXML(org.jboss.as.test.clustering.cluster.registry.RegistryTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(org.jboss.as.test.clustering.cluster.provider.ServiceProviderRegistrationTestCase.class.getPackage(), "web.xml");
         return war;
     }
 
     @Test
     public void test() throws Exception {
-        try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
-            RegistryRetriever bean = context.lookupStateless(RegistryRetrieverBean.class, RegistryRetriever.class);
-            Collection<String> names = bean.getNodes();
+        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+            ServiceProviderRetriever bean = directory.lookupStateless(ServiceProviderRetrieverBean.class, ServiceProviderRetriever.class);
+            Collection<String> names = bean.getProviders();
             assertEquals(1, names.size());
             assertTrue(names.toString(), names.contains(NODE_1));
         }

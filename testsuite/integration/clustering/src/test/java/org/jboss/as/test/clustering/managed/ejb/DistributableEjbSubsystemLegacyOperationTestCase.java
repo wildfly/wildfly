@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.single.ejb;
+package org.jboss.as.test.clustering.managed.ejb;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -33,10 +33,10 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.single.ejb.bean.Incrementor;
-import org.jboss.as.test.clustering.single.ejb.bean.IncrementorBean;
-import org.jboss.as.test.clustering.single.ejb.bean.Result;
-import org.jboss.as.test.clustering.single.ejb.bean.StatefulIncrementorBean;
+import org.jboss.as.test.clustering.managed.ejb.bean.Incrementor;
+import org.jboss.as.test.clustering.managed.ejb.bean.IncrementorBean;
+import org.jboss.as.test.clustering.managed.ejb.bean.Result;
+import org.jboss.as.test.clustering.managed.ejb.bean.StatefulIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;

@@ -19,27 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.clustering.managed.ejb.bean;
 
-package org.jboss.as.test.clustering.single.web.passivation;
+import javax.ejb.Remote;
+import javax.ejb.Stateful;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
-
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
-import org.junit.runner.RunWith;
-
-/**
- * Validates the correctness of session passivation events for a distributed session manager using a local, passivating cache and SESSION granularity.
- * @author Paul Ferraro
- */
-@RunWith(Arquillian.class)
-public class LocalCoarseSessionPassivationTestCase extends LocalSessionPassivationTestCase {
-
-    private static final String MODULE_NAME = LocalCoarseSessionPassivationTestCase.class.getSimpleName();
-
-    @Deployment(name = DEPLOYMENT_1, testable = false)
-    public static Archive<?> deployment() {
-        return getBaseDeployment(MODULE_NAME).addAsWebInfResource(LocalSessionPassivationTestCase.class.getPackage(), "distributable-web-coarse.xml", "distributable-web.xml");
-    }
+@Stateful
+@Remote(Incrementor.class)
+public class StatefulIncrementorBean extends IncrementorBean {
 }

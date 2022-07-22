@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.single.ejb.bean;
+package org.jboss.as.test.clustering.managed.ejb.bean;
 
-import java.io.Serializable;
+import javax.ejb.Remove;
 
-/**
- * A wrapper for a return value that includes the node on which the result was generated.
- * @author Paul Ferraro
- */
-public class Result<T> implements Serializable {
-    private static final long serialVersionUID = -1079933234795356933L;
+public interface Incrementor {
+    Result<Integer> increment();
 
-    private final T value;
-    private final String node;
-
-    public Result(T value) {
-        this.value = value;
-        this.node = System.getProperty("jboss.node.name");
-    }
-
-    public T getValue() {
-        return this.value;
-    }
-
-    public String getNode() {
-        return this.node;
+    @Remove
+    default void remove() {
+        // Do nothing
     }
 }

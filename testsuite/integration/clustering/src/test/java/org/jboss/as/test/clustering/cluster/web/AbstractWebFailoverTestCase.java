@@ -45,7 +45,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
-import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.clustering.managed.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.junit.Assert;
 import org.junit.Test;

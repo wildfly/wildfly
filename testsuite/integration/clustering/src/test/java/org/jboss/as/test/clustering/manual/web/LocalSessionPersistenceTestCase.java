@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.single.web;
+package org.jboss.as.test.clustering.manual.web;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.CONTAINER_SINGLE;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
@@ -42,6 +42,8 @@ import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.NodeUtil;
+import org.jboss.as.test.clustering.managed.web.Mutable;
+import org.jboss.as.test.clustering.managed.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -58,8 +60,8 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
-public class NonHaWebSessionPersistenceTestCase {
-    private static final String MODULE_NAME = NonHaWebSessionPersistenceTestCase.class.getSimpleName();
+public class LocalSessionPersistenceTestCase {
+    private static final String MODULE_NAME = LocalSessionPersistenceTestCase.class.getSimpleName();
     private static final String APPLICATION_NAME = MODULE_NAME + ".war";
 
     @ArquillianResource
@@ -72,7 +74,7 @@ public class NonHaWebSessionPersistenceTestCase {
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, APPLICATION_NAME);
         war.addClasses(SimpleServlet.class, Mutable.class);
-        war.setWebXML(NonHaWebSessionPersistenceTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(SimpleServlet.class.getPackage(), "web.xml");
         return war;
     }
 

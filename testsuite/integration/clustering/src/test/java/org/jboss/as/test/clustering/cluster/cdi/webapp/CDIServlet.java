@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
-import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.clustering.managed.web.SimpleServlet;
 
 /**
  * Note that the servlet is mapped to /simple using web.xml servlet-mapping overriding @WebServlet of the SimpleServlet.
