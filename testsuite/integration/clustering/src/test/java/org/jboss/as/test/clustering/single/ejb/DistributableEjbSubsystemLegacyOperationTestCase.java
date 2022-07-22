@@ -22,8 +22,6 @@
 package org.jboss.as.test.clustering.single.ejb;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -50,8 +48,6 @@ import org.junit.runner.RunWith;
 import javax.naming.Context;
 import java.util.Properties;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
-
 /**
  * Validates legacy operation of EJB deployments when <distributable-ejb/> subsystem is removed.
  *
@@ -64,8 +60,7 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
     private static final String MODULE_NAME = DistributableEjbSubsystemLegacyOperationTestCase.class.getSimpleName();
     private static final String APPLICATION_NAME = MODULE_NAME + ".jar";
 
-    @Deployment(name = DEPLOYMENT_1, testable = false)
-    @TargetsContainer("single")
+    @Deployment(testable = false)
     public static Archive<?> deployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, APPLICATION_NAME);
         jar.addClasses(Result.class, Incrementor.class, IncrementorBean.class, StatefulIncrementorBean.class);
@@ -73,8 +68,7 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
     }
 
     @Test
-    @OperateOnDeployment(DEPLOYMENT_1)
-    public void test(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient managementClient) throws Exception {
+    public void test(@ArquillianResource ManagementClient managementClient) throws Exception {
 
         // Confirm absence of distributable-ejb subsystem
         PathAddress address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "distributable-ejb"));
