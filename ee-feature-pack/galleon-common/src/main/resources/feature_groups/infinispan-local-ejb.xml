@@ -7,7 +7,6 @@
             <param name="cache-container" value="ejb"/>
             <param name="modules" value="[org.wildfly.clustering.ejb.infinispan]"/>
             <param name="marshaller" value="PROTOSTREAM"/>
-            <param name="aliases" value="[sfsb]"/>
             <param name="default-cache" value="sfsb"/>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="sfsb"/>

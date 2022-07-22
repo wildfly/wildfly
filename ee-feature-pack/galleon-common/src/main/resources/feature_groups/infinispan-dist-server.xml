@@ -7,7 +7,6 @@
             <param name="modules" value="[org.wildfly.clustering.singleton.server]"/>
             <param name="marshaller" value="PROTOSTREAM"/>
             <param name="default-cache" value="default"/>
-            <param name="aliases" value="[singleton, cluster]"/>
             <feature spec="subsystem.infinispan.cache-container.transport.jgroups">
                 <param name="lock-timeout" value="60000"/>
             </feature>
