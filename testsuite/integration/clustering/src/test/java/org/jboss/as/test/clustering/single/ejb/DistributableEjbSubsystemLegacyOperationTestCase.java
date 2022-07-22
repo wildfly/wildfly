@@ -36,7 +36,7 @@ import org.jboss.as.test.clustering.single.ejb.bean.IncrementorBean;
 import org.jboss.as.test.clustering.single.ejb.bean.Result;
 import org.jboss.as.test.clustering.single.ejb.bean.StatefulIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -103,38 +103,44 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
      * - update the cache defaults to point again to the non-legacy caches
      * - remove legacy cache support from ejb3 subsystem
      */
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node("single")
-                    .batch(true)
-                    // add legacy cache support
-                    .setup("/subsystem=ejb3/cache=legacy-simple:add()")
-                    .setup("/subsystem=ejb3/passivation-store=infinispan:add(cache-container=ejb, max-size=10000")
-                    .setup("/subsystem=ejb3/cache=legacy-distributable:add(passivation-store=infinispan,aliases=[passivating,clustered])")
-                    // update cache defaults, now to legacy caches
-                    .setup("/subsystem=ejb3:write-attribute(name=default-sfsb-cache, value=legacy-simple")
-                    .setup("/subsystem=ejb3:write-attribute(name=default-sfsb-passivation-disabled-cache, value=legacy-simple")
-                    // remove non-legacy caches
-                    .setup("/subsystem=ejb3/simple-cache=simple:remove(){allow-resource-service-restart=true}")
-                    .setup("/subsystem=ejb3/distributable-cache=distributable:remove(){allow-resource-service-restart=true}")
-                    // remove distributable-ejb subsystem
-                    .setup("/subsystem=distributable-ejb:remove()")
-
-                    // add back distributable-ejb subsystem
-                    .teardown("/subsystem=distributable-ejb:add(default-bean-management=default)")
-                    .teardown("/subsystem=distributable-ejb/infinispan-bean-management=default:add(cache-container=ejb,cache=passivation,max-active-beans=10000)")
-                    .teardown("/subsystem=distributable-ejb/client-mappings-registry=local:add()")
-                    // add back non-legacy caches
-                    .teardown("/subsystem=ejb3/simple-cache=simple:add()")
-                    .teardown("/subsystem=ejb3/distributable-cache=distributable:add(bean-management=default)")
-                    // reinstate cache defaults to non-legacy caches
-                    .teardown("/subsystem=ejb3:write-attribute(name=default-sfsb-cache, value=simple")
-                    .teardown("/subsystem=ejb3:write-attribute(name=default-sfsb-passivation-disabled-cache, value=simple")
-                    // remove legacy cache support
-                    .teardown("/subsystem=ejb3/cache=legacy-simple:remove(){allow-resource-service-restart=true}")
-                    .teardown("/subsystem=ejb3/cache=legacy-distributable:remove(){allow-resource-service-restart=true}")
-                    .teardown("/subsystem=ejb3/passivation-store=infinispan:remove(){allow-resource-service-restart=true}")
-                    ;
+            super(createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                        .startBatch()
+                            // add legacy cache support
+                            .add("/subsystem=ejb3/cache=legacy-simple:add()")
+                            .add("/subsystem=ejb3/passivation-store=infinispan:add(cache-container=ejb, max-size=10000")
+                            .add("/subsystem=ejb3/cache=legacy-distributable:add(passivation-store=infinispan,aliases=[passivating,clustered])")
+                            // update cache defaults, now to legacy caches
+                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-cache, value=legacy-simple")
+                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-passivation-disabled-cache, value=legacy-simple")
+                            // remove non-legacy caches
+                            .add("/subsystem=ejb3/simple-cache=simple:remove(){allow-resource-service-restart=true}")
+                            .add("/subsystem=ejb3/distributable-cache=distributable:remove(){allow-resource-service-restart=true}")
+                            // remove distributable-ejb subsystem
+                            .add("/subsystem=distributable-ejb:remove()")
+                        .endBatch()
+                        .build())
+                    .tearDownScript(createScriptBuilder()
+                        .startBatch()
+                            // add back distributable-ejb subsystem
+                            .add("/subsystem=distributable-ejb:add(default-bean-management=default)")
+                            .add("/subsystem=distributable-ejb/infinispan-bean-management=default:add(cache-container=ejb,cache=passivation,max-active-beans=10000)")
+                            .add("/subsystem=distributable-ejb/client-mappings-registry=local:add()")
+                            // add back non-legacy caches
+                            .add("/subsystem=ejb3/simple-cache=simple:add()")
+                            .add("/subsystem=ejb3/distributable-cache=distributable:add(bean-management=default)")
+                            // reinstate cache defaults to non-legacy caches
+                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-cache, value=simple")
+                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-passivation-disabled-cache, value=simple")
+                            // remove legacy cache support
+                            .add("/subsystem=ejb3/cache=legacy-simple:remove(){allow-resource-service-restart=true}")
+                            .add("/subsystem=ejb3/cache=legacy-distributable:remove(){allow-resource-service-restart=true}")
+                            .add("/subsystem=ejb3/passivation-store=infinispan:remove(){allow-resource-service-restart=true}")
+                        .endBatch()
+                        .build())
+                    .build());
         }
     }
 
