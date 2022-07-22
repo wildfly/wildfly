@@ -6,13 +6,13 @@
             <param name="cache-container" value="web"/>
             <param name="modules" value="[org.wildfly.clustering.web.infinispan]"/>
             <param name="marshaller" value="PROTOSTREAM"/>
-            <param name="default-cache" value="dist"/>
+            <param name="default-cache" value="session"/>
             <feature spec="subsystem.infinispan.cache-container.transport.jgroups">
                 <param name="transport" value="jgroups"/>
                 <param name="lock-timeout" value="60000"/>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.distributed-cache">
-                <param name="distributed-cache" value="dist"/>
+                <param name="distributed-cache" value="session"/>
                 <feature spec="subsystem.infinispan.cache-container.distributed-cache.component.locking">
                     <param name="isolation" value="REPEATABLE_READ"/>
                 </feature>

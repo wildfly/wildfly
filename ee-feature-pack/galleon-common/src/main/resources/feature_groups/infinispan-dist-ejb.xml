@@ -7,12 +7,12 @@
             <param name="cache-container" value="ejb"/>
             <param name="modules" value="[org.wildfly.clustering.ejb.infinispan]"/>
             <param name="marshaller" value="PROTOSTREAM"/>
-            <param name="default-cache" value="dist"/>
+            <param name="default-cache" value="sfsb"/>
             <feature spec="subsystem.infinispan.cache-container.transport.jgroups">
                 <param name="lock-timeout" value="60000"/>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.distributed-cache">
-                <param name="distributed-cache" value="dist"/>
+                <param name="distributed-cache" value="sfsb"/>
                 <feature spec="subsystem.infinispan.cache-container.distributed-cache.component.locking">
                     <param name="isolation" value="REPEATABLE_READ"/>
                 </feature>
