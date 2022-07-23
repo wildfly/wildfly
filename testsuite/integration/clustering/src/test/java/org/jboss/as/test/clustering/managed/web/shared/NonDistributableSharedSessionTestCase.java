@@ -17,8 +17,6 @@
  */
 package org.jboss.as.test.clustering.managed.web.shared;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -29,7 +27,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -62,7 +59,7 @@ public class NonDistributableSharedSessionTestCase {
     @ContainerResource
     private ManagementClient managementClient;
 
-    @Deployment(name = DEPLOYMENT_1, testable = false)
+    @Deployment(testable = false)
     public static Archive<?> deployment1() {
         return getDeployment();
     }
@@ -85,9 +82,7 @@ public class NonDistributableSharedSessionTestCase {
     }
 
     @Test
-    public void test(
-            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURLDep)
-            throws URISyntaxException, IOException {
+    public void test(@ArquillianResource URL baseURLDep) throws URISyntaxException, IOException {
         URI baseURI = new URI(baseURLDep.toExternalForm() + "/");
         URI uri1 = SimpleServlet.createURI(baseURI.resolve(MODULE_1 + "/"));
         URI uri2 = SimpleServlet.createURI(baseURI.resolve(MODULE_2 + "/"));

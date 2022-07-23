@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.clustering.managed.web.passivation;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -38,7 +36,7 @@ public class LocalCoarseSessionPassivationTestCase extends LocalSessionPassivati
 
     private static final String MODULE_NAME = LocalCoarseSessionPassivationTestCase.class.getSimpleName();
 
-    @Deployment(name = DEPLOYMENT_1, testable = false)
+    @Deployment(testable = false)
     public static Archive<?> deployment() {
         return getBaseDeployment(MODULE_NAME).addAsWebInfResource(LocalSessionPassivationTestCase.class.getPackage(), "distributable-web-coarse.xml", "distributable-web.xml");
     }

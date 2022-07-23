@@ -21,9 +21,6 @@
  */
 package org.jboss.as.test.clustering.manual.web;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.CONTAINER_SINGLE;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
-
 import java.net.URI;
 import java.net.URL;
 
@@ -61,6 +58,10 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class LocalSessionPersistenceTestCase {
+
+    private static final String CONTAINER = "node-non-ha";
+    private static final String DEPLOYMENT = "node-non-ha";
+
     private static final String MODULE_NAME = LocalSessionPersistenceTestCase.class.getSimpleName();
     private static final String APPLICATION_NAME = MODULE_NAME + ".war";
 
@@ -70,7 +71,7 @@ public class LocalSessionPersistenceTestCase {
     @ArquillianResource
     private Deployer deployer;
 
-    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
+    @Deployment(name = DEPLOYMENT, managed = false, testable = false)
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, APPLICATION_NAME);
         war.addClasses(SimpleServlet.class, Mutable.class);
@@ -80,18 +81,18 @@ public class LocalSessionPersistenceTestCase {
 
     @Before
     public void beforeTestMethod() {
-        NodeUtil.start(this.controller, CONTAINER_SINGLE);
-        NodeUtil.deploy(this.deployer, DEPLOYMENT_1);
+        NodeUtil.start(this.controller, CONTAINER);
+        NodeUtil.deploy(this.deployer, DEPLOYMENT);
     }
 
     @After
     public void afterTestMethod() {
-        NodeUtil.undeploy(this.deployer, DEPLOYMENT_1);
-        NodeUtil.stop(this.controller, CONTAINER_SINGLE);
+        NodeUtil.undeploy(this.deployer, DEPLOYMENT);
+        NodeUtil.stop(this.controller, CONTAINER);
     }
 
     @Test
-    public void testSessionPersistence(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL, @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient managementClient) throws Exception {
+    public void testSessionPersistence(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT) URL baseURL, @ArquillianResource @OperateOnDeployment(DEPLOYMENT) ManagementClient managementClient) throws Exception {
 
         URI url = SimpleServlet.createURI(baseURL);
 
@@ -110,10 +111,10 @@ public class LocalSessionPersistenceTestCase {
                 Assert.assertEquals(sessionId, response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
 
-            NodeUtil.stop(this.controller, CONTAINER_SINGLE);
-            NodeUtil.start(this.controller, CONTAINER_SINGLE);
+            NodeUtil.stop(this.controller, CONTAINER);
+            NodeUtil.start(this.controller, CONTAINER);
             if (Boolean.getBoolean("ts.bootable") || Boolean.getBoolean("ts.bootable.ee9")) {
-                NodeUtil.deploy(this.deployer, DEPLOYMENT_1);
+                NodeUtil.deploy(this.deployer, DEPLOYMENT);
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(url))) {

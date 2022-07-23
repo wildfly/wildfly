@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.clustering.managed.web;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,7 +33,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -66,7 +63,7 @@ public class SimpleWebTestCase {
     private static final String MODULE_NAME = SimpleWebTestCase.class.getSimpleName();
     private static final String APPLICATION_NAME = MODULE_NAME + ".war";
 
-    @Deployment(name = DEPLOYMENT_1, testable = false)
+    @Deployment(testable = false)
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, APPLICATION_NAME);
         war.addClasses(SimpleServlet.class, Mutable.class);
@@ -75,8 +72,7 @@ public class SimpleWebTestCase {
     }
 
     @Test
-    @OperateOnDeployment(DEPLOYMENT_1)
-    public void test(@ArquillianResource(SimpleServlet.class) URL baseURL, @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient managementClient) throws IOException, URISyntaxException {
+    public void test(@ArquillianResource(SimpleServlet.class) URL baseURL, @ArquillianResource ManagementClient managementClient) throws IOException, URISyntaxException {
         // Validate existence of runtime resource for deployment cache
         PathAddress address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "infinispan"), PathElement.pathElement("cache-container", "web"), PathElement.pathElement("cache", APPLICATION_NAME));
         ModelNode operation = Util.createOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, address);

@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.clustering.managed.web.passivation;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -44,7 +43,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.managed.web.SimpleServlet;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -69,7 +67,7 @@ public abstract class LocalSessionPassivationTestCase {
     }
 
     @Test
-    public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws IOException, URISyntaxException {
+    public void test(@ArquillianResource(SessionOperationServlet.class) URL baseURL) throws IOException, URISyntaxException {
 
         try (CloseableHttpClient client1 = HttpClients.createDefault()) {
             try (CloseableHttpClient client2 = HttpClients.createDefault()) {

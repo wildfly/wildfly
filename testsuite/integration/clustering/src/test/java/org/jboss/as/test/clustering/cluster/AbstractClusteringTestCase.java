@@ -65,8 +65,6 @@ import org.junit.rules.TestRule;
  */
 public abstract class AbstractClusteringTestCase {
 
-    public static final String CONTAINER_SINGLE = "node-non-ha";
-
     // Unified node and container names
     public static final String NODE_1 = "node-1";
     public static final String NODE_2 = "node-2";
