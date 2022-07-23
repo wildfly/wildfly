@@ -670,12 +670,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${version.commons-lang3}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-core</artifactId>
                 <version>${version.org.apache.cxf}</version>
@@ -4940,18 +4934,6 @@
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-common</artifactId>
                 <version>${version.org.jboss.ws.common}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ws</groupId>
-                <artifactId>jbossws-common-tools</artifactId>
-                <version>${version.org.jboss.ws.common.tools}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
