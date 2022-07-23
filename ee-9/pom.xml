@@ -3791,14 +3791,14 @@
         </dependencies>
     </dependencyManagement>
 
-    <profiles>
+<!--    <profiles>
         <profile>
             <id>skip.preview</id>
             <activation>
                 <property>
                     <name>!skip.preview</name>
                 </property>
-            </activation>
+            </activation>-->
 
             <modules>
                 <module>source-transform</module>
@@ -3812,7 +3812,7 @@
                 <module>galleon-content</module>
                 <module>galleon-content-microprofile</module>
             </modules>
-        </profile>
-    </profiles>
+<!--        </profile>
+    </profiles>-->
 
 </project>
