@@ -60,9 +60,10 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
         if (provider != null) {
             unit.putAttachment(DistributableSessionManagementProvider.ATTACHMENT_KEY, provider);
 
+            ModuleSpecification specification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
+            ModuleLoader loader = Module.getBootModuleLoader();
+
             if (provider.getSessionManagementConfiguration().getMarshallerFactory() == SessionMarshallerFactory.PROTOSTREAM) {
-                ModuleSpecification specification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-                ModuleLoader loader = Module.getBootModuleLoader();
                 specification.addSystemDependency(new ModuleDependency(loader, PROTOSTREAM, false, false, false, false));
 
                 CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
@@ -79,11 +80,11 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
                         throw new IllegalStateException(e);
                     }
                 }
+            }
 
-                if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_2_0)) {
-                    specification.addSystemDependency(new ModuleDependency(loader, EL_GLASSFISH, false, false, true, false));
-                    specification.addSystemDependency(new ModuleDependency(loader, FACES_MOJARRA, false, false, true, false));
-                }
+            if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_2_0)) {
+                specification.addSystemDependency(new ModuleDependency(loader, EL_GLASSFISH, false, false, true, false));
+                specification.addSystemDependency(new ModuleDependency(loader, FACES_MOJARRA, false, false, true, false));
             }
         }
     }
