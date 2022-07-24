@@ -694,7 +694,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-ra</artifactId>
+            <artifactId>artemis-jakarta-ra</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -704,7 +704,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-service-extensions</artifactId>
+            <artifactId>artemis-jakarta-service-extensions</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -83,7 +83,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

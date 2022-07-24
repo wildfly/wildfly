@@ -59,6 +59,11 @@
             <artifactId>angus-mail</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
+        </dependency>
+
         <!-- Other deps consistent with the javax.* mail module -->
 
         <dependency>
@@ -67,7 +72,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <artifactId>wildfly-ee-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

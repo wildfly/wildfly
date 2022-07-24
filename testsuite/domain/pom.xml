@@ -114,7 +114,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq-injection</artifactId>
+            <artifactId>wildfly-messaging-activemq-injection-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>

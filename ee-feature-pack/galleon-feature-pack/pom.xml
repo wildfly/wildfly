@@ -375,7 +375,7 @@
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
                             <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                            <excludedArtifacts>wildfly-jar-boot|infinispan-hibernate-cache-v51|jboss-ejb-client-legacy|wildfly-core-feature-pack-common|wildfly-core-feature-pack-ee-8-api|wildfly-core-feature-pack-galleon-common|wildfly-core-feature-pack-galleon-pruned|wildfly-servlet-feature-pack-common|wildfly-servlet-feature-pack-ee-8-api|wildfly-servlet-feature-pack-galleon-common|wildfly-servlet-feature-pack-galleon-legacy|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-ee-8-api|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-ee-feature-pack-galleon-content|wildfly-elytron\z</excludedArtifacts>
+                            <excludedArtifacts>wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-ee-8-api|wildfly-core-feature-pack-galleon-common|wildfly-core-feature-pack-galleon-pruned|wildfly-servlet-feature-pack-common|wildfly-servlet-feature-pack-ee-8-api|wildfly-servlet-feature-pack-galleon-common|wildfly-servlet-feature-pack-galleon-legacy|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-ee-8-api|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-ee-feature-pack-galleon-content|wildfly-elytron\z</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>

@@ -60,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.modules</groupId>
@@ -92,7 +92,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-web-common</artifactId>
+            <artifactId>wildfly-web-common-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
