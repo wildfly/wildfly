@@ -114,6 +114,7 @@
         <module>rts</module>
         <module>testsuite/shared</module>
         <module>testsuite/test-feature-pack</module>
+        <module>testsuite/test-feature-pack-preview</module>
         <module>testsuite</module>
     </modules>
 
@@ -2078,19 +2079,6 @@
             <properties>
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
-        </profile>
-        <!-- Skip preview builds if specified -->
-        <profile>
-            <id>skip.preview</id>
-            <activation>
-                <property>
-                    <name>!skip.preview</name>
-                </property>
-            </activation>
-
-            <modules>
-                <module>testsuite/test-feature-pack-preview</module>
-            </modules>
         </profile>
 
         <profile>
