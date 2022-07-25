@@ -587,8 +587,8 @@
         <preview.version.org.eclipse.microprofile.rest.client.api>3.0</preview.version.org.eclipse.microprofile.rest.client.api>
         <!-- Implementations -->
         <preview.version.io.smallrye.open-api>3.0.0-RC2</preview.version.io.smallrye.open-api>
-        <preview.version.io.smallrye.smallrye-common>2.0.0-RC2</preview.version.io.smallrye.smallrye-common>
-        <preview.version.io.smallrye.smallrye-config>3.0.0-RC2</preview.version.io.smallrye.smallrye-config>
+        <preview.version.io.smallrye.smallrye-common>2.0.0-RC3</preview.version.io.smallrye.smallrye-common>
+        <preview.version.io.smallrye.smallrye-config>3.0.0-RC3</preview.version.io.smallrye.smallrye-config>
         <preview.version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC4</preview.version.io.smallrye.smallrye-fault-tolerance>
         <preview.version.io.smallrye.smallrye-health>4.0.0-RC2</preview.version.io.smallrye.smallrye-health>
         <preview.version.io.smallrye.smallrye-jwt>4.0.0-RC2</preview.version.io.smallrye.smallrye-jwt>
