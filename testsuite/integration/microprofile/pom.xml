@@ -334,6 +334,7 @@
                     <stdout>none</stdout>
                     <java-opts>${modular.jdk.args}</java-opts>
                     <system-properties>
+                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
                         <module.path>${jboss.dist}/modules</module.path>
                     </system-properties>
                 </configuration>
