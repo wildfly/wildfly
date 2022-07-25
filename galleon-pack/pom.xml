@@ -61,4 +61,40 @@
         </dependencies>
     </dependencyManagement>
 
+    <dependencies>
+
+        <!-- Ensure the boms get built. -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-common-ee-dependency-management</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-common-expansion-dependency-management</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-legacy-ee-bom</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-legacy-expansion-bom</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-standard-ee-bom</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-standard-expansion-bom</artifactId>
+            <type>pom</type>
+        </dependency>
+
+    </dependencies>
+
 </project>
