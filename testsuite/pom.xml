@@ -453,11 +453,24 @@
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
             </properties>
             <modules>
+                <module>test-feature-pack-preview</module>
                 <module>domain</module>
                 <module>integration</module>
                 <module>layers</module>
                 <module>preview</module>
                 <module>scripts</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>bootablejar.ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable.ee9</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-feature-pack-preview</module>
+                <module>integration</module>
             </modules>
         </profile>
 

@@ -2093,19 +2093,6 @@
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
-        <!-- Skip preview builds if specified -->
-        <profile>
-            <id>skip.preview</id>
-            <activation>
-                <property>
-                    <name>!skip.preview</name>
-                </property>
-            </activation>
-
-            <modules>
-                <module>testsuite/test-feature-pack-preview</module>
-            </modules>
-        </profile>
 
         <profile>
             <id>ee9.test.profile</id>
