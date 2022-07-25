@@ -40,7 +40,8 @@
     <module name="org.jboss.weld.core"/>
     <module name="org.jboss.weld.spi"/>
     <module name="org.joda.time"/>
-    <module name="org.jsoup"/>
+    <module name="org.jsoup" optional="true"/>
+    <module name="org.apache.xerces" services="import"/>
     <module name="sun.jdk" services="import"/>
     <module name="java.xml"/>
   </dependencies>

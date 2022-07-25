@@ -44,7 +44,6 @@
 
     <dependencyManagement>
         <dependencies>
-
             <!-- Just import the preview-expansion bom -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
@@ -57,28 +56,34 @@
         </dependencies>
     </dependencyManagement>
 
-<!--    <profiles>
+    <modules>
+        <!--
+             TODO move the source-transform module out of this part of the source tree.
+             Its use is no longer for 'preview'.
+         -->
+        <module>source-transform</module>
+    </modules>
+
+    <profiles>
         <profile>
             <id>skip.preview</id>
             <activation>
                 <property>
                     <name>!skip.preview</name>
                 </property>
-            </activation>-->
+            </activation>
 
             <modules>
-                <module>source-transform</module>
                 <module>build</module>
                 <module>deployment-transformer</module>
                 <module>dist</module>
                 <module>feature-pack</module>
-                <module>ee-9-api</module>
                 <module>common</module>
                 <module>common-microprofile</module>
                 <module>galleon-content</module>
                 <module>galleon-content-microprofile</module>
             </modules>
-<!--        </profile>
-    </profiles>-->
+        </profile>
+    </profiles>
 
 </project>

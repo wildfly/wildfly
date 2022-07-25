@@ -48,5 +48,8 @@
         <module name="javax.inject.api" />
         <module name="javax.security.jacc.api" />
         <module name="javax.ejb.api" />
+        <module name="jakarta.json.api" />
+        <module name="jakarta.ws.rs.api" />
+        <module name="com.nimbusds.nimbus-jose-jwt" />
     </dependencies>
 </module>

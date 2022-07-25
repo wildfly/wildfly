@@ -24,18 +24,6 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <!-- Use the WildFly Preview dependencies until standard WildFly moves to EE 10 -->
-        <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
-        <!-- Use the WildFly Preview feature pack for Galleon provisioning until standard WildFly moves to EE 10 -->
-        <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
-        <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
-        <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
-        <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
-        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared-jakarta</wildfly-testsuite-shared.artifactId>
-        <!-- WildFly Arquillian Adapter with Jakarta EE Support -->
-        <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
-        <version.org.wildfly.arquillian>5.0.0.Alpha1</version.org.wildfly.arquillian>
-        <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
     </properties>
 
     <dependencies>

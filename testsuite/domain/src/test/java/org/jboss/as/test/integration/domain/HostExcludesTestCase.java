@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -204,14 +205,21 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         ), getCurrentRemovedExtenstions());
 
         private static List<String> getCurrentRemovedExtenstions() {
-            return Arrays.asList(
-                    "org.jboss.as.messaging",
-                    "org.jboss.as.jacorb",
-                    "org.jboss.as.jsr77",
-                    "org.jboss.as.web",
-                    "org.wildfly.extension.picketlink",
-                    "org.jboss.as.security"
-            );
+            // TODO If we decide to remove these modules from WFP, uncomment this.
+            // See https://issues.redhat.com/browse/WFLY-16686
+            /*
+            if (AssumeTestGroupUtil.isWildFlyPreview()) {
+                return Arrays.asList(
+                        "org.jboss.as.messaging",
+                        "org.jboss.as.jacorb",
+                        "org.jboss.as.jsr77",
+                        "org.jboss.as.web",
+                        "org.wildfly.extension.picketlink",
+                        "org.jboss.as.security"
+                        );
+            }
+            */
+            return Collections.emptyList();
         }
 
         private final String name;

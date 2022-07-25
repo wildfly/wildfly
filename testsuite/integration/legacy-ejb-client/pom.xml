@@ -29,13 +29,8 @@
         <preview.version.org.jboss.ejb-client>The legacy testsuite is unintentionally including ejb client!
             It MUST be excluded to function properly! See the HACK comment in pom.xml</preview.version.org.jboss.ejb-client>
 
-        <!-- Use the WildFly Preview dependencies until standard WildFly moves to EE 10 -->
-        <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
-        <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
-        <!-- WildFly Arquillian Adapter with Jakarta EE Support -->
-        <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
-        <version.org.wildfly.arquillian>5.0.0.Alpha1</version.org.wildfly.arquillian>
-        <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
+        <!-- Use the legacy javax.* testsuite/shared as it's used client-side and client-side is currently javax.* -->
+        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared</wildfly-testsuite-shared.artifactId>
 
     </properties>
 

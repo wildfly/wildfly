@@ -46,7 +46,16 @@
         <module>opentelemetry</module>
     </modules>
 
-    <!-- DO NOT PLACE CONFIGURATION IN THIS POM EXPECTING IT TO BE INHERITED BY SUB MODULES.
-         SUB MODULES MAY NOT USE THIS ARTIFACT AS THEIR PARENT -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>

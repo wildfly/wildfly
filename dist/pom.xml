@@ -44,8 +44,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-feature-pack-parent</artifactId>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-expansion-bom</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -78,7 +78,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

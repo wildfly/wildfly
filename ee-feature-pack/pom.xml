@@ -44,6 +44,7 @@
     <modules>
         <module>common</module>
         <module>ee-8-api</module>
+        <module>ee-10-api</module>
         <module>galleon-common</module>
         <module>galleon-content</module>
         <module>galleon-feature-pack</module>
@@ -52,8 +53,6 @@
 
     <dependencyManagement>
         <dependencies>
-
-            <!-- Just import the ee bom -->
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-standard-ee-bom</artifactId>
