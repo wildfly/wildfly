@@ -236,17 +236,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse</groupId>
-            <artifactId>yasson</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.eclipse.angus</groupId>
             <artifactId>angus-activation</artifactId>
             <exclusions>
@@ -3118,6 +3107,7 @@
         </dependency>
 
         <dependency>
+            <!-- TODO. Remove the module for this and its declaration here and in the license file -->
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
         </dependency>
