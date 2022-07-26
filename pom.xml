@@ -551,7 +551,7 @@
         <version.org.jboss.narayana>5.12.7.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.9.Final</version.org.jboss.openjdk-orb>
         <legacy.version.org.jboss.resteasy>4.7.4.Final</legacy.version.org.jboss.resteasy>
-        <version.org.jboss.resteasy>6.1.0.Beta2</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>6.1.0.Beta3</version.org.jboss.resteasy>
         <legacy.version.org.jboss.resteasy.microprofile>${legacy.version.org.jboss.resteasy}</legacy.version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.microprofile>2.0.0.Beta1</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.0.0.Alpha3</version.org.jboss.resteasy.spring>
