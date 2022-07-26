@@ -35,12 +35,14 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilde
  * @author Paul Ferraro
  */
 public class ProtoStreamMarshaller extends UserMarshaller {
+    public static final String MEDIA_TYPE_NAME = MediaType.APPLICATION_OCTET_STREAM_TYPE;
+    public static final MediaType MEDIA_TYPE = MediaType.APPLICATION_OCTET_STREAM;
 
     public ProtoStreamMarshaller(ClassLoaderMarshaller loaderMarshaller, UnaryOperator<SerializationContextBuilder> builder) {
         this(builder.apply(new SerializationContextBuilder(loaderMarshaller).register(new IOSerializationContextInitializer())).build());
     }
 
     public ProtoStreamMarshaller(ImmutableSerializationContext context) {
-        super(MediaType.APPLICATION_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(context));
+        super(MEDIA_TYPE, new ProtoStreamByteBufferMarshaller(context));
     }
 }

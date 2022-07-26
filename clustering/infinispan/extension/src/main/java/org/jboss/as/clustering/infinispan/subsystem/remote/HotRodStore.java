@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -43,6 +44,7 @@ import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
 import org.infinispan.client.hotrod.impl.operations.PingResponse;
 import org.infinispan.commons.configuration.ConfiguredBy;
+import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.util.IntSet;
 import org.infinispan.marshall.persistence.PersistenceMarshaller;
@@ -116,12 +118,14 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
     }
 
     synchronized void setRemoteCache(RemoteCacheContainer container, String cacheName) {
-        this.cache = container.getCache(cacheName);
+        RemoteCache<ByteBuffer, ByteBuffer> cache = container.getCache(cacheName);
 
-        if (this.cache == null) {
+        if (cache == null) {
             // Administration support was introduced in protocol version 2.7
             throw InfinispanLogger.ROOT_LOGGER.remoteCacheMustBeDefined(container.getConfiguration().version().toString(), cacheName);
         }
+
+        this.cache = cache.withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(container.getMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(container.getMarshaller()).build());
 
         RemoteCacheManager manager = this.cache.getRemoteCacheManager();
         this.operationsFactory = new OperationsFactory(manager.getChannelFactory(), manager.getCodec(), null, manager.getConfiguration());
