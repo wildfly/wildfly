@@ -166,8 +166,8 @@ class KeycloakSubsystemParser implements XMLStreamConstants, XMLElementReader<Li
             }
         }
     }
-    
-       public void readRewriteRule(XMLExtendedStreamReader reader, PathAddress parent, List<ModelNode> rewriteRuleToToAdd) throws XMLStreamException {
+
+    public void readRewriteRule(XMLExtendedStreamReader reader, PathAddress parent, List<ModelNode> rewriteRuleToToAdd) throws XMLStreamException {
         String name = readNameAttribute(reader);
 
         Map<String, String> values = new HashMap<>();
@@ -212,7 +212,7 @@ class KeycloakSubsystemParser implements XMLStreamConstants, XMLElementReader<Li
         addCredential.get(CredentialDefinition.VALUE.getName()).set(value);
         return addCredential;
     }
-    
+
     private ModelNode getRedirectRuleToAdd(PathAddress parent, String name, String value) {
         ModelNode addRedirectRule = new ModelNode();
         addRedirectRule.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
@@ -342,8 +342,8 @@ class KeycloakSubsystemParser implements XMLStreamConstants, XMLElementReader<Li
             writer.writeEndElement();
         }
     }
-    
-      private void writeRedirectRules(XMLExtendedStreamWriter writer, ModelNode redirectRules) throws XMLStreamException {
+
+    private void writeRedirectRules(XMLExtendedStreamWriter writer, ModelNode redirectRules) throws XMLStreamException {
         Map<String, Object> parsed = new LinkedHashMap<>();
         for (Property redirectRule : redirectRules.asPropertyList()) {
             String ruleName = redirectRule.getName();

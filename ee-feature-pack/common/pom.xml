@@ -1206,6 +1206,17 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-keycloak</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-web</artifactId>
             <exclusions>
                 <exclusion>

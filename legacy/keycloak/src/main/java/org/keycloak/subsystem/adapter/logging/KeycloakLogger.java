@@ -18,11 +18,7 @@ package org.keycloak.subsystem.adapter.logging;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-
-import static org.jboss.logging.Logger.Level.INFO;
 
 /**
  * This interface to be fleshed out later when error messages are fully externalized.
@@ -37,9 +33,9 @@ public interface KeycloakLogger extends BasicLogger {
      */
     KeycloakLogger ROOT_LOGGER = Logger.getMessageLogger(KeycloakLogger.class, "org.jboss.keycloak");
 
-    @LogMessage(level = INFO)
-    @Message(value = "Keycloak subsystem override for deployment %s")
-    void deploymentSecured(String deployment);
+    //@LogMessage(level = INFO)
+    //@Message(value = "Keycloak subsystem override for deployment %s")
+    //void deploymentSecured(String deployment);
 
 
 }

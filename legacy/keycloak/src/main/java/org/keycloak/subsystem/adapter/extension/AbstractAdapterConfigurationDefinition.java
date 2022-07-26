@@ -17,15 +17,13 @@
  */
 package org.keycloak.subsystem.adapter.extension;
 
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -39,7 +37,7 @@ import java.util.Map;
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2013 Red Hat Inc.
  */
-abstract class AbstractAdapterConfigurationDefinition extends SimpleResourceDefinition {
+abstract class AbstractAdapterConfigurationDefinition extends ModelOnlyResourceDefinition {
 
     protected static final SimpleAttributeDefinition REALM =
             new SimpleAttributeDefinitionBuilder("realm", ModelType.STRING, true)
@@ -131,6 +129,8 @@ abstract class AbstractAdapterConfigurationDefinition extends SimpleResourceDefi
         ALL_ATTRIBUTES.addAll(SharedAttributeDefinitons.ATTRIBUTES);
     }
 
+    static final SimpleAttributeDefinition[] ALL_ATTRIBUTES_ARRAY = ALL_ATTRIBUTES.toArray(new SimpleAttributeDefinition[ALL_ATTRIBUTES.size()]);
+
     static final Map<String, SimpleAttributeDefinition> XML_ATTRIBUTES = new HashMap<String, SimpleAttributeDefinition>();
 
     static {
@@ -146,30 +146,12 @@ abstract class AbstractAdapterConfigurationDefinition extends SimpleResourceDefi
         }
     }
 
-    private final AbstractAdapterConfigurationWriteAttributeHandler attrWriteHandler;
-    private final List<SimpleAttributeDefinition> attributes;
-
-    protected AbstractAdapterConfigurationDefinition(String name, List<SimpleAttributeDefinition> attributes, AbstractAdapterConfigurationAddHandler addHandler, AbstractAdapterConfigurationRemoveHandler removeHandler, AbstractAdapterConfigurationWriteAttributeHandler attrWriteHandler) {
+    protected AbstractAdapterConfigurationDefinition(String name, SimpleAttributeDefinition[] attributes) {
         super(PathElement.pathElement(name),
                 KeycloakExtension.getResourceDescriptionResolver(name),
-                addHandler,
-                removeHandler);
-        this.attributes = attributes;
-        this.attrWriteHandler = attrWriteHandler;
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        for (AttributeDefinition attrDef : this.attributes) {
-            resourceRegistration.registerReadWriteAttribute(attrDef, null, this.attrWriteHandler);
-        }
+                new ModelOnlyAddStepHandler(attributes),
+                attributes
+                );
     }
 
     public static SimpleAttributeDefinition lookup(String name) {

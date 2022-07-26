@@ -17,12 +17,11 @@
 package org.keycloak.subsystem.adapter.extension;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -30,7 +29,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2013 Red Hat Inc.
  */
-public class CredentialDefinition extends SimpleResourceDefinition {
+public class CredentialDefinition extends ModelOnlyResourceDefinition {
 
     public static final String TAG_NAME = "credential";
 
@@ -43,19 +42,8 @@ public class CredentialDefinition extends SimpleResourceDefinition {
     public CredentialDefinition() {
         super(PathElement.pathElement(TAG_NAME),
                 KeycloakExtension.getResourceDescriptionResolver(TAG_NAME),
-                new CredentialAddHandler(VALUE),
-                CredentialRemoveHandler.INSTANCE);
+                new ModelOnlyAddStepHandler(VALUE),
+                VALUE);
     }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadWriteAttribute(VALUE, null, new CredentialReadWriteAttributeHandler());
-    }
 }

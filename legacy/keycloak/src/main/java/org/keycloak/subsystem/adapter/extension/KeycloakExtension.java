@@ -16,16 +16,20 @@
  */
 package org.keycloak.subsystem.adapter.extension;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.keycloak.subsystem.adapter.logging.KeycloakLogger;
+
+import java.util.Collections;
+import java.util.Set;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -35,7 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2013 Red Hat Inc.
  */
-public class KeycloakExtension implements Extension {
+public final class KeycloakExtension extends AbstractLegacyExtension {
 
     public static final String SUBSYSTEM_NAME = "keycloak";
     public static final String NAMESPACE_1_1 = "urn:jboss:domain:keycloak:1.1";
@@ -53,7 +57,11 @@ public class KeycloakExtension implements Extension {
     static final CredentialDefinition CREDENTIAL_DEFINITION = new CredentialDefinition();
     static final RedirecRewritetRuleDefinition REDIRECT_RULE_DEFINITON = new RedirecRewritetRuleDefinition();
 
-    public static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+    public KeycloakExtension() {
+        super("org.keycloak.keycloak-adapter-subsystem", SUBSYSTEM_NAME);
+    }
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
             prefix.append('.').append(kp);
@@ -65,7 +73,7 @@ public class KeycloakExtension implements Extension {
      * {@inheritDoc}
      */
     @Override
-    public void initializeParsers(final ExtensionParsingContext context) {
+    protected void initializeLegacyParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, KeycloakExtension.NAMESPACE_1_1, PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, KeycloakExtension.NAMESPACE_1_2, PARSER);
     }
@@ -74,7 +82,7 @@ public class KeycloakExtension implements Extension {
      * {@inheritDoc}
      */
     @Override
-    public void initialize(final ExtensionContext context) {
+    protected Set<ManagementResourceRegistration> initializeLegacyModel(final ExtensionContext context) {
         KeycloakLogger.ROOT_LOGGER.debug("Activating Keycloak Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MGMT_API_VERSION);
 
@@ -89,5 +97,7 @@ public class KeycloakExtension implements Extension {
         secureServerRegistration.registerSubModel(REDIRECT_RULE_DEFINITON);
 
         subsystem.registerXMLElementWriter(PARSER);
+
+        return Collections.singleton(registration);
     }
 }

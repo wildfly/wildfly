@@ -16,12 +16,10 @@
  */
 package org.keycloak.subsystem.adapter.extension;
 
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +31,7 @@ import java.util.Map;
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2013 Red Hat Inc.
  */
-public class RealmDefinition extends SimpleResourceDefinition {
+public class RealmDefinition extends ModelOnlyResourceDefinition {
 
     public static final String TAG_NAME = "realm";
 
@@ -47,6 +45,7 @@ public class RealmDefinition extends SimpleResourceDefinition {
         ALL_ATTRIBUTES.addAll(REALM_ONLY_ATTRIBUTES);
         ALL_ATTRIBUTES.addAll(SharedAttributeDefinitons.ATTRIBUTES);
     }
+    protected static final SimpleAttributeDefinition[] ALL_ATTRIBUTES_ARRAY = ALL_ATTRIBUTES.toArray(new SimpleAttributeDefinition[ALL_ATTRIBUTES.size()]);
 
     private static final Map<String, SimpleAttributeDefinition> DEFINITION_LOOKUP = new HashMap<String, SimpleAttributeDefinition>();
     static {
@@ -55,31 +54,13 @@ public class RealmDefinition extends SimpleResourceDefinition {
         }
     }
 
-    private static final RealmWriteAttributeHandler realmAttrHandler = new RealmWriteAttributeHandler(ALL_ATTRIBUTES.toArray(new SimpleAttributeDefinition[0]));
-
     public RealmDefinition() {
         super(PathElement.pathElement("realm"),
                 KeycloakExtension.getResourceDescriptionResolver("realm"),
-                RealmAddHandler.INSTANCE,
-                RealmRemoveHandler.INSTANCE);
+                new ModelOnlyAddStepHandler(ALL_ATTRIBUTES_ARRAY),
+                ALL_ATTRIBUTES_ARRAY
+                );
     }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
-        for (AttributeDefinition attrDef : ALL_ATTRIBUTES) {
-            //TODO: use subclass of realmAttrHandler that can call RealmDefinition.validateTruststoreSetIfRequired
-            resourceRegistration.registerReadWriteAttribute(attrDef, null, realmAttrHandler);
-        }
-    }
-
 
     public static SimpleAttributeDefinition lookup(String name) {
         return DEFINITION_LOOKUP.get(name);

@@ -18,19 +18,18 @@
 package org.keycloak.subsystem.adapter.extension;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
  *
  * @author sblanc
  */
-public class RedirecRewritetRuleDefinition extends SimpleResourceDefinition {
+public class RedirecRewritetRuleDefinition extends ModelOnlyResourceDefinition {
 
     public static final String TAG_NAME = "redirect-rewrite-rule";
 
@@ -43,19 +42,8 @@ public class RedirecRewritetRuleDefinition extends SimpleResourceDefinition {
     public RedirecRewritetRuleDefinition() {
         super(PathElement.pathElement(TAG_NAME),
                 KeycloakExtension.getResourceDescriptionResolver(TAG_NAME),
-                new RedirectRewriteRuleAddHandler(VALUE),
-                RedirectRewriteRuleRemoveHandler.INSTANCE);
+                new ModelOnlyAddStepHandler(VALUE),
+                VALUE);
     }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadWriteAttribute(VALUE, null, new RedirectRewriteRuleReadWriteAttributeHandler());
-    }
 }
