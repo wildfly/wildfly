@@ -27,6 +27,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -35,7 +36,6 @@ import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
-import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.SecurityResourceDefinition;
@@ -850,6 +850,17 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
     }
 
+    private void applyLegacyStoreAttributeDefaults(ModelNode operation) {
+        if (!this.schema.since(InfinispanSchema.VERSION_14_0)) {
+            for (Attribute attribute : Set.of(StoreResourceDefinition.Attribute.PASSIVATION, StoreResourceDefinition.Attribute.PURGE)) {
+                // If undefined, use default value from legacy schema
+                if (!operation.hasDefined(attribute.getName())) {
+                    operation.get(attribute.getName()).set(ModelNode.TRUE);
+                }
+            }
+        }
+    }
+
     private void parseCustomStore(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = cacheAddress.append(CustomStoreResourceDefinition.PATH);
@@ -876,6 +887,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         if (!operation.hasDefined(CustomStoreResourceDefinition.Attribute.CLASS.getName())) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(XMLAttribute.CLASS));
         }
+
+        this.applyLegacyStoreAttributeDefaults(operation);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseStoreElement(reader, address, operations);
@@ -908,6 +921,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
             }
         }
+
+        this.applyLegacyStoreAttributeDefaults(operation);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseStoreElement(reader, address, operations);
@@ -950,6 +965,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             }
         }
 
+        this.applyLegacyStoreAttributeDefaults(operation);
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseStoreElement(reader, address, operations);
         }
@@ -980,6 +997,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
             }
         }
+
+        this.applyLegacyStoreAttributeDefaults(operation);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseStoreElement(reader, address, operations);
@@ -1078,6 +1097,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
             }
         }
+
+        this.applyLegacyStoreAttributeDefaults(operation);
     }
 
     private void parseJDBCStoreStringTable(XMLExtendedStreamReader reader, PathAddress storeAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {

@@ -45,7 +45,7 @@ import org.jboss.dmr.ModelType;
  * /subsystem=infinispan/cache-container=X/cache=Y/remote-store=REMOTE_STORE
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
- * @deprecated Use {@link org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition} instead.
+ * @deprecated Use {@link org.jboss.as.clustering.infinispan.subsystem.HotRodStoreResourceDefinition} instead.
  */
 @Deprecated
 public class RemoteStoreResourceDefinition extends StoreResourceDefinition {

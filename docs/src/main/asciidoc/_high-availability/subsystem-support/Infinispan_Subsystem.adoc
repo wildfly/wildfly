@@ -424,7 +424,7 @@ The following CLI script demonstrates a typical use case for offloading sessions
 ----
 batch
 /subsystem=infinispan/cache-container=web/invalidation-cache=foo:add()
-/subsystem=infinispan/cache-container=web/invalidation-cache=foo/store=hotrod:add(remote-cache-container=web, cache-configuration=transactional, fetch-state=false, purge=false, passivation=false, shared=true)
+/subsystem=infinispan/cache-container=web/invalidation-cache=foo/store=hotrod:add(remote-cache-container=web, cache-configuration=transactional, fetch-state=false, shared=true)
 /subsystem=infinispan/cache-container=web/invalidation-cache=foo/component=transaction:add(mode=BATCH)
 /subsystem=infinispan/cache-container=web/invalidation-cache=foo/component=locking:add(isolation=REPEATABLE_READ)
 run-batch

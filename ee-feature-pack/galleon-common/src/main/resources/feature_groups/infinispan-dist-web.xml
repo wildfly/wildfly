@@ -23,6 +23,8 @@
                     <param name="interval" value="0"/>
                 </feature>
                 <feature spec="subsystem.infinispan.cache-container.distributed-cache.store.file">
+                    <param name="passivation" value="true"/>
+                    <param name="purge" value="true"/>
                     <unset param="relative-to"/>
                 </feature>
             </feature>

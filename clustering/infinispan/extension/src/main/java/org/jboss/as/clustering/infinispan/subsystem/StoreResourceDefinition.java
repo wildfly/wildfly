@@ -74,9 +74,9 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         FETCH_STATE("fetch-state", ModelType.BOOLEAN, ModelNode.TRUE),
         MAX_BATCH_SIZE("max-batch-size", ModelType.INT, new ModelNode(100)),
-        PASSIVATION("passivation", ModelType.BOOLEAN, ModelNode.TRUE),
+        PASSIVATION("passivation", ModelType.BOOLEAN, ModelNode.FALSE),
         PRELOAD("preload", ModelType.BOOLEAN, ModelNode.FALSE),
-        PURGE("purge", ModelType.BOOLEAN, ModelNode.TRUE),
+        PURGE("purge", ModelType.BOOLEAN, ModelNode.FALSE),
         SHARED("shared", ModelType.BOOLEAN, ModelNode.FALSE),
         PROPERTIES("properties"),
         ;
