@@ -386,6 +386,7 @@
         <version.io.smallrye.smallrye-opentracing>3.0.0-RC1</version.io.smallrye.smallrye-opentracing>
         <legacy.version.io.smallrye.smallrye-reactive-messaging>3.18.0</legacy.version.io.smallrye.smallrye-reactive-messaging>
         <version.io.smallrye.smallrye-reactive-messaging>4.0.0.RC1</version.io.smallrye.smallrye-reactive-messaging>
+        <legacy.version.io.undertow>2.2.18.Final</legacy.version.io.undertow>
         <version.io.undertow>2.3.0.Alpha1</version.io.undertow>
         <legacy.version.io.undertow.jastow>2.0.10.Final</legacy.version.io.undertow.jastow>
         <version.io.undertow.jastow>2.2.1.Final</version.io.undertow.jastow>
@@ -402,12 +403,14 @@
         <legacy.version.jakarta.enterprise>2.0.2</legacy.version.jakarta.enterprise>
         <version.jakarta.enterprise>4.0.0</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>4.0.1</version.jakarta.faces.jakarta-faces-api>
+        <legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</legacy.version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.1.0</version.jakarta.jms.jakarta-jms-api>
         <legacy.version.jakarta.json.bind.api>1.0.2</legacy.version.jakarta.json.bind.api>
         <version.jakarta.json.bind.api>3.0.0</version.jakarta.json.bind.api>
         <version.jakarta.json.jakarta-json-api>2.1.0</version.jakarta.json.jakarta-json-api>
+        <legacy.version.jakarta.json.jakarta-json-api>1.1.6</legacy.version.jakarta.json.jakarta-json-api>
         <legacy.version.jakarta.jws.jakarta.jws-api>2.1.0</legacy.version.jakarta.jws.jakarta.jws-api>
         <version.jakarta.jws.jakarta-jws-api>3.0.0</version.jakarta.jws.jakarta-jws-api>
         <legacy.version.jakarta.mail>1.6.7</legacy.version.jakarta.mail>
@@ -508,6 +511,7 @@
         <version.org.glassfish.jakarta.el>5.0.0-M1</version.org.glassfish.jakarta.el>
         <legacy.version.org.glassfish.jakarta.enterprise.concurrent>1.1.1</legacy.version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.enterprise.concurrent>3.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
+        <legacy.version.org.glassfish.jakarta.json>1.1.6</legacy.version.org.glassfish.jakarta.json>
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF. Use the version expression from the root
          pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
         <version.org.glassfish.jaxb>4.0.0</version.org.glassfish.jaxb>
@@ -569,9 +573,12 @@
         <version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>2.0.0.Final</version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>
         <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>2.0.0.Final</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
         <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>3.1.0.SP02</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>
+        <legacy.version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>2.0.0.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>2.0.0.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
+        <legacy.version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.5_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.5_spec>
+        <legacy.version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>2.0.1.Final</legacy.version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>2.0.0.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>
@@ -621,9 +628,11 @@
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.12.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.15.Final</version.org.wildfly.naming-client>
+        <legacy.version.org.wildfly.security.elytron>1.19.0.Final</legacy.version.org.wildfly.security.elytron>
         <version.org.wildfly.security.elytron>2.0.0.Beta1</version.org.wildfly.security.elytron>
         <legacy.version.org.wildfly.security.elytron-mp>1.19.0.Final</legacy.version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.security.elytron-mp>2.0.0.Beta3</version.org.wildfly.security.elytron-mp>
+        <legacy.version.org.wildfly.security.elytron-web>1.10.1.Final</legacy.version.org.wildfly.security.elytron-web>
         <version.org.wildfly.security.elytron-web>3.0.0.Beta1</version.org.wildfly.security.elytron-web>
         <version.org.wildfly.security.jakarta.elytron-ee>3.0.0.Beta2</version.org.wildfly.security.jakarta.elytron-ee>
         <version.org.wildfly.transaction.client>2.0.1.Final</version.org.wildfly.transaction.client>
@@ -1176,6 +1185,17 @@
                 </exclusions>
             </dependency>
 
+            <!--
+            TODO used both in both a testsuite/integration/microprofile-tck and in legacy code.
+            Once the legacy use is removed, this can become a <scope>test</scope> dependency.
+            TODO double-check that the testsuite use is really needed
+            -->
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>jakarta.json</artifactId>
+                <version>${legacy.version.org.glassfish.jakarta.json}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
@@ -1326,8 +1346,8 @@
             </dependency>
 
             <!--
-            TODO used both in testuite/integration/elytron-oidc-client dep and in legacy FP.
-            Once legacy FP moves to EE 10, etc structure, this can become a <scope>test</scope> dependency.
+            TODO used both in testuite/integration/elytron-oidc-client dep and in legacy code.
+            Once the legacy use is removed, etc structure, this can become a <scope>test</scope> dependency.
             -->
             <dependency>
                 <groupId>org.jsoup</groupId>
