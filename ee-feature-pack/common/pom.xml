@@ -1707,7 +1707,7 @@
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
             <artifactId>jakarta.security.enterprise</artifactId>
-            <!-- Exclude dependencies declared in the ee-8-api module -->
+            <!-- Exclude dependencies declared in the ee-10-api module -->
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>

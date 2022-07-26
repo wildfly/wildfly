@@ -827,7 +827,7 @@
                 <groupId>jakarta.ejb</groupId>
                 <artifactId>jakarta.ejb-api</artifactId>
                 <version>${preview.version.jakarta.ejb.jakarta-ejb-api}</version>
-                <!-- Exclude dependencies declared in the servlet-feature-pack-ee-8-api module -->
+                <!-- Exclude dependencies declared in the servlet-feature-pack-ee-10-api module -->
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
