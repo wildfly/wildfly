@@ -608,28 +608,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.xml.bind.external</groupId>
-                <artifactId>relaxng-datatype</artifactId>
-                <version>${version.sun.jaxb}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun.xml.bind.external</groupId>
-                <artifactId>rngom</artifactId>
-                <version>${version.sun.jaxb}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>relaxngDatatype</groupId>
-                        <artifactId>relaxngDatatype</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind.external</groupId>
-                        <artifactId>relaxng-datatype</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>com.sun.xml.fastinfoset</groupId>
                 <artifactId>FastInfoset</artifactId>
                 <version>${version.com.sun.xml.fastinfoset}</version>
@@ -1625,18 +1603,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.el</artifactId>
-                <version>${version.org.glassfish.jakarta.el}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+			
             <dependency>
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-commons</artifactId>
