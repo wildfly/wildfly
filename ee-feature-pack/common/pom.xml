@@ -3107,12 +3107,6 @@
         </dependency>
 
         <dependency>
-            <!-- TODO. Remove the module for this and its declaration here and in the license file -->
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jasypt</groupId>
             <artifactId>jasypt</artifactId>
         </dependency>

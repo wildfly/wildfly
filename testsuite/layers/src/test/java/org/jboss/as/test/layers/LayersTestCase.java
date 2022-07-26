@@ -121,10 +121,6 @@ public class LayersTestCase {
         "org.wildfly.security.jakarta.client.resteasy",
         "org.wildfly.security.jakarta.client.webservices",
         "org.jboss.resteasy.microprofile.config",
-        // TODO remove in the big-bang. No longer referenced by org.hibernate in Hibernate 6
-        "org.javassist",
-        // TODO no longer referenced by org.jboss.as.clustering.infinispan in WildFly Preview. Remove this as part of the big bang.
-        "internal.jakarta.transaction.api",
     };
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning

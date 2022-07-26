@@ -1199,14 +1199,11 @@
                 </exclusions>
             </dependency>
 
-            <!--
-            TODO used both in both a testuite/integration/basic and in legacy FP.
-            Once legacy FP moves to EE 10, etc structure, this can become a <scope>test</scope> dependency.
-            -->
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
                 <version>${version.org.javassist}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
