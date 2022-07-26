@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.jms.JMSDestinationDefinition;
-import javax.jms.Message;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.Message;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 
@@ -36,7 +36,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
  */
 @JMSDestinationDefinition(
         name="java:/queue/NoTimerMDB-queue",
-        interfaceName = "javax.jms.Queue"
+        interfaceName = "jakarta.jms.Queue"
 )
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})

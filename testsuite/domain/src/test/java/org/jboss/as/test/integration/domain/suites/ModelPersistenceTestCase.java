@@ -42,7 +42,6 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.util.EENamespaceTransformer;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
@@ -437,7 +436,7 @@ public class ModelPersistenceTestCase {
         war.addAsWebInfResource(new StringAsset("Malformed"), "web.xml");
         File brokenWar = new File(System.getProperty("java.io.tmpdir") + File.separator + "malformedDeployment.war");
         brokenWar.deleteOnExit();
-        EENamespaceTransformer.jakartaTransform(new ZipExporterImpl(war), brokenWar);
+        new ZipExporterImpl(war).exportTo(brokenWar, true);
         return brokenWar;
     }
 }

@@ -21,9 +21,9 @@
  */
 package org.jboss.as.testsuite.integration.secman.ejbs;
 
-import javax.ejb.Local;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.Local;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 /**
  * A SLSB bean which reads the given system property and returns its value.

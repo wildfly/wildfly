@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 
 /**
  * TestEntityManager that implements createQuery
@@ -66,7 +66,7 @@ public class TestEntityManager implements InvocationHandler {
             boolean alreadyHasInterfaceClass = false;
             for (int interfaceIndex = 0; interfaceIndex < targetInterfaces.length; interfaceIndex++) {
                 Class interfaceClass = targetInterfaces[interfaceIndex];
-                if (interfaceClass.equals(javax.persistence.Query.class)) {
+                if (interfaceClass.equals(jakarta.persistence.Query.class)) {
                     proxyInterfaces = targetInterfaces;                     // targetInterfaces already has all interfaces
                     alreadyHasInterfaceClass = true;
                     break;
@@ -74,7 +74,7 @@ public class TestEntityManager implements InvocationHandler {
                 proxyInterfaces[1 + interfaceIndex] = interfaceClass;
             }
             if (!alreadyHasInterfaceClass) {
-                proxyInterfaces[0] = javax.persistence.Query.class;
+                proxyInterfaces[0] = jakarta.persistence.Query.class;
             }
 
             Query proxyQuery = (Query) Proxy.newProxyInstance(

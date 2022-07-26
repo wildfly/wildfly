@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ejb.stateful.passivation.ejb2;
 
 import java.rmi.RemoteException;
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.jboss.logging.Logger;
 

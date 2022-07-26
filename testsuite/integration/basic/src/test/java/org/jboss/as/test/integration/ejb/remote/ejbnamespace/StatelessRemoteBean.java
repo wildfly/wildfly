@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.ejbnamespace;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  *

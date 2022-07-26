@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.view;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @author Stuart Douglas

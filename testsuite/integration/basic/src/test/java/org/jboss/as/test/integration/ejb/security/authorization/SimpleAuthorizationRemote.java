@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ejb.security.authorization;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>

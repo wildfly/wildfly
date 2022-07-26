@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.enventry;
 
-import javax.annotation.ManagedBean;
-import javax.annotation.Resource;
+import jakarta.annotation.ManagedBean;
+import jakarta.annotation.Resource;
 
 /**
  * @author Stuart Douglas

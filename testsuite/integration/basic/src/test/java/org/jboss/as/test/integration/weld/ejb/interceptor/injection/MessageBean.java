@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.ejb.interceptor.injection;
 
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
 
 /**
  * @author Stuart Douglas

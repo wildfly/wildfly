@@ -16,7 +16,7 @@
 
     <service-ref>
         <service-ref-name>service3</service-ref-name>
-        <service-interface>javax.xml.ws.Service</service-interface>
+        <service-interface>jakarta.xml.ws.Service</service-interface>
         <wsdl-file>WEB-INF/wsdl/TestService.wsdl</wsdl-file>
         <service-qname>{http://www.openuri.org/2004/04/HelloWorld}EndpointService</service-qname>
     </service-ref>

@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.jpa.beanvalidation;
 
-import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.Stateful;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * stateful session bean

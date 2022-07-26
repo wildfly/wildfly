@@ -24,7 +24,7 @@ package org.jboss.as.test.multinode.ejb.timer.database;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface RefreshIF {

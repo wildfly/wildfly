@@ -25,7 +25,7 @@ package org.jboss.as.test.multinode.remotecall;
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
-public interface StatefulRemote extends javax.ejb.EJBObject {
+public interface StatefulRemote extends jakarta.ejb.EJBObject {
     void localCall() throws Exception;
 
     void localHomeCall() throws Exception;

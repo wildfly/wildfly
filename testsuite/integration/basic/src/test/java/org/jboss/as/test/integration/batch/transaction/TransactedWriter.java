@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.batch.transaction;
 
-import javax.batch.api.chunk.AbstractItemWriter;
-import javax.inject.Named;
+import jakarta.batch.api.chunk.AbstractItemWriter;
+import jakarta.inject.Named;
 import java.util.List;
 
 @Named

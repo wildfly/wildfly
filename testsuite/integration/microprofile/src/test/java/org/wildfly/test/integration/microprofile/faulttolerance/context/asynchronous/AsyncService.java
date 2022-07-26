@@ -23,8 +23,8 @@ package org.wildfly.test.integration.microprofile.faulttolerance.context.asynchr
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 

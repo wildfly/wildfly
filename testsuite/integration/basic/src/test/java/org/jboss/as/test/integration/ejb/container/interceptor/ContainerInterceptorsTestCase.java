@@ -160,7 +160,7 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
 
     /**
      * Tests that the container-interceptor(s) have access to the data that's passed by a remote client via the
-     * {@link javax.interceptor.InvocationContext#getContextData()}
+     * {@link jakarta.interceptor.InvocationContext#getContextData()}
      */
     @Test
     // force real remote invocation so that the RemotingConnectionEJBReceiver is used instead of a LocalEJBReceiver

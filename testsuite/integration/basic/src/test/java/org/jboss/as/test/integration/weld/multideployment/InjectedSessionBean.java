@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.multideployment;
 
-import javax.ejb.Stateful;
-import javax.inject.Inject;
+import jakarta.ejb.Stateful;
+import jakarta.inject.Inject;
 
 @Stateful
 public class InjectedSessionBean {

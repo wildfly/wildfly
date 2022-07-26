@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.naming.remote.multiple;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface MyEjb {

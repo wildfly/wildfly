@@ -23,13 +23,13 @@
 package org.jboss.as.test.integration.jpa.mockprovider.txtimeout;
 
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Resource;
-import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Status;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateful;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Status;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.logging.Logger;

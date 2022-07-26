@@ -23,8 +23,8 @@
 package org.jboss.as.test.integration.ejb.mdb.messagelistener.nomethodinterface;
 
 import java.util.concurrent.CountDownLatch;
-import javax.annotation.PostConstruct;
-import javax.ejb.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Singleton;
 
 /**
  * @author Jan Martiska

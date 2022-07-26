@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.domain;
 
-import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -119,8 +118,7 @@ public class JVMServerPropertiesTestCase {
         WebArchive deployment = createDeployment();
         deploymentPath = DomainTestSupport.getBaseDir(JVMServerPropertiesTestCase.class.getSimpleName()).toPath().resolve("deployments");
         deploymentPath.toFile().mkdirs();
-        jakartaTransform(deployment.as(ZipExporter.class), deploymentPath.resolve(PROP_SERVLET_APP_WAR).toFile());
-        //deployment.as(ZipExporter.class).exportTo(deploymentPath.resolve(PROP_SERVLET_APP_WAR).toFile(), true);
+        deployment.as(ZipExporter.class).exportTo(deploymentPath.resolve(PROP_SERVLET_APP_WAR).toFile(), true);
 
         testSupport.start();
 

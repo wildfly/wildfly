@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.jpa.mockprovider.classtransformer;
 
-import javax.ejb.Stateful;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.LockModeType;
-import javax.persistence.PersistenceUnit;
+import jakarta.ejb.Stateful;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceUnit;
 
 /**
  * stateful session bean

@@ -18,7 +18,7 @@ package org.wildfly.test.integration.elytron.securityapi;
 
 import java.security.Principal;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * The local interface to the simple WhoAmI bean.

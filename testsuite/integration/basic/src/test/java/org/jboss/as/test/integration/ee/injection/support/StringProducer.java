@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ee.injection.support;
 
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.inject.Produces;
 
 public class StringProducer {
 

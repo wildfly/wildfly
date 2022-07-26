@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateless;
 
-import javax.ejb.SessionBean;
+import jakarta.ejb.SessionBean;
 
 import org.jboss.as.test.clustering.cluster.ejb2.stateless.bean.StatelessBeanBase;
 

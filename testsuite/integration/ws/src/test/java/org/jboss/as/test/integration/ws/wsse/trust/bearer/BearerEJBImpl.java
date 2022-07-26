@@ -24,10 +24,10 @@ import org.apache.cxf.annotations.EndpointProperties;
 import org.apache.cxf.annotations.EndpointProperty;
 import org.jboss.as.test.integration.ws.wsse.trust.ContextProvider;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceContext;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.WebServiceContext;
 
 @WebService
         (

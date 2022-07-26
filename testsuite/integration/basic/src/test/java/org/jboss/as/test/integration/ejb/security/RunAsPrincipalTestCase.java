@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
 
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 
 import org.hamcrest.CoreMatchers;

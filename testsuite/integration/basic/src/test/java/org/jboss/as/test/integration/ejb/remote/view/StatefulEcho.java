@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.remote.view;
 
-import javax.ejb.Local;
-import javax.ejb.Stateful;
+import jakarta.ejb.Local;
+import jakarta.ejb.Stateful;
 
 /**
  * @author Jaikiran Pai

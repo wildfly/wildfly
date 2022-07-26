@@ -16,10 +16,10 @@
  */
 package org.jboss.as.test.integration.jsf.version.war;
 
-import javax.enterprise.context.SessionScoped;
-import javax.faces.annotation.FacesConfig;
-import javax.faces.context.FacesContext;
-import javax.inject.Named;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.annotation.FacesConfig;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Named;
 
 import java.io.Serializable;
 

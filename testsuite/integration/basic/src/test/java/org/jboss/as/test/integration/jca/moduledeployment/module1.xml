@@ -31,8 +31,8 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.resource.api"/>
-        <module name="javax.validation.api"/>
+        <module name="jakarta.resource.api"/>
+        <module name="jakarta.validation.api"/>
         <module name="org.hibernate.validator"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.transactions"/>
@@ -41,7 +41,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.threads"/>
         <module name="javax.xml.stream.api"/>
-        <module name="javax.jms.api"/>
+        <module name="jakarta.jms.api"/>
         <module name="org.wildfly.common"/>
     </dependencies>
 </module>

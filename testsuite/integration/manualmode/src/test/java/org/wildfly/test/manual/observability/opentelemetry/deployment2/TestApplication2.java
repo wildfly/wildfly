@@ -19,7 +19,7 @@
 
 package org.wildfly.test.manual.observability.opentelemetry.deployment2;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 
 public class TestApplication2 extends Application {
 

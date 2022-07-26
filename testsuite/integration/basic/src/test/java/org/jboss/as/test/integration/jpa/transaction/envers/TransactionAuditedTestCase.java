@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.persistence.TransactionRequiredException;
+import jakarta.persistence.TransactionRequiredException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

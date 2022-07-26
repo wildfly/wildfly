@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.jpa.epcpropagation.hierarchy;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateful;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateful;
 import javax.naming.InitialContext;
 
 import org.junit.Assert;

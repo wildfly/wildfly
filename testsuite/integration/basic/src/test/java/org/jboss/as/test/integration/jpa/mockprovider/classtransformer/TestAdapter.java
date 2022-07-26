@@ -2,7 +2,7 @@ package org.jboss.as.test.integration.jpa.mockprovider.classtransformer;
 
 import java.util.Map;
 
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import org.jipijapa.plugin.spi.JtaManager;
 import org.jipijapa.plugin.spi.ManagementAdaptor;

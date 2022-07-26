@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ws.serviceref;
 
-import javax.xml.ws.WebServiceRef;
+import jakarta.xml.ws.WebServiceRef;
 
 /**
  * @author Stuart Douglas

@@ -21,10 +21,10 @@
 
 package org.jboss.as.test.integration.ejb.security.runasprincipal.transitive;
 
-import javax.annotation.security.RunAs;
-import javax.ejb.EJB;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.annotation.security.RunAs;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.WhoAmI;
 import org.jboss.ejb3.annotation.RunAsPrincipal;
 import org.jboss.ejb3.annotation.SecurityDomain;

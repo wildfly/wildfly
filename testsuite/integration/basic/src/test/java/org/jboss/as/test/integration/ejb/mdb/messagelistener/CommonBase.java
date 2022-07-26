@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.mdb.messagelistener;
 
-import javax.jms.MessageListener;
+import jakarta.jms.MessageListener;
 
 /**
  * @author Jaikiran Pai

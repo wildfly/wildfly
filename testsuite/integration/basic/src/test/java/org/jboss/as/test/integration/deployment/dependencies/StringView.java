@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.deployment.dependencies;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author Stuart Douglas

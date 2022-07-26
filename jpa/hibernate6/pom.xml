@@ -22,10 +22,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-   <parent>
+    <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-ee-9-parent</artifactId>
-        <relativePath>../../ee-9/pom.xml</relativePath>
+        <artifactId>wildfly-jpa-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
         <version>27.0.0.Alpha4-SNAPSHOT</version>
     </parent>
 
@@ -34,8 +37,8 @@
     <name>jipijapa Hibernate 6 (JPA 3.1) integration</name>
 
     <properties>
-        <!-- Use the WildFly Preview dependency set until standard WildFly uses Hibernate 6 -->
-        <dependency.management.pom.artifactId>wildfly-preview-feature-pack-parent</dependency.management.pom.artifactId>
+        <!-- Use the standard WildFly dependency set -->
+        <dependency.management.pom.artifactId>wildfly-standard-ee-bom</dependency.management.pom.artifactId>
     </properties>
 
     <dependencies>
@@ -140,13 +143,13 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.spec.javax.annotation</groupId>
-            <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
 
         <dependency>
-                <groupId>jakarta.transaction</groupId>
-                <artifactId>jakarta.transaction-api</artifactId>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
         </dependency>
     
         <dependency>

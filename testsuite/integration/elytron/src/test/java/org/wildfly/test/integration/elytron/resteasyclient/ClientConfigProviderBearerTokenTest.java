@@ -22,7 +22,7 @@
 
 package org.wildfly.test.integration.elytron.resteasyclient;
 
-import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -40,9 +40,9 @@ import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.credential.BearerTokenCredential;
 import org.wildfly.test.integration.elytron.util.ClientConfigProviderBearerTokenAbortFilter;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.Response;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

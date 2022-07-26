@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.ejb;
 
-import javax.ejb.Local;
-import javax.ejb.Stateless;
+import jakarta.ejb.Local;
+import jakarta.ejb.Stateless;
 
 /**
  * User: jpai

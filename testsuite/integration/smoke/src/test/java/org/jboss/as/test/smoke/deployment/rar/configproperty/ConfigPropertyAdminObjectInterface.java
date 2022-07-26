@@ -22,7 +22,7 @@
 package org.jboss.as.test.smoke.deployment.rar.configproperty;
 
 import java.io.Serializable;
-import javax.resource.Referenceable;
+import jakarta.resource.Referenceable;
 
 /**
  * ConfigPropertyAdminObjectInterface

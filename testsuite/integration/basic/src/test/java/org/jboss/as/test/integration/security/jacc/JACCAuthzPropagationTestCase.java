@@ -35,7 +35,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
@@ -189,8 +188,8 @@ public class JACCAuthzPropagationTestCase {
         @Override
         protected SecurityDomain[] getSecurityDomains() {
             return new SecurityDomain[]{new SecurityDomain.Builder().name(TEST_NAME)
-                    .loginModules(new SecurityModule.Builder().name("UsersRoles").flag(Constants.REQUIRED).build()) //
-                    .authorizationModules(new SecurityModule.Builder().name("JACC").flag(Constants.REQUIRED).build()) //
+                    .loginModules(new SecurityModule.Builder().name("UsersRoles").flag("required").build()) //
+                    .authorizationModules(new SecurityModule.Builder().name("JACC").flag("required").build()) //
                     .cacheType("default") //
                     .build()};
         }

@@ -22,16 +22,16 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import static javax.ejb.LockType.WRITE;
+import static jakarta.ejb.LockType.WRITE;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.ejb.LocalBean;
-import javax.ejb.Lock;
-import javax.ejb.Schedule;
-import javax.ejb.Singleton;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Lock;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 

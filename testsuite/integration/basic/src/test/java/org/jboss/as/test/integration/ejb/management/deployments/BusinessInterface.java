@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 /**
  * Dummy interface for session beans in this class.
  *

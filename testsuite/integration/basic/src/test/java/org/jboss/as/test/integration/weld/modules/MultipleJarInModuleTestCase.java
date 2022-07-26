@@ -35,7 +35,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -62,7 +62,7 @@ public class MultipleJarInModuleTestCase {
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         jar = testModule.addResource("m2.jar");
         jar.addClass(Multiple2.class);
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         testModules.add(testModule);
         testModule.create(true);
     }
@@ -80,7 +80,7 @@ public class MultipleJarInModuleTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class)
                 .addClass(MultipleJarInModuleTestCase.class)
                 .addClass(TestModule.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test.multiple meta-inf\n"), "MANIFEST.MF");
         return war;
     }

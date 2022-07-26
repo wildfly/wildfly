@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.jsf.managedbean.managedproperty;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Named;
 
 /**
  * A greeting bean.

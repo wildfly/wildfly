@@ -135,7 +135,7 @@ public class JcaTestsUtil {
                 if (fields != null && fields.length > 0) {
                     for (Field field : fields) {
                         Class<?> fieldType = field.getType();
-                        if (fieldType.equals(javax.resource.spi.ConnectionManager.class) ||
+                        if (fieldType.equals(jakarta.resource.spi.ConnectionManager.class) ||
                                 fieldType.equals(ConnectionManager.class)) {
                             field.setAccessible(true);
                             return (ConnectionManager) field.get(connectionFactory);
@@ -149,7 +149,7 @@ public class JcaTestsUtil {
                 Method[] methods = clz.getDeclaredMethods();
                 for (Method method : methods) {
                     Class<?> type = method.getReturnType();
-                    if (type.equals(javax.resource.spi.ConnectionManager.class) ||
+                    if (type.equals(jakarta.resource.spi.ConnectionManager.class) ||
                             type.equals(ConnectionManager.class)) {
                         method.setAccessible(true);
                         return (ConnectionManager) method.invoke(connectionFactory);

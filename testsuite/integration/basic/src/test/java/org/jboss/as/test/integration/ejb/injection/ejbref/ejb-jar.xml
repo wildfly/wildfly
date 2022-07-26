@@ -36,7 +36,7 @@
             <transaction-type>Container</transaction-type>
             <resource-env-ref>
                 <resource-env-ref-name>ctx</resource-env-ref-name>
-                <resource-env-ref-type>javax.ejb.SessionContext</resource-env-ref-type>
+                <resource-env-ref-type>jakarta.ejb.SessionContext</resource-env-ref-type>
                 <!--mapped-name>java:comp/EJBContext</mapped-name -->
                 <injection-target>
                     <injection-target-class>org.jboss.as.test.integration.ejb.injection.ejbref.CtxInjectionTesterBean</injection-target-class>

@@ -24,8 +24,8 @@ package org.jboss.as.test.clustering.cluster.ejb2.stateful.passivation;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.SessionContext;
 
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.logging.Logger;
@@ -75,7 +75,7 @@ public abstract class StatefulBeanBase {
     /**
      * Creating method for home interface...
      */
-    public void ejbCreate() throws java.rmi.RemoteException, javax.ejb.CreateException {
+    public void ejbCreate() throws java.rmi.RemoteException, jakarta.ejb.CreateException {
     }
 
     /**

@@ -24,14 +24,14 @@ package org.jboss.as.test.xts.annotation.service;
 import com.arjuna.ats.jta.TransactionManager;
 import org.jboss.logging.Logger;
 
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.jws.WebService;
+import jakarta.jws.soap.SOAPBinding;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>

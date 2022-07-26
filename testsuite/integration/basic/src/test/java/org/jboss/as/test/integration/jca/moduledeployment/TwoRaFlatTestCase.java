@@ -24,8 +24,8 @@ package org.jboss.as.test.integration.jca.moduledeployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import javax.annotation.Resource;
-import javax.resource.cci.ConnectionFactory;
+import jakarta.annotation.Resource;
+import jakarta.resource.cci.ConnectionFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.legacy.ejb.remote.client.api.tx;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 /**
  * User: jpai

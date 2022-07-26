@@ -23,7 +23,7 @@
 
 package org.jboss.as.test.integration.ejb.timerservice.gettimers;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Tomas Hofman (thofman@redhat.com)

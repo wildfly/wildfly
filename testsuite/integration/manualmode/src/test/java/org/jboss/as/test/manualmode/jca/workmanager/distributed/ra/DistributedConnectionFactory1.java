@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.manualmode.jca.workmanager.distributed.ra;
 
-import javax.resource.Referenceable;
-import javax.resource.ResourceException;
+import jakarta.resource.Referenceable;
+import jakarta.resource.ResourceException;
 import java.io.Serializable;
 
 public interface DistributedConnectionFactory1 extends Serializable, Referenceable {

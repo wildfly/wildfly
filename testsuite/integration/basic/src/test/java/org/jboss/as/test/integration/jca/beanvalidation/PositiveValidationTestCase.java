@@ -27,8 +27,8 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Resource;
-import javax.resource.spi.ActivationSpec;
+import jakarta.annotation.Resource;
+import jakarta.resource.spi.ActivationSpec;
 
 import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -115,7 +115,7 @@ public class PositiveValidationTestCase {
         assertNotNull(controller);
         ResourceAdapterRepository repository = (ResourceAdapterRepository) controller.getValue();
         assertNotNull(repository);
-        Set<String> ids = repository.getResourceAdapters(javax.jms.MessageListener.class);
+        Set<String> ids = repository.getResourceAdapters(jakarta.jms.MessageListener.class);
 
         assertNotNull(ids);
 

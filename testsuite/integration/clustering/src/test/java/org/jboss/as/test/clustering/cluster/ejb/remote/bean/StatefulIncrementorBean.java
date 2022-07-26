@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
 
 @Stateful
 @Remote(Incrementor.class)

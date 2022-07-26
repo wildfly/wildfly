@@ -27,18 +27,18 @@ import static org.jboss.as.test.integration.messaging.jms.context.transactionsco
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateful;
-import javax.enterprise.concurrent.ManagedThreadFactory;
-import javax.inject.Inject;
-import javax.jms.JMSDestinationDefinition;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateful;
+import jakarta.enterprise.concurrent.ManagedThreadFactory;
+import jakarta.inject.Inject;
+import jakarta.jms.JMSDestinationDefinition;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
 @JMSDestinationDefinition(
         name = QUEUE_NAME,
-        interfaceName = "javax.jms.Queue",
+        interfaceName = "jakarta.jms.Queue",
         destinationName = "InjectedJMSContextTestCaseQueue"
 )
 @Stateful(passivationCapable = false)

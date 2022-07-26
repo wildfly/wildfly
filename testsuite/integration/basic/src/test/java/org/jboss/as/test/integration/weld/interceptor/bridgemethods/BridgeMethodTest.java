@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.weld.interceptor.bridgemethods;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -24,7 +24,7 @@ public class BridgeMethodTest {
     @Deployment
     public static Archive<?> deploy() {
         return ShrinkWrap.create(JavaArchive.class, "testBridgeMethods.jar")
-                .addAsManifestResource(new StringAsset("<beans><interceptors><class>" + SomeInterceptor.class.getName() + "</class></interceptors></beans>"), "beans.xml")
+                .addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"><interceptors><class>" + SomeInterceptor.class.getName() + "</class></interceptors></beans>"), "beans.xml")
                 .addPackage(BridgeMethodTest.class.getPackage());
     }
 

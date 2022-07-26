@@ -16,8 +16,8 @@
  */
 package org.jboss.as.test.integration.jsf.version.ejb;
 
-import javax.ejb.Stateless;
-import javax.faces.context.FacesContext;
+import jakarta.ejb.Stateless;
+import jakarta.faces.context.FacesContext;
 
 @Stateless
 public class JSFVersionEJB {

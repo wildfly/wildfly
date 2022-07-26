@@ -22,8 +22,8 @@
 package org.jboss.as.test.integration.jca.lazyconnectionmanager.rar;
 
 import java.io.Serializable;
-import javax.resource.Referenceable;
-import javax.resource.ResourceException;
+import jakarta.resource.Referenceable;
+import jakarta.resource.ResourceException;
 
 /**
  * @author <a href="mailto:jesper.pedersen@ironjacamar.org">Jesper Pedersen</a>

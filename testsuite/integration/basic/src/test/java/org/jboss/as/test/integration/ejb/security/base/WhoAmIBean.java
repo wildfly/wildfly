@@ -23,8 +23,8 @@ package org.jboss.as.test.integration.ejb.security.base;
 
 import java.security.Principal;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

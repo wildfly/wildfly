@@ -16,7 +16,7 @@
  */
 package org.jboss.as.test.integration.ejb.singleton.deployment;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Bartosz Spyrko-Smietanko

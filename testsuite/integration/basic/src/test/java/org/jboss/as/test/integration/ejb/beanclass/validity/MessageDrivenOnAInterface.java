@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.beanclass.validity;
 
-import javax.ejb.MessageDriven;
+import jakarta.ejb.MessageDriven;
 
 /**
  * Invalid use of {@link MessageDriven} annotation on an interface

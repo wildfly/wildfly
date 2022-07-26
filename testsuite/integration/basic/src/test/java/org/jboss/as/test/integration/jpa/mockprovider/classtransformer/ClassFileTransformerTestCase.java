@@ -45,7 +45,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Hibernate "hibernate.ejb.use_class_enhancer" test that causes hibernate to add a
- * javax.persistence.spi.ClassTransformer to the pu.
+ * jakarta.persistence.spi.ClassTransformer to the pu.
  *
  * @author Scott Marlow
  */
@@ -64,9 +64,9 @@ public class ClassFileTransformerTestCase {
                 TestAdapter.class
         );
 
-        // META-INF/services/javax.persistence.spi.PersistenceProvider
+        // META-INF/services/jakarta.persistence.spi.PersistenceProvider
         persistenceProvider.addAsResource(new StringAsset("org.jboss.as.test.integration.jpa.mockprovider.classtransformer.TestPersistenceProvider"),
-                "META-INF/services/javax.persistence.spi.PersistenceProvider");
+                "META-INF/services/jakarta.persistence.spi.PersistenceProvider");
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
 

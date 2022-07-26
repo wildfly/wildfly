@@ -23,8 +23,8 @@
 package org.jboss.as.test.integration.batch.common;
 
 import java.util.List;
-import javax.batch.api.chunk.ItemWriter;
-import javax.inject.Named;
+import jakarta.batch.api.chunk.ItemWriter;
+import jakarta.inject.Named;
 
 @Named("integerArrayWriter")
 public final class IntegerArrayWriter extends IntegerArrayReaderWriterBase implements ItemWriter {

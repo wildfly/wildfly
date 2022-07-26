@@ -36,8 +36,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.annotation.Resource;
-import javax.jms.ConnectionFactory;
+import jakarta.annotation.Resource;
+import jakarta.jms.ConnectionFactory;
 import java.io.IOException;
 import java.util.Map;
 

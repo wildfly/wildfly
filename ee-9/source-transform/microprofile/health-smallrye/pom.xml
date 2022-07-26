@@ -130,7 +130,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-undertow</artifactId>
+            <artifactId>wildfly-undertow-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>

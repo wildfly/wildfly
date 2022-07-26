@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.naming.defaultbindings.jmsconnectionfactory;
 
-import javax.annotation.Resource;
-import javax.jms.ConnectionFactory;
+import jakarta.annotation.Resource;
+import jakarta.jms.ConnectionFactory;
 
 /**
  * @author Eduardo Martins

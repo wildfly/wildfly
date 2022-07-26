@@ -48,21 +48,9 @@
 
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
 
-        <!-- Use the WildFly Preview dependency set -->
-        <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
+        <!-- Use the WildFly Preview EE dependency set. Child modules that test expansion capabilities can override. -->
+        <dependency.management.import.artifact>wildfly-preview-ee-bom</dependency.management.import.artifact>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-9-parent</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
 
@@ -133,7 +121,6 @@
             </activation>
             <modules>
                 <module>basic</module>
-                <module>source-transform</module>
                 <!--<module>ws</module>
                 <module>web</module>
                 <module>smoke</module>

@@ -24,14 +24,14 @@ package org.jboss.as.test.smoke.jms.auxiliary;
 
 import org.jboss.logging.Logger;
 
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.TextMessage;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.MessageDriven;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
+import jakarta.jms.TextMessage;
 
 /**
  * Auxiliary class for Jakarta Messaging smoke tests - receives messages from a queue and fires events afterwards
@@ -41,7 +41,7 @@ import javax.jms.TextMessage;
 @MessageDriven(
         name = "ShippingRequestProcessor",
         activationConfig = {
-                @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue"),
                 @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/myAwesomeQueue")
         }
 )

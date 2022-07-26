@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.xpc.bean;
 
-import javax.ejb.Remove;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.Remove;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * Interface to see if that helps avoid the

@@ -23,9 +23,9 @@
 package org.jboss.as.test.integration.xerces;
 
 import java.io.Serializable;
-import javax.faces.annotation.FacesConfig;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
+import jakarta.faces.annotation.FacesConfig;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 
 /**
  * User: jpai

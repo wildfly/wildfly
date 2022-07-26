@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.view.duplicateview;
 
-import javax.ejb.Local;
-import javax.ejb.Stateless;
+import jakarta.ejb.Local;
+import jakarta.ejb.Stateless;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

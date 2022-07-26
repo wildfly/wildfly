@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.singleton.dependson.session;
 
-import javax.ejb.DependsOn;
-import javax.ejb.Remote;
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
+import jakarta.ejb.DependsOn;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Remove;
+import jakarta.ejb.Stateful;
 
 /**
  * @author baranowb

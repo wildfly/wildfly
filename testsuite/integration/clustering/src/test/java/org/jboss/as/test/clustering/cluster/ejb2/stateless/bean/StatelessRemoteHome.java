@@ -23,8 +23,8 @@
 package org.jboss.as.test.clustering.cluster.ejb2.stateless.bean;
 
 import java.rmi.RemoteException;
-import javax.ejb.CreateException;
-import javax.ejb.EJBHome;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJBHome;
 
 /**
  * @author Ondrej Chaloupka

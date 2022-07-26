@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.servlet;
 
-import javax.ejb.Local;
-import javax.ejb.Stateful;
+import jakarta.ejb.Local;
+import jakarta.ejb.Stateful;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>

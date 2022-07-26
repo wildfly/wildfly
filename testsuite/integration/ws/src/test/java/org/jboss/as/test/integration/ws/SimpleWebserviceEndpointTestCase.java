@@ -26,8 +26,8 @@ import java.net.URL;
 import org.jboss.logging.Logger;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
-import javax.xml.ws.spi.Provider;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.spi.Provider;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -64,13 +64,14 @@ public class SimpleWebserviceEndpointTestCase {
     @Test
     public void testJBossWSIntegrationIsInPlace() {
         String p = Provider.provider().getClass().getName();
-        Assert.assertTrue(p + " is not a JBossWS implementation of javax.xml.ws.spi.Provider", p.startsWith("org.jboss."));
+        Assert.assertTrue(p + " is not a JBossWS implementation of jakarta.xml.ws.spi.Provider", p.startsWith("org.jboss."));
     }
 
 
     @Test
     @RunAsClient
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
+
         final QName serviceName = new QName("org.jboss.as.test.integration.ws", "SimpleService");
         final URL wsdlURL = new URL(baseUrl, "/ws-endpoint-example/SimpleService?wsdl");
         final Service service = Service.create(wsdlURL, serviceName);

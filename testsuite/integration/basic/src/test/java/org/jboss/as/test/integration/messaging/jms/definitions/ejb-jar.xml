@@ -20,17 +20,17 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+<ejb-jar xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd"
-         version="3.2">
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd"
+         version="4.0">
     <enterprise-beans>
         <session>
             <ejb-name>MessagingBean</ejb-name>
             <ejb-class>org.jboss.as.test.integration.messaging.jms.definitions.MessagingBean</ejb-class>
             <jms-connection-factory>
                 <name>java:app/myFactory4</name>
-                <interface-name>javax.jms.TopicConnectionFactory</interface-name>
+                <interface-name>jakarta.jms.TopicConnectionFactory</interface-name>
                 <user>guest</user>
                 <password>guest</password>
                 <client-id>myClientID4</client-id>
@@ -53,7 +53,7 @@
             <jms-destination>
                 <description></description>
                 <name>java:app/env/myQueue3</name>
-                <interface-name>javax.jms.Queue</interface-name>
+                <interface-name>jakarta.jms.Queue</interface-name>
                 <destination-name>myQueue3</destination-name>
                 <property>
                     <name>durable</name>
@@ -67,7 +67,7 @@
             <jms-destination>
                 <description></description>
                 <name>java:app/env/myTopic2</name>
-                <interface-name>javax.jms.Topic</interface-name>
+                <interface-name>jakarta.jms.Topic</interface-name>
                 <destination-name>myTopic2</destination-name>
             </jms-destination>
         </session>

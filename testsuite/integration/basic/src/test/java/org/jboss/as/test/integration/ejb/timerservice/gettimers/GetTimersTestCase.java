@@ -26,7 +26,7 @@ package org.jboss.as.test.integration.ejb.timerservice.gettimers;
 import java.util.Collection;
 import java.util.Map;
 
-import javax.ejb.Timer;
+import jakarta.ejb.Timer;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

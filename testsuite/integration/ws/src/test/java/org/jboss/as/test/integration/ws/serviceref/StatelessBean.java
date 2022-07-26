@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ws.serviceref;
 
-import javax.annotation.Resource;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.xml.ws.WebServiceRef;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import jakarta.xml.ws.WebServiceRef;
 
 /**
  * A test bean that delegates to a web service provided through serviceref injection.

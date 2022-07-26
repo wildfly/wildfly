@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.manualmode.ejb.interceptor.serverside;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 public class UpdatedInterceptor {
     static final String PREFIX = "UpdatedInterceptor:";

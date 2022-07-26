@@ -77,7 +77,7 @@ public class ServiceRefSevletTestCase {
             properties.put("node0", node0);
         }
         war.addAsWebInfResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl, properties)), "wsdl/TestService.wsdl");
-        // all the following permissions are needed because EndpointService directly extends javax.xml.ws.Service class
+        // all the following permissions are needed because EndpointService directly extends jakarta.xml.ws.Service class
         // and CXF guys are not willing to add more privileged blocks into their code, thus deployments need to have
         // the following permissions (note that the wsdl.properties permission is needed by wsdl4j)
         war.addAsManifestResource(createPermissionsXmlAsset(

@@ -21,12 +21,12 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.cdi;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.TextMessage;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
+import jakarta.jms.TextMessage;
 
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.junit.Assert;

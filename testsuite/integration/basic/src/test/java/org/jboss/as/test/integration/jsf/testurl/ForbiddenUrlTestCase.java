@@ -39,7 +39,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -53,8 +52,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ForbiddenUrlTestCase {
-    private static final String ALLOWED_URL = "faces/javax.faces.resource/lala.js?con=lala";
-    private static final String FORBIDDEN_URL = "faces/javax.faces.resource/lala.js?con=lala/../lala";
+    private static final String ALLOWED_URL = "faces/jakarta.faces.resource/lala.js?con=lala";
+    private static final String FORBIDDEN_URL = "faces/jakarta.faces.resource/lala.js?con=lala/../lala";
     private static final int ALLOWED_STATUS_CODE = 200;
     private static final int FORBIDDEN_STATUS_CODE = 404;
 
@@ -66,6 +65,7 @@ public class ForbiddenUrlTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "jsf-resources.war");
         war.addAsWebInfResource(ForbiddenUrlTestCase.class.getPackage(), "web.xml", "web.xml");
+        //war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         war.addAsWebResource(ForbiddenUrlTestCase.class.getPackage(), "index.xhtml", "index.xhtml");
         war.addAsWebResource(ForbiddenUrlTestCase.class.getPackage(), "lala.jsp", "lala.jsp");
         war.addAsWebResource(ForbiddenUrlTestCase.class.getPackage(), "lala.js", "contracts/lala/lala.js");
@@ -84,7 +84,7 @@ public class ForbiddenUrlTestCase {
 
         try (CloseableHttpClient client = httpClientBuilder.build()) {
 
-            HttpUriRequest getVarRequest = new HttpGet(url.toExternalForm() + jakartafiUrl(ALLOWED_URL));
+            HttpUriRequest getVarRequest = new HttpGet(url.toExternalForm() + ALLOWED_URL);
             try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
                 int statusCode = getVarResponse.getStatusLine().getStatusCode();
                 Assert.assertEquals("Status code should be " + ALLOWED_STATUS_CODE + ", but is " + statusCode +
@@ -105,31 +105,12 @@ public class ForbiddenUrlTestCase {
 
         try (CloseableHttpClient client = httpClientBuilder.build()) {
 
-            HttpUriRequest getVarRequest = new HttpGet(url.toExternalForm() + jakartafiUrl(FORBIDDEN_URL));
+            HttpUriRequest getVarRequest = new HttpGet(url.toExternalForm() + FORBIDDEN_URL);
             try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
                 int statusCode = getVarResponse.getStatusLine().getStatusCode();
                 Assert.assertEquals("Status code should be " + FORBIDDEN_STATUS_CODE + ", but is " + statusCode +
                         ". For more information see JBEAP-18842. ", FORBIDDEN_STATUS_CODE, statusCode);
             }
-        }
-    }
-
-    /**
-     * TODO: Temporary hack
-     * EE 9 changes the namespace from javax.* to jakarta.*. Running these tests under EE 9 or later, as WildFly Preview does, will
-     * cause the tests to fail, since they're using the old namespace in strings. This method will alter the URLs if it can detect
-     * that the tests are running under EE 9 or later. Once WildFly switches completely to EE 10, this hack can be removed, and the
-     * strings updated appropriately.
-     *
-     * @param url
-     * @return
-     */
-    @Deprecated
-    private String jakartafiUrl(String url) {
-        if (AssumeTestGroupUtil.isWildFlyPreview()) {
-            return url.replaceAll("javax", "jakarta");
-        } else {
-            return url;
         }
     }
 }

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnectionMetaData;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnectionMetaData;
 
 /**
  * Managed connection metadata
@@ -40,7 +40,7 @@ public class ValidManagedConnectionMetaData implements ManagedConnectionMetaData
      * Returns Product name of the underlying EIS instance connected through the ManagedConnection.
      *
      * @return Product name of the EIS instance
-     * @throws javax.resource.ResourceException Thrown if an error occurs
+     * @throws jakarta.resource.ResourceException Thrown if an error occurs
      */
     @Override
     public String getEISProductName() throws ResourceException {
@@ -51,7 +51,7 @@ public class ValidManagedConnectionMetaData implements ManagedConnectionMetaData
      * Returns Product version of the underlying EIS instance connected through the ManagedConnection.
      *
      * @return Product version of the EIS instance
-     * @throws javax.resource.ResourceException Thrown if an error occurs
+     * @throws jakarta.resource.ResourceException Thrown if an error occurs
      */
     @Override
     public String getEISProductVersion() throws ResourceException {
@@ -62,7 +62,7 @@ public class ValidManagedConnectionMetaData implements ManagedConnectionMetaData
      * Returns maximum limit on number of active concurrent connections
      *
      * @return Maximum limit for number of active concurrent connections
-     * @throws javax.resource.ResourceException Thrown if an error occurs
+     * @throws jakarta.resource.ResourceException Thrown if an error occurs
      */
     @Override
     public int getMaxConnections() throws ResourceException {
@@ -73,7 +73,7 @@ public class ValidManagedConnectionMetaData implements ManagedConnectionMetaData
      * Returns name of the user associated with the ManagedConnection instance
      *
      * @return Name of the user
-     * @throws javax.resource.ResourceException Thrown if an error occurs
+     * @throws jakarta.resource.ResourceException Thrown if an error occurs
      */
     @Override
     public String getUserName() throws ResourceException {

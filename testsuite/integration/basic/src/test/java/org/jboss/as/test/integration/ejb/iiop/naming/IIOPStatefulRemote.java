@@ -2,7 +2,7 @@ package org.jboss.as.test.integration.ejb.iiop.naming;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 
 /**
  * @author Stuart Douglas

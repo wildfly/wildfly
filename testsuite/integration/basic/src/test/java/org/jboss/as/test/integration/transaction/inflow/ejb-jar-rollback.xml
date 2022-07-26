@@ -7,7 +7,7 @@
     <message-driven>
       <ejb-name>TransactionInflowMessageDrivenBeanCommit</ejb-name>
       <ejb-class>org.jboss.as.test.integration.transaction.inflow.TransactionInflowMdb</ejb-class>
-      <messaging-type>javax.jms.MessageListener</messaging-type>
+      <messaging-type>jakarta.jms.MessageListener</messaging-type>
       <transaction-type>Container</transaction-type>
       <activation-config>
         <activation-config-property>

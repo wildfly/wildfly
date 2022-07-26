@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.remove.method;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class DelegateBean implements Delegate {

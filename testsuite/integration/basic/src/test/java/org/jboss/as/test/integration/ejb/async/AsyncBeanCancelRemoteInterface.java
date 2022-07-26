@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ejb.async;
 
 import java.util.concurrent.Future;
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Remote interface for testing cancel method asynchronously.

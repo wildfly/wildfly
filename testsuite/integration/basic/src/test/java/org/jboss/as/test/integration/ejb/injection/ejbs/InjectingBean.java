@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.injection.ejbs;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBs;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBs;
+import jakarta.ejb.Stateless;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

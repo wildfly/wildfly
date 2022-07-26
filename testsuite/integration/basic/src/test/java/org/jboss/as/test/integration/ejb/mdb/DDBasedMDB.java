@@ -25,12 +25,12 @@ package org.jboss.as.test.integration.ejb.mdb;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
 import javax.sql.DataSource;
 
 import org.jboss.logging.Logger;

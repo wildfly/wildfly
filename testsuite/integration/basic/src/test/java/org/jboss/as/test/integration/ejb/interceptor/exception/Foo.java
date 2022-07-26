@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.exception;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @FooBinding
 @Stateless

@@ -23,8 +23,8 @@
 package org.jboss.as.test.integration.jpa.webnontxem;
 
 import javax.naming.InitialContext;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 /**
  * Employee entity class

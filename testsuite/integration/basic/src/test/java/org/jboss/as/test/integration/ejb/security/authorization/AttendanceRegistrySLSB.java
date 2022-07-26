@@ -23,10 +23,10 @@ package org.jboss.as.test.integration.ejb.security.authorization;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 import java.io.Serializable;
 import java.util.Date;
 

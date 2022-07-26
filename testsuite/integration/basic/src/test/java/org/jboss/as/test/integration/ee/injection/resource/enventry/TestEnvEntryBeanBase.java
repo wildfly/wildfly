@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.enventry;
 
-import javax.ejb.SessionContext;
+import jakarta.ejb.SessionContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

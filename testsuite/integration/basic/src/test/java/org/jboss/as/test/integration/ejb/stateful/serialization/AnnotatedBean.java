@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.stateful.serialization;
 
-import javax.ejb.Stateful;
+import jakarta.ejb.Stateful;
 
 /**
  * stateful session bean

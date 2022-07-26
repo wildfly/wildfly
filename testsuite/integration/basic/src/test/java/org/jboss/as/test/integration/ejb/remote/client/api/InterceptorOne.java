@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * User: jpai

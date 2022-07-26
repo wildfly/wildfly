@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jsf.phaselistener.injectiontarget;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class TestEJB {

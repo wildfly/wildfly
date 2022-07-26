@@ -22,9 +22,9 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.tx;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>

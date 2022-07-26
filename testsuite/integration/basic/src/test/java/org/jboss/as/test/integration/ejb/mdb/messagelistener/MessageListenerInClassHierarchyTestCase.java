@@ -38,11 +38,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.TextMessage;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
+import jakarta.jms.TextMessage;
 
 import java.util.PropertyPermission;
 
@@ -105,7 +105,7 @@ public class MessageListenerInClassHierarchyTestCase {
 
 
     /**
-     * Test that if a {@link javax.jms.MessageListener} interface is implemented by the base class of a
+     * Test that if a {@link jakarta.jms.MessageListener} interface is implemented by the base class of a
      * message driven bean, then it's taken into consideration while looking for potential message listener
      * interface
      * <p>See https://issues.jboss.org/browse/AS7-2638</p>

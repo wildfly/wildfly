@@ -32,7 +32,7 @@ import java.util.PropertyPermission;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;

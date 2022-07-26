@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.batch.deployment;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 
 /**
  * Pointless EJB that exists only to convert a jar to an EJB archive.

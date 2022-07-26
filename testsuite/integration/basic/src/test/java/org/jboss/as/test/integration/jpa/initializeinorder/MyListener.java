@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.jpa.initializeinorder;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJBContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJBContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 
 public class MyListener {
 

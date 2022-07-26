@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.descriptor;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

@@ -16,7 +16,7 @@
 package org.wildfly.test.manual.elytron.seccontext;
 
 import java.net.URL;
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Interface for the bean used as the entry point to verify EJB3 security behaviour.

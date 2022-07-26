@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.configuration.requirebeandescriptor;
 
-import javax.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.RequestScoped;
 
 @RequestScoped
 public class Bar extends Foo {

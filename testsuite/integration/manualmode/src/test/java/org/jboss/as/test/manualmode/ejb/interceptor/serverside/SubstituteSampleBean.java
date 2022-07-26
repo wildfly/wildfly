@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.manualmode.ejb.interceptor.serverside;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class SubstituteSampleBean implements SubstituteSampleBeanRemote {

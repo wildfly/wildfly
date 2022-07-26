@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.smoke.ejb3.dd;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * User: jpai

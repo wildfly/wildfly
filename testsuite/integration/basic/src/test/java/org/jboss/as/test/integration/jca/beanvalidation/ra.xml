@@ -52,7 +52,7 @@
         <inbound-resourceadapter>
             <messageadapter>
                 <messagelistener>
-                    <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
+                    <messagelistener-type>jakarta.jms.MessageListener</messagelistener-type>
                     <activationspec>
                         <activationspec-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidActivationSpec</activationspec-class>
                         <config-property>

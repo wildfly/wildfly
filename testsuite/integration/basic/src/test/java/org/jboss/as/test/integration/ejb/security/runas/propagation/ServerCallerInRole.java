@@ -23,11 +23,11 @@ package org.jboss.as.test.integration.ejb.security.runas.propagation;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 
-import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
-import javax.ejb.Remote;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.PermitAll;
+import jakarta.ejb.Remote;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 
 /**
  * @author tmiyar

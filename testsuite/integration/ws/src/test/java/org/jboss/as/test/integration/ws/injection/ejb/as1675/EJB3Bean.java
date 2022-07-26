@@ -24,8 +24,8 @@ package org.jboss.as.test.integration.ws.injection.ejb.as1675;
 
 import org.jboss.ws.api.annotation.WebContext;
 
-import javax.ejb.Stateless;
-import javax.jws.WebService;
+import jakarta.ejb.Stateless;
+import jakarta.jws.WebService;
 
 /**
  * EJB3 bean published as WebService injecting other EJB3 bean and resources.

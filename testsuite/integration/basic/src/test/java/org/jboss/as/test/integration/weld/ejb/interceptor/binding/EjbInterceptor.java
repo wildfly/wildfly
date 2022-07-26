@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.ejb.interceptor.binding;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 import org.junit.Assert;
 

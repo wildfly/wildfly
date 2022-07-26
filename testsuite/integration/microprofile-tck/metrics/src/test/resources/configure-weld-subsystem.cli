@@ -1,0 +1,1 @@
+/subsystem=weld:write-attribute(name=legacy-empty-beans-xml-treatment,value=true)

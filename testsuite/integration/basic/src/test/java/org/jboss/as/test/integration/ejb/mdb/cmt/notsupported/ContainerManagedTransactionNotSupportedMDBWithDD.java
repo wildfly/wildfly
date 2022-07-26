@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.mdb.cmt.notsupported;
 
-import javax.jms.Message;
+import jakarta.jms.Message;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.

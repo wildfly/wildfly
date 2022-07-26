@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.jpa.resourcelocal;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -79,7 +79,7 @@ public class ResourceLocalTestCase {
         try {
             sfsb1.flushWithNoTx();
         } catch (EJBException e) {
-            Assert.assertEquals(javax.persistence.TransactionRequiredException.class, e.getCause().getClass());
+            Assert.assertEquals(jakarta.persistence.TransactionRequiredException.class, e.getCause().getClass());
         }
     }
 

@@ -23,8 +23,8 @@ package org.wildfly.test.integration.elytron.ejb.base;
 
 import java.security.Principal;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

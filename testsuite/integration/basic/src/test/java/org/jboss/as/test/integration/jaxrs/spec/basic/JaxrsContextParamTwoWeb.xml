@@ -14,7 +14,7 @@
   </servlet-mapping>
 
   <context-param>
-    <param-name>javax.ws.rs.core.Application</param-name>
+    <param-name>jakarta.ws.rs.core.Application</param-name>
     <param-value>org.jboss.as.test.integration.jaxrs.spec.basic.resource.JaxrsApp</param-value>
   </context-param>
   <context-param>

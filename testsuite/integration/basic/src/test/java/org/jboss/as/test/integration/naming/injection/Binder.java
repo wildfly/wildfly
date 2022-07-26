@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.naming.injection;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 import javax.naming.NamingException;
 
 /**

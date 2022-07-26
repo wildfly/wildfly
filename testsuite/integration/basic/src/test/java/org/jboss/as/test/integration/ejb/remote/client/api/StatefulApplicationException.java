@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 import java.io.Serializable;
 
 /**

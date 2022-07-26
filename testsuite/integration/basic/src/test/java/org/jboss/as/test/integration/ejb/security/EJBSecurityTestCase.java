@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.security;
 
 import static org.junit.Assert.assertEquals;
 
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -175,7 +175,7 @@ public class EJBSecurityTestCase {
     }
 
     /**
-     * Tests that if a method of an EJB is annotated with a {@link javax.annotation.security.RolesAllowed} with empty value for the annotation
+     * Tests that if a method of an EJB is annotated with a {@link jakarta.annotation.security.RolesAllowed} with empty value for the annotation
      * <code>@RolesAllowed({})</code> then access to that method by any user MUST throw an EJBAccessException. i.e. it should
      * behave like a @DenyAll
      *

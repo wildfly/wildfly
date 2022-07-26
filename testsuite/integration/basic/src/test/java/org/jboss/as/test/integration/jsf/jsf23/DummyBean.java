@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.jsf.jsf23;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.faces.annotation.FacesConfig;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.faces.annotation.FacesConfig;
 
 /**
  *

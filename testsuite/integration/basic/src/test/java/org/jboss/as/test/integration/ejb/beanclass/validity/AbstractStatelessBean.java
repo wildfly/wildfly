@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.beanclass.validity;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * User: jpai

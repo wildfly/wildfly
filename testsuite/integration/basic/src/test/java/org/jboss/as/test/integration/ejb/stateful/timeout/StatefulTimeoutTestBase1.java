@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.stateful.timeout;
 
-import javax.ejb.NoSuchEJBException;
-import javax.inject.Inject;
+import jakarta.ejb.NoSuchEJBException;
+import jakarta.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;

@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.mail.annotation;
 
-import javax.annotation.Resource;
-import javax.mail.Session;
+import jakarta.annotation.Resource;
+import jakarta.mail.Session;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

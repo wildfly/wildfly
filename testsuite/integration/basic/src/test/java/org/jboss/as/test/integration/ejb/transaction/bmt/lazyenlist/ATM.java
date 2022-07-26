@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.transaction.bmt.lazyenlist;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

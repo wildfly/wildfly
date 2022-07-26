@@ -20,14 +20,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.Principal;
 
-import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.security.enterprise.SecurityContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
+import jakarta.security.enterprise.SecurityContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.wildfly.security.auth.server.SecurityDomain;
 

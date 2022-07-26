@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.xts.wsat.service;
 
-import javax.jws.WebMethod;
+import jakarta.jws.WebMethod;
 
 import org.jboss.as.test.xts.base.TestApplicationException;
 import org.jboss.as.test.xts.util.ServiceCommand;

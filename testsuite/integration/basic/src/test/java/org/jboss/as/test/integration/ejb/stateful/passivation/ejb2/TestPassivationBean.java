@@ -25,11 +25,11 @@ package org.jboss.as.test.integration.ejb.stateful.passivation.ejb2;
 import java.rmi.RemoteException;
 import java.util.Random;
 
-import javax.ejb.EJBException;
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateful;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.SessionBean;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateful;
 
 import org.jboss.ejb3.annotation.Cache;
 import org.jboss.logging.Logger;

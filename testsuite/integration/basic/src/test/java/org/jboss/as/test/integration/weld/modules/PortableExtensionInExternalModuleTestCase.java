@@ -24,9 +24,9 @@ package org.jboss.as.test.integration.weld.modules;
 import java.io.File;
 import java.net.URL;
 
-import javax.ejb.EJB;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

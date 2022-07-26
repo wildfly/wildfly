@@ -31,8 +31,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.ejb.NoSuchEJBException;
-import javax.inject.Inject;
+import jakarta.ejb.NoSuchEJBException;
+import jakarta.inject.Inject;
 
 /**
  * AS7-1463

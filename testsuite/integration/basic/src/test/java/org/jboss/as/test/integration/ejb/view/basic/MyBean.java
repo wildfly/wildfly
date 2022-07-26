@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.view.basic;
 
-import javax.ejb.Local;
-import javax.ejb.Stateless;
+import jakarta.ejb.Local;
+import jakarta.ejb.Stateless;
 
 /**
  * User: jpai

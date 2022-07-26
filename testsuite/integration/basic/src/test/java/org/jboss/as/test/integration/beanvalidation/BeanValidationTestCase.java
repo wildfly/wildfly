@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.beanvalidation;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -52,7 +52,7 @@ public class BeanValidationTestCase {
     }
 
     /**
-     * Test that {@link javax.validation.Validation#buildDefaultValidatorFactory()} works fine within an EJB
+     * Test that {@link jakarta.validation.Validation#buildDefaultValidatorFactory()} works fine within an EJB
      */
     @Test
     public void testBuildDefaultValidatorFactory() {
@@ -60,7 +60,7 @@ public class BeanValidationTestCase {
     }
 
     /**
-     * Test that {@link javax.validation.Validator} and {@link javax.validation.ValidatorFactory} are injected in a
+     * Test that {@link jakarta.validation.Validator} and {@link jakarta.validation.ValidatorFactory} are injected in a
      * EJB
      */
     @Test
@@ -70,7 +70,7 @@ public class BeanValidationTestCase {
     }
 
     /**
-     * Tests that {@link javax.validation.ValidatorFactory#getValidator()} returns a validator
+     * Tests that {@link jakarta.validation.ValidatorFactory#getValidator()} returns a validator
      */
     @Test
     public void testGetValidatorFromValidatorFactory() {

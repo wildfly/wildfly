@@ -22,14 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.global;
 
-import javax.ejb.SessionContext;
+import jakarta.ejb.SessionContext;
 import javax.naming.InitialContext;
 import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
-public class Session21Bean implements javax.ejb.SessionBean {
+public class Session21Bean implements jakarta.ejb.SessionBean {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(Session21Bean.class);
 

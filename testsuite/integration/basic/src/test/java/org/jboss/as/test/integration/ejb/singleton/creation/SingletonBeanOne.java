@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.singleton.creation;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Singleton;
 
 import org.jboss.logging.Logger;
 

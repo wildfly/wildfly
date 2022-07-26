@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.modules;
 
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 public class AlphaLookup {
 

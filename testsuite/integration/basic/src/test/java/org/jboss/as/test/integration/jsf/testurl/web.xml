@@ -16,7 +16,7 @@
         <display-name>Security Constraint on Conversation</display-name>
         <web-resource-collection>
             <web-resource-name>exampleWebApp</web-resource-name>
-            <url-pattern>/javax.faces.resource/*</url-pattern>
+            <url-pattern>/jakarta.faces.resource/*</url-pattern>
         </web-resource-collection>
     </security-constraint>
 
@@ -42,7 +42,7 @@
 	
    <servlet>
       <servlet-name>Faces Servlet</servlet-name>
-      <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+      <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
       <load-on-startup>1</load-on-startup>
    </servlet>
 	

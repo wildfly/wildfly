@@ -31,7 +31,7 @@ import java.io.File;
 import java.security.Principal;
 import java.util.concurrent.Callable;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 

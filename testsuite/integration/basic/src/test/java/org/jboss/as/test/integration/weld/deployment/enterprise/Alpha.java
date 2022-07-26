@@ -16,7 +16,7 @@
  */
 package org.jboss.as.test.integration.weld.deployment.enterprise;
 
-import javax.ejb.Stateful;
+import jakarta.ejb.Stateful;
 
 @Stateful
 public class Alpha implements AlphaLocal {

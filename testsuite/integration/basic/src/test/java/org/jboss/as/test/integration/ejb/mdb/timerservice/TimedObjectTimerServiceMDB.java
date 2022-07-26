@@ -24,14 +24,14 @@ package org.jboss.as.test.integration.ejb.mdb.timerservice;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
-import javax.ejb.TimedObject;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
-import javax.jms.Message;
-import javax.jms.MessageListener;
+import jakarta.annotation.Resource;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.MessageDriven;
+import jakarta.ejb.TimedObject;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
 
 /**
  * @author Stuart Douglas

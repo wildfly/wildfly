@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.injection.support;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 
 @RequestScoped
 public class Bravo {

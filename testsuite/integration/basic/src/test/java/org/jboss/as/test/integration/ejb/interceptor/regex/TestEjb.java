@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.regex;
 
-import javax.interceptor.ExcludeClassInterceptors;
-import javax.interceptor.ExcludeDefaultInterceptors;
+import jakarta.interceptor.ExcludeClassInterceptors;
+import jakarta.interceptor.ExcludeDefaultInterceptors;
 
 /**
  * @author Stuart Douglas

@@ -22,14 +22,13 @@
 
 package org.jboss.as.test.integration.jpa.mockprovider.skipquerydetach;
 
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import javax.persistence.spi.ClassTransformer;
+import jakarta.persistence.spi.ClassTransformer;
 
 /**
  * TestClassTransformer
@@ -42,7 +41,7 @@ public class TestClassTransformer implements ClassTransformer {
     private static final List<String> transformedClasses = Collections.synchronizedList(new ArrayList<String>());
 
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer)  {
         transformedClasses.add(className);
         return classfileBuffer;
     }

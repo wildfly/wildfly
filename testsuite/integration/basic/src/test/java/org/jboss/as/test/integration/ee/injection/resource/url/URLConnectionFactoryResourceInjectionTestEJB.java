@@ -24,8 +24,8 @@ package org.jboss.as.test.integration.ee.injection.resource.url;
 
 import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
 import java.net.URL;
 
 /**

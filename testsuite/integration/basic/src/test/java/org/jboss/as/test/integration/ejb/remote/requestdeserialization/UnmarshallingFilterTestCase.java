@@ -18,7 +18,7 @@ package org.jboss.as.test.integration.ejb.remote.requestdeserialization;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;

@@ -24,11 +24,11 @@ package org.jboss.as.test.integration.ejb.timerservice.cdi.requestscope;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.TimerService;
-import javax.inject.Inject;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.TimerService;
+import jakarta.inject.Inject;
 
 /**
  * @author Stuart Douglas

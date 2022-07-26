@@ -16,9 +16,9 @@
 
 package org.jboss.as.test.integration.mail.annotation;
 
-import javax.mail.MailSessionDefinition;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
+import jakarta.mail.MailSessionDefinition;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 
 @MailSessionDefinition(
         name = "java:/mail/test-mail-session-1",

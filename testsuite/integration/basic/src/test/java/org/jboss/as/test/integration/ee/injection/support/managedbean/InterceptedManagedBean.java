@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ee.injection.support.managedbean;
 
-import javax.annotation.ManagedBean;
+import jakarta.annotation.ManagedBean;
 
 import org.jboss.as.test.integration.ee.injection.support.AroundConstructBinding;
 

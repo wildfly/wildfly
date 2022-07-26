@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.legacy.ejb.remote.client.api;
 
-import javax.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.RequestScoped;
 
 /**
  * @author Stuart Douglas

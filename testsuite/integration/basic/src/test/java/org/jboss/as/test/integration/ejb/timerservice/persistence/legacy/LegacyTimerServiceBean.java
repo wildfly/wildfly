@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.persistence.legacy;
 
-import javax.annotation.Resource;
-import javax.ejb.Singleton;
-import javax.ejb.Timeout;
-import javax.ejb.TimerService;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.TimerService;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 

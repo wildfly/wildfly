@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.xts.suspend;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 import java.util.List;
 
 /**

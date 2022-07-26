@@ -25,9 +25,9 @@ package org.jboss.as.test.integration.json;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-import javax.json.Json;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
+import jakarta.json.Json;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

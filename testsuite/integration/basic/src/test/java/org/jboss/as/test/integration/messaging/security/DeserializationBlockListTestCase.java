@@ -30,7 +30,7 @@ import static org.jboss.shrinkwrap.api.ArchivePaths.create;
 import java.util.Date;
 import java.util.UUID;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;

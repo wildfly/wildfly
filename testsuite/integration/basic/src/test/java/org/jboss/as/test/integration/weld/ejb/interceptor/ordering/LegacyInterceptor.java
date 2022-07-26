@@ -19,8 +19,8 @@ package org.jboss.as.test.integration.weld.ejb.interceptor.ordering;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 public class LegacyInterceptor implements Serializable {
 

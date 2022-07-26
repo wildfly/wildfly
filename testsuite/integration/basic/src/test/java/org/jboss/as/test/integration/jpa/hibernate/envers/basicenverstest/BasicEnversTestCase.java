@@ -30,6 +30,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.hibernate.envers.Address;
 import org.jboss.as.test.integration.jpa.hibernate.envers.Person;
 import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBPU;
+import org.jboss.as.test.shared.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -51,6 +52,10 @@ public class BasicEnversTestCase {
 
     @BeforeClass
     public static void beforeClass() throws NamingException {
+
+        // TODO WFLY-16552
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
+
         iniCtx = new InitialContext();
     }
 
@@ -72,6 +77,7 @@ public class BasicEnversTestCase {
 
     @Test
     public void testSimpleEnversOperation() throws Exception {
+
         SLSBPU slsbpu = lookup("SLSBPU", SLSBPU.class);
         Person p1 = slsbpu.createPerson("Strong", "Liu", "kexueyuan source road", 307);
         Person p2 = slsbpu.createPerson("tom", "cat", "apache", 34);

@@ -168,6 +168,7 @@ abstract class ConfiguredJaspiTestBase extends JaspiTestBase {
 
             // Was the authType saved?
             request = new HttpGet(new URI(url.toExternalForm() + "role1?value=authType"));
+            request.addHeader("X-AUTH-TYPE", "SessionAuth");
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);

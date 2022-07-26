@@ -90,17 +90,6 @@
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-opentracing-smallrye-jakarta</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>io.opentracing.contrib</groupId>
-            <artifactId>opentracing-tracerresolver</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>io.jaegertracing</groupId>
             <artifactId>jaeger-core</artifactId>
@@ -119,7 +108,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.modules</groupId>

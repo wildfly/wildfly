@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.interceptor.inject;
 
-import javax.annotation.Resource;
-import javax.ejb.EJBContext;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
-import javax.persistence.EntityManager;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJBContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
+import jakarta.persistence.EntityManager;
 import javax.sql.DataSource;
 
 /**

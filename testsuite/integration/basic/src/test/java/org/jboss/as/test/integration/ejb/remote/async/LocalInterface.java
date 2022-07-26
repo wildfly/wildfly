@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.remote.async;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 import java.util.concurrent.Future;
 
 /**

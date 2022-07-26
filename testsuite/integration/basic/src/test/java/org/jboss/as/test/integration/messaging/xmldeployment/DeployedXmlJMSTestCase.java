@@ -25,8 +25,8 @@ package org.jboss.as.test.integration.messaging.xmldeployment;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.Queue;
-import javax.jms.Topic;
+import jakarta.jms.Queue;
+import jakarta.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;

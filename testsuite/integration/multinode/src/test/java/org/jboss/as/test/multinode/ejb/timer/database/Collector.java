@@ -1,6 +1,6 @@
 package org.jboss.as.test.multinode.ejb.timer.database;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 import java.util.List;
 
 /**

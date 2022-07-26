@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.Set;
 
 import javax.naming.InitialContext;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.NamingException;
-import javax.validation.ConstraintViolation;
-import javax.validation.ValidatorFactory;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ValidatorFactory;
 
 import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;

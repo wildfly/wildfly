@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.modules.alias;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  *

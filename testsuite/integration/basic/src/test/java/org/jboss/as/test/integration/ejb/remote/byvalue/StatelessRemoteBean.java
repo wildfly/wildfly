@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.byvalue;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  *

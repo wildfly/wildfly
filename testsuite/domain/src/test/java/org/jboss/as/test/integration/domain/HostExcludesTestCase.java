@@ -205,7 +205,10 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         ), getCurrentRemovedExtenstions());
 
         private static List<String> getCurrentRemovedExtenstions() {
-            if (System.getProperty("ts.ee9") != null || System.getProperty("ts.bootable.ee9") != null) {
+            // TODO If we decide to remove these modules from WFP, uncomment this.
+            // See https://issues.redhat.com/browse/WFLY-16686
+            /*
+            if (AssumeTestGroupUtil.isWildFlyPreview()) {
                 return Arrays.asList(
                         "org.jboss.as.messaging",
                         "org.jboss.as.jacorb",
@@ -215,6 +218,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                         "org.jboss.as.security"
                         );
             }
+            */
             return Collections.emptyList();
         }
 

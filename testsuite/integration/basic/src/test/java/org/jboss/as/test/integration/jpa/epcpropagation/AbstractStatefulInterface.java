@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * @author Scott Marlow

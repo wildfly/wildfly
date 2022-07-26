@@ -29,7 +29,7 @@ import org.jboss.as.test.integration.ws.wsse.trust.shared.ClientCallbackHandler;
 import org.jboss.as.test.integration.ws.wsse.trust.shared.UsernameTokenCallbackHandler;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
+import jakarta.xml.ws.BindingProvider;
 import java.util.Map;
 
 /**

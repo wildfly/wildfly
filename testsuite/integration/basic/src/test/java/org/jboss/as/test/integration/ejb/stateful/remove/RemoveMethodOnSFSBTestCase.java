@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.stateful.remove;
 
-import javax.ejb.EJB;
-import javax.ejb.NoSuchEJBException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.NoSuchEJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests the {@link javax.ejb.Remove @Remove} methods on Stateful session beans.
+ * Tests the {@link jakarta.ejb.Remove @Remove} methods on Stateful session beans.
  * <p/>
  * User: Jaikiran Pai
  */

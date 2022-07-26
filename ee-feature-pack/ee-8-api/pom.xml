@@ -42,6 +42,20 @@
     <name>WildFly: EE Feature Pack EE 8 API Resources</name>
     <packaging>pom</packaging>
 
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- Just import the ee bom -->
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
 
         <!-- module and copy artifact dependencies -->

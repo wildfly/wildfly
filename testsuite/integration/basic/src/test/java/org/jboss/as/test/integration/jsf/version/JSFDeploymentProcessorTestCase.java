@@ -29,7 +29,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.PropertyPermission;
-import javax.faces.context.FacesContext;
+
+import jakarta.faces.context.FacesContext;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -63,6 +64,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -75,6 +77,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({JSFDeploymentProcessorTestCase.TestLogHandlerSetup.class})
 @RunAsClient
+@Ignore("WFLY-16528")
 public class JSFDeploymentProcessorTestCase {
 
     private static final String WEB_BUNDLED_JSF = "bundled-jsf";

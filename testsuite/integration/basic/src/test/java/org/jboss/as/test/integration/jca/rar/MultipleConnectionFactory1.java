@@ -22,10 +22,10 @@
 package org.jboss.as.test.integration.jca.rar;
 
 import java.io.Serializable;
-import javax.resource.Referenceable;
-import javax.resource.ResourceException;
-import javax.resource.cci.Connection;
-import javax.resource.cci.ConnectionFactory;
+import jakarta.resource.Referenceable;
+import jakarta.resource.ResourceException;
+import jakarta.resource.cci.Connection;
+import jakarta.resource.cci.ConnectionFactory;
 
 /**
  * MultipleConnectionFactory1

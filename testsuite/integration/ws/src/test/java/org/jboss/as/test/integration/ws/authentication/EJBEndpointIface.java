@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ws.authentication;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 /**
  * @author Rostislav Svoboda

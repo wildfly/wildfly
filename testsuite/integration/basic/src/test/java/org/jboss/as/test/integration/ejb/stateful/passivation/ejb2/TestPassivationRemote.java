@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.ejb.stateful.passivation.ejb2;
 /**
  * @author Ondrej Chaloupka
  */
-public interface TestPassivationRemote extends javax.ejb.EJBObject {
+public interface TestPassivationRemote extends jakarta.ejb.EJBObject {
     String EXPECTED_RESULT = "true";
 
     /**

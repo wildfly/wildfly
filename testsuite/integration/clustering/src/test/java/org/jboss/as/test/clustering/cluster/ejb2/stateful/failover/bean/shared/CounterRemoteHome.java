@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared;
 
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 
 /**
  * @author Ondrej Chaloupka
  */
 public interface CounterRemoteHome extends EJBHome {
-    CounterRemote create() throws java.rmi.RemoteException, javax.ejb.CreateException;
+    CounterRemote create() throws java.rmi.RemoteException, jakarta.ejb.CreateException;
 
 }

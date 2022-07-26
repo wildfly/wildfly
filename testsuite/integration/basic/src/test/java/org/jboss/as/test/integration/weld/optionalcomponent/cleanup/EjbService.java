@@ -16,8 +16,8 @@
  */
 package org.jboss.as.test.integration.weld.optionalcomponent.cleanup;
 
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 /**
  *

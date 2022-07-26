@@ -1,9 +1,9 @@
 package org.jboss.as.test.integration.naming.remote.multiple;
 
 import javax.naming.InitialContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 
 @WebServlet(name = "BindRmiServlet", urlPatterns = {"/BindRmiServlet"}, loadOnStartup = 1)
 public class BindRmiServlet extends HttpServlet {

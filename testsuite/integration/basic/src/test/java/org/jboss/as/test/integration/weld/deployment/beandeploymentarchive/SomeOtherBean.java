@@ -16,7 +16,7 @@
  */
 package org.jboss.as.test.integration.weld.deployment.beandeploymentarchive;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  *

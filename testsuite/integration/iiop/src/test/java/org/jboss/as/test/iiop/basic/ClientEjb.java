@@ -2,10 +2,10 @@ package org.jboss.as.test.iiop.basic;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBMetaData;
-import javax.ejb.Handle;
-import javax.ejb.HomeHandle;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJBMetaData;
+import jakarta.ejb.Handle;
+import jakarta.ejb.HomeHandle;
+import jakarta.ejb.Stateless;
 import javax.rmi.PortableRemoteObject;
 
 import org.junit.Assert;

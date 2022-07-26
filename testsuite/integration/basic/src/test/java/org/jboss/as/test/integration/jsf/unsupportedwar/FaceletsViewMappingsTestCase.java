@@ -30,19 +30,18 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * <p>Tests the Jakarta Server Faces deployment failure due to UnsupportedOperationException when
- * <em>javax.faces.FACELETS_VIEW_MAPPINGS</em> is defined with something that
+ * <em>jakarta.faces.FACELETS_VIEW_MAPPINGS</em> is defined with something that
  * does not include <em>*.xhtml</em>.</p>
  * <p>
  * For details check https://issues.redhat.com/browse/WFLY-13792
@@ -51,17 +50,10 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-16521")
 public class FaceletsViewMappingsTestCase {
 
     public static final String FACELETS_VIEW_MAPPINGS_TEST_CASE = "FaceletsViewMappingsTestCase";
-
-    // TODO: For now...
-    // The runtime behavior seems to have changed with Faces 4, resulting in a failed deployment. To prevent breaking testing from
-    // main, I'm disabling this test for now, and will update it once we make the flip to EE 10.
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWildFlyPreview();
-    }
 
     private static final String DEPLOYMENT = FaceletsViewMappingsTestCase.class.getSimpleName();
 
@@ -100,7 +92,7 @@ public class FaceletsViewMappingsTestCase {
             HttpResponse response = httpclient.execute(httpget);
             String result = EntityUtils.toString(response.getEntity());
 
-            Assert.assertEquals("Jakarta Server Faces deployment failed due to UnsupportedOperationException when javax.faces.FACELETS_VIEW_MAPPINGS valued wrong",
+            Assert.assertEquals("Jakarta Server Faces deployment failed due to UnsupportedOperationException when jakarta.faces.FACELETS_VIEW_MAPPINGS valued wrong",
                     HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
             MatcherAssert.assertThat("Hello World is in place", result, CoreMatchers.containsString("Hello World!"));
         }

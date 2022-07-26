@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.legacy.ejb.remote.client.api;
 
 import java.io.Serializable;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 /**
  * User: jpai

@@ -59,7 +59,7 @@ public class OnOffOpenTracingTestCase {
             + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
             + "        xsi:schemaLocation=\"http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd\">\n"
             + "    <servlet-mapping>\n"
-            + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
+            + "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n"
             + "        <url-pattern>/rest/*</url-pattern>\n"
             + "    </servlet-mapping>\n"
             + "</web-app>";

@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.ejb.Timer;
+import jakarta.ejb.Timer;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -18,7 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Testcase for the {@link javax.ejb.TimerService#getAllTimers()} API introduced in EJB 3.2 spec
+ * Testcase for the {@link jakarta.ejb.TimerService#getAllTimers()} API introduced in EJB 3.2 spec
  *
  * @author: Jaikiran Pai
  */
@@ -44,7 +44,7 @@ public class ActiveTimerServiceCountTestCase {
     }
 
     /**
-     * Tests that the {@link javax.ejb.TimerService#getAllTimers()} API introduced in EJB 3.2 works as expected
+     * Tests that the {@link jakarta.ejb.TimerService#getAllTimers()} API introduced in EJB 3.2 works as expected
      *
      * @throws Exception
      */

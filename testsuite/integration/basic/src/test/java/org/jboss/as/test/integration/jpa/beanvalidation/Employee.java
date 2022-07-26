@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.jpa.beanvalidation;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Employee entity class

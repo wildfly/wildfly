@@ -24,9 +24,9 @@ package org.jboss.as.test.integration.ejb.singleton.concurrency.inheritance;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import javax.ejb.AccessTimeout;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
+import jakarta.ejb.AccessTimeout;
+import jakarta.ejb.Lock;
+import jakarta.ejb.LockType;
 
 
 public class SingletonBaseBean {

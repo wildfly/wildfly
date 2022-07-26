@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ee.lifecycle;
 
-import javax.annotation.PostConstruct;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * User: jpai

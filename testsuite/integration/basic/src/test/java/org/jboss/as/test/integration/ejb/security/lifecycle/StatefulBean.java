@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.security.lifecycle;
 
-import javax.ejb.AfterBegin;
-import javax.ejb.Stateful;
+import jakarta.ejb.AfterBegin;
+import jakarta.ejb.Stateful;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 

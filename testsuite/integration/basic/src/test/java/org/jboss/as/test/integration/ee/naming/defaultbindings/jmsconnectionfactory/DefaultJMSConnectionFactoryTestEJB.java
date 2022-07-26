@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ee.naming.defaultbindings.jmsconnectionfactory;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.jms.ConnectionFactory;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.jms.ConnectionFactory;
 import javax.naming.InitialContext;
 
 /**

@@ -16,7 +16,7 @@
  */
 package org.jboss.as.test.integration.weld.deployment;
 
-import javax.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.RequestScoped;
 
 @RequestScoped
 public class Foxtrot implements Ping {

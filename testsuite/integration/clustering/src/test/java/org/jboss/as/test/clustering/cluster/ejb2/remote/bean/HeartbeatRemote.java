@@ -1,6 +1,6 @@
 package org.jboss.as.test.clustering.cluster.ejb2.remote.bean;
 
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 import java.util.Date;
 
 /**

@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import javax.transaction.Status;
+import jakarta.transaction.Status;
 
 import org.junit.Assert;
 import org.apache.http.Header;

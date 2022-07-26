@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.transaction.exception.bean.ejb2;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 
 public interface TestBean2Remote extends EJBObject {
 

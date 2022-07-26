@@ -30,11 +30,11 @@
             <ejb-name>EJB21MDB</ejb-name>
             <ejb-class>org.jboss.as.test.integration.ejb.mdb.ejb2x.EJB2xMDB</ejb-class>
             <transaction-type>Container</transaction-type>
-            <message-destination-type>javax.jms.Queue</message-destination-type>
+            <message-destination-type>jakarta.jms.Queue</message-destination-type>
             <activation-config>
                 <activation-config-property>
                     <activation-config-property-name>destinationType</activation-config-property-name>
-                    <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+                    <activation-config-property-value>jakarta.jms.Queue</activation-config-property-value>
                 </activation-config-property>
                 <activation-config-property>
                     <activation-config-property-name>destination</activation-config-property-name>

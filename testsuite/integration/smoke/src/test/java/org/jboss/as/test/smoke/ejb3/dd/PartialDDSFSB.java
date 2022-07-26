@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.smoke.ejb3.dd;
 
-import javax.ejb.EJB;
-import javax.ejb.LocalBean;
+import jakarta.ejb.EJB;
+import jakarta.ejb.LocalBean;
 
 /**
  * @author Jaikiran Pai

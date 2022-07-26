@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.manualmode.ws;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 /**
  *

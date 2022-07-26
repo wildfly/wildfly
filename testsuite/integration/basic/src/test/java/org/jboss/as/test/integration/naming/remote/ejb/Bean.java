@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.naming.remote.ejb;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 
 /**
  * @author John Bailey, Ondrej Chaloupka

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.ejb.interceptor.binding;
 
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
 
 import org.junit.Assert;
 

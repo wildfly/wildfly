@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.transaction.methodparams;
 
-import javax.ejb.EJBLocalObject;
+import jakarta.ejb.EJBLocalObject;
 
 public interface Local extends EJBLocalObject {
 

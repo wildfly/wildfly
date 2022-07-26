@@ -25,11 +25,11 @@ package org.jboss.as.test.integration.ejb.mdb.objectmessage.unit;
 import java.util.Arrays;
 import java.util.PropertyPermission;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.jms.Message;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.jms.Message;
+import jakarta.jms.ObjectMessage;
+import jakarta.jms.Queue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

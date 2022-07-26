@@ -21,7 +21,7 @@
 */
 package org.wildfly.test.extension.rts;
 
-import javax.json.JsonArray;
+import jakarta.json.JsonArray;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

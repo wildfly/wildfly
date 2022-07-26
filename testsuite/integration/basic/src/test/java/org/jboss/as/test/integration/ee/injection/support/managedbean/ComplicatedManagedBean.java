@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.injection.support.managedbean;
 
-import javax.annotation.ManagedBean;
-import javax.inject.Inject;
+import jakarta.annotation.ManagedBean;
+import jakarta.inject.Inject;
 
 import org.jboss.as.test.integration.ee.injection.support.AroundConstructBinding;
 import org.jboss.as.test.integration.ee.injection.support.ProducedString;

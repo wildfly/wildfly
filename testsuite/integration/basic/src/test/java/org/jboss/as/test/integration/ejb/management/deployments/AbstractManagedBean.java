@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import javax.ejb.Asynchronous;
-import javax.ejb.Remove;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.Remove;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

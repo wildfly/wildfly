@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.servlet;
 
-import javax.ejb.Local;
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
+import jakarta.ejb.Local;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ws.ejb;
 
-import javax.ejb.Singleton;
-import javax.jws.WebService;
+import jakarta.ejb.Singleton;
+import jakarta.jws.WebService;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

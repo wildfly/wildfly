@@ -49,6 +49,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.microprofile.health</groupId>
             <artifactId>microprofile-health-api</artifactId>
             <scope>test</scope>
@@ -58,6 +68,12 @@
             <artifactId>microprofile-health-tck</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>parsson</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <!-- WFLY-15265. This is a workaround for an unclear dep tree pollution problem.
                  TODO Remove this if elytron aligns its version with WF or some other solution is found. -->
@@ -130,16 +146,9 @@
                 </property>
             </activation>
             <properties>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
             </properties>
-             <dependencies>
-                 <dependency>
-                     <groupId>org.eclipse.parsson</groupId>
-                     <artifactId>parsson</artifactId>
-                 </dependency>
-             </dependencies>
         </profile>
 
         <profile>
@@ -150,16 +159,9 @@
                 </property>
             </activation>
             <properties>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Enable galleon provisioning -->
                 <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.eclipse.parsson</groupId>
-                    <artifactId>parsson</artifactId>
-                </dependency>
-            </dependencies>
         </profile>
 
         <!-- Profile to turn off execution of this module's tests if the testsuite is being run

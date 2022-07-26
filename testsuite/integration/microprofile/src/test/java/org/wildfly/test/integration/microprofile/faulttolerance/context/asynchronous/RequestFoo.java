@@ -23,9 +23,9 @@ package org.wildfly.test.integration.microprofile.faulttolerance.context.asynchr
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.RequestScoped;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.context.RequestScoped;
 
 /**
  * Adapted from Thorntail.

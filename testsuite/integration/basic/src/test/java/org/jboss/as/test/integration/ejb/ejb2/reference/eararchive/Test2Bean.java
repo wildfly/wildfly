@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.eararchive;
 
-import javax.ejb.SessionContext;
+import jakarta.ejb.SessionContext;
 import javax.naming.InitialContext;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
-public class Test2Bean implements javax.ejb.SessionBean {
+public class Test2Bean implements jakarta.ejb.SessionBean {
     private static final long serialVersionUID = -8375644698783606562L;
 
     public void testAccess() throws Exception {

@@ -123,8 +123,8 @@ public class ResourceInjectionTestCase {
     }
 
     /**
-     * Tests that an EJB with a @Resource of type {@link javax.ejb.TimerService} deploys fine and the
-     * {@link javax.ejb.TimerService} is injected in the bean
+     * Tests that an EJB with a @Resource of type {@link jakarta.ejb.TimerService} deploys fine and the
+     * {@link jakarta.ejb.TimerService} is injected in the bean
      */
     @Test
     public void testTimerServiceInjection() {

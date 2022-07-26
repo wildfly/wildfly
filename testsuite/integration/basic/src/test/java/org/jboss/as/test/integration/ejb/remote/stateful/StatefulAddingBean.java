@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.remote.stateful;
 
-import javax.ejb.EJB;
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Remove;
+import jakarta.ejb.Stateful;
 
 /**
  *

@@ -24,10 +24,10 @@ package org.jboss.as.test.integration.ejb.remote.client.api.interceptor;
 
 import org.jboss.ejb.client.EJBClientContext;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
 import java.util.HashMap;
 import java.util.Map;
 

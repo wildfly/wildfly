@@ -23,9 +23,9 @@ package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
 
 @Stateful
 @Remote(Incrementor.class)

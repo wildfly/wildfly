@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ee.remotelookup;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class StatelessBean {

@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import javax.annotation.Resource;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
 
 import org.wildfly.clustering.group.Group;
 

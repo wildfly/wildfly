@@ -23,8 +23,8 @@ package org.jboss.as.test.integration.ejb.home.remotehome.descriptor;
 
 import java.rmi.RemoteException;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
 
 import org.jboss.as.test.integration.ejb.home.remotehome.SimpleInterface;
 

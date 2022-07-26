@@ -32,16 +32,16 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.MessageInfo;
-import javax.security.auth.message.MessagePolicy;
-import javax.security.auth.message.callback.CallerPrincipalCallback;
-import javax.security.auth.message.callback.GroupPrincipalCallback;
-import javax.security.auth.message.callback.PasswordValidationCallback;
-import javax.security.auth.message.module.ServerAuthModule;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.callback.CallerPrincipalCallback;
+import jakarta.security.auth.message.callback.GroupPrincipalCallback;
+import jakarta.security.auth.message.callback.PasswordValidationCallback;
+import jakarta.security.auth.message.module.ServerAuthModule;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.wildfly.security.auth.principal.NamePrincipal;
 
@@ -52,8 +52,8 @@ import org.wildfly.security.auth.principal.NamePrincipal;
  */
 public class SimpleServerAuthModule implements ServerAuthModule {
 
-    private static final String AUTH_TYPE = "javax.servlet.http.authType";
-    private static final String SESSION = "javax.servlet.http.registerSession";
+    private static final String AUTH_TYPE = "jakarta.servlet.http.authType";
+    private static final String SESSION = "jakarta.servlet.http.registerSession";
     static final String ANONYMOUS = "anonymous";
 
     private static final String AUTH_TYPE_HEADER = "X-AUTH-TYPE";
@@ -89,6 +89,15 @@ public class SimpleServerAuthModule implements ServerAuthModule {
         HttpServletResponse response = (HttpServletResponse) messageInfo.getResponseMessage();
 
         final String authType = request.getHeader(AUTH_TYPE_HEADER);
+        final Principal currentPrincipal = request.getUserPrincipal();
+        if (currentPrincipal != null && currentPrincipal.getName().equals("anonymous") == false) {
+            handle(new CallerPrincipalCallback(clientSubject, currentPrincipal));
+            if (authType != null) {
+                messageInfo.getMap().put(AUTH_TYPE, authType);
+            }
+            return AuthStatus.SUCCESS;
+        }
+
         final String username = request.getHeader(USERNAME_HEADER);
         final String password = request.getHeader(PASSWORD_HEADER);
         final String roles = request.getHeader(ROLES_HEADER);

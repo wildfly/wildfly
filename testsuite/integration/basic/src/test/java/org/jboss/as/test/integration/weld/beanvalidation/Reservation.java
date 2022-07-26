@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.beanvalidation;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * A Reservation.

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.manualmode.jca.workmanager.distributed;
 
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkException;
+import jakarta.resource.spi.work.Work;
+import jakarta.resource.spi.work.WorkException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;

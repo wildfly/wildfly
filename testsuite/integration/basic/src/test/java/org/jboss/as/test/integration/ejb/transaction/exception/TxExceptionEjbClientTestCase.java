@@ -27,7 +27,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.rmi.RemoteException;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -68,20 +68,20 @@ public class TxExceptionEjbClientTestCase extends TxExceptionBaseTestCase {
             case NONE:
                 switch (testCnf.getEjbType()) {
                 case EJB2:
-                    assertThat(receivedEx.getClass(), equalTo(javax.transaction.TransactionRolledbackException.class));
+                    assertThat(receivedEx.getClass(), equalTo(jakarta.transaction.TransactionRolledbackException.class));
                     break;
                 case EJB3:
-                    assertThat(receivedEx.getClass(), equalTo(javax.ejb.EJBTransactionRolledbackException.class));
+                    assertThat(receivedEx.getClass(), equalTo(jakarta.ejb.EJBTransactionRolledbackException.class));
                     break;
                 }
                 break;
             case HEURISTIC_CAUSED_BY_XA_EXCEPTION:
             case HEURISTIC_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION:
-                assertThat(receivedEx.getClass(), equalTo(javax.transaction.HeuristicMixedException.class));
+                assertThat(receivedEx.getClass(), equalTo(jakarta.transaction.HeuristicMixedException.class));
                 break;
             case ROLLBACK_CAUSED_BY_XA_EXCEPTION:
             case ROLLBACK_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION:
-                assertThat(receivedEx.getClass(), equalTo(javax.transaction.RollbackException.class));
+                assertThat(receivedEx.getClass(), equalTo(jakarta.transaction.RollbackException.class));
                 break;
             }
             break;
@@ -94,29 +94,29 @@ public class TxExceptionEjbClientTestCase extends TxExceptionBaseTestCase {
                     assertThat(receivedEx.getClass(), equalTo(java.rmi.RemoteException.class));
                     break;
                 case EJB3:
-                    assertThat(receivedEx.getClass(), equalTo(javax.ejb.EJBException.class));
+                    assertThat(receivedEx.getClass(), equalTo(jakarta.ejb.EJBException.class));
                     break;
                 }
                 break;
             case HEURISTIC_CAUSED_BY_XA_EXCEPTION:
-                assertThat(receivedEx.getClass(), equalTo(javax.ejb.EJBException.class));
-                assertThat(receivedEx.getCause().getClass(), equalTo(javax.transaction.HeuristicMixedException.class));
+                assertThat(receivedEx.getClass(), equalTo(jakarta.ejb.EJBException.class));
+                assertThat(receivedEx.getCause().getClass(), equalTo(jakarta.transaction.HeuristicMixedException.class));
                 break;
             case HEURISTIC_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION:
-                assertThat(receivedEx.getClass(), equalTo(javax.ejb.EJBException.class));
+                assertThat(receivedEx.getClass(), equalTo(jakarta.ejb.EJBException.class));
                 // FIXME WFLY-8794
-                // assertThat("HeuristicMixedException should be cause.", receivedEx.getCause().getClass(), equalTo(javax.transaction.HeuristicMixedException.class));
+                // assertThat("HeuristicMixedException should be cause.", receivedEx.getCause().getClass(), equalTo(jakarta.transaction.HeuristicMixedException.class));
                 assertThat(receivedEx.getCause().getClass(), equalTo(java.lang.ClassNotFoundException.class));
                 break;
             case ROLLBACK_CAUSED_BY_XA_EXCEPTION:
-                assertThat(receivedEx.getClass(), equalTo(javax.ejb.EJBTransactionRolledbackException.class));
-                assertThat(receivedEx.getCause().getClass(), equalTo(javax.transaction.RollbackException.class));
+                assertThat(receivedEx.getClass(), equalTo(jakarta.ejb.EJBTransactionRolledbackException.class));
+                assertThat(receivedEx.getCause().getClass(), equalTo(jakarta.transaction.RollbackException.class));
                 break;
             case ROLLBACK_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION:
                 // FIXME should be EJBTransactionRolledbackException
-                assertThat(receivedEx.getClass(), equalTo(javax.ejb.EJBException.class));
+                assertThat(receivedEx.getClass(), equalTo(jakarta.ejb.EJBException.class));
                 // FIXME WFLY-8794
-                // assertThat("HeuristicMixedException should be cause.", receivedEx.getCause().getClass(), equalTo(javax.transaction.HeuristicMixedException.class));
+                // assertThat("HeuristicMixedException should be cause.", receivedEx.getCause().getClass(), equalTo(jakarta.transaction.HeuristicMixedException.class));
                 assertThat(receivedEx.getCause().getClass(), equalTo(java.lang.ClassNotFoundException.class));
                 break;
             }

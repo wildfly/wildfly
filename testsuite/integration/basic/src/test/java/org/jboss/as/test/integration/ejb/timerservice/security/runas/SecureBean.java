@@ -25,10 +25,10 @@ package org.jboss.as.test.integration.ejb.timerservice.security.runas;
  * @author Tomasz Adamski
  */
 
-import javax.annotation.Resource;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class SecureBean {

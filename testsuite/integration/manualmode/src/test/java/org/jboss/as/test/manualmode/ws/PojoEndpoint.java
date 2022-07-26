@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.manualmode.ws;
 
-import javax.jws.WebService;
-import javax.xml.ws.BindingType;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.BindingType;
 
 /**
  * Simple POJO endpoint
@@ -34,7 +34,7 @@ import javax.xml.ws.BindingType;
         targetNamespace = "http://jbossws.org/basic",
         endpointInterface = "org.jboss.as.test.manualmode.ws.EndpointIface"
         )
-@BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
+@BindingType(jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class PojoEndpoint implements EndpointIface {
 
     public String helloString(String input) {

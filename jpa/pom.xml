@@ -21,7 +21,8 @@
     <name>WildFly: JPA</name>
 
     <properties>
-        <dependency.management.pom.artifactId>wildfly-ee-feature-pack-parent</dependency.management.pom.artifactId>
+        <!-- Default to the legacy WildFly dependency set until most child modules use standard WildFly dependencies -->
+        <dependency.management.pom.artifactId>wildfly-legacy-ee-bom</dependency.management.pom.artifactId>
     </properties>
 
     <dependencyManagement>
@@ -41,21 +42,9 @@
         <module>spi</module>
         <module>hibernate5</module>
         <module>hibernate5_3</module>
+        <module>hibernate6</module>
         <module>eclipselink</module>
         <module>openjpa</module>
     </modules>
 
-    <profiles>
-        <profile>
-            <id>include-hibernate-6</id>
-            <activation>
-                <property>
-                    <name>!skip.preview</name>
-                </property>
-            </activation>
-            <modules>
-                <module>hibernate6</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>

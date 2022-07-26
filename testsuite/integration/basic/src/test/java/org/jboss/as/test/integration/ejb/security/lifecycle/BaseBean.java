@@ -21,9 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.security.lifecycle;
 
-import javax.ejb.EJBContext;
-
-import java.security.Identity;
+import jakarta.ejb.EJBContext;
 
 /**
  * The base class for calling the four EJBContext methods.
@@ -37,10 +35,6 @@ public abstract class BaseBean {
     public static final String GET_CALLER_PRINCIPAL = "getCallerPrincipal()";
 
     public static final String IS_CALLER_IN_ROLE = "isCallerInRole(String)";
-
-    public static final String IS_CALLER_IN_ROLE_IDENITY = "isCallerInRole(Identity)";
-
-    public static final String GET_CALLER_IDENTITY = "getCallerIdentity";
 
     public static final String DEPENDENCY_INJECTION = "Dependency Injection";
 
@@ -68,29 +62,9 @@ public abstract class BaseBean {
         }
     }
 
-    private String callGetCallerIdentity() {
-         try {
-            return getEJBContext().getCallerIdentity().getName();
-        } catch (Exception e) {
-            return e.getClass().getSimpleName();
-        }
-    }
-
-    private String callIsCallerInRole_Identity() {
-        try {
-            Identity id = new Identity(DEFAULT_ROLE) {
-            };
-            return Boolean.toString(getEJBContext().isCallerInRole(id));
-        } catch (Exception e) {
-            return e.getClass().getSimpleName();
-        }
-    }
-
     void performTests(final String beanMethod) {
         ResultHolder.addResult(beanMethod, GET_CALLER_PRINCIPAL, callGetCallerPrincipal());
-        ResultHolder.addResult(beanMethod, GET_CALLER_IDENTITY, callGetCallerIdentity());
         ResultHolder.addResult(beanMethod, IS_CALLER_IN_ROLE,callIsCallerInRole());
-        ResultHolder.addResult(beanMethod,IS_CALLER_IN_ROLE_IDENITY,callIsCallerInRole_Identity());
     }
 
 }

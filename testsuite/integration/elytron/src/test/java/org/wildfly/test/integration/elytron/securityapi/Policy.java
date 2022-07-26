@@ -24,11 +24,10 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.wildfly.test.security.common.elytron.AbstractConfigurableElement;
-
-import net.sf.ehcache.config.generator.model.elements.ConfigurationElement;
+import org.wildfly.test.security.common.elytron.ConfigurableElement;
 
 /**
- * A {@link ConfigurationElement} to add a policy definition to the Elytron subsystem.
+ * A {@link ConfigurableElement} to add a policy definition to the Elytron subsystem.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -89,9 +88,9 @@ class Policy extends AbstractConfigurableElement {
         }
 
         /**
-         * Build a new Policy {@link ConfigurationElement}
+         * Build a new Policy {@link ConfigurableElement}
          *
-         * @return a new Policy {@link ConfigurationElement}
+         * @return a new Policy {@link ConfigurableElement}
          */
         public Policy build() {
             return new Policy(this);

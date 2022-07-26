@@ -26,7 +26,6 @@
     1. The testsuite module has a small number of submodules:
 
     integration - holds all integration tests for Wildfly.
-    compat      - holds all compatibility management tests for Wildfly.
     domain      - holds all domain management tests for Wildfly.
 
     All tests should fit into one of these four categories.
@@ -100,7 +99,7 @@
              Child modules or profiles can override this to use a different dependency set,
              for example to test WildFly Preview or to test microprofile.
              Default is the EE dependency set. -->
-        <dependency.management.import.artifact>wildfly-ee-feature-pack-parent</dependency.management.import.artifact>
+        <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
 
         <!-- IP address defaults. -->
         <node0>127.0.0.1</node0>
@@ -171,9 +170,6 @@
 
         <!-- If servers should be killed before the test suite is run-->
         <org.wildfly.test.kill-servers-before-test>false</org.wildfly.test.kill-servers-before-test>
-
-        <!-- Arquillian dependency versions -->
-        <version.arquillian_wildfly>${project.parent.version}</version.arquillian_wildfly>
         
         <!-- Don't try to deploy the testsuite modules because they don't build jars -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -406,17 +402,6 @@
         </profile>
 
         <profile>
-            <id>compat.module.profile</id>
-            <activation><property><name>compat.module</name></property></activation>
-            <modules><module>compat</module></modules>
-        </profile>
-        <profile>
-            <id>compat_.module.profile</id>
-            <activation><property><name>ts.compat</name></property></activation>
-            <modules><module>compat</module></modules>
-        </profile>
-
-        <profile>
             <id>domain.module.profile</id>
             <activation><property><name>domain.module</name></property></activation>
             <modules><module>domain</module></modules>
@@ -464,12 +449,28 @@
         <profile>
             <id>ee9.profile</id>
             <activation><property><name>ts.ee9</name></property></activation>
+            <properties>
+                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+            </properties>
             <modules>
+                <module>test-feature-pack-preview</module>
                 <module>domain</module>
                 <module>integration</module>
                 <module>layers</module>
                 <module>preview</module>
                 <module>scripts</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>bootablejar.ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable.ee9</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-feature-pack-preview</module>
+                <module>integration</module>
             </modules>
         </profile>
 

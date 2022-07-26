@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.management.deploy.runtime.ejb.singleton.timer;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author baranowb

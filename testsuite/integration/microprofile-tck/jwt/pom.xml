@@ -48,10 +48,22 @@
         <dependency>
             <groupId>io.reactivex.rxjava2</groupId>
             <artifactId>rxjava</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
@@ -81,8 +93,13 @@
         </dependency>
         <!-- A REST (RESTEasy) implementation is required -->
         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client-microprofile</artifactId>
+            <groupId>org.jboss.resteasy.microprofile</groupId>
+            <artifactId>microprofile-rest-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy.microprofile</groupId>
+            <artifactId>microprofile-rest-client-base</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -237,36 +254,9 @@
                 </property>
             </activation>
             <properties>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>jakarta.annotation</groupId>
-                    <artifactId>jakarta.annotation-api</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>jakarta.ws.rs</groupId>
-                    <artifactId>jakarta.ws.rs-api</artifactId>
-                </dependency>
-                <!--
-                This one ends up pulling in MP Config, and if present fails because no ConfigProviderResolver
-                can be found
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-config</artifactId>
-                </dependency>
-                -->
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-rest-client</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-rest-client-base</artifactId>
-                </dependency>
-            </dependencies>
         </profile>
 
         <!-- Profile to turn off execution of this module's tests if the testsuite is being run
@@ -304,36 +294,9 @@
                 </property>
             </activation>
             <properties>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Enable galleon provisioning -->
                 <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>jakarta.annotation</groupId>
-                    <artifactId>jakarta.annotation-api</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>jakarta.ws.rs</groupId>
-                    <artifactId>jakarta.ws.rs-api</artifactId>
-                </dependency>
-                <!--
-                This one ends up pulling in MP Config, and if present fails because no ConfigProviderResolver
-                can be found
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-config</artifactId>
-                </dependency>
-                -->
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-rest-client</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-rest-client-base</artifactId>
-                </dependency>
-            </dependencies>
         </profile>
 
     </profiles>

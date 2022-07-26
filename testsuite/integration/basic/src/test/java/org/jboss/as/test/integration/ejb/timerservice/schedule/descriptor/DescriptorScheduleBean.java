@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.ejb.Timer;
+import jakarta.ejb.Timer;
 
 /**
  * Ejb with it's timers managed by a descriptor

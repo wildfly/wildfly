@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.transaction.exception.bean.ejb3;
 
-import javax.annotation.Resource;
-import javax.ejb.LocalBean;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+import jakarta.annotation.Resource;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException;
 import org.jboss.as.test.integration.ejb.transaction.exception.TimeoutTestXAResource;

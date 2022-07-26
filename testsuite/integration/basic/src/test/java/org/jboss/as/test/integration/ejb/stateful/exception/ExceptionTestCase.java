@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.stateful.exception;
 
-import javax.ejb.EJBException;
-import javax.ejb.NoSuchEJBException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.NoSuchEJBException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

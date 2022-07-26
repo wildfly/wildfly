@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.localview;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * An ejb local interface

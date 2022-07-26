@@ -44,7 +44,6 @@ import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
-import org.jboss.as.test.integration.domain.util.EENamespaceTransformer;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.dmr.ModelNode;
@@ -89,19 +88,19 @@ public class DomainDeploymentOverlayTestCase {
         war.addClass(SimpleServlet.class);
         war.addAsWebInfResource("cli/deployment-overlay/web.xml", "web.xml");
         war1 = new File(tempDir + File.separator + war.getName());
-        EENamespaceTransformer.jakartaTransform(new ZipExporterImpl(war), war1);
+        new ZipExporterImpl(war).exportTo(war1, true);
 
         war = ShrinkWrap.create(WebArchive.class, "deployment1.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebInfResource("cli/deployment-overlay/web.xml", "web.xml");
         war2 = new File(tempDir + File.separator + war.getName());
-        EENamespaceTransformer.jakartaTransform(new ZipExporterImpl(war), war2);
+        new ZipExporterImpl(war).exportTo(war2, true);
 
         war = ShrinkWrap.create(WebArchive.class, "another.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebInfResource("cli/deployment-overlay/web.xml", "web.xml");
         war3 = new File(tempDir + File.separator + war.getName());
-        EENamespaceTransformer.jakartaTransform(new ZipExporterImpl(war), war3);
+        new ZipExporterImpl(war).exportTo(war3, true);
 
         final URL overrideXmlUrl = DomainDeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/override.xml");
         if(overrideXmlUrl == null) {

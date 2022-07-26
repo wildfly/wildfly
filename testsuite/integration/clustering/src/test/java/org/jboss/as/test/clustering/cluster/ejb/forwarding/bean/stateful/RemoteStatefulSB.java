@@ -24,7 +24,7 @@ package org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful;
 
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common.CommonStatefulSB;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * The enterprise bean must implement a business interface. That is, remote clients may not access an enterprise bean through a

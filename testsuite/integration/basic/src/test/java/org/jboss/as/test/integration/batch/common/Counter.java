@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.batch.common;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 

@@ -29,7 +29,7 @@ import java.security.SecurityPermission;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJBAccessException;
 import javax.security.auth.AuthPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;

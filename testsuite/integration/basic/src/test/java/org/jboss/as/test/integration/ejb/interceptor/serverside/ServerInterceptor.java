@@ -22,9 +22,9 @@
 package org.jboss.as.test.integration.ejb.interceptor.serverside;
 
 import java.util.concurrent.CountDownLatch;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.AroundTimeout;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * Server side sample interceptor

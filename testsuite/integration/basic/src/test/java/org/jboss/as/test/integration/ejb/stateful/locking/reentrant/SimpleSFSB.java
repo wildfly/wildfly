@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.stateful.locking.reentrant;
 
-import javax.ejb.AccessTimeout;
-import javax.ejb.Stateful;
+import jakarta.ejb.AccessTimeout;
+import jakarta.ejb.Stateful;
 import java.util.concurrent.TimeUnit;
 
 /**

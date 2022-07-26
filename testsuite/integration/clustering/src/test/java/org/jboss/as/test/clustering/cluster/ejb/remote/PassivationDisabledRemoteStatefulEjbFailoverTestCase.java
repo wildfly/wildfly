@@ -1,7 +1,7 @@
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
 import java.util.PropertyPermission;
-import javax.ejb.NoSuchEJBException;
+import jakarta.ejb.NoSuchEJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;

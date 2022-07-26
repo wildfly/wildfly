@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
-import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
@@ -42,8 +41,8 @@ import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.shared.RetryTaskExecutor;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -73,8 +72,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
                 "permissions.xml");
         String tempDir = System.getProperty("java.io.tmpdir");
         warFile = new File(tempDir + File.separator + "RolloutPlanTestCase.war");
-        //new ZipExporterImpl(war).exportTo(warFile, true);
-        jakartaTransform(war.as(ZipExporter.class), warFile);
+        new ZipExporterImpl(war).exportTo(warFile, true);
 
         AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
 

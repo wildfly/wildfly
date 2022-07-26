@@ -51,6 +51,24 @@
         <module>opentracing-smallrye</module>
     </modules>
 
+    <dependencyManagement>
+        <!--
+        This module actually builds artifacts for standard WildFly, not Preview,
+        so use the standard WildFly dependencies.
+
+        This module builds expansion capabilities so use the expansion bom.
+        -->
+        <dependencies>
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-expansion-bom</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

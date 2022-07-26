@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.smoke.managedbean;
 
-import javax.annotation.ManagedBean;
+import jakarta.annotation.ManagedBean;
 
 
 /**

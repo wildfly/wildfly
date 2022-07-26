@@ -1,7 +1,7 @@
 package org.jboss.as.test.integration.ejb.jndi.logging;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 @Stateless(name="Hello")
 @Remote(Hello.class)

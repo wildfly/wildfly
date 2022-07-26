@@ -33,6 +33,11 @@
         <actions>read</actions>
     </permission>
     <permission>
+        <class-name>java.util.PropertyPermission</class-name>
+        <name>*</name>
+        <actions>read,write</actions>
+    </permission>
+    <permission>
         <class-name>java.lang.RuntimePermission</class-name>
         <name>createClassLoader</name>
     </permission>

@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.ejb.transaction.cmt.mandatory;
 
-import javax.ejb.EJBTransactionRequiredException;
-import javax.inject.Inject;
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import jakarta.ejb.EJBTransactionRequiredException;
+import jakarta.inject.Inject;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

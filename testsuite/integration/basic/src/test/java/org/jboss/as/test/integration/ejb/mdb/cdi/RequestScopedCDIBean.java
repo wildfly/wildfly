@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.cdi;
 
-import javax.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.RequestScoped;
 
 /**
  * @author Stuart Douglas

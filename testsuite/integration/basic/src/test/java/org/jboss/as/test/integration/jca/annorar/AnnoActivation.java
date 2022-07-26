@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.jca.annorar;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.endpoint.MessageEndpointFactory;
 
 /**
  * AnnoActivation
