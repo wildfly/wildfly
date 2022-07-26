@@ -49,7 +49,7 @@ public class ManagementServerSetupTask implements ServerSetupTask {
 
     public interface ContainerSetConfiguration {
         /**
-         * Returns the configuration for the specified container, or null, if no configuration exists.
+         * Returns the configuration for the specified container, or the default configuration.
          * @param container a container identifier
          * @return a container configuration
          */
@@ -96,6 +96,14 @@ public class ManagementServerSetupTask implements ServerSetupTask {
         default ContainerSetConfigurationBuilder addContainer(String container, ContainerConfiguration configuration) {
             return this.addContainers(Set.of(container), configuration);
         }
+
+        /**
+         * Adds a container configuration.
+         * @param container a container identifier
+         * @param configuration a container configuration
+         * @return a reference to this builder
+         */
+        ContainerSetConfigurationBuilder defaultContainer(ContainerConfiguration configuration);
     }
 
     public interface ContainerConfigurationBuilder extends Builder<ContainerConfiguration> {
@@ -155,6 +163,7 @@ public class ManagementServerSetupTask implements ServerSetupTask {
     public static ContainerSetConfigurationBuilder createContainerSetConfigurationBuilder() {
         return new ContainerSetConfigurationBuilder() {
             private final Map<String, ContainerConfiguration> containers = new HashMap<>();
+            private ContainerConfiguration defaultContainer = null;
 
             @Override
             public ContainerSetConfigurationBuilder addContainers(Set<String> containers, ContainerConfiguration configuration) {
@@ -165,8 +174,21 @@ public class ManagementServerSetupTask implements ServerSetupTask {
             }
 
             @Override
+            public ContainerSetConfigurationBuilder defaultContainer(ContainerConfiguration configuration) {
+                this.defaultContainer = configuration;
+                return this;
+            }
+
+            @Override
             public ContainerSetConfiguration build() {
-                return this.containers::get;
+                Map<String, ContainerConfiguration> containers = this.containers;
+                ContainerConfiguration defaultConfig = this.defaultContainer;
+                return new ContainerSetConfiguration() {
+                    @Override
+                    public ContainerConfiguration getContainerConfiguration(String container) {
+                        return containers.getOrDefault(container, defaultConfig);
+                    }
+                };
             }
         };
     }
@@ -255,6 +277,10 @@ public class ManagementServerSetupTask implements ServerSetupTask {
 
     public ManagementServerSetupTask(ContainerSetConfiguration config) {
         this.config = config;
+    }
+
+    public ManagementServerSetupTask(ContainerConfiguration defaultConfig) {
+        this(createContainerSetConfigurationBuilder().defaultContainer(defaultConfig).build());
     }
 
     public ManagementServerSetupTask(String container, ContainerConfiguration config) {
