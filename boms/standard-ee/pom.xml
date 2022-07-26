@@ -849,7 +849,6 @@
                 <groupId>jakarta.ejb</groupId>
                 <artifactId>jakarta.ejb-api</artifactId>
                 <version>${version.jakarta.ejb.jakarta-ejb-api}</version>
-                <!-- Exclude dependencies declared in the servlet-feature-pack-ee-8-api module -->
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
