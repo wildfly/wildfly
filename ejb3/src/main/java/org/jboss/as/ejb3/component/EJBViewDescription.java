@@ -155,6 +155,6 @@ public class EJBViewDescription extends ViewDescription {
 
     @Override
     public boolean requiresSuperclassInProxy() {
-        return !(isEjb2xView() || methodIntf == MethodIntf.HOME);
+        return !(isEjb2xView() || methodIntf == MethodIntf.LOCAL_HOME || methodIntf == MethodIntf.HOME);
     }
 }
