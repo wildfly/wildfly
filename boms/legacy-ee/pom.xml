@@ -368,7 +368,7 @@
             <dependency>
                 <groupId>antlr</groupId>
                 <artifactId>antlr</artifactId>
-                <version>${version.antlr}</version>
+                <version>${legacy.version.antlr}</version>
             </dependency>
 
             <!-- Begin deps previously in ee-feature-pack/pom.xml -->
@@ -398,13 +398,13 @@
             <dependency>
                 <groupId>com.sun.faces</groupId>
                 <artifactId>jsf-impl</artifactId>
-                <version>${version.com.sun.faces}</version>
+                <version>${legacy.version.com.sun.faces}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.sun.istack</groupId>
                 <artifactId>istack-commons-runtime</artifactId>
-                <version>${version.com.sun.istack}</version>
+                <version>${legacy.version.com.sun.istack}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>javax.xml.stream</groupId>
@@ -416,7 +416,7 @@
             <dependency>
                 <groupId>com.sun.istack</groupId>
                 <artifactId>istack-commons-tools</artifactId>
-                <version>${version.com.sun.istack}</version>
+                <version>${legacy.version.com.sun.istack}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.sun</groupId>
@@ -432,7 +432,29 @@
             <dependency>
                 <groupId>com.sun.mail</groupId>
                 <artifactId>jakarta.mail</artifactId>
-                <version>${version.jakarta.mail}</version>
+                <version>${legacy.version.jakarta.mail}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.bind.external</groupId>
+                <artifactId>relaxng-datatype</artifactId>
+                <version>${legacy.version.sun.jaxb}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.bind.external</groupId>
+                <artifactId>rngom</artifactId>
+                <version>${legacy.version.sun.jaxb}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>relaxngDatatype</groupId>
+                        <artifactId>relaxngDatatype</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind.external</groupId>
+                        <artifactId>relaxng-datatype</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -478,13 +500,13 @@
             <dependency>
                 <groupId>io.agroal</groupId>
                 <artifactId>agroal-api</artifactId>
-                <version>${version.io.agroal}</version>
+                <version>${legacy.version.io.agroal}</version>
             </dependency>
 
             <dependency>
                 <groupId>io.agroal</groupId>
                 <artifactId>agroal-narayana</artifactId>
-                <version>${version.io.agroal}</version>
+                <version>${legacy.version.io.agroal}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss</groupId>
@@ -500,13 +522,13 @@
             <dependency>
                 <groupId>io.agroal</groupId>
                 <artifactId>agroal-pool</artifactId>
-                <version>${version.io.agroal}</version>
+                <version>${legacy.version.io.agroal}</version>
             </dependency>
 
             <dependency>
                 <groupId>io.undertow.jastow</groupId>
                 <artifactId>jastow</artifactId>
-                <version>${version.io.undertow.jastow}</version>
+                <version>${legacy.version.io.undertow.jastow}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -518,7 +540,7 @@
             <dependency>
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                <version>${version.jakarta.enterprise}</version>
+                <version>${legacy.version.jakarta.enterprise}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -530,7 +552,7 @@
             <dependency>
                 <groupId>jakarta.json.bind</groupId>
                 <artifactId>jakarta.json.bind-api</artifactId>
-                <version>${version.jakarta.json.bind.api}</version>
+                <version>${legacy.version.jakarta.json.bind.api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -542,25 +564,25 @@
             <dependency>
                 <groupId>jakarta.jws</groupId>
                 <artifactId>jakarta.jws-api</artifactId>
-                <version>${version.jakarta.jws.jakarta.jws-api}</version>
+                <version>${legacy.version.jakarta.jws.jakarta.jws-api}</version>
             </dependency>
 
             <dependency>
                 <groupId>jakarta.persistence</groupId>
                 <artifactId>jakarta.persistence-api</artifactId>
-                <version>${version.jakarta.persistence}</version>
+                <version>${legacy.version.jakarta.persistence}</version>
             </dependency>
 
             <dependency>
                 <groupId>jakarta.security.enterprise</groupId>
                 <artifactId>jakarta.security.enterprise-api</artifactId>
-                <version>${version.jakarta.security.enterprise}</version>
+                <version>${legacy.version.jakarta.security.enterprise}</version>
             </dependency>
 
             <dependency>
                 <groupId>jakarta.transaction</groupId>
                 <artifactId>jakarta.transaction-api</artifactId>
-                <version>${version.jakarta.transaction}</version>
+                <version>${legacy.version.jakarta.transaction}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -584,7 +606,7 @@
             <dependency>
                 <groupId>jboss.jaxbintros</groupId>
                 <artifactId>jboss-jaxb-intros</artifactId>
-                <version>${version.jboss.jaxbintros}</version>
+                <version>${legacy.version.jboss.jaxbintros}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-beanutils</groupId>
@@ -612,7 +634,7 @@
             <dependency>
                 <groupId>net.shibboleth.utilities</groupId>
                 <artifactId>java-support</artifactId>
-                <version>${version.net.shibboleth.utilities.java-support}</version>
+                <version>${legacy.version.net.shibboleth.utilities.java-support}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.google.code.findbugs</groupId>
@@ -672,7 +694,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-core</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.ws.xmlschema</groupId>
@@ -712,7 +734,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-bindings-coloc</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -804,7 +826,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-bindings-soap</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -868,7 +890,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-bindings-xml</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -928,7 +950,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-databinding-aegis</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -988,7 +1010,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-databinding-jaxb</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
@@ -1049,7 +1071,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-features-clustering</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.osgi</groupId>
@@ -1113,7 +1135,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-features-logging</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
@@ -1169,7 +1191,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.ow2.asm</groupId>
@@ -1265,7 +1287,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-simple</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>xalan</groupId>
@@ -1317,7 +1339,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-management</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -1405,7 +1427,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-security</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -1461,7 +1483,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-security-saml</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>xalan</groupId>
@@ -1517,7 +1539,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -1609,7 +1631,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-http-hc</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -1709,7 +1731,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-jms</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -1813,7 +1835,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-local</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -1873,7 +1895,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-addr</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>xalan</groupId>
@@ -1925,7 +1947,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-mex</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>xalan</groupId>
@@ -1977,7 +1999,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-policy</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -2077,7 +2099,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-rm</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -2181,7 +2203,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-security</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>net.sf.ehcache</groupId>
@@ -2285,7 +2307,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-wsdl</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -2345,7 +2367,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-common</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
@@ -2413,7 +2435,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-java2ws</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -2553,7 +2575,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-validator</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -2701,7 +2723,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-wsdlto-core</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
@@ -2817,7 +2839,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-wsdlto-databinding-jaxb</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
@@ -2913,7 +2935,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-wsdlto-frontend-jaxws</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -3009,7 +3031,7 @@
             <dependency>
                 <groupId>org.apache.cxf.services.sts</groupId>
                 <artifactId>cxf-services-sts-core</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -3069,7 +3091,7 @@
             <dependency>
                 <groupId>org.apache.cxf.services.ws-discovery</groupId>
                 <artifactId>cxf-services-ws-discovery-api</artifactId>
-                <version>${version.org.apache.cxf}</version>
+                <version>${legacy.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -3125,7 +3147,7 @@
             <dependency>
                 <groupId>org.apache.cxf.xjc-utils</groupId>
                 <artifactId>cxf-xjc-runtime</artifactId>
-                <version>${version.org.apache.cxf.xjcplugins}</version>
+                <version>${legacy.version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.commons</groupId>
@@ -3173,7 +3195,7 @@
             <dependency>
                 <groupId>org.apache.cxf.xjcplugins</groupId>
                 <artifactId>cxf-xjc-boolean</artifactId>
-                <version>${version.org.apache.cxf.xjcplugins}</version>
+                <version>${legacy.version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>jakarta.xml.bind</groupId>
@@ -3249,7 +3271,7 @@
             <dependency>
                 <groupId>org.apache.cxf.xjcplugins</groupId>
                 <artifactId>cxf-xjc-bug986</artifactId>
-                <version>${version.org.apache.cxf.xjcplugins}</version>
+                <version>${legacy.version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.commons</groupId>
@@ -3297,7 +3319,7 @@
             <dependency>
                 <groupId>org.apache.cxf.xjcplugins</groupId>
                 <artifactId>cxf-xjc-dv</artifactId>
-                <version>${version.org.apache.cxf.xjcplugins}</version>
+                <version>${legacy.version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>jakarta.xml.bind</groupId>
@@ -3337,7 +3359,7 @@
             <dependency>
                 <groupId>org.apache.cxf.xjcplugins</groupId>
                 <artifactId>cxf-xjc-ts</artifactId>
-                <version>${version.org.apache.cxf.xjcplugins}</version>
+                <version>${legacy.version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.commons</groupId>
@@ -3385,29 +3407,29 @@
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-analyzers-common</artifactId>
-                <version>${version.org.apache.lucene}</version>
+                <version>${legacy.version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <!-- Legacy dependency, useful for Hibernate Search 5 only -->
                 <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-backward-codecs</artifactId>
-                <version>${version.org.apache.lucene}</version>
+                <version>${legacy.version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-core</artifactId>
-                <version>${version.org.apache.lucene}</version>
+                <version>${legacy.version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-facet</artifactId>
-                <version>${version.org.apache.lucene}</version>
+                <version>${legacy.version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-join</artifactId>
-                <version>${version.org.apache.lucene}</version>
+                <version>${legacy.version.org.apache.lucene}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.lucene</groupId>
@@ -3424,17 +3446,17 @@
                 <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-misc</artifactId>
-                <version>${version.org.apache.lucene}</version>
+                <version>${legacy.version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-queries</artifactId>
-                <version>${version.org.apache.lucene}</version>
+                <version>${legacy.version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-queryparser</artifactId>
-                <version>${version.org.apache.lucene}</version>
+                <version>${legacy.version.org.apache.lucene}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.lucene</groupId>
@@ -3446,13 +3468,13 @@
             <dependency>
                 <groupId>org.apache.myfaces.core</groupId>
                 <artifactId>myfaces-api</artifactId>
-                <version>${version.org.apache.myfaces.core}</version>
+                <version>${legacy.version.org.apache.myfaces.core}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.myfaces.core</groupId>
                 <artifactId>myfaces-impl</artifactId>
-                <version>${version.org.apache.myfaces.core}</version>
+                <version>${legacy.version.org.apache.myfaces.core}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-logging</groupId>
@@ -3694,7 +3716,7 @@
             <dependency>
                 <groupId>org.eclipse</groupId>
                 <artifactId>yasson</artifactId>
-                <version>${version.org.eclipse.yasson}</version>
+                <version>${legacy.version.org.eclipse.yasson}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -3707,7 +3729,7 @@
             <dependency>
                 <groupId>org.eclipse.microprofile.health</groupId>
                 <artifactId>microprofile-health-api</artifactId>
-                <version>${version.org.eclipse.microprofile.health.api}</version>
+                <version>${legacy.version.org.eclipse.microprofile.health.api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>javax.inject</groupId>
@@ -3719,7 +3741,7 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>eclipselink</artifactId>
-                <version>${version.org.eclipselink.version}</version>
+                <version>${legacy.version.org.eclipselink.version}</version>
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
@@ -3745,8 +3767,20 @@
 
             <dependency>
                 <groupId>org.glassfish</groupId>
+                <artifactId>jakarta.el</artifactId>
+                <version>${legacy.version.org.glassfish.jakarta.el}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish</groupId>
                 <artifactId>jakarta.enterprise.concurrent</artifactId>
-                <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
+                <version>${legacy.version.org.glassfish.jakarta.enterprise.concurrent}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -3758,13 +3792,13 @@
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>codemodel</artifactId>
-                <version>${version.sun.jaxb}</version>
+                <version>${legacy.version.sun.jaxb}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-jxc</artifactId>
-                <version>${version.sun.jaxb}</version>
+                <version>${legacy.version.sun.jaxb}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.sun</groupId>
@@ -3776,7 +3810,7 @@
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-runtime</artifactId>
-                <version>${version.sun.jaxb}</version>
+                <version>${legacy.version.sun.jaxb}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>javax.activation</groupId>
@@ -3796,7 +3830,7 @@
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-xjc</artifactId>
-                <version>${version.sun.jaxb}</version>
+                <version>${legacy.version.sun.jaxb}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.sun.xml.dtd-parser</groupId>
@@ -3808,13 +3842,13 @@
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>txw2</artifactId>
-                <version>${version.sun.jaxb}</version>
+                <version>${legacy.version.sun.jaxb}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>xsom</artifactId>
-                <version>${version.sun.jaxb}</version>
+                <version>${legacy.version.sun.jaxb}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.sun.xml.bind.external</groupId>
@@ -3830,13 +3864,13 @@
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
                 <artifactId>jakarta.security.enterprise</artifactId>
-                <version>${version.org.glassfish.soteria}</version>
+                <version>${legacy.version.org.glassfish.soteria}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
-                <version>${version.org.hibernate}</version>
+                <version>${legacy.version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -3848,7 +3882,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-entitymanager</artifactId>
-                <version>${version.org.hibernate}</version>
+                <version>${legacy.version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -3860,7 +3894,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-envers</artifactId>
-                <version>${version.org.hibernate}</version>
+                <version>${legacy.version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -3872,7 +3906,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-java8</artifactId>
-                <version>${version.org.hibernate}</version>
+                <version>${legacy.version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -3886,7 +3920,7 @@
                 <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-backend-jms</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${legacy.version.org.hibernate.search}</version>
             </dependency>
 
             <dependency>
@@ -3894,7 +3928,7 @@
                 <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-engine</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${legacy.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -3908,7 +3942,7 @@
                 <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-orm</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${legacy.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.hibernate</groupId>
@@ -3942,13 +3976,13 @@
                 <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-serialization-avro</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${legacy.version.org.hibernate.search}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.hibernate.common</groupId>
                 <artifactId>hibernate-commons-annotations</artifactId>
-                <version>${version.org.hibernate.commons.annotations}</version>
+                <version>${legacy.version.org.hibernate.commons.annotations}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -3960,7 +3994,7 @@
             <dependency>
                 <groupId>org.hibernate.validator</groupId>
                 <artifactId>hibernate-validator</artifactId>
-                <version>${version.org.hibernate.validator}</version>
+                <version>${legacy.version.org.hibernate.validator}</version>
                 <exclusions>
                     <!-- TODO remove this exclusion once this supports Jakarta Validation -->
                     <!-- Superceded by jakarta.validation:jakarta.validation-api -->
@@ -3974,7 +4008,7 @@
             <dependency>
                 <groupId>org.hibernate.validator</groupId>
                 <artifactId>hibernate-validator-cdi</artifactId>
-                <version>${version.org.hibernate.validator}</version>
+                <version>${legacy.version.org.hibernate.validator}</version>
             </dependency>
 
             <dependency>
@@ -4004,7 +4038,7 @@
             <dependency>
                 <groupId>org.jberet</groupId>
                 <artifactId>jberet-core</artifactId>
-                <version>${version.org.jberet}</version>
+                <version>${legacy.version.org.jberet}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -4493,7 +4527,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>jose-jwt</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4505,7 +4539,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-atom-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4517,7 +4551,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-cdi</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4529,7 +4563,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4541,7 +4575,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client-api</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4553,7 +4587,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-core</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4565,7 +4599,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-core-spi</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4577,7 +4611,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-crypto</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4589,7 +4623,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jackson2-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4601,7 +4635,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxb-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4613,7 +4647,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jsapi</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4625,7 +4659,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-json-binding-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4637,7 +4671,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-json-p-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4649,7 +4683,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-multipart-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4661,7 +4695,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-rxjava2</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4673,7 +4707,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-spring</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4685,7 +4719,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-validator-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${legacy.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4823,7 +4857,7 @@
             <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-api</artifactId>
-                <version>${version.org.jboss.weld.weld-api}</version>
+                <version>${legacy.version.org.jboss.weld.weld-api}</version>
                 <exclusions>
                     <!-- TODO remove this exclusion once this depends on Jakarta CDI -->
                     <!-- superseded by jakarta.enterprise:jakarta.enterprise.cdi-api -->
@@ -4843,7 +4877,7 @@
             <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-core-impl</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${legacy.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4855,13 +4889,13 @@
             <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-spi</artifactId>
-                <version>${version.org.jboss.weld.weld-api}</version>
+                <version>${legacy.version.org.jboss.weld.weld-api}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-ejb</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${legacy.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4873,7 +4907,7 @@
             <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-jsf</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${legacy.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4885,7 +4919,7 @@
             <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-jta</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${legacy.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4897,7 +4931,7 @@
             <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-web</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${legacy.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4909,7 +4943,7 @@
             <dependency>
                 <groupId>org.jboss.weld.probe</groupId>
                 <artifactId>weld-probe-core</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${legacy.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4921,7 +4955,7 @@
             <dependency>
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-api</artifactId>
-                <version>${version.org.jboss.ws.api}</version>
+                <version>${legacy.version.org.jboss.ws.api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4933,7 +4967,7 @@
             <dependency>
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-common</artifactId>
-                <version>${version.org.jboss.ws.common}</version>
+                <version>${legacy.version.org.jboss.ws.common}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4945,7 +4979,7 @@
             <dependency>
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-spi</artifactId>
-                <version>${version.org.jboss.ws.spi}</version>
+                <version>${legacy.version.org.jboss.ws.spi}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4957,7 +4991,7 @@
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-client</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
+                <version>${legacy.version.org.jboss.ws.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>asm</groupId>
@@ -5126,20 +5160,20 @@
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-factories</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
+                <version>${legacy.version.org.jboss.ws.cxf}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-resources</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
+                <version>${legacy.version.org.jboss.ws.cxf}</version>
                 <classifier>wildfly2700</classifier>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-server</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
+                <version>${legacy.version.org.jboss.ws.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>asm</groupId>
@@ -5312,7 +5346,7 @@
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-transports-udp</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
+                <version>${legacy.version.org.jboss.ws.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.fasterxml.woodstox</groupId>
@@ -5340,7 +5374,7 @@
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-transports-undertow</artifactId>
-                <version>${version.org.jboss.ws.cxf}</version>
+                <version>${legacy.version.org.jboss.ws.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.annotation</groupId>
@@ -5368,7 +5402,7 @@
             <dependency>
                 <groupId>org.jboss.ws.projects</groupId>
                 <artifactId>jaxws-undertow-httpspi</artifactId>
-                <version>${version.org.jboss.ws.jaxws-undertow-httpspi}</version>
+                <version>${legacy.version.org.jboss.ws.jaxws-undertow-httpspi}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.xml.ws</groupId>
@@ -5380,7 +5414,7 @@
             <dependency>
                 <groupId>org.jvnet.staxex</groupId>
                 <artifactId>stax-ex</artifactId>
-                <version>${version.org.jvnet.staxex}</version>
+                <version>${legacy.version.org.jvnet.staxex}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>javax.xml.stream</groupId>
@@ -5396,7 +5430,7 @@
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-core</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>io.dropwizard.metrics</groupId>
@@ -5408,19 +5442,19 @@
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-profile-api</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-saml-api</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-saml-impl</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.velocity</groupId>
@@ -5432,55 +5466,55 @@
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-security-api</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-security-impl</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-soap-api</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-xacml-api</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-xacml-impl</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-xacml-saml-api</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-xacml-saml-impl</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-xmlsec-api</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-xmlsec-impl</artifactId>
-                <version>${version.org.opensaml.opensaml}</version>
+                <version>${legacy.version.org.opensaml.opensaml}</version>
             </dependency>
 
             <dependency>

@@ -884,7 +884,7 @@
                                 <artifactItem>
                                     <groupId>org.hibernate.search</groupId>
                                     <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
-                                    <version>${preview.version.org.hibernate.search}</version>
+                                    <version>${version.org.hibernate.search}</version>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/testlib</outputDirectory>
@@ -893,7 +893,7 @@
                                 <artifactItem>
                                     <groupId>org.hibernate.search</groupId>
                                     <artifactId>hibernate-search-v5migrationhelper-engine</artifactId>
-                                    <version>${preview.version.org.hibernate.search}</version>
+                                    <version>${version.org.hibernate.search}</version>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/testlib</outputDirectory>
@@ -902,7 +902,7 @@
                                 <artifactItem>
                                     <groupId>org.hibernate.search</groupId>
                                     <artifactId>hibernate-search-v5migrationhelper-orm-orm6</artifactId>
-                                    <version>${preview.version.org.hibernate.search}</version>
+                                    <version>${version.org.hibernate.search}</version>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/testlib</outputDirectory>
