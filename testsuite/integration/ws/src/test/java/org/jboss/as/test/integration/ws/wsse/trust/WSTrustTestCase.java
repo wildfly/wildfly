@@ -98,7 +98,7 @@ public class WSTrustTestCase {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, STS_DEP + ".war");
         archive
                 .setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.jboss.ws.cxf.sts annotations\n"))
+                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.jboss.ws.cxf.sts export services\n"))
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.sts.STSCallbackHandler.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.sts.SampleSTS.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.shared.WSTrustAppUtils.class)

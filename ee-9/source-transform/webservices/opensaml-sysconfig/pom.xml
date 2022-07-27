@@ -28,7 +28,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-ee-9-source-transform-parent</artifactId>
+        <artifactId>wildfly-webservices-jakarta</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -36,12 +36,20 @@
         <version>27.0.0.Alpha4-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-webservices-jakarta</artifactId>
-    <packaging>pom</packaging>
-    <name>WildFly: Webservice integration modules (Jakarta Namespace)</name>
+    <artifactId>wildfly-webservices-opensaml-sysconfig</artifactId>
+    <packaging>jar</packaging>
 
-    <modules>
-        <module>server-integration</module>
-        <module>opensaml-sysconfig</module>
-    </modules>
+    <name>WildFly: Web Services OpenSAML ConfigurationPropertiesSource Impl</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+        </dependency>
+    </dependencies>
 </project>
