@@ -37,6 +37,7 @@
 
         <module name="com.sun.jsf-impl"/>
         <module name="org.infinispan.protostream"/>
+        <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.faces.api"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.common"/>

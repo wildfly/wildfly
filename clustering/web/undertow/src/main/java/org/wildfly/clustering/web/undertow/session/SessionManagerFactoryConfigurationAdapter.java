@@ -31,7 +31,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionActivationListener;
 
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.modules.Module;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
@@ -57,8 +59,10 @@ public class SessionManagerFactoryConfigurationAdapter<C extends DistributableSe
     public SessionManagerFactoryConfigurationAdapter(SessionManagerFactoryConfiguration configuration, C managementConfiguration, Immutability immutability) {
         super(configuration);
         this.maxActiveSessions = configuration.getMaxActiveSessions();
+        DeploymentUnit unit = configuration.getDeploymentUnit();
+        Module module = unit.getAttachment(Attachments.MODULE);
         this.marshaller = managementConfiguration.getMarshallerFactory().apply(configuration.getDeploymentUnit());
-        ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
+        ServiceLoader<Immutability> loadedImmutability = module.loadService(Immutability.class);
         this.immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(UndertowSessionAttributeImmutability.class), loadedImmutability, Collections.singleton(immutability)));
         this.attributePersistenceStrategy = managementConfiguration.getAttributePersistenceStrategy();
     }
