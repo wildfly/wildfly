@@ -16,8 +16,10 @@
  */
 package org.keycloak.subsystem.adapter.logging;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
@@ -37,5 +39,12 @@ public interface KeycloakLogger extends BasicLogger {
     //@Message(value = "Keycloak subsystem override for deployment %s")
     //void deploymentSecured(String deployment);
 
+    @Message(id = 1, value = "The migrate operation can not be performed: the server must be in admin-only mode")
+    OperationFailedException migrateOperationAllowedOnlyInAdminOnly();
 
+    @Message(id = 2, value = "Migration failed, see results for more details.")
+    String migrationFailed();
+
+    @Message(id = 3, value = "Cannot migrate 'secure-server' resource. This resource is not supported by the new elytron-oidc-subsystem yet.")
+    String couldNotMigrateUnsupportedSecureServerResource();
 }

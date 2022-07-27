@@ -19,6 +19,7 @@ package org.keycloak.subsystem.adapter.extension;
 
 import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * Definition of subsystem=keycloak.
@@ -32,5 +33,11 @@ public class KeycloakSubsystemDefinition extends ModelOnlyResourceDefinition {
                 KeycloakExtension.getResourceDescriptionResolver("subsystem"),
                 new ModelOnlyAddStepHandler()
         );
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        MigrateOperation.registerOperations(resourceRegistration, KeycloakExtension.getResourceDescriptionResolver());
     }
 }
