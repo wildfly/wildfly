@@ -79,7 +79,6 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
 
             // invoke on the bean to check that state is maintained using legacy cache support
             for (int i = 1; i <= 5; i++) {
-                System.out.println("Invoking on StatefulIncrementor bean");
                 Result<Integer> invResult = bean.increment();
 
                 Assert.assertEquals(i, invResult.getValue().intValue());
