@@ -33,7 +33,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,7 +42,6 @@ import jakarta.inject.Inject;
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
 @RunWith(Arquillian.class)
-@Ignore("Remove ignore when JBTM-3647 and WFLY-16664 are resolved")
 public class CompensationScopedTestCase {
 
     @Inject
