@@ -57,7 +57,7 @@ public class GroupedKey<K> implements Key<K>, KeyGroup<K> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.getClass(), this.id);
+        return Objects.hash(this.getClass().getName(), this.id);
     }
 
     @Override
