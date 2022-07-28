@@ -24,14 +24,14 @@ package org.wildfly.clustering.ee.infinispan;
 
 import java.util.Objects;
 
-import org.infinispan.distribution.group.Group;
 import org.wildfly.clustering.ee.Key;
+import org.wildfly.clustering.infinispan.distribution.KeyGroup;
 
 /**
  * An embedded cache key supporting group co-location.
  * @author Paul Ferraro
  */
-public class GroupedKey<K> implements Key<K> {
+public class GroupedKey<K> implements Key<K>, KeyGroup<K> {
     private final K id;
 
     public GroupedKey(K id) {
@@ -47,11 +47,6 @@ public class GroupedKey<K> implements Key<K> {
         return this.id;
     }
 
-    @Group
-    public String getGroup() {
-        return this.id.toString();
-    }
-
     @Override
     public boolean equals(Object object) {
         if ((object == null) || (object.getClass() != this.getClass())) return false;
@@ -62,7 +57,7 @@ public class GroupedKey<K> implements Key<K> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.getClass(), this.id);
+        return Objects.hash(this.getClass().getName(), this.id);
     }
 
     @Override

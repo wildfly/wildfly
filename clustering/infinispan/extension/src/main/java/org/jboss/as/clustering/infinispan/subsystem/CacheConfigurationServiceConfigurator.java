@@ -25,20 +25,18 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.STATISTICS_ENABLED;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.CONFIGURATION;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
-import org.infinispan.configuration.cache.GroupsConfigurationBuilder;
 import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.configuration.cache.MemoryConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
-import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.cache.TransactionConfiguration;
-import org.infinispan.distribution.group.Grouper;
+import org.infinispan.distribution.ch.impl.AffinityPartitioner;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
@@ -46,7 +44,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.service.ConfigurationServiceConfigurator;
@@ -68,31 +65,22 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
     private final SupplierDependency<LockingConfiguration> locking;
     private final SupplierDependency<PersistenceConfiguration> persistence;
     private final SupplierDependency<TransactionConfiguration> transaction;
-    private final SupplierDependency<List<Module>> modules;
+    private final CacheMode mode;
 
     private volatile boolean statisticsEnabled;
 
-    CacheConfigurationServiceConfigurator(PathAddress address) {
+    CacheConfigurationServiceConfigurator(PathAddress address, CacheMode mode) {
         super(CONFIGURATION, address);
+        this.mode = mode;
         this.memory = new ServiceSupplierDependency<>(CacheComponent.MEMORY.getServiceName(address));
         this.expiration = new ServiceSupplierDependency<>(CacheComponent.EXPIRATION.getServiceName(address));
         this.locking = new ServiceSupplierDependency<>(CacheComponent.LOCKING.getServiceName(address));
         this.persistence = new ServiceSupplierDependency<>(CacheComponent.PERSISTENCE.getServiceName(address));
         this.transaction = new ServiceSupplierDependency<>(CacheComponent.TRANSACTION.getServiceName(address));
-        this.modules = new ServiceSupplierDependency<>(CacheComponent.MODULES.getServiceName(address));
 
         String containerName = address.getParent().getLastElement().getValue();
         String cacheName = address.getLastElement().getValue();
-        this.configurator = new ConfigurationServiceConfigurator(this.getServiceName(), containerName, cacheName, this.andThen(builder -> {
-            if (builder.memory().storage() == StorageType.HEAP) {
-                GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups().enabled();
-                for (Module module : this.modules.get()) {
-                    for (Grouper<?> grouper : module.loadService(Grouper.class)) {
-                        groupsBuilder.addGrouper(grouper);
-                    }
-                }
-            }
-        })).require(this);
+        this.configurator = new ConfigurationServiceConfigurator(this.getServiceName(), containerName, cacheName, this).require(this);
     }
 
     @Override
@@ -102,7 +90,7 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
 
     @Override
     public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        return new CompositeDependency(this.memory, this.expiration, this.locking, this.persistence, this.transaction, this.modules).register(builder);
+        return new CompositeDependency(this.memory, this.expiration, this.locking, this.persistence, this.transaction).register(builder);
     }
 
     @Override
@@ -117,6 +105,7 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
     public void accept(ConfigurationBuilder builder) {
         TransactionConfiguration tx = this.transaction.get();
 
+        builder.clustering().cacheMode(this.mode).hash().keyPartitioner(new AffinityPartitioner());
         builder.memory().read(this.memory.get());
         builder.expiration().read(this.expiration.get());
         builder.locking().read(this.locking.get());
@@ -134,17 +123,5 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
         } catch (Exception e) {
             throw new CacheException(e);
         }
-    }
-
-    MemoryConfiguration memory() {
-        return this.memory.get();
-    }
-
-    PersistenceConfiguration persistence() {
-        return this.persistence.get();
-    }
-
-    TransactionConfiguration transaction() {
-        return this.transaction.get();
     }
 }

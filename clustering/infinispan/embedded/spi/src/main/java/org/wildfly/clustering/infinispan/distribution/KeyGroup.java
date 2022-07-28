@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
-
-import org.infinispan.configuration.cache.CacheMode;
-import org.jboss.as.controller.PathAddress;
+package org.wildfly.clustering.infinispan.distribution;
 
 /**
+ * Implemented by keys that should be logical grouped by a common identifier.
+ * Keys with the same group identifier will be stored within the same segment.
+ * This is analogous to Infinispan's {@link org.infinispan.distribution.group.Group} logic, but avoids a potentially unnecessary String conversion.
  * @author Paul Ferraro
  */
-public class LocalCacheServiceConfigurator extends CacheConfigurationServiceConfigurator {
-
-    LocalCacheServiceConfigurator(PathAddress address) {
-        super(address, CacheMode.LOCAL);
-    }
+public interface KeyGroup<I> {
+    /**
+     * The identifier of this group of keys.
+     * @return an group identifier
+     */
+    I getId();
 }
