@@ -36,6 +36,9 @@
           <param name="protocol" value="pbcast.GMS"/>
         </feature>
         <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="UFC"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
           <param name="protocol" value="MFC"/>
         </feature>
         <feature spec="subsystem.jgroups.stack.protocol">
