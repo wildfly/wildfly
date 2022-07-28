@@ -22,63 +22,21 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.FileStoreResourceDefinition.Attribute.RELATIVE_PATH;
-import static org.jboss.as.clustering.infinispan.subsystem.FileStoreResourceDefinition.Attribute.RELATIVE_TO;
-
-import java.io.File;
-
 import org.infinispan.persistence.sifs.configuration.SoftIndexFileStoreConfiguration;
 import org.infinispan.persistence.sifs.configuration.SoftIndexFileStoreConfigurationBuilder;
-import org.jboss.as.clustering.controller.CommonRequirement;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jgroups.util.UUID;
-import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.ServiceSupplierDependency;
-import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * @author Paul Ferraro
  */
 public class FileStoreServiceConfigurator extends StoreServiceConfigurator<SoftIndexFileStoreConfiguration, SoftIndexFileStoreConfigurationBuilder> {
 
-    private final String containerName;
-
-    private volatile SupplierDependency<PathManager> pathManager;
-    private volatile String relativePath;
-    private volatile String relativeTo;
-    private volatile String serverTempDirectory;
-
     FileStoreServiceConfigurator(PathAddress address) {
         super(address, SoftIndexFileStoreConfigurationBuilder.class);
-        this.containerName = address.getParent().getParent().getLastElement().getValue();
-    }
-
-    @Override
-    public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        return super.register(this.pathManager.register(builder));
-    }
-
-    @Override
-    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.pathManager = new ServiceSupplierDependency<>(CommonRequirement.PATH_MANAGER.getServiceName(context));
-        this.relativePath = RELATIVE_PATH.resolveModelAttribute(context, model).asString(InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.containerName);
-        this.relativeTo = RELATIVE_TO.resolveModelAttribute(context, model).asString();
-        this.serverTempDirectory = context.resolveExpressions(new ModelNode(ServerEnvironment.SERVER_TEMP_DIR)).asString();
-        return super.configure(context, model);
     }
 
     @Override
     public void accept(SoftIndexFileStoreConfigurationBuilder builder) {
-        builder.segmented(true)
-                .dataLocation(this.pathManager.get().resolveRelativePathEntry(this.relativePath, this.relativeTo))
-                // Store index in server temp directory with unique path - to ensure index is rebuilt across restarts
-                .indexLocation(this.pathManager.get().resolveRelativePathEntry(this.relativePath + File.separatorChar + UUID.randomUUID().toString(), this.serverTempDirectory))
-                ;
+        builder.segmented(true);
     }
 }

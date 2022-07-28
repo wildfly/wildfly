@@ -27,6 +27,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONFIGURATION;
 
+import java.io.File;
 import java.io.UncheckedIOException;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -46,6 +47,7 @@ import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
+import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
@@ -56,6 +58,8 @@ import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
@@ -80,6 +84,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     private final SupplierDependency<ModuleLoader> loader;
     private final SupplierDependency<List<Module>> modules;
     private final SupplierDependency<TransportConfiguration> transport;
+    private final SupplierDependency<ServerEnvironment> environment;
     private final Map<ThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> pools = new EnumMap<>(ThreadPoolResourceDefinition.class);
     private final Map<ScheduledThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> scheduledPools = new EnumMap<>(ScheduledThreadPoolResourceDefinition.class);
     private final String name;
@@ -95,6 +100,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
         this.modules = new ServiceSupplierDependency<>(CacheContainerComponent.MODULES.getServiceName(address));
         this.transport = new ServiceSupplierDependency<>(CacheContainerComponent.TRANSPORT.getServiceName(address));
+        this.environment = new ServiceSupplierDependency<>(ServerEnvironmentService.SERVICE_NAME);
         for (ThreadPoolResourceDefinition pool : EnumSet.of(ThreadPoolResourceDefinition.LISTENER, ThreadPoolResourceDefinition.BLOCKING, ThreadPoolResourceDefinition.NON_BLOCKING)) {
             this.pools.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
         }
@@ -172,15 +178,21 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
             // Disable triangle algorithm - we optimize for originator as primary owner
             builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
         }
-        builder.globalState().disable();
 
+        String path = InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.name;
+        ServerEnvironment environment = this.environment.get();
+        builder.globalState().enable()
+                .configurationStorage(ConfigurationStorage.VOLATILE)
+                .persistentLocation(path, environment.getServerDataDir().getPath())
+                .temporaryLocation(path, environment.getServerTempDir().getPath())
+                ;
         return builder.build();
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<GlobalConfiguration> global = new CompositeDependency(this.loader, this.modules, this.transport, this.server).register(builder).provides(this.getServiceName());
+        Consumer<GlobalConfiguration> global = new CompositeDependency(this.loader, this.modules, this.transport, this.server, this.environment).register(builder).provides(this.getServiceName());
         for (Dependency dependency: this.pools.values()) {
             dependency.register(builder);
         }
