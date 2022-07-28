@@ -610,7 +610,7 @@
         <version.org.wildfly.http-client>1.1.12.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.15.Final</version.org.wildfly.naming-client>
         <legacy.version.org.wildfly.security.elytron>1.19.0.Final</legacy.version.org.wildfly.security.elytron>
-        <version.org.wildfly.security.elytron>2.0.0.Beta1</version.org.wildfly.security.elytron>
+        <version.org.wildfly.security.elytron>2.0.0.Beta2</version.org.wildfly.security.elytron>
         <legacy.version.org.wildfly.security.elytron-mp>1.19.0.Final</legacy.version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.security.elytron-mp>2.0.0.Beta3</version.org.wildfly.security.elytron-mp>
         <legacy.version.org.wildfly.security.elytron-web>1.10.1.Final</legacy.version.org.wildfly.security.elytron-web>
