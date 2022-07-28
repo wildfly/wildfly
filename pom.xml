@@ -604,7 +604,7 @@
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <legacy.version.org.jvnet.staxex>1.8.3</legacy.version.org.jvnet.staxex>
         <version.org.jvnet.staxex>2.0.1</version.org.jvnet.staxex>
-        <version.org.keycloak>17.0.1</version.org.keycloak>
+        <version.org.keycloak>18.0.2</version.org.keycloak>
         <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
         <legacy.version.org.opensaml.opensaml>3.4.6</legacy.version.org.opensaml.opensaml>
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
@@ -612,7 +612,7 @@
         <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <!-- Test dependency -->
-        <version.org.keycloak.keycloak-saml-wildfly-subsystem>17.0.1</version.org.keycloak.keycloak-saml-wildfly-subsystem>
+        <version.org.keycloak.keycloak-saml-wildfly-subsystem>18.0.2</version.org.keycloak.keycloak-saml-wildfly-subsystem>
         <version.org.springframework.kafka>2.8.2</version.org.springframework.kafka>
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>
