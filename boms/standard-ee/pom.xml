@@ -1730,7 +1730,7 @@
             <dependency>
                 <groupId>org.apache.santuario</groupId>
                 <artifactId>xmlsec</artifactId>
-                <version>${version.org.apache.xmlsec}</version>
+                <version>${version.org.apache.santuario}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
