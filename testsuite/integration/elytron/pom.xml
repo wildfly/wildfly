@@ -272,7 +272,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-elytron-integration</artifactId>
+            <artifactId>wildfly-elytron-integration-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Required for Java 11 -->
@@ -285,8 +285,8 @@
 
         <!-- Jakarta RESTful Web Services Client implementation -->
         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
+            <groupId>org.wildfly.security.jakarta</groupId>
+            <artifactId>jakarta-client-resteasy</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -395,6 +395,12 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
