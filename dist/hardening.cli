@@ -41,5 +41,8 @@ end-if
 /subsystem=undertow/servlet-container=default/setting=session-cookie:add
 /subsystem=undertow/servlet-container=default/setting=session-cookie:write-attribute(name=http-only,value=true)
 
+# set samesite mode to strict for session cookies
+/subsystem=undertow/configuration=filter/expression-filter=samesite-cookie:add(expression="samesite-cookie\(mode\=strict\)")
+/subsystem=undertow/server=default-server/host=default-host/filter-ref=samesite-cookie:add
 
 stop-embedded-server
