@@ -52,7 +52,6 @@ import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
-import org.jboss.weld.exceptions.IllegalArgumentException;
 
 /**
  * Date: 10.06.2011

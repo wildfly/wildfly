@@ -38,13 +38,19 @@
     </dependencyManagement>
 
     <modules>
-        <module>subsystem</module>
-        <module>spi</module>
-        <module>hibernate5</module>
-        <module>hibernate5_3</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>subsystem</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>spi</module>-->
+		<!-- TODO remove
+        <module>hibernate5</module>-->
+		<!-- TODO remove
+        <module>hibernate5_3</module>-->
         <module>hibernate6</module>
-        <module>eclipselink</module>
-        <module>openjpa</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>eclipselink</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>openjpa</module>-->
     </modules>
 
 </project>

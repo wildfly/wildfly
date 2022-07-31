@@ -115,13 +115,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-undertow</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>wildfly-undertow-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -136,6 +130,11 @@
             <optional>true</optional>
         </dependency>
         <!--Test dependencies -->
+        <dependency>
+            <groupId>org.jboss.xnio</groupId>
+            <artifactId>xnio-api</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.projectodd.vdx</groupId>
             <artifactId>vdx-wildfly</artifactId>

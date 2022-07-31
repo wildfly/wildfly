@@ -45,7 +45,8 @@
     </description>
 
     <modules>
-        <module>glassfish</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>glassfish</module>-->
         <module>expressly</module>
     </modules>
 
