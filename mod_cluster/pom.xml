@@ -43,7 +43,8 @@
 
     <modules>
         <module>extension</module>
-        <module>undertow</module>
+        <!-- TODO uncomment when converted to jakarta.*
+        <module>undertow</module>-->
     </modules>
 
     <dependencyManagement>

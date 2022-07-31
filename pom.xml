@@ -54,8 +54,10 @@
 
     <modules>
         <module>appclient</module>
-        <module>batch-jberet</module>
-        <module>bean-validation</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>batch-jberet</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>bean-validation</module>-->
         <module>boms/common-ee</module>
         <module>boms/common-expansion</module>
         <module>boms/legacy-ee</module>
@@ -66,52 +68,70 @@
         <module>boms/standard-expansion</module>
         <module>build</module>
         <module>client/properties</module>
-        <module>client/shade</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>client/shade</module>-->
         <module>clustering</module>
-        <module>connector</module>
-        <module>datasources-agroal</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>connector</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>datasources-agroal</module>-->
         <module>dist</module>
-        <module>ee</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>ee</module>-->
         <module>ee-build</module>
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
-        <module>ee-security</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>ee-security</module>-->
         <module>ee-9</module>
-        <module>ejb3</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>ejb3</module>-->
         <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
         <module>health</module>
-        <module>iiop-openjdk</module>
-        <module>jaxrs</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>iiop-openjdk</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>jaxrs</module>-->
         <module>jdr</module>
         <module>jpa</module>
-        <module>jsf</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>jsf</module>-->
         <module>legacy/jacorb</module>
         <module>legacy/jsr77</module>
         <module>legacy/messaging</module>
         <module>legacy/web</module>
-        <module>mail</module>
-        <module>messaging-activemq</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>mail</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>messaging-activemq</module>-->
         <module>metrics</module>
         <module>microprofile</module>
         <module>mod_cluster</module>
         <module>naming</module>
-        <module>observability</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>observability</module>-->
         <module>picketlink</module>
         <module>pojo</module>
         <module>release</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>rts</module>-->
         <module>sar</module>
         <module>security</module>
         <module>system-jmx</module>
         <module>spec-api</module>
-        <module>transactions</module>
-        <module>undertow</module>
-        <module>web-common</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>transactions</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>undertow</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>web-common</module>-->
         <module>servlet-feature-pack</module>
-        <module>webservices</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>webservices</module>-->
         <module>weld</module>
-        <module>xts</module>
-        <module>rts</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>xts</module>-->
         <module>testsuite/shared</module>
         <module>testsuite/test-feature-pack</module>
         <module>testsuite</module>
@@ -332,7 +352,7 @@
         <version.com.nimbus.jose-jwt>9.23</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp3>3.14.9</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.17.5</version.com.squareup.okio>
-        <version.com.sun.activation.jakarta.activation>1.2.2</version.com.sun.activation.jakarta.activation>
+        <legacy.version.com.sun.activation.jakarta.activation>1.2.2</legacy.version.com.sun.activation.jakarta.activation>
         <legacy.version.com.sun.faces>2.3.17.SP01</legacy.version.com.sun.faces>
         <version.com.sun.faces>4.0.0.SP01</version.com.sun.faces>
         <version.com.sun.istack>4.1.0</version.com.sun.istack>

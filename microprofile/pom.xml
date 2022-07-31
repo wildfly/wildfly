@@ -42,15 +42,21 @@
     <name>WildFly: MicroProfile modules</name>
 
     <modules>
-        <module>config-smallrye</module>
-        <module>fault-tolerance-smallrye</module>
+		<module>config-smallrye</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>fault-tolerance-smallrye</module>-->
         <module>galleon-common</module>
-        <module>health-smallrye</module>
-        <module>jwt-smallrye</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>health-smallrye</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>jwt-smallrye</module>-->
         <module>metrics-smallrye</module>
-        <module>openapi-smallrye</module>
-        <module>opentracing-extension</module>
-        <module>opentracing-smallrye</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>openapi-smallrye</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>opentracing-extension</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>opentracing-smallrye</module>-->
         <module>reactive-messaging-smallrye</module>
         <module>reactive-streams-operators-smallrye</module>
     </modules>
@@ -59,7 +65,7 @@
         <dependencies>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-legacy-expansion-bom</artifactId>
+                <artifactId>wildfly-standard-expansion-bom</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>

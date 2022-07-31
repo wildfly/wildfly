@@ -57,7 +57,7 @@
                       <artifactItems>
                          <artifactItem>
                             <groupId>org.jboss.openjdk-orb</groupId>
-                            <artifactId>openjdk-orb</artifactId>
+                            <artifactId>openjdk-orb-jakarta</artifactId>
                             <type>jar</type>
                             <overWrite>true</overWrite>
                             <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
@@ -74,7 +74,7 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -91,12 +91,12 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-iiop-openjdk</artifactId>
+            <artifactId>wildfly-iiop-openjdk-jakarta</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>
-            <artifactId>openjdk-orb</artifactId>
+            <artifactId>openjdk-orb-jakarta</artifactId>
         </dependency>
 
         <dependency>
