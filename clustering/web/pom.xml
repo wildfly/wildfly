@@ -50,7 +50,8 @@
         <module>service</module>
         <module>cache</module>
         <module>container</module>
-        <module>undertow</module>
+        <!-- TODO uncomment when converted to jakarta.*
+        <module>undertow</module>-->
         <module>hotrod</module>
         <module>infinispan</module>
         <module>extension</module>

@@ -40,6 +40,18 @@
     <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
     <name>WildFly: MicroProfile Reactive Streams Operators CDI Provider</name>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>jakarta.enterprise</groupId>

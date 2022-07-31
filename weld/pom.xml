@@ -42,14 +42,22 @@
     <name>WildFly: Weld</name>
 
     <modules>
-        <module>spi</module>
-        <module>common</module>
-        <module>ejb</module>
-        <module>jpa</module>
-        <module>bean-validation</module>
-        <module>webservices</module>
-        <module>transactions</module>
-        <module>subsystem</module>
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>spi</module>-->
+        <!-- TODO uncomment when converted to jakarta.*
+        <module>common</module>-->
+        <!-- TODO uncomment when converted to jakarta.*
+        <module>ejb</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>jpa</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>bean-validation</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>webservices</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>transactions</module>-->
+		<!-- TODO uncomment when converted to jakarta.*
+        <module>subsystem</module>-->
     </modules>
 
     <dependencyManagement>
