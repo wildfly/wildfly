@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
-import org.jboss.as.connector.subsystems.datasources.Util;
+import org.jboss.as.connector.subsystems.common.jndi.Util;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
 

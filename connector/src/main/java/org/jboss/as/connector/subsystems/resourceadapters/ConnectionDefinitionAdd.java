@@ -23,6 +23,8 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME;
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.CONNECTION_DEFINITIONS_NODE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
@@ -30,7 +32,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ELYTRON_ENABLED;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
@@ -94,7 +95,7 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
 
         final ModelNode address = operation.require(OP_ADDR);
         PathAddress path = context.getCurrentAddress();
-        final String jndiName = JNDINAME.resolveModelAttribute(context, operation).asString();
+        final String jndiName = JNDI_NAME.resolveModelAttribute(context, operation).asString();
         final String raName = path.getParent().getLastElement().getValue();
 
         final String archiveOrModuleName;
@@ -231,8 +232,9 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
                 bootStrapCtxName = raxml.getBootstrapContext();
             }
 
+            final boolean useJavaContext = USE_JAVA_CONTEXT.resolveModelAttribute(context, raModel).asBoolean();
 
-            ConnectionDefinitionStatisticsService connectionDefinitionStatisticsService = new ConnectionDefinitionStatisticsService(context.getResourceRegistrationForUpdate(), jndiName, poolName, statsEnabled);
+            ConnectionDefinitionStatisticsService connectionDefinitionStatisticsService = new ConnectionDefinitionStatisticsService(context.getResourceRegistrationForUpdate(), jndiName, useJavaContext, poolName, statsEnabled);
 
             ServiceBuilder statsServiceBuilder = serviceTarget.addService(serviceName.append(ConnectorServices.STATISTICS_SUFFIX), connectionDefinitionStatisticsService);
             statsServiceBuilder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName), Object.class, connectionDefinitionStatisticsService.getBootstrapContextInjector())

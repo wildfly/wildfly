@@ -21,17 +21,17 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME;
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 
 import org.jboss.as.connector._private.Capabilities;
-import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.metadata.api.common.Security;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -42,7 +42,6 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
@@ -113,8 +112,6 @@ public class Constants {
 
     private static final String URL_SELECTOR_STRATEGY_CLASS_NAME_NAME = "url-selector-strategy-class-name";
 
-    private static final String USE_JAVA_CONTEXT_NAME = "use-java-context";
-
     private static final String CONNECTABLE_NAME = "connectable";
 
     private static final String MCP_NAME = "mcp";
@@ -128,8 +125,6 @@ public class Constants {
     private static final String ENABLED_NAME = "enabled";
 
     private static final String JTA_NAME = "jta";
-
-    private static final String JNDINAME_NAME = "jndi-name";
 
     private static final String ALLOCATION_RETRY_NAME = "allocation-retry";
 
@@ -278,34 +273,6 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
-    static SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(JNDINAME_NAME, ModelType.STRING, false)
-            .setXmlName(DataSource.Attribute.JNDI_NAME.getLocalName())
-            .setAllowExpression(true)
-            .setValidator(new ParameterValidator() {
-                @Override
-                public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                    if (value.isDefined()) {
-                        if (value.getType() != ModelType.EXPRESSION) {
-                            String str = value.asString();
-                            if (!str.startsWith("java:/") && !str.startsWith("java:jboss/")) {
-                                throw ConnectorLogger.ROOT_LOGGER.jndiNameInvalidFormat();
-                            } else if (str.endsWith("/") || str.indexOf("//") != -1) {
-                                throw ConnectorLogger.ROOT_LOGGER.jndiNameShouldValidate();
-                            }
-                        }
-                    } else {
-                        throw ConnectorLogger.ROOT_LOGGER.jndiNameRequired();
-                    }
-                }
-
-                @Override
-                public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                    validateParameter(parameterName, value.resolve());
-                }
-            })
-            .setRestartAllServices()
-            .build();
-
 
     static SimpleAttributeDefinition DATASOURCE_DRIVER = new SimpleAttributeDefinitionBuilder(DATASOURCE_DRIVER_NAME, ModelType.STRING, false)
             .setXmlName(DataSource.Tag.DRIVER.getLocalName())
@@ -336,13 +303,6 @@ public class Constants {
 
     static SimpleAttributeDefinition URL_SELECTOR_STRATEGY_CLASS_NAME = new SimpleAttributeDefinitionBuilder(URL_SELECTOR_STRATEGY_CLASS_NAME_NAME, ModelType.STRING, true)
             .setXmlName(DataSource.Tag.URL_SELECTOR_STRATEGY_CLASS_NAME.getLocalName())
-            .setAllowExpression(true)
-            .setRestartAllServices()
-            .build();
-
-    static SimpleAttributeDefinition USE_JAVA_CONTEXT = new SimpleAttributeDefinitionBuilder(USE_JAVA_CONTEXT_NAME, ModelType.BOOLEAN, true)
-            .setXmlName(DataSource.Attribute.USE_JAVA_CONTEXT.getLocalName())
-            .setDefaultValue(new ModelNode(Defaults.USE_JAVA_CONTEXT))
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

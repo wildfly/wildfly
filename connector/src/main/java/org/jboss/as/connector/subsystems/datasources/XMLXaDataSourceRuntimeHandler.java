@@ -67,7 +67,7 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
     private void handleDatasourceAttribute(final String attributeName, final OperationContext context, final XaDataSource dataSource) {
         if (attributeName.equals(Constants.XA_DATASOURCE_CLASS.getName())) {
             setStringIfNotNull(context, dataSource.getXaDataSourceClass());
-        } else if (attributeName.equals(Constants.JNDI_NAME.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME.getName())) {
             setStringIfNotNull(context, dataSource.getJndiName());
         } else if (attributeName.equals(Constants.DATASOURCE_DRIVER.getName())) {
             setStringIfNotNull(context, dataSource.getDriver());
@@ -79,7 +79,7 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             setStringIfNotNull(context, dataSource.getUrlProperty());
         } else if (attributeName.equals(Constants.URL_SELECTOR_STRATEGY_CLASS_NAME.getName())) {
             setStringIfNotNull(context, dataSource.getUrlSelectorStrategyClassName());
-        } else if (attributeName.equals(Constants.USE_JAVA_CONTEXT.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.jndi.Constants.USE_JAVA_CONTEXT.getName())) {
             setBooleanIfNotNull(context, dataSource.isUseJavaContext());
         } else if (attributeName.equals(Constants.ENABLED.getName())) {
             setBooleanIfNotNull(context, dataSource.isEnabled());

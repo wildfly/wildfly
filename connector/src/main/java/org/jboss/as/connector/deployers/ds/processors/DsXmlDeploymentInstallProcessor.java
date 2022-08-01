@@ -44,7 +44,7 @@ import org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProvide
 import org.jboss.as.connector.subsystems.datasources.LocalDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.ModifiableDataSource;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
-import org.jboss.as.connector.subsystems.datasources.Util;
+import org.jboss.as.connector.subsystems.common.jndi.Util;
 import org.jboss.as.connector.subsystems.datasources.XMLDataSourceRuntimeHandler;
 import org.jboss.as.connector.subsystems.datasources.XMLXaDataSourceRuntimeHandler;
 import org.jboss.as.connector.subsystems.datasources.XaDataSourceService;

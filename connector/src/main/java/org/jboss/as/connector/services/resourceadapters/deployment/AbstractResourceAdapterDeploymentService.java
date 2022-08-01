@@ -56,6 +56,7 @@ import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryReferen
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.services.workmanager.NamedWorkManager;
+import org.jboss.as.connector.subsystems.common.jndi.Util;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -721,19 +722,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
         // Override this method to change how jndiName is build in AS7
         @Override
         protected String buildJndiName(String rawJndiName, Boolean javaContext) {
-            final String jndiName;
-            if (!rawJndiName.startsWith("java:")) {
-                if (rawJndiName.startsWith("jboss/")) {
-                    // Bind to java:jboss/ namespace
-                    jndiName = "java:" + rawJndiName;
-                } else {
-                    // Bind to java:/ namespace
-                    jndiName= "java:/" + rawJndiName;
-                }
-            } else {
-                jndiName = rawJndiName;
-            }
-            return jndiName;
+            return Util.cleanJndiName(rawJndiName, javaContext);
         }
 
         @Override

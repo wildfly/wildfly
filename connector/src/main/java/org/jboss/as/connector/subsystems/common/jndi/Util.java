@@ -20,10 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.subsystems.datasources;
+package org.jboss.as.connector.subsystems.common.jndi;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME;
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.USE_JAVA_CONTEXT;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelNode;
 public class Util {
 
     /**
-     * Extracts the raw JNDINAME value from the given model node, and depending on the value and
+     * Extracts the raw JNDI_NAME value from the given model node, and depending on the value and
      * the value of any USE_JAVA_CONTEXT child node, converts the raw name into a compliant jndi name.
      *
      * @param modelNode the model node; either an operation or the model behind a datasource resource
@@ -49,7 +49,7 @@ public class Util {
         return cleanJndiName(rawJndiName, USE_JAVA_CONTEXT.resolveModelAttribute(context, modelNode).asBoolean());
     }
 
-    public static String cleanJndiName(String rawJndiName, boolean useJavaContext) {
+    public static String cleanJndiName(String rawJndiName, Boolean useJavaContext) {
         final String jndiName;
         if (!rawJndiName.startsWith("java:") && useJavaContext) {
             if(rawJndiName.startsWith("jboss/")) {

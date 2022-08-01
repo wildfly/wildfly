@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME;
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -50,7 +52,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ELYTR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
@@ -67,7 +68,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECUR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_GROUP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_USER;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
@@ -144,14 +144,14 @@ public class IronJacamarResourceCreator {
     private void addConnectionDefinition(final Resource parent, ConnectionDefinition connDef) {
         final Resource connDefResource = new IronJacamarResource.IronJacamarRuntimeResource();
         final ModelNode model = connDefResource.getModel();
-        setAttribute(model, Constants.JNDINAME, connDef.getJndiName());
+        setAttribute(model, JNDI_NAME, connDef.getJndiName());
         if (connDef.getConfigProperties() != null) {
             for (Map.Entry<String, String> config : connDef.getConfigProperties().entrySet()) {
                 addConfigProperties(connDefResource, config.getKey(), config.getValue());
             }
         }
         setAttribute(model, CLASS_NAME, connDef.getClassName());
-        setAttribute(model, JNDINAME, connDef.getJndiName());
+        setAttribute(model, JNDI_NAME, connDef.getJndiName());
         setAttribute(model, USE_JAVA_CONTEXT, connDef.isUseJavaContext());
         setAttribute(model, ENABLED, connDef.isEnabled());
 
@@ -284,7 +284,7 @@ public class IronJacamarResourceCreator {
         final Resource adminObjectResource = new IronJacamarResource.IronJacamarRuntimeResource();
         final ModelNode model = adminObjectResource.getModel();
         setAttribute(model, CLASS_NAME, adminObject.getClassName());
-        setAttribute(model, JNDINAME, adminObject.getJndiName());
+        setAttribute(model, JNDI_NAME, adminObject.getJndiName());
         setAttribute(model, USE_JAVA_CONTEXT, adminObject.isUseJavaContext());
         setAttribute(model, ENABLED, adminObject.isEnabled());
         if (adminObject.getConfigProperties() != null) {
