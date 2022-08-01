@@ -39,6 +39,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 public class ScatteredCacheServiceConfigurator extends SegmentedCacheServiceConfigurator {
 
     private volatile int invalidationBatchSize;

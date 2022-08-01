@@ -350,6 +350,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void parseScatteredCache(XMLExtendedStreamReader reader, PathAddress containerAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String name = require(reader, XMLAttribute.NAME);
@@ -790,7 +791,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case ENABLED: {
-                    readAttribute(reader, i, operation, BackupResourceDefinition.Attribute.ENABLED);
+                    readAttribute(reader, i, operation, BackupResourceDefinition.DeprecatedAttribute.ENABLED);
                     break;
                 }
                 default: {
@@ -1549,7 +1550,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case FETCH_STATE: {
-                readAttribute(reader, index, operation, StoreResourceDefinition.Attribute.FETCH_STATE);
+                readAttribute(reader, index, operation, StoreResourceDefinition.DeprecatedAttribute.FETCH_STATE);
                 break;
             }
             case PURGE: {
@@ -1566,6 +1567,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             case MAX_BATCH_SIZE: {
                 if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
                     readAttribute(reader, index, operation, StoreResourceDefinition.Attribute.MAX_BATCH_SIZE);
+                    break;
+                }
+            }
+            case SEGMENTED: {
+                if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    readAttribute(reader, index, operation, StoreResourceDefinition.Attribute.SEGMENTED);
                     break;
                 }
             }

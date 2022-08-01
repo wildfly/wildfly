@@ -72,12 +72,12 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        FETCH_STATE("fetch-state", ModelType.BOOLEAN, ModelNode.TRUE),
         MAX_BATCH_SIZE("max-batch-size", ModelType.INT, new ModelNode(100)),
         PASSIVATION("passivation", ModelType.BOOLEAN, ModelNode.FALSE),
         PRELOAD("preload", ModelType.BOOLEAN, ModelNode.FALSE),
         PURGE("purge", ModelType.BOOLEAN, ModelNode.FALSE),
         SHARED("shared", ModelType.BOOLEAN, ModelNode.FALSE),
+        SEGMENTED("segmented", ModelType.BOOLEAN, ModelNode.TRUE),
         PROPERTIES("properties"),
         ;
         private final AttributeDefinition definition;
@@ -104,6 +104,27 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        FETCH_STATE("fetch-state", ModelType.BOOLEAN, ModelNode.TRUE, InfinispanModel.VERSION_16_0_0),
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
     private final UnaryOperator<ResourceDescriptor> configurator;
 
     protected StoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
@@ -117,6 +138,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
 
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttributes(Attribute.class)
+                .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;

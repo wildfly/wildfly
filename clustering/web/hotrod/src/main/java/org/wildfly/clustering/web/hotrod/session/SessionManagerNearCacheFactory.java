@@ -26,14 +26,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
+import java.util.function.BiConsumer;
 
 import org.infinispan.client.hotrod.MetadataValue;
-import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
-import org.infinispan.client.hotrod.near.NearCacheService;
-import org.wildfly.clustering.infinispan.client.NearCacheFactory;
-import org.wildfly.clustering.infinispan.client.near.CaffeineNearCacheService;
+import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
+import org.infinispan.client.hotrod.near.NearCache;
+import org.infinispan.client.hotrod.near.NearCacheFactory;
+import org.wildfly.clustering.infinispan.client.near.CaffeineNearCache;
+import org.wildfly.clustering.infinispan.client.near.EvictionListener;
 import org.wildfly.clustering.infinispan.client.near.SimpleKeyWeigher;
 import org.wildfly.clustering.web.hotrod.session.coarse.SessionAttributesKey;
 import org.wildfly.clustering.web.hotrod.session.fine.SessionAttributeKey;
@@ -42,18 +42,15 @@ import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.RemovalCause;
-import com.github.benmanes.caffeine.cache.RemovalListener;
 
 /**
  * A near-cache factory based on max-active-sessions.
  * @author Paul Ferraro
  */
-public class SessionManagerNearCacheFactory<K, V> implements NearCacheFactory<K, V>, Supplier<Cache<K, MetadataValue<V>>>, RemovalListener<Object, Object> {
+public class SessionManagerNearCacheFactory implements NearCacheFactory {
 
     private final Integer maxActiveSessions;
     private final SessionAttributePersistenceStrategy strategy;
-    private final AtomicReference<Cache<K, MetadataValue<V>>> cache = new AtomicReference<>();
 
     public SessionManagerNearCacheFactory(Integer maxActiveSessions, SessionAttributePersistenceStrategy strategy) {
         this.maxActiveSessions = maxActiveSessions;
@@ -61,53 +58,57 @@ public class SessionManagerNearCacheFactory<K, V> implements NearCacheFactory<K,
     }
 
     @Override
-    public NearCacheService<K, V> createService(ClientListenerNotifier notifier) {
-        return new CaffeineNearCacheService<>(this, notifier);
-    }
-
-    @Override
-    public Cache<K, MetadataValue<V>> get() {
+    public <K, V> NearCache<K, V> createNearCache(NearCacheConfiguration config, BiConsumer<K, MetadataValue<V>> removedConsumer) {
+        EvictionListener<K, V> listener = (this.maxActiveSessions != null) ? new EvictionListener<>(removedConsumer, new InvalidationListener(this.strategy)) : null;
         Caffeine<Object, Object> builder = Caffeine.newBuilder();
-        if (this.maxActiveSessions != null) {
+        if (listener != null) {
             builder.executor(Runnable::run)
                     .maximumWeight(this.maxActiveSessions.longValue())
                     .weigher(new SimpleKeyWeigher(SessionCreationMetaDataKey.class::isInstance))
-                    .removalListener(this);
+                    .removalListener(listener);
         }
         Cache<K, MetadataValue<V>> cache = builder.build();
-        // Set reference for use by removal listener
-        this.cache.set(cache);
-        return cache;
+        if (listener != null) {
+            listener.accept(cache);
+        }
+        return new CaffeineNearCache<>(cache);
     }
 
-    @Override
-    public void onRemoval(Object key, Object value, RemovalCause cause) {
-        // Cascade invalidation to dependent entries
-        if ((cause == RemovalCause.SIZE) && (key instanceof SessionCreationMetaDataKey)) {
-            String id = ((SessionCreationMetaDataKey) key).getId();
-            Cache<K, MetadataValue<V>> cache = this.cache.get();
-            List<Object> keys = new LinkedList<>();
-            keys.add(new SessionAccessMetaDataKey(id));
-            switch (this.strategy) {
-                case COARSE: {
-                    keys.add(new SessionAttributesKey(id));
-                    break;
-                }
-                case FINE: {
-                    SessionAttributeNamesKey namesKey = new SessionAttributeNamesKey(id);
-                    keys.add(namesKey);
-                    MetadataValue<V> namesValue = cache.getIfPresent(namesKey);
-                    if (namesValue != null) {
-                        @SuppressWarnings("unchecked")
-                        Map<String, UUID> names = (Map<String, UUID>) namesValue.getValue();
-                        for (UUID attributeId : names.values()) {
-                            keys.add(new SessionAttributeKey(id, attributeId));
-                        }
+    private static class InvalidationListener implements BiConsumer<Cache<Object, MetadataValue<Object>>, Map.Entry<Object, Object>> {
+        private final SessionAttributePersistenceStrategy strategy;
+
+        InvalidationListener(SessionAttributePersistenceStrategy strategy) {
+            this.strategy = strategy;
+        }
+
+        @Override
+        public void accept(Cache<Object, MetadataValue<Object>> cache, Map.Entry<Object, Object> entry) {
+            Object key = entry.getKey();
+            if (key instanceof SessionCreationMetaDataKey) {
+                String id = ((SessionCreationMetaDataKey) key).getId();
+                List<Object> keys = new LinkedList<>();
+                keys.add(new SessionAccessMetaDataKey(id));
+                switch (this.strategy) {
+                    case COARSE: {
+                        keys.add(new SessionAttributesKey(id));
+                        break;
                     }
-                    break;
+                    case FINE: {
+                        SessionAttributeNamesKey namesKey = new SessionAttributeNamesKey(id);
+                        keys.add(namesKey);
+                        MetadataValue<Object> namesValue = cache.getIfPresent(namesKey);
+                        if (namesValue != null) {
+                            @SuppressWarnings("unchecked")
+                            Map<String, UUID> names = (Map<String, UUID>) namesValue.getValue();
+                            for (UUID attributeId : names.values()) {
+                                keys.add(new SessionAttributeKey(id, attributeId));
+                            }
+                        }
+                        break;
+                    }
                 }
+                cache.invalidateAll(keys);
             }
-            cache.invalidateAll(keys);
         }
     }
 }

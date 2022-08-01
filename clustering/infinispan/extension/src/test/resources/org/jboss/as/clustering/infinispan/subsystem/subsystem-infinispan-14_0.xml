@@ -53,7 +53,7 @@
             <transaction mode="NON_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <off-heap-memory size="20000" size-unit="BYTES"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <remote-store cache="default" remote-servers="hotrod-server-1 hotrod-server-2" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false">
+            <remote-store cache="default" remote-servers="hotrod-server-1 hotrod-server-2" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" segmented="false">
                 <write-behind modification-queue-size="2048"/>
                 <property name="valueSizeEstimate">100</property>
             </remote-store>
@@ -66,7 +66,7 @@
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <off-heap-memory size="20000" size-unit="BYTES"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false">
+            <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" segmented="false">
                 <write-behind modification-queue-size="2048"/>
                 <property name="location">${java.io.tmpdir}</property>
             </store>

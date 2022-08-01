@@ -82,7 +82,7 @@ public enum XMLElement {
     REMOTE_SERVER("remote-server"),
     REMOTE_STORE("remote-store"),
     REPLICATED_CACHE(ReplicatedCacheResourceDefinition.WILDCARD_PATH),
-    SCATTERED_CACHE(ScatteredCacheResourceDefinition.WILDCARD_PATH),
+    @Deprecated SCATTERED_CACHE(ScatteredCacheResourceDefinition.WILDCARD_PATH),
     SEGMENT_COLUMN(TableResourceDefinition.ColumnAttribute.SEGMENT),
     SIZE("size"),
     STATE_TRANSFER(StateTransferResourceDefinition.PATH),

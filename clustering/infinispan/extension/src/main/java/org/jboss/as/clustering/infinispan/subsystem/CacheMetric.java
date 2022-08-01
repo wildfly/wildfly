@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.UnaryOperator;
+
 import org.infinispan.interceptors.impl.CacheMgmtInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
@@ -34,7 +36,7 @@ import org.jboss.dmr.ModelType;
  * Enumeration of management metrics for a cache.
  * @author Paul Ferraro
  */
-public enum CacheMetric implements Metric<CacheMgmtInterceptor> {
+public enum CacheMetric implements Metric<CacheMgmtInterceptor>, UnaryOperator<SimpleAttributeDefinitionBuilder> {
 
     AVERAGE_READ_TIME("average-read-time", ModelType.LONG, MeasurementUnit.MILLISECONDS) {
         @Override
@@ -78,16 +80,26 @@ public enum CacheMetric implements Metric<CacheMgmtInterceptor> {
             return new ModelNode(interceptor.getMisses());
         }
     },
-    NUMBER_OF_ENTRIES("number-of-entries", ModelType.INT, AttributeAccess.Flag.GAUGE_METRIC) {
+    @Deprecated NUMBER_OF_ENTRIES("number-of-entries", ModelType.INT, AttributeAccess.Flag.GAUGE_METRIC) {
         @Override
         public ModelNode execute(CacheMgmtInterceptor interceptor) {
             return new ModelNode(interceptor.getNumberOfEntries());
         }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder.setDeprecated(InfinispanModel.VERSION_16_0_0.getVersion());
+        }
     },
-    NUMBER_OF_ENTRIES_IN_MEMORY("number-of-entries-in-memory", ModelType.INT, AttributeAccess.Flag.GAUGE_METRIC) {
+    @Deprecated NUMBER_OF_ENTRIES_IN_MEMORY("number-of-entries-in-memory", ModelType.INT, AttributeAccess.Flag.GAUGE_METRIC) {
         @Override
         public ModelNode execute(CacheMgmtInterceptor interceptor) {
             return new ModelNode(interceptor.getNumberOfEntriesInMemory());
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder.setDeprecated(InfinispanModel.VERSION_16_0_0.getVersion());
         }
     },
     READ_WRITE_RATIO("read-write-ratio", ModelType.DOUBLE, AttributeAccess.Flag.GAUGE_METRIC) {
@@ -143,6 +155,11 @@ public enum CacheMetric implements Metric<CacheMgmtInterceptor> {
                 .setMeasurementUnit(unit)
                 .setStorageRuntime()
                 .build();
+    }
+
+    @Override
+    public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+        return builder;
     }
 
     @Override

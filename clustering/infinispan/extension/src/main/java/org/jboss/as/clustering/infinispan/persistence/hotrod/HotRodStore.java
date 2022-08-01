@@ -32,19 +32,20 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+
 import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
-import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
-import org.infinispan.client.hotrod.impl.operations.PingResponse;
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.util.IntSet;
+import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.marshall.persistence.PersistenceMarshaller;
 import org.infinispan.persistence.spi.InitializationContext;
 import org.infinispan.persistence.spi.MarshallableEntry;
@@ -53,17 +54,13 @@ import org.infinispan.persistence.spi.MarshalledValue;
 import org.infinispan.persistence.spi.NonBlockingStore;
 import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.util.concurrent.BlockingManager;
-import org.infinispan.util.concurrent.CompletableFutures;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.reactivestreams.Publisher;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.common.function.Functions;
 
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Flowable;
-
 /**
- * Implementation of Infinispan {@link AdvancedLoadWriteStore} configured with a started container-managed {@link RemoteCacheContainer} instance.
+ * Implementation of Infinispan {@link NonBlockingStore} configured with a started container-managed {@link RemoteCacheContainer} instance.
  * Remote caches are auto-created on the remote server if supported by the protocol.
  *
  * @author Radoslav Husar
@@ -73,9 +70,9 @@ import io.reactivex.rxjava3.core.Flowable;
 public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
     private static final Set<Characteristic> CHARACTERISTICS = EnumSet.of(Characteristic.SHAREABLE, Characteristic.BULK_READ, Characteristic.EXPIRATION);
 
+    private RemoteCacheContainer container;
     private RemoteCache<ByteBuffer, ByteBuffer> cache;
     private BlockingManager blockingManager;
-    private OperationsFactory operationsFactory;
     private PersistenceMarshaller marshaller;
     private MarshallableEntryFactory<K,V> entryFactory;
     private int batchSize;
@@ -88,6 +85,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
         RemoteCacheContainer container = configuration.remoteCacheContainer();
         String cacheConfiguration = configuration.cacheConfiguration();
         String cacheName = context.getCache().getName();
+        this.container = container;
         this.batchSize = configuration.maxBatchSize();
 
         this.marshaller = context.getPersistenceMarshaller();
@@ -100,7 +98,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
                 builder.forceReturnValues(false).transactionMode(TransactionMode.NONE).nearCacheMode(NearCacheMode.DISABLED).templateName(templateName);
             }
         };
-        container.getConfiguration().addRemoteCache(cacheName, configurator);
+        this.container.getConfiguration().addRemoteCache(cacheName, configurator);
 
         Runnable task = new Runnable() {
             @Override
@@ -122,9 +120,6 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
             // Administration support was introduced in protocol version 2.7
             throw InfinispanLogger.ROOT_LOGGER.remoteCacheMustBeDefined(container.getConfiguration().version().toString(), cacheName);
         }
-
-        RemoteCacheManager manager = this.cache.getRemoteCacheManager();
-        this.operationsFactory = new OperationsFactory(manager.getChannelFactory(), manager.getCodec(), null, manager.getConfiguration());
 
         this.cache.start();
     }
@@ -219,7 +214,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
 
     @Override
     public CompletionStage<Boolean> isAvailable() {
-        return this.operationsFactory.newFaultTolerantPingOperation().execute().thenApply(PingResponse::isSuccess);
+        return this.container.isAvailable();
     }
 
     @Override

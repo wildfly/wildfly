@@ -78,7 +78,7 @@ public class InfinispanCachePropertiesTestCase {
             }
         }
 
-        Configuration config = new ConfigurationBuilder().clustering().cacheMode(CacheMode.LOCAL).persistence().passivation(false).addSingleFileStore().build();
+        Configuration config = new ConfigurationBuilder().clustering().cacheMode(CacheMode.LOCAL).persistence().passivation(false).addSoftIndexFileStore().build();
         Assert.assertTrue(new InfinispanCacheProperties(config).isMarshalling());
 
         Configuration passivating = new ConfigurationBuilder().read(config).persistence().passivation(true).build();
@@ -100,7 +100,7 @@ public class InfinispanCachePropertiesTestCase {
             }
         }
 
-        Configuration config = new ConfigurationBuilder().clustering().cacheMode(CacheMode.LOCAL).persistence().passivation(false).addSingleFileStore().build();
+        Configuration config = new ConfigurationBuilder().clustering().cacheMode(CacheMode.LOCAL).persistence().passivation(false).addSoftIndexFileStore().build();
         Assert.assertTrue(new InfinispanCacheProperties(config).isPersistent());
 
         Configuration passivating = new ConfigurationBuilder().read(config).persistence().passivation(true).build();

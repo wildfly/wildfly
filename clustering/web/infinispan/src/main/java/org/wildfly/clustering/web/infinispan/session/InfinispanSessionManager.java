@@ -32,13 +32,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
-import org.infinispan.util.concurrent.CompletableFutures;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batcher;
@@ -105,7 +105,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
         this.context = configuration.getServletContext();
         this.contextRegistrar = configuration.getContextRegistrar();
         this.startTask = configuration.getStartTask();
-        this.closeTask = new Consumer<ImmutableSession>() {
+        this.closeTask = new Consumer<>() {
             @Override
             public void accept(ImmutableSession session) {
                 if (session.isValid()) {

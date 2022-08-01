@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.distribution.DistributionManager;
@@ -46,7 +47,6 @@ import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddressCache;
-import org.infinispan.util.concurrent.CompletableFutures;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.ExecutorServiceFactory;

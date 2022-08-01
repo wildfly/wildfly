@@ -66,7 +66,7 @@ public class HotRodSessionManagerFactory<S, SC, AL, LC> implements SessionManage
         this.factory = sessionFactory;
         this.expirationRegistrar = sessionFactory;
         this.batcher = new HotRodBatcher(config.getCache());
-        this.transactionTimeout = Duration.ofMillis(config.getCache().getRemoteCacheManager().getConfiguration().transactionTimeout());
+        this.transactionTimeout = Duration.ofMillis(config.getCache().getRemoteCacheContainer().getConfiguration().transactionTimeout());
     }
 
     @Override

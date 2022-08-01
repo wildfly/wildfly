@@ -42,6 +42,7 @@ import org.jboss.dmr.ModelType;
  * Resource definition for a scattered-cache.
  * @author Paul Ferraro
  */
+@Deprecated
 public class ScatteredCacheResourceDefinition extends SegmentedCacheResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
@@ -86,5 +87,6 @@ public class ScatteredCacheResourceDefinition extends SegmentedCacheResourceDefi
 
     ScatteredCacheResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {
         super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), new ClusteredCacheServiceHandler(ScatteredCacheServiceConfigurator::new), executors);
+        this.setDeprecated(InfinispanModel.VERSION_16_0_0.getVersion());
     }
 }

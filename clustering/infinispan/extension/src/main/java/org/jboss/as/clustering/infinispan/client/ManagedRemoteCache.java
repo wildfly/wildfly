@@ -52,23 +52,26 @@ import org.infinispan.query.dsl.Query;
 import org.reactivestreams.Publisher;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 
 /**
  * {@link RemoteCache} decorator that handles registration on {@link #start()} and deregistration on {@link #stop()}.
  * @author Paul Ferraro
  */
-public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implements UnaryOperator<Registration> {
+public class ManagedRemoteCache<K, V> extends RemoteCacheSupport<K, V> implements UnaryOperator<Registration> {
 
     private final Registrar<String> registrar;
     private final AtomicReference<Registration> registration;
+    private final RemoteCacheContainer container;
     private final RemoteCacheManager manager;
     private final RemoteCache<K, V> cache;
 
-    public RegisteredRemoteCache(RemoteCacheManager manager, RemoteCache<K, V> cache, Registrar<String> registrar) {
-        this(manager, cache, registrar, new AtomicReference<>());
+    public ManagedRemoteCache(RemoteCacheContainer container, RemoteCacheManager manager, RemoteCache<K, V> cache, Registrar<String> registrar) {
+        this(container, manager, cache, registrar, new AtomicReference<>());
     }
 
-    private RegisteredRemoteCache(RemoteCacheManager manager, RemoteCache<K, V> cache, Registrar<String> registrar, AtomicReference<Registration> registration) {
+    private ManagedRemoteCache(RemoteCacheContainer container, RemoteCacheManager manager, RemoteCache<K, V> cache, Registrar<String> registrar, AtomicReference<Registration> registration) {
+        this.container = container;
         this.manager = manager;
         this.cache = cache;
         this.registrar = registrar;
@@ -106,6 +109,12 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
         }
     }
 
+    @Override
+    public RemoteCacheContainer getRemoteCacheContainer() {
+        return this.container;
+    }
+
+    @Deprecated
     @Override
     public RemoteCacheManager getRemoteCacheManager() {
         return this.manager;
@@ -219,12 +228,12 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
 
     @Override
     public <T, U> RemoteCache<T, U> withDataFormat(DataFormat dataFormat) {
-        return new RegisteredRemoteCache<>(this.manager, this.cache.withDataFormat(dataFormat), this.registrar, this.registration);
+        return new ManagedRemoteCache<>(this.container, this.manager, this.cache.withDataFormat(dataFormat), this.registrar, this.registration);
     }
 
     @Override
     public RemoteCache<K, V> withFlags(Flag... flags) {
-        return new RegisteredRemoteCache<>(this.manager, this.cache.withFlags(flags), this.registrar, this.registration);
+        return new ManagedRemoteCache<>(this.container, this.manager, this.cache.withFlags(flags), this.registrar, this.registration);
     }
 
     @Override

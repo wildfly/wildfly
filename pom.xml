@@ -315,7 +315,7 @@
         <version.com.fasterxml.jackson>2.13.4</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
         <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
-        <version.com.github.ben-manes.caffeine>2.9.3</version.com.github.ben-manes.caffeine>
+        <version.com.github.ben-manes.caffeine>3.1.1</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
@@ -354,7 +354,7 @@
         <version.io.agroal>2.0</version.io.agroal>
         <version.io.grpc>1.38.1</version.io.grpc>
         <version.io.jaegertracing>1.6.0</version.io.jaegertracing>
-        <version.io.netty>4.1.79.Final</version.io.netty>
+        <version.io.netty>4.1.80.Final</version.io.netty>
         <version.io.opentelemetry.opentelemetry>1.12.0</version.io.opentelemetry.opentelemetry>
         <version.io.opentracing>0.33.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.4.0</version.io.opentracing.concurrent>
@@ -503,8 +503,10 @@
         <legacy.version.org.hibernate.validator>6.0.23.Final</legacy.version.org.hibernate.validator>
         <version.org.hibernate.validator>8.0.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
-        <version.org.infinispan>13.0.11.Final</version.org.infinispan>
-        <version.org.infinispan.protostream>4.4.4.Final</version.org.infinispan.protostream>
+        <version.org.infinispan>14.0.0.CR2</version.org.infinispan>
+        <!-- Needed to compile org.wildfly:jipijapa-hibernate5* modules -->
+        <legacy.version.org.infinispan>13.0.11.Final</legacy.version.org.infinispan>
+        <version.org.infinispan.protostream>4.5.0.CR1</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.27.0-GA</version.org.javassist>
         <version.org.jberet>2.1.1.Final</version.org.jberet>
@@ -583,7 +585,7 @@
         <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.3</version.org.ow2.asm>
-        <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
+        <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <!-- Test dependency -->
         <version.org.keycloak.keycloak-saml-wildfly-subsystem>18.0.2</version.org.keycloak.keycloak-saml-wildfly-subsystem>

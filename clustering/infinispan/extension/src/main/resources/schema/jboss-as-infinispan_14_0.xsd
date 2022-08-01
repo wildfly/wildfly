@@ -519,6 +519,11 @@
                 <xs:documentation>If true, purges this cache store when it starts up.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="segmented" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>If true, purges this cache store when it starts up.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="write-behind">
