@@ -52,7 +52,6 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.WildFlyElytronClientDefaultSSLContextProvider;
@@ -63,7 +62,6 @@ import org.wildfly.security.auth.client.WildFlyElytronClientDefaultSSLContextPro
  * WildFlyElytronClientDefaultSSLContextProvider is configured on client side to provide default SSL context that RESTEsy client utilizes to connect to the server.
  */
 @RunWith(Arquillian.class)
-@Ignore("WFLY-16633")
 public class WildFlyElytronClientDefaultSSLContextProviderTestCase {
     private static final String[] SERVER_KEY_STORE1 = {"subsystem", "elytron", "key-store", "twoWayKS"};
     private static final String[] SERVER_KEY_MANAGER1 = {"subsystem", "elytron", "key-manager", "twoWayKM"};
