@@ -35,7 +35,6 @@
     <dependencies>
         <module name="jakarta.enterprise.api"/>
 
-        <module name="org.glassfish.jakarta.el" />
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.weld.spi"/>
