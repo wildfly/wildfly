@@ -53,7 +53,6 @@
         <bootable-jar-jpa-distributed-packaging.phase>none</bootable-jar-jpa-distributed-packaging.phase>
         <bootable-jar-load-balancer-packaging.phase>none</bootable-jar-load-balancer-packaging.phase>
         <bootable-jar-configure-windows-paths.phase>none</bootable-jar-configure-windows-paths.phase>
-        <bootable-jar-web-passivation-packaging.phase>none</bootable-jar-web-passivation-packaging.phase>
         <!-- Disable the default surefire test execution. All profiles use custom executions. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
         <infinispan.server.home.override/>
@@ -332,28 +331,6 @@
 
     <build>
         <plugins>
-            <!-- Single backslashes needs to be converted in four backslashes to correctly process Windows paths
-                    on variables passed by property files on Bootable JAR execution CLI sessions. -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>ts.bootable.configure-windows-paths</id>
-                        <goals>
-                            <goal>regex-property</goal>
-                        </goals>
-                        <phase>${bootable-jar-configure-windows-paths.phase}</phase>
-                        <configuration>
-                            <name>bootable.web-passivation.cache.path</name>
-                            <value>${project.build.testOutputDirectory}</value>
-                            <regex>\\</regex>
-                            <replacement>\\\\\\\\</replacement>
-                            <failIfNoMatch>false</failIfNoMatch>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-jar-maven-plugin</artifactId>
@@ -444,47 +421,6 @@
                         </configuration>
                     </execution>
 
-                    <!-- Package a web-passivation server -->
-                    <execution>
-                        <id>bootable-jar-web-passivation-packaging</id>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <phase>${bootable-jar-web-passivation-packaging.phase}</phase>
-                        <configuration>
-                            <output-file-name>test-wildfly-web-passivation.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                            </plugin-options>
-                            <cli-sessions>
-                                <cli-session>
-                                    <properties-file>
-                                        ${project.build.testOutputDirectory}/clustering-web-passivation.properties
-                                    </properties-file>
-                                    <script-files>
-                                        <script>clustering-web-passivation.cli</script>
-                                    </script-files>
-                                </cli-session>
-                            </cli-sessions>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                            <layers>
-                                <layer>datasources-web-server</layer>
-                                <layer>web-passivation</layer>
-                            </layers>
-                        </configuration>
-                    </execution>
                     <!-- Package a load balancer -->
                     <execution>
                         <id>bootable-jar-load-balancer-packaging</id>
@@ -2128,7 +2064,6 @@
                 <bootable-jar-cloud-profile-packaging.phase>process-test-resources</bootable-jar-cloud-profile-packaging.phase>
                 <bootable-jar-jpa-distributed-packaging.phase>process-test-resources</bootable-jar-jpa-distributed-packaging.phase>
                 <bootable-jar-load-balancer-packaging.phase>process-test-resources</bootable-jar-load-balancer-packaging.phase>
-                <bootable-jar-web-passivation-packaging.phase>process-test-resources</bootable-jar-web-passivation-packaging.phase>
                 <bootable-jar-configure-windows-paths.phase>generate-test-sources</bootable-jar-configure-windows-paths.phase>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
@@ -2264,25 +2199,6 @@
                                     </classpathDependencyExcludes>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>ts.surefire.clustering.web-passivation</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <install.dir.1>${project.build.directory}/wildfly-web-passivation</install.dir.1>
-                                        <bootable.jar>${project.build.directory}/test-wildfly-web-passivation.jar</bootable.jar>
-                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
-                                    </systemPropertyVariables>
-                                    <classpathDependencyExcludes>
-                                        <classpathDependencyExclude>
-                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
-                                        </classpathDependencyExclude>
-                                    </classpathDependencyExcludes>
-                                </configuration>
-                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
@@ -2307,7 +2223,6 @@
                 <bootable-jar-cloud-profile-packaging.phase>process-test-resources</bootable-jar-cloud-profile-packaging.phase>
                 <bootable-jar-jpa-distributed-packaging.phase>process-test-resources</bootable-jar-jpa-distributed-packaging.phase>
                 <bootable-jar-load-balancer-packaging.phase>process-test-resources</bootable-jar-load-balancer-packaging.phase>
-                <bootable-jar-web-passivation-packaging.phase>process-test-resources</bootable-jar-web-passivation-packaging.phase>
                 <bootable-jar-configure-windows-paths.phase>generate-test-sources</bootable-jar-configure-windows-paths.phase>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
@@ -2381,16 +2296,6 @@
                             <!-- Package a jpa2lc server -->
                             <execution>
                                 <id>bootable-jar-jpa-distributed-packaging</id>
-                                <configuration>
-                                    <plugin-options combine-children="append">
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                    </plugin-options>
-                                </configuration>
-                            </execution>
-
-                            <!-- Package a web-passivation server -->
-                            <execution>
-                                <id>bootable-jar-web-passivation-packaging</id>
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
@@ -2476,25 +2381,6 @@
                                         <install.dir.load.balancer>${project.build.directory}/wildfly-jpa-dist-load-balancer-1</install.dir.load.balancer>
                                         <bootable.jar>${project.build.directory}/test-wildfly-jpa-distributed.jar</bootable.jar>
                                         <bootable.jar.load.balancer>${project.build.directory}/test-wildfly-cloud-profile-load-balancer.jar</bootable.jar.load.balancer>
-                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
-                                    </systemPropertyVariables>
-                                    <classpathDependencyExcludes>
-                                        <classpathDependencyExclude>
-                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
-                                        </classpathDependencyExclude>
-                                    </classpathDependencyExcludes>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>ts.surefire.clustering.web-passivation</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <install.dir.1>${project.build.directory}/wildfly-web-passivation</install.dir.1>
-                                        <bootable.jar>${project.build.directory}/test-wildfly-web-passivation.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
                                     <classpathDependencyExcludes>

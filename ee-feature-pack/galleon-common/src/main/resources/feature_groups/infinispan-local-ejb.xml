@@ -16,7 +16,6 @@
                 </feature>
                 <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
                     <param name="passivation" value="true"/>
-                    <unset param="relative-to"/>
                 </feature>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
@@ -32,7 +31,6 @@
                 </feature>
                 <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
                     <param name="preload" value="true"/>
-                    <unset param="relative-to"/>
                 </feature>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
@@ -49,7 +47,6 @@
                 <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
                     <param name="passivation" value="true"/>
                     <param name="purge" value="true"/>
-                    <unset param="relative-to"/>
                 </feature>
             </feature>
         </feature>

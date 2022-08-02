@@ -292,7 +292,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         if (cache.hasDefined(FileStoreResourceDefinition.PATH.getKeyValuePair())) {
             ModelNode store = cache.get(FileStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(XMLElement.FILE_STORE.getLocalName());
-            writeAttributes(writer, store, FileStoreResourceDefinition.Attribute.class);
+            writeAttributes(writer, store, FileStoreResourceDefinition.DeprecatedAttribute.class);
             writeAttributes(writer, store, storeAttributes);
             writeStoreElements(writer, store);
             writer.writeEndElement();

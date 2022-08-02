@@ -909,11 +909,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case RELATIVE_TO: {
-                    readAttribute(reader, i, operation, FileStoreResourceDefinition.Attribute.RELATIVE_TO);
+                    readAttribute(reader, i, operation, FileStoreResourceDefinition.DeprecatedAttribute.RELATIVE_TO);
                     break;
                 }
                 case PATH: {
-                    readAttribute(reader, i, operation, FileStoreResourceDefinition.Attribute.RELATIVE_PATH);
+                    readAttribute(reader, i, operation, FileStoreResourceDefinition.DeprecatedAttribute.RELATIVE_PATH);
                     break;
                 }
                 default: {
