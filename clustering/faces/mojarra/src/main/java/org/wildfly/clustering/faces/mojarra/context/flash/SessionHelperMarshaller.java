@@ -26,7 +26,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
 
-import javax.servlet.http.HttpSessionActivationListener;
+import jakarta.servlet.http.HttpSessionActivationListener;
 
 import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 import org.wildfly.security.manager.WildFlySecurityManager;

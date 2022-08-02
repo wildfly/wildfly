@@ -146,7 +146,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-faces-api-jakarta</artifactId>
+                <artifactId>wildfly-clustering-faces-api</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -157,7 +157,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-faces-mojarra-jakarta</artifactId>
+                <artifactId>wildfly-clustering-faces-mojarra</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>

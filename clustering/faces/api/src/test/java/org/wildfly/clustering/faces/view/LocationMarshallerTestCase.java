@@ -23,7 +23,7 @@ package org.wildfly.clustering.faces.view;
 
 import java.io.IOException;
 
-import javax.faces.view.Location;
+import jakarta.faces.view.Location;
 
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.Tester;

@@ -2595,7 +2595,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-faces-api-jakarta</artifactId>
+      <artifactId>wildfly-clustering-faces-api</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2606,7 +2606,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-faces-mojarra-jakarta</artifactId>
+      <artifactId>wildfly-clustering-faces-mojarra</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
