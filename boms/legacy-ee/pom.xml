@@ -136,11 +136,6 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-web-undertow</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-connector</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>

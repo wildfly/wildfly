@@ -100,11 +100,6 @@
             <classifier>tests</classifier>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-web-undertow-jakarta</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>

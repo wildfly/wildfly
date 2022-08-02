@@ -169,7 +169,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-web-undertow-jakarta</artifactId>
+                <artifactId>wildfly-clustering-web-undertow</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>

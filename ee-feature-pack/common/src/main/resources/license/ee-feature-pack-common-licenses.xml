@@ -2980,7 +2980,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-web-undertow-jakarta</artifactId>
+      <artifactId>wildfly-clustering-web-undertow</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
