@@ -51,8 +51,8 @@
         <module>ee</module>
         <module>ejb</module>
         <module>el</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>faces</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>faces</module>
         <module>infinispan</module>
         <module>jgroups</module>
         <module>marshalling</module>
@@ -60,8 +60,8 @@
         <module>service</module>
         <module>singleton</module>
         <module>web</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>weld</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>weld</module>
     </modules>
 
     <dependencyManagement>

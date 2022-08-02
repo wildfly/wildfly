@@ -43,20 +43,20 @@
 
     <modules>
 		<module>config-smallrye</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>fault-tolerance-smallrye</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>fault-tolerance-smallrye</module>
         <module>galleon-common</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>health-smallrye</module>-->
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>jwt-smallrye</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>health-smallrye</module>
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>jwt-smallrye</module>
         <module>metrics-smallrye</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>openapi-smallrye</module>-->
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>opentracing-extension</module>-->
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>opentracing-smallrye</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>openapi-smallrye</module>
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>opentracing-extension</module>
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>opentracing-smallrye</module>
         <module>reactive-messaging-smallrye</module>
         <module>reactive-streams-operators-smallrye</module>
     </modules>

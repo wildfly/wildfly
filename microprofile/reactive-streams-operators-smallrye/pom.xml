@@ -40,8 +40,8 @@
     <name>WildFly: MicroProfile Reactive Streams Operators Parent</name>
     <packaging>pom</packaging>
     <modules>
-        <!-- TODO uncomment when converted to jakarta.*
-        <module>cdi-provider</module>-->
+        <!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>cdi-provider</module>
         <module>extension</module>
     </modules>
 </project>

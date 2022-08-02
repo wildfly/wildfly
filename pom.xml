@@ -54,10 +54,10 @@
 
     <modules>
         <module>appclient</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>batch-jberet</module>-->
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>bean-validation</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>batch-jberet</module>
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>bean-validation</module>
         <module>boms/common-ee</module>
         <module>boms/common-expansion</module>
         <module>boms/legacy-ee</module>
@@ -68,70 +68,71 @@
         <module>boms/standard-expansion</module>
         <module>build</module>
         <module>client/properties</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>client/shade</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>client/shade</module>
         <module>clustering</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>connector</module>-->
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>datasources-agroal</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>connector</module>
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>datasources-agroal</module>
         <module>dist</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>ee</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>ee</module>
         <module>ee-build</module>
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>ee-security</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>ee-security</module>
         <module>ee-9</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>ejb3</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>ejb3</module>
         <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
         <module>health</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>iiop-openjdk</module>-->
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>jaxrs</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>iiop-openjdk</module>
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>jaxrs</module>
         <module>jdr</module>
         <module>jpa</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>jsf</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>jsf</module>
         <module>legacy/jacorb</module>
         <module>legacy/jsr77</module>
         <module>legacy/messaging</module>
         <module>legacy/web</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>mail</module>-->
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>messaging-activemq</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>mail</module>
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>messaging-activemq</module>
         <module>metrics</module>
         <module>microprofile</module>
         <module>mod_cluster</module>
         <module>naming</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>observability</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>observability</module>
         <module>picketlink</module>
         <module>pojo</module>
         <module>release</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>rts</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>rts</module>
         <module>sar</module>
         <module>security</module>
         <module>system-jmx</module>
         <module>spec-api</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>transactions</module>-->
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>undertow</module>-->
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>web-common</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>transactions</module>
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>undertow</module>
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>web-common</module>
         <module>servlet-feature-pack</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>webservices</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>webservices</module>
         <module>weld</module>
-		<!-- TODO uncomment when converted to jakarta.*
-        <module>xts</module>-->
+		<!-- TODO until moved to jakarta.* consider moving to a profile-->
+        <module>xts</module>
+        <!-- TODO until moved to jakarta.* consider moving to a profile-->
         <module>testsuite/shared</module>
         <module>testsuite/test-feature-pack</module>
         <module>testsuite</module>
