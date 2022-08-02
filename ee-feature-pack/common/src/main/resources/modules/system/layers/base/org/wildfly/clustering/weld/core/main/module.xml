@@ -29,11 +29,12 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-clustering-weld-core@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-clustering-weld-core}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
+
         <module name="org.glassfish.jakarta.el" />
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.as.server"/>

@@ -2991,7 +2991,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-weld-core-jakarta</artifactId>
+      <artifactId>wildfly-clustering-weld-core</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3002,7 +3002,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-weld-ejb-jakarta</artifactId>
+      <artifactId>wildfly-clustering-weld-ejb</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3013,7 +3013,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-weld-web-jakarta</artifactId>
+      <artifactId>wildfly-clustering-weld-web</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>

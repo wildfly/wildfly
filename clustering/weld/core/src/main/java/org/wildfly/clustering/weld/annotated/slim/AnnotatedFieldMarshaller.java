@@ -24,8 +24,8 @@ package org.wildfly.clustering.weld.annotated.slim;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
-import javax.enterprise.inject.spi.AnnotatedField;
-import javax.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.AnnotatedField;
+import jakarta.enterprise.inject.spi.AnnotatedType;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.weld.annotated.slim.SlimAnnotatedType;
