@@ -43,20 +43,7 @@
 
     <modules>
 		<module>config-smallrye</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>fault-tolerance-smallrye</module>
-        <module>galleon-common</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>health-smallrye</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>jwt-smallrye</module>
-        <module>metrics-smallrye</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>openapi-smallrye</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>opentracing-extension</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>opentracing-smallrye</module>
+		<module>galleon-common</module>
         <module>reactive-messaging-smallrye</module>
         <module>reactive-streams-operators-smallrye</module>
     </modules>
@@ -72,5 +59,31 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>ee8.build.profile</id>
+            <activation>
+                <property>
+                    <name>!skip.ee8</name>
+                </property>
+            </activation>
+            <modules>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>fault-tolerance-smallrye</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>health-smallrye</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>jwt-smallrye</module>
+                <module>metrics-smallrye</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>openapi-smallrye</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>opentracing-extension</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>opentracing-smallrye</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>

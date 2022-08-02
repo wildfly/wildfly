@@ -54,11 +54,7 @@
 
     <modules>
         <module>appclient</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>batch-jberet</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>bean-validation</module>
-        <module>boms/common-ee</module>
+		<module>boms/common-ee</module>
         <module>boms/common-expansion</module>
         <module>boms/legacy-ee</module>
         <module>boms/legacy-expansion</module>
@@ -68,73 +64,35 @@
         <module>boms/standard-expansion</module>
         <module>build</module>
         <module>client/properties</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>client/shade</module>
-        <module>clustering</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>connector</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>datasources-agroal</module>
-        <module>dist</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>ee</module>
-        <module>ee-build</module>
+		<module>clustering</module>
+		<module>dist</module>
+		<module>ee-build</module>
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>ee-security</module>
-        <module>ee-9</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>ejb3</module>
-        <module>elytron-oidc-client</module>
+		<module>ee-9</module>
+		<module>elytron-oidc-client</module>
         <module>galleon-pack</module>
         <module>health</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>iiop-openjdk</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>jaxrs</module>
-        <module>jdr</module>
+		<module>jdr</module>
         <module>jpa</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>jsf</module>
-        <module>legacy/jacorb</module>
+		<module>legacy/jacorb</module>
         <module>legacy/jsr77</module>
         <module>legacy/messaging</module>
         <module>legacy/web</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>mail</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>messaging-activemq</module>
-        <module>metrics</module>
+		<module>metrics</module>
         <module>microprofile</module>
         <module>mod_cluster</module>
         <module>naming</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>observability</module>
-        <module>picketlink</module>
+		<module>picketlink</module>
         <module>pojo</module>
         <module>release</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>rts</module>
-        <module>sar</module>
+		<module>sar</module>
         <module>security</module>
         <module>system-jmx</module>
         <module>spec-api</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>transactions</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>undertow</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>web-common</module>
-        <module>servlet-feature-pack</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>webservices</module>
-        <module>weld</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>xts</module>
-        <!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>testsuite/shared</module>
-        <module>testsuite/test-feature-pack</module>
+		<module>servlet-feature-pack</module>
+		<module>weld</module>
+		<module>testsuite/test-feature-pack</module>
         <module>testsuite</module>
     </modules>
 
@@ -2060,6 +2018,59 @@
 
     <!-- Profiles -->
     <profiles>
+
+        <profile>
+            <id>ee8.build.profile</id>
+            <activation>
+                <property>
+                    <name>!skip.ee8</name>
+                </property>
+            </activation>
+            <modules>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>batch-jberet</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>bean-validation</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>client/shade</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>connector</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>datasources-agroal</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>ee</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>ee-security</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>ejb3</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>iiop-openjdk</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>jaxrs</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>jsf</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>mail</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>messaging-activemq</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>observability</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>rts</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>transactions</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>undertow</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>web-common</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>webservices</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>xts</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>testsuite/shared</module>
+            </modules>
+        </profile>
         <profile>
             <id>jdk18</id>
             <activation>

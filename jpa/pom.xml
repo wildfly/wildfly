@@ -38,19 +38,32 @@
     </dependencyManagement>
 
     <modules>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>subsystem</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>spi</module>
-		<!-- TODO remove-->
-        <module>hibernate5</module>
-		<!-- TODO remove-->
-        <module>hibernate5_3</module>
-        <module>hibernate6</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>eclipselink</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>openjpa</module>
+		<module>hibernate6</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>ee8.build.profile</id>
+            <activation>
+                <property>
+                    <name>!skip.ee8</name>
+                </property>
+            </activation>
+            <modules>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>subsystem</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>spi</module>
+                <!-- TODO remove-->
+                <module>hibernate5</module>
+                <!-- TODO remove-->
+                <module>hibernate5_3</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>eclipselink</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>openjpa</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>

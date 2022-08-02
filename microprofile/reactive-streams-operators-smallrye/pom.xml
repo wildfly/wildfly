@@ -40,8 +40,21 @@
     <name>WildFly: MicroProfile Reactive Streams Operators Parent</name>
     <packaging>pom</packaging>
     <modules>
-        <!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>cdi-provider</module>
         <module>extension</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>ee8.build.profile</id>
+            <activation>
+                <property>
+                    <name>!skip.ee8</name>
+                </property>
+            </activation>
+            <modules>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>cdi-provider</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

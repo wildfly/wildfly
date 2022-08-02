@@ -42,22 +42,6 @@
     <name>WildFly: Weld</name>
 
     <modules>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>spi</module>
-        <!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>common</module>
-        <!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>ejb</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>jpa</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>bean-validation</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>webservices</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>transactions</module>
-		<!-- TODO until moved to jakarta.* consider moving to a profile-->
-        <module>subsystem</module>
     </modules>
 
     <dependencyManagement>
@@ -71,5 +55,33 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>ee8.build.profile</id>
+            <activation>
+                <property>
+                    <name>!skip.ee8</name>
+                </property>
+            </activation>
+            <modules>
+                <module>spi</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>common</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>ejb</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>jpa</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>bean-validation</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>webservices</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>transactions</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>subsystem</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>
