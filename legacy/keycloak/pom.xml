@@ -86,6 +86,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-elytron-oidc-client-subsystem</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>

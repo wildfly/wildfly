@@ -76,6 +76,7 @@ public class LayersTestCase {
         "org.jboss.as.jsr77",
         "org.jboss.as.messaging",
         "org.jboss.as.web",
+        "org.keycloak.keycloak-adapter-subsystem",
         // TODO nothing references this
         "org.wildfly.security.http.sfbasic",
         // TODO Legacy Seam integration. Does it even work with EE 10?
