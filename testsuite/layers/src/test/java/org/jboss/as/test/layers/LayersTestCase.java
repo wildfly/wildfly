@@ -47,8 +47,6 @@ public class LayersTestCase {
         "org.jboss.narayana.rts",
         // TODO we need to add an xts layer
         "org.jboss.as.xts",
-        // TODO  WFLY-16453 we need to add a clustering singleton layer
-        "org.wildfly.extension.clustering.singleton",
         // TODO we need to add an agroal layer
         "org.wildfly.extension.datasources-agroal",
         "io.agroal",
@@ -126,6 +124,7 @@ public class LayersTestCase {
     // This is the expected set of un-referenced modules found when scanning
     // the default configuration.
     private static final String[] NOT_REFERENCED = {
+        "org.wildfly.extension.clustering.singleton",
         // Standard configs don't include various MP subsystems
         "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
         "org.wildfly.extension.microprofile.health-smallrye",

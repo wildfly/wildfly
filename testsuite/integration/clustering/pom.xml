@@ -940,6 +940,7 @@
                                         <exclude>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</exclude>
                                     </excludes>
                                     <systemPropertyVariables combine.children="append">
+                                        <wildfly1>wildfly-1</wildfly1>
                                         <arquillian.launch>single</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
@@ -1219,7 +1220,44 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>ts.surefire.clustering.singleton-ha</id>
+                                <!-- Disabled by default; other profiles turn it on -->
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/cluster/singleton/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <!-- Requires EJB not provisioned by the tested layer -->
+                                        <exclude>org/jboss/as/test/clustering/cluster/singleton/SingletonPartitionTestCase.java</exclude>
+                                    </excludes>
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>ts.surefire.clustering.web-passivation</id>
+                                <!-- Disabled by default; other profiles turn it on -->
                                 <phase>none</phase>
                                 <goals>
                                     <goal>test</goal>
@@ -1231,6 +1269,24 @@
                                     </includes>
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>node-non-ha</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.singleton-local</id>
+                                <!-- Disabled by default; other profiles turn it on -->
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <runOrder>alphabetical</runOrder>
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/single/singleton/SingletonServiceTestCase.java</include>
+                                    </includes>
+                                    <systemPropertyVariables combine.children="append">
+                                        <arquillian.launch>single</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>
@@ -1561,6 +1617,70 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+                            <!-- Provision base 'web-server' + 'core-server' with 'singleton-ha'-->
+                            <execution>
+                                <id>cloud-server-singleton-ha-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-clustering-singleton-ha</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>${galleon.offline}</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <!-- Provision the configuration that the ts.surefire.clustering.singleton-ha
+                                             surefire execution tests. -->
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone-full-ha.xml</name>
+                                            <layers>
+                                                <layer>web-server</layer>
+                                                <layer>core-server</layer>
+                                                <layer>singleton-ha</layer>
+                                            </layers>
+                                        </config>
+                                        <!-- Also produce a standalone-ha.xml file with the same content
+                                             as standalone-full-ha.xml.
+                                             This doesn't actually get used in any tests we run with this
+                                             profile but the clustering-all.cli script wants to modify it
+                                             so to keep it simple create the file so that doesn't fail.
+                                        -->
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone-ha.xml</name>
+                                            <layers>
+                                                <layer>web-server</layer>
+                                                <layer>core-server</layer>
+                                                <layer>singleton-ha</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
                             <!-- Provision datasources-web-server with web-passivation -->
                             <execution>
                                 <id>web-passivation-provisioning</id>
@@ -1595,6 +1715,45 @@
                                             <layers>
                                                 <layer>datasources-web-server</layer>
                                                 <layer>web-passivation</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- Provision base 'web-server' + 'core-server' with 'singleton-local' -->
+                            <execution>
+                                <id>singleton-local-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-singleton-local</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>web-server</layer>
+                                                <layer>core-server</layer>
+                                                <layer>singleton-local</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -1668,6 +1827,26 @@
                                     </system-properties>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>ts.config-as.configure-wildfly-clustering-singleton-ha</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <offline>true</offline>
+                                    <scripts>
+                                        <script>clustering-all.cli</script>
+                                    </scripts>
+                                    <jboss-home>${project.build.directory}/wildfly-clustering-singleton-ha</jboss-home>
+                                    <stdout>${project.build.directory}/wildfly-clustering-singleton-ha-plugin.log</stdout>
+                                    <java-opts>${modular.jdk.args}</java-opts>
+                                    <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                        <module.path>${project.build.directory}/wildfly-clustering-singleton-ha/modules</module.path>
+                                    </system-properties>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                     <!-- Copy 4 containers based on the shared configuration and one load balancer profile -->
@@ -1731,6 +1910,26 @@
                                             <property name="wildfly4" value="wildfly-clustering-jsf-4"/>
                                             <property name="wildfly-original" value="wildfly-clustering-jsf"/>
                                             <property name="wildfly-load-balancer1" value="wildfly-clustering-jsf-load-balancer-1"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.config-as.clustering.singleton-ha</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <target name="build-clustering"/>
+                                            <property name="wildfly1" value="wildfly-clustering-singleton-ha-1"/>
+                                            <property name="wildfly2" value="wildfly-clustering-singleton-ha-2"/>
+                                            <property name="wildfly3" value="wildfly-clustering-singleton-ha-3"/>
+                                            <property name="wildfly4" value="wildfly-clustering-singleton-ha-4"/>
+                                            <property name="wildfly-original" value="wildfly-clustering-singleton-ha"/>
+                                            <property name="wildfly-load-balancer1" value="wildfly-clustering-singleton-ha-load-balancer-1"/>
                                         </ant>
                                     </target>
                                 </configuration>
@@ -1890,6 +2089,23 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>ts.surefire.clustering.singleton-ha</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <module.path>${project.build.directory}/wildfly-clustering-singleton-ha-1/modules${path.separator}${basedir}/target/modules</module.path>
+                                        <wildfly1>wildfly-clustering-singleton-ha-1</wildfly1>
+                                        <wildfly2>wildfly-clustering-singleton-ha-2</wildfly2>
+                                        <wildfly3>wildfly-clustering-singleton-ha-3</wildfly3>
+                                        <wildfly4>wildfly-clustering-singleton-ha-4</wildfly4>
+                                        <wildfly-load-balancer1>wildfly-clustering-singleton-ha-load-balancer-1</wildfly-load-balancer1>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>ts.surefire.clustering.web-passivation</id>
                                 <phase>test</phase>
                                 <goals>
@@ -1899,6 +2115,19 @@
                                     <systemPropertyVariables>
                                         <wildfly1>wildfly-web-passivation</wildfly1>
                                         <module.path>${project.build.directory}/wildfly-web-passivation/modules</module.path>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.singleton-local</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <wildfly1>wildfly-singleton-local</wildfly1>
+                                        <module.path>${project.build.directory}/wildfly-singleton-local/modules</module.path>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
