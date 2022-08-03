@@ -390,7 +390,7 @@
         <legacy.version.io.undertow>2.2.18.Final</legacy.version.io.undertow>
         <version.io.undertow>2.3.0.Alpha2</version.io.undertow>
         <legacy.version.io.undertow.jastow>2.0.10.Final</legacy.version.io.undertow.jastow>
-        <version.io.undertow.jastow>2.2.1.Final</version.io.undertow.jastow>
+        <version.io.undertow.jastow>2.2.2.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.3.1</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
