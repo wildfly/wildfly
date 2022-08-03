@@ -129,6 +129,12 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager-action</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>
