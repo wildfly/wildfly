@@ -33,9 +33,9 @@ import org.jboss.logging.annotations.MessageLogger;
  * @author <a href="kkhan@redhat.com">Kabir Khan</a>
  */
 @MessageLogger(projectCode = "WFLYRXSTOPSCDI", length = 4)
-public interface MicroProfileReactiveStreamsOperatorsCdiProviderLogger extends BasicLogger {
+public interface CdiProviderLogger extends BasicLogger {
 
-    MicroProfileReactiveStreamsOperatorsCdiProviderLogger LOGGER = Logger.getMessageLogger(MicroProfileReactiveStreamsOperatorsCdiProviderLogger.class, "org.wildfly.extension.microprofile.reactive.streams.operators.cdi");
+    CdiProviderLogger LOGGER = Logger.getMessageLogger(CdiProviderLogger.class, "org.wildfly.extension.microprofile.reactive.streams.operators.cdi");
 
     @Message(id = 1, value = "No implementation of the %s found in the classpath")
     IllegalStateException noImplementationFound(String className);
