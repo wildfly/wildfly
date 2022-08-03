@@ -130,6 +130,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.jboss.as.webservices",
                 "org.jboss.as.weld",
                 "org.jboss.as.xts",
+                "org.keycloak.keycloak-adapter-subsystem",
                 "org.wildfly.extension.batch.jberet",
                 "org.wildfly.extension.bean-validation",
                 "org.wildfly.extension.clustering.singleton",
