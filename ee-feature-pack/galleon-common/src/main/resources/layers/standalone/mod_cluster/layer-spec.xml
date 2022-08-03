@@ -26,6 +26,7 @@
         <layer name="web-server"/>
     </dependencies>
 
+    <feature-group name="undertow-ajp-listener"/>
     <feature-group name="modcluster"/>
 
     <feature spec="socket-binding-group">
