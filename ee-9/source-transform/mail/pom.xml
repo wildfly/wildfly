@@ -64,6 +64,11 @@
             <artifactId>jboss-metadata-common-jakarta</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-credential-store</artifactId>
+        </dependency>
+
         <!-- Other deps consistent with the javax.* mail module -->
 
         <dependency>
