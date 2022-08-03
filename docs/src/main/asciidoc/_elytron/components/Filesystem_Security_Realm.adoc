@@ -15,6 +15,8 @@ Every identity is stored in an XML file where the name of the file is the name o
 * `hash-charset` specifies the character set to use when converting the password string to a byte array. Set to UTF-8 by default.
 * `credential-store` specifies the credential store where the secret key is stored if the filesystem realm is to be encrypted. This attribute is optional.
 * `secret-key` specifies the alias of the secret key that is stored in the previously specified credential store. This attribute is optional.
+* `key-store` specifies the key store where the key pair is stored if the integrity is to be enabled on the filesystem realm. This attribute is optional.
+* `key-store-alias` specifies the alias of the key pair that is stored in the previously specified key store. This attribute is optional.
 
 Filesystem security realm can be added with WildFly management CLI or with Elytron API.
 
@@ -25,9 +27,11 @@ The charset is UTF-8 and the string encoding is BASE64.
 
 The `credential-store` being referenced is called `mycredstore` and the alias of the `secret-key` in that `credential-store` is `key`. The secret key will be used to encrypt and decrypt the filesystem realm.
 
+The key-store being referenced is called `keystore` and the alias of the key pair in that key-store is `localhost`. The `localhost` key pair will be used to sign identity files and verify the pre-existing signatures to ensure that the filesystem realm has not been tampered with.
+
 [source,options="nowrap"]
 ----
-/subsystem=elytron/filesystem-realm=fsRealm:add(path=fs-realm-users, relative-to=jboss.server.config.dir, credential-store=mycredstore, secret-key=key)
+/subsystem=elytron/filesystem-realm=fsRealm:add(path=fs-realm-users, relative-to=jboss.server.config.dir, credential-store=mycredstore, secret-key=key, key-store=keystore, key-store-alias=localhost)
 ----
 
 NOTE: Although identities stored within the same realm can be hashed using different algorithms, they are all
@@ -47,11 +51,19 @@ To delete existing identity from filesystem realm:
 /subsystem=elytron/filesystem-realm=fsRealm:remove-identity(identity=alex)
 ----
 
+It's possible to update the ``key-store`` or ``key-store-alias`` to use for integrity checking using the ``update-key-pair`` command as shown below. This command will also update the signature in any existing identity files.
+[source, options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=fsRealm:update-key-pair(key-store=newKeyStore, key-store-alias=newKeyStoreAlias)
+----
+
 === Programmatic approach
 
 When creating filesystem realm with Elytron API, you can specify `name rewriter` in the constructor. The name rewriter will be applied to identity names to transform them from one form to another. It can be used to normalize the case, trim extra whitespaces, map one naming scheme to another, remove realm component from identity name (e.g. "user@realm" to "user") or to perform validation step on the syntax of the name.
 
 To enable encryption for a filesystem realm programmatically, you can specify a `SecretKey` when instantiating the realm.
+
+To enable integrity for the filesystem realm programmatically, you can specify a PublicKey and PrivateKey when instantiating the realm.
 
 A `org.wildfly.security.auth.realm.FileSystemSecurityRealm` can be instantiated using a `builder()` method as shown in the example below.
 
@@ -62,7 +74,10 @@ FileSystemSecurityRealm fsRealm = FileSystemSecurityRealm.builder()
     .setNameRewriter(IDENTITY_REWRITER)
     .setLevels(2)
     .setEncoded(true)
-    .setSecretKey(key)
+    .setProviders(ELYTRON_PASSWORD_PROVIDERS)
+    .setSecretKey(secretKey)
+    .setPublicKey(publicKey)
+    .setPrivateKey(privateKey)
     .build();
 ----
 
