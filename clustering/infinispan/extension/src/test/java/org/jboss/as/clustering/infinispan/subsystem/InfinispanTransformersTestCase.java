@@ -85,6 +85,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                         "org.infinispan:infinispan-core:11.0.9.Final-redhat-00001",
                         "org.infinispan:infinispan-cachestore-jdbc:11.0.9.Final-redhat-00001",
                         "org.infinispan:infinispan-client-hotrod:11.0.9.Final-redhat-00001",
+                        "org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final-redhat-00001",
                         // Following are needed for InfinispanSubsystemInitialization
                         formatArtifact("org.jboss.eap:wildfly-clustering-api:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),

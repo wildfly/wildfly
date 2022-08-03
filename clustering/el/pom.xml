@@ -45,8 +45,23 @@
     </description>
 
     <modules>
-        <module>glassfish</module>
         <module>expressly</module>
     </modules>
+
+    <profiles>
+
+        <profile>
+            <id>ee8.build.profile</id>
+            <activation>
+                <property>
+                    <name>!skip.ee8</name>
+                </property>
+            </activation>
+            <modules>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>glassfish</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>

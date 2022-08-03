@@ -392,7 +392,7 @@
             <dependency>
                 <groupId>com.sun.activation</groupId>
                 <artifactId>jakarta.activation</artifactId>
-                <version>${version.com.sun.activation.jakarta.activation}</version>
+                <version>${legacy.version.com.sun.activation.jakarta.activation}</version>
             </dependency>
 
             <dependency>
@@ -1440,12 +1440,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.spec.javax.annotation</groupId>
-                <artifactId>jboss-annotations-api_1.3_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.spec.javax.batch</groupId>
                 <artifactId>jboss-batch-api_1.0_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.batch.jboss-batch-api_1.0_spec}</version>
@@ -1704,7 +1698,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-			
+
             <dependency>
                 <groupId>org.wildfly.security</groupId>
                 <artifactId>wildfly-elytron</artifactId>

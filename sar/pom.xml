@@ -44,7 +44,7 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -83,7 +83,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.msc</groupId>
@@ -91,7 +91,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <artifactId>wildfly-ee-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-naming</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>

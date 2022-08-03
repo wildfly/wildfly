@@ -51,6 +51,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-transaction-spi-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ee-infinispan</artifactId>
         </dependency>
@@ -87,12 +92,8 @@
             <artifactId>wildfly-clustering-server-service</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-transactions</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client</artifactId>
+            <artifactId>wildfly-transaction-client-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -144,13 +145,38 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-connector</artifactId>
+            <artifactId>wildfly-connector-jakarta</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.resource</groupId>
+            <artifactId>jakarta.resource-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-common-api-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-core-api-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-deployers-common-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -24,8 +24,10 @@ package org.jboss.as.messaging.test;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.messaging.MessagingExtension.SUBSYSTEM_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -151,7 +153,7 @@ public class MigrateTestCase extends AbstractSubsystemTest {
 
         ModelNode response = services.executeOperation(migrateOp);
 
-        checkOutcome(response);
+        assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
 
         ModelNode warnings = response.get(RESULT, "migration-warnings");
         // 6 warnings about broadcast-group attributes that can not be migrated.

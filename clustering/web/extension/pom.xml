@@ -71,11 +71,19 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-jsf</artifactId>
+            <artifactId>wildfly-ee-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common</artifactId>
+            <artifactId>wildfly-jsf-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-web-common-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-weld-common-jakarta</artifactId>
         </dependency>
 
         <dependency>
@@ -93,7 +101,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-web-undertow</artifactId>
+            <artifactId>wildfly-clustering-web-undertow-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

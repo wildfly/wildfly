@@ -54,9 +54,7 @@
 
     <modules>
         <module>appclient</module>
-        <module>batch-jberet</module>
-        <module>bean-validation</module>
-        <module>boms/common-ee</module>
+		<module>boms/common-ee</module>
         <module>boms/common-expansion</module>
         <module>boms/legacy-ee</module>
         <module>boms/legacy-expansion</module>
@@ -66,54 +64,35 @@
         <module>boms/standard-expansion</module>
         <module>build</module>
         <module>client/properties</module>
-        <module>client/shade</module>
-        <module>clustering</module>
-        <module>connector</module>
-        <module>datasources-agroal</module>
-        <module>dist</module>
-        <module>ee</module>
-        <module>ee-build</module>
+		<module>clustering</module>
+		<module>dist</module>
+		<module>ee-build</module>
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
-        <module>ee-security</module>
-        <module>ee-9</module>
-        <module>ejb3</module>
-        <module>elytron-oidc-client</module>
+		<module>ee-9</module>
+		<module>elytron-oidc-client</module>
         <module>galleon-pack</module>
         <module>health</module>
-        <module>iiop-openjdk</module>
-        <module>jaxrs</module>
-        <module>jdr</module>
+		<module>jdr</module>
         <module>jpa</module>
-        <module>jsf</module>
-        <module>legacy/jacorb</module>
+		<module>legacy/jacorb</module>
         <module>legacy/jsr77</module>
         <module>legacy/messaging</module>
         <module>legacy/web</module>
-        <module>mail</module>
-        <module>messaging-activemq</module>
-        <module>metrics</module>
+		<module>metrics</module>
         <module>microprofile</module>
         <module>mod_cluster</module>
         <module>naming</module>
-        <module>observability</module>
-        <module>picketlink</module>
+		<module>picketlink</module>
         <module>pojo</module>
         <module>release</module>
-        <module>sar</module>
+		<module>sar</module>
         <module>security</module>
         <module>system-jmx</module>
         <module>spec-api</module>
-        <module>transactions</module>
-        <module>undertow</module>
-        <module>web-common</module>
-        <module>servlet-feature-pack</module>
-        <module>webservices</module>
-        <module>weld</module>
-        <module>xts</module>
-        <module>rts</module>
-        <module>testsuite/shared</module>
-        <module>testsuite/test-feature-pack</module>
+		<module>servlet-feature-pack</module>
+		<module>weld</module>
+		<module>testsuite/test-feature-pack</module>
         <module>testsuite</module>
     </modules>
 
@@ -335,7 +314,7 @@
         <version.com.nimbus.jose-jwt>9.23</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp3>3.14.9</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.17.5</version.com.squareup.okio>
-        <version.com.sun.activation.jakarta.activation>1.2.2</version.com.sun.activation.jakarta.activation>
+        <legacy.version.com.sun.activation.jakarta.activation>1.2.2</legacy.version.com.sun.activation.jakarta.activation>
         <legacy.version.com.sun.faces>2.3.17.SP01</legacy.version.com.sun.faces>
         <version.com.sun.faces>4.0.0.SP01</version.com.sun.faces>
         <version.com.sun.istack>4.1.0</version.com.sun.istack>
@@ -1300,6 +1279,17 @@
                 <version>${version.org.jboss.shrinkwrap.descriptors}</version>
                 <scope>test</scope>
             </dependency>
+
+            <!--
+            TODO used both in testsuite/shared and in tests in clustering/marshalling/protostream.
+            Once testsuite/shared use is gone, convert to <scope>test</scope>
+            -->
+            <dependency>
+                <groupId>org.jboss.spec.javax.annotation</groupId>
+                <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec}</version>
+            </dependency>
+
             <!--
             TODO used both in MicroProfile REST Client TCK and in legacy code.
             Once legacy code use is gone, convert to <scope>test</scope>
@@ -2031,6 +2021,59 @@
 
     <!-- Profiles -->
     <profiles>
+
+        <profile>
+            <id>ee8.build.profile</id>
+            <activation>
+                <property>
+                    <name>!skip.ee8</name>
+                </property>
+            </activation>
+            <modules>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>batch-jberet</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>bean-validation</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>client/shade</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>connector</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>datasources-agroal</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>ee</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>ee-security</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>ejb3</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>iiop-openjdk</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>jaxrs</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>jsf</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>mail</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>messaging-activemq</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>observability</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>rts</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>transactions</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>undertow</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>web-common</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>webservices</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>xts</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>testsuite/shared</module>
+            </modules>
+        </profile>
         <profile>
             <id>jdk18</id>
             <activation>

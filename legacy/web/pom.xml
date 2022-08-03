@@ -47,7 +47,7 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -64,13 +64,33 @@
         </dependency>
 
         <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-domain-management</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-io</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-network</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-undertow</artifactId>
+            <artifactId>wildfly-undertow-jakarta</artifactId>
         </dependency>
 
         <dependency>

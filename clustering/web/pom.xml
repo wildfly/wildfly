@@ -50,10 +50,25 @@
         <module>service</module>
         <module>cache</module>
         <module>container</module>
-        <module>undertow</module>
         <module>hotrod</module>
         <module>infinispan</module>
         <module>extension</module>
     </modules>
+
+    <profiles>
+
+        <profile>
+            <id>ee8.build.profile</id>
+            <activation>
+                <property>
+                    <name>!skip.ee8</name>
+                </property>
+            </activation>
+            <modules>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>undertow</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>
