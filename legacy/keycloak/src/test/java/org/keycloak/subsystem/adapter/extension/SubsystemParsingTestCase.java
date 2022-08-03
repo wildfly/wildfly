@@ -51,13 +51,6 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
         return "schema/wildfly-keycloak_1_2.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/keycloak-adapter.xml"
-        };
-    }
-
     /**
      * Checks if the subsystem is still capable of reading a configuration that uses version 1.1 of the schema.
      *
