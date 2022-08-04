@@ -24,8 +24,9 @@
 
 <module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.cxf.sts">
     
-    <resources/>
-
+    <resources>
+        <artifact name="${org.wildfly:wildfly-webservices-opensaml-sysconfig}"/>
+    </resources>
     <dependencies>
         <module name="org.apache.cxf.ws-security" services="export" export="true">
           <imports>
@@ -47,5 +48,6 @@
             <include path="META-INF"/>
           </exports>
         </module>
+        <module name="org.opensaml" />
     </dependencies>
 </module>
