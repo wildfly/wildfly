@@ -38,7 +38,7 @@
     <artifactId>wildfly-ee-jakarta</artifactId>
 
     <name>WildFly: EE subsystem (Jakarta Namespace)</name>
-	
+
     <packaging>jar</packaging>
 
     <dependencies>

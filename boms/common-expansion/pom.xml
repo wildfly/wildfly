@@ -51,8 +51,8 @@
             N.B. Only include dependencies in this pom if they are used across
             'legacy', 'standard', and 'preview' builds.
             -->
-			
-			<!-- Keep sorted -->
+
+            <!-- Keep sorted -->
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>

@@ -434,7 +434,7 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
-			
+
             <!-- General plugin configuration for all integration tests -->
 
             <!-- Resources plugin. -->

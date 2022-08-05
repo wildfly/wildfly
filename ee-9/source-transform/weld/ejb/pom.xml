@@ -38,7 +38,7 @@
     <artifactId>wildfly-weld-ejb-jakarta</artifactId>
 
     <name>WildFly: Weld EJB (Jakarta Namespace)</name>
-	
+
     <packaging>jar</packaging>
 
     <properties>

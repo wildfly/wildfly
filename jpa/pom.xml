@@ -38,7 +38,7 @@
     </dependencyManagement>
 
     <modules>
-		<module>hibernate6</module>
+        <module>hibernate6</module>
     </modules>
 
     <profiles>

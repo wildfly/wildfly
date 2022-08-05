@@ -38,7 +38,7 @@
     <artifactId>jipijapa-spi-jakarta</artifactId>
 
     <name>WildFly: Jipijapa SPI (Jakarta Namespace)</name>
-	
+
     <packaging>jar</packaging>
 
     <properties>

@@ -38,7 +38,7 @@
     <artifactId>wildfly-weld-spi-jakarta</artifactId>
 
     <name>WildFly: Weld Subsystem SPI (Jakarta Namespace)</name>
-	
+
     <packaging>jar</packaging>
 
     <properties>

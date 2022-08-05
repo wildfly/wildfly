@@ -40,9 +40,9 @@
 
     <artifactId>wildfly-preview-ee-bom</artifactId>
     <description>
-		Build of materials that can be used to build WildFly Preview maven modules 
-		that provide traditional capabilities like Jakarta EE.
-	</description>
+        Build of materials that can be used to build WildFly Preview maven modules 
+        that provide traditional capabilities like Jakarta EE.
+    </description>
     <packaging>pom</packaging>
 
     <dependencyManagement>

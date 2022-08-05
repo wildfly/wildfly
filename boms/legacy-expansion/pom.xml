@@ -40,9 +40,9 @@
 
     <artifactId>wildfly-legacy-expansion-bom</artifactId>
     <description>
-		Build of materials that can be used to build legacy WildFly maven modules 
-		that provide expansion capabilities like MicroProfile.
-	</description>
+        Build of materials that can be used to build legacy WildFly maven modules 
+        that provide expansion capabilities like MicroProfile.
+    </description>
     <packaging>pom</packaging>
 
     <dependencyManagement>
@@ -65,8 +65,8 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-			
-			<!-- Dependencies specific to this bom. Keep sorted -->
+
+            <!-- Dependencies specific to this bom. Keep sorted -->
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>

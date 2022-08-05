@@ -41,8 +41,8 @@
     <artifactId>wildfly-common-ee-dependency-management</artifactId>
     <description>
         Common dependency management that can be imported by other boms used for traditional
-		capabilities like Jakarta EE. Not meant for direct use as a bom.
-	</description>
+        capabilities like Jakarta EE. Not meant for direct use as a bom.
+    </description>
     <packaging>pom</packaging>
 
     <dependencyManagement>
@@ -52,8 +52,8 @@
             N.B. Only include dependencies in this pom if they are used across
             'legacy', 'standard', and 'preview' builds.
             -->
-			
-			<!-- Keep these sorted -->
+
+            <!-- Keep these sorted -->
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
@@ -1603,7 +1603,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-			
+
             <dependency>
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-commons</artifactId>

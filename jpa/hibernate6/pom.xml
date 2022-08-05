@@ -46,24 +46,24 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-	    <scope>test</scope>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
-	    <artifactId>shrinkwrap-api</artifactId>
+            <artifactId>shrinkwrap-api</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
-	    <artifactId>shrinkwrap-impl-base</artifactId>
+            <artifactId>shrinkwrap-impl-base</artifactId>
         </dependency>
 
         <!-- Internal -->
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-	    <artifactId>jipijapa-spi-jakarta</artifactId>
+            <artifactId>jipijapa-spi-jakarta</artifactId>
         </dependency>
 
         <!-- External -->

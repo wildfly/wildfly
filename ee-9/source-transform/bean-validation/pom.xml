@@ -38,7 +38,7 @@
     <artifactId>wildfly-bean-validation-jakarta</artifactId>
 
     <name>WildFly: Bean Validation subsystem (Jakarta Namespace)</name>
-	
+
     <packaging>jar</packaging>
 
     <properties>

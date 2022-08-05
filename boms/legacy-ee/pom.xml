@@ -40,9 +40,9 @@
 
     <artifactId>wildfly-legacy-ee-bom</artifactId>
     <description>
-		Bill of materials for maven modules that provide traditional capabilities like Jakarta EE
-		and that compile against legacy dependencies		
-	</description>
+        Bill of materials for maven modules that provide traditional capabilities like Jakarta EE
+        and that compile against legacy dependencies
+    </description>
     <packaging>pom</packaging>
 
     <dependencyManagement>
@@ -58,8 +58,8 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-			
-			<!-- Dependencies specific to this bom. Keep sorted -->
+
+            <!-- Dependencies specific to this bom. Keep sorted -->
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
@@ -513,13 +513,13 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-			
+
             <dependency>
                 <groupId>jakarta.inject</groupId>
                 <artifactId>jakarta.inject-api</artifactId>
                 <version>${legacy.version.jakarta.inject.jakarta.inject-api}</version>
             </dependency>
-			
+
             <dependency>
                 <groupId>jakarta.json</groupId>
                 <artifactId>jakarta.json-api</artifactId>
