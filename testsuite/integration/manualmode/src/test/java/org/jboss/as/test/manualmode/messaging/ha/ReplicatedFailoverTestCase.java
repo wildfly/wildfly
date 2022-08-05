@@ -30,6 +30,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -37,6 +39,9 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.jgroups.util.Util;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 
 /**
  *
@@ -45,6 +50,14 @@ import org.jboss.dmr.ModelNode;
 public class ReplicatedFailoverTestCase extends FailoverTestCase {
     private static final ModelNode PRIMARY_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-primary").toModelNode();
     private static final ModelNode SECONDARY_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-secondary").toModelNode();
+
+    @BeforeClass
+    public static void beforeClass() {
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            Assume.assumeFalse("[WFLY-14481] Disable on Windows", Util.checkForWindows());
+            return null;
+        });
+    }
 
     @Override
     protected void setUpServer1(ModelControllerClient client) throws Exception {
