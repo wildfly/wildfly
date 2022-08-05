@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,17 +26,17 @@ import org.infinispan.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 
 /**
- * Marshaller registration for the {@link org.wildfly.security.cache} package.
+ * Marshaller registration for the {@link org.wildfly.elytron.web.undertow.server.servlet} package.
  * @author Paul Ferraro
  */
-public class SecurityCacheSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class ElytronUndertowSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    public SecurityCacheSerializationContextInitializer() {
-        super("org.wildfly.security.cache.proto");
+    public ElytronUndertowSerializationContextInitializer() {
+        super("org.wildfly.elytron.web.undertow.server.servlet.proto");
     }
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new CachedIdentityMarshaller());
+        context.registerMarshaller(new IdentityContainerMarshaller());
     }
 }
