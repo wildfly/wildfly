@@ -206,8 +206,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 reportListOfStrings(context, list);
             } else if (GET_ROLES.equals(operationName)) {
                 String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
-                String json = serverControl.getRolesAsJSON(addressMatch);
-                reportRoles(context, json);
+                reportRoles(context, serverControl.getRoles(addressMatch));
             } else if (GET_ROLES_AS_JSON.equals(operationName)) {
                 String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
                 String json = serverControl.getRolesAsJSON(addressMatch);
