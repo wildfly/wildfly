@@ -41,6 +41,8 @@
     <description>Parent for various legacy and Galleon feature pack modules</description>
     <packaging>pom</packaging>
 
+    <name>WildFly: EE Feature Pack Parent</name>
+
     <modules>
         <module>common</module>
         <module>ee-10-api</module>

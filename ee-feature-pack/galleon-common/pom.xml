@@ -35,6 +35,8 @@
     </parent>
 
     <artifactId>wildfly-ee-feature-pack-galleon-common</artifactId>
+
+    <name>WildFly: EE Feature Pack Galleon Common</name>
     <packaging>pom</packaging>
 
     <build>

@@ -34,7 +34,7 @@
 
     <artifactId>jipijapa-hibernate6</artifactId>
 
-    <name>jipijapa Hibernate 6 (JPA 3.1) integration</name>
+    <name>WildFly: Jipijapa Hibernate 6 (JPA 3.1) integration</name>
 
     <properties>
         <!-- Use the standard WildFly dependency set -->

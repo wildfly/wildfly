@@ -45,6 +45,8 @@
 	</description>
     <packaging>pom</packaging>
 
+    <name>WildFly: Common Dependency Management (Base Dependencies)</name>
+
     <dependencyManagement>
         <dependencies>
 

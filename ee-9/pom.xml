@@ -36,6 +36,8 @@
     <description>Parent for EE 9 related modules</description>
     <packaging>pom</packaging>
 
+    <name>WildFly Preview: Parent</name>
+
     <properties>
         <preview.dist.product.release.name>WildFly Preview</preview.dist.product.release.name>
         <preview.dist.product.slot>${full.dist.product.slot}</preview.dist.product.slot>

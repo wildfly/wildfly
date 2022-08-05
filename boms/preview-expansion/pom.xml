@@ -45,6 +45,8 @@
 	</description>
     <packaging>pom</packaging>
 
+    <name>WildFly Preview: Dependency Management (Expansion Dependencies)</name>
+
     <dependencyManagement>
         <dependencies>
 

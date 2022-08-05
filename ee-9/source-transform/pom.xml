@@ -37,6 +37,8 @@
     <description>Parent for EE 9 Source Transformation related modules</description>
     <packaging>pom</packaging>
 
+    <name>WildFly: EE 9 Source Transform parent</name>
+
     <properties>
         <!-- Directory from which source is obtained. Child modules will override this -->
         <transformer-input-dir>${project.basedir}</transformer-input-dir>
