@@ -313,7 +313,8 @@
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
         <version.com.microsoft.azure>8.6.6</version.com.microsoft.azure>
         <version.com.nimbus.jose-jwt>9.23</version.com.nimbus.jose-jwt>
-        <version.com.squareup.okhttp3>3.14.9</version.com.squareup.okhttp3>
+        <legacy.version.com.squareup.okhttp>3.14.9</legacy.version.com.squareup.okhttp>
+        <version.com.squareup.okhttp>4.10.0</version.com.squareup.okhttp>
         <version.com.squareup.okio>1.17.5</version.com.squareup.okio>
         <legacy.version.com.sun.activation.jakarta.activation>1.2.2</legacy.version.com.sun.activation.jakarta.activation>
         <legacy.version.com.sun.faces>2.3.17.SP01</legacy.version.com.sun.faces>
