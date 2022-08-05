@@ -56,7 +56,9 @@
         <module name="net.bytebuddy"/>
         <module name="java.xml"/>
         <module name="com.h2database.h2" optional="true"/>
+        <!-- If the Oracle JDBC driver classes are accessible, Hibernate ORM will use them to tailor OracleDialect behavior -->
         <module name="com.oracle.ojdbc" optional="true"/>
+        <!-- If the PostgreSQL JDBC driver classes are accessible, Hibernate ORM will use them to tailor PostgresDialect and CockroachDialect behavior -->
         <module name="org.postgresql.jdbc" optional="true"/>
     </dependencies>
 </module>
