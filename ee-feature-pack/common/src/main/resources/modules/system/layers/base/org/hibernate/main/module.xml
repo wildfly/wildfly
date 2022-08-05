@@ -56,5 +56,7 @@
         <module name="net.bytebuddy"/>
         <module name="java.xml"/>
         <module name="com.h2database.h2" optional="true"/>
+        <module name="com.oracle.ojdbc" optional="true"/>
+        <module name="org.postgresql.jdbc" optional="true"/>
     </dependencies>
 </module>
