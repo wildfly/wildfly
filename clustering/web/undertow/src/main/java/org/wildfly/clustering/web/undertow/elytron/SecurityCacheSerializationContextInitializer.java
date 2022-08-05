@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.undertow.sso.elytron;
+package org.wildfly.clustering.web.undertow.elytron;
 
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
@@ -28,13 +28,18 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 
 /**
+ * Marshaller registration for the {@link org.wildfly.security.cache} package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
-public class ElytronSSOSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class SecurityCacheSerializationContextInitializer extends AbstractSerializationContextInitializer {
+
+    public SecurityCacheSerializationContextInitializer() {
+        super("org.wildfly.security.cache.proto");
+    }
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ElytronAuthenticationMarshaller());
+        context.registerMarshaller(new CachedIdentityMarshaller());
     }
 }

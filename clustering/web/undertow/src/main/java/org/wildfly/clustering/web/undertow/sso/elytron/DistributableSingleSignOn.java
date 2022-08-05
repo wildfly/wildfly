@@ -35,6 +35,7 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.cache.CachedIdentity;
 import org.wildfly.security.http.util.sso.SingleSignOn;
 
 /**
@@ -42,12 +43,12 @@ import org.wildfly.security.http.util.sso.SingleSignOn;
  */
 public class DistributableSingleSignOn implements SingleSignOn {
 
-    private final SSO<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext> sso;
+    private final SSO<CachedIdentity, String, Map.Entry<String, URI>, LocalSSOContext> sso;
     private final Batcher<Batch> batcher;
     private final Batch batch;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public DistributableSingleSignOn(SSO<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext> sso, Batcher<Batch> batcher, Batch batch) {
+    public DistributableSingleSignOn(SSO<CachedIdentity, String, Map.Entry<String, URI>, LocalSSOContext> sso, Batcher<Batch> batcher, Batch batch) {
         this.sso = sso;
         this.batcher = batcher;
         this.batch = batch;
@@ -61,7 +62,7 @@ public class DistributableSingleSignOn implements SingleSignOn {
     @Override
     public String getMechanism() {
         try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
-            return this.sso.getAuthentication().getMechanism();
+            return this.sso.getAuthentication().getMechanismName();
         }
     }
 
