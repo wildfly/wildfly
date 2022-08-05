@@ -202,6 +202,18 @@ link:#gal.transactions[transactions] +
 |
 link:#gal.base-server[base-server] +
 
+|[[gal.embedded-activemq]]embedded-activemq
+|Support for an embedded Apache Activemq Artemis Jakarta Messaging broker. +
+_Alternative:_ link:#gal.remote-activemq[remote-activemq]
+|
+link:#gal.cdi[cdi] +
+link:#gal.ee[ee] +
+link:#gal.elytron[elytron] +
+link:#gal.naming[naming] +
+link:#gal.remoting[remoting] +
+link:#gal.resource-adapters[resource-adapters] +
+link:#gal.undertow[undertow] +
+
 |[[gal.git-history]]git-history
 |Support for using _git_ for configuration management.
 |
@@ -407,7 +419,8 @@ link:#gal.microprofile-opentracing[microprofile-opentracing] (optional) +
 link:#gal.base-server[base-server] +
 
 |[[gal.remote-activemq]]remote-activemq
-|Support for connections to a remote Apache Activemq Artemis Jakarta Messaging broker.
+|Support for connections to a remote Apache Activemq Artemis Jakarta Messaging broker. +
+_Alternative:_ link:#gal.embedded-activemq[embedded-activemq]
 |
 link:#gal.resource-adapters[resource-adapters] +
 
