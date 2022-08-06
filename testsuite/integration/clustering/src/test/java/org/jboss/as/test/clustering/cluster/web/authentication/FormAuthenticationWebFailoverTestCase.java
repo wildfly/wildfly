@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster.web.authentication;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,7 +53,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
 import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
 /**
@@ -65,6 +63,7 @@ import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 @ServerSetup({FormAuthenticationWebFailoverTestCase.ElytronDomainSetupOverride.class, FormAuthenticationWebFailoverTestCase.ServletElytronDomainSetupOverride.class})
 public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTestCase {
 
+    private static final String MODULE_NAME = BasicAuthenticationWebFailoverTestCase.class.getSimpleName();
     private static final String SECURITY_DOMAIN_NAME = "authentication";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -80,7 +79,7 @@ public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTes
     }
 
     private static Archive<?> getDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "form-authentication.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addClass(SecureServlet.class);
         war.setWebXML(SecureServlet.class.getPackage(), "web-form.xml");
         war.addAsWebInfResource(SecureServlet.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
@@ -153,12 +152,10 @@ public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTes
         }
     }
 
-    static class ElytronDomainSetupOverride extends ElytronDomainSetup {
+    static class ElytronDomainSetupOverride extends ElytronDomainServerSetupTask {
 
         public ElytronDomainSetupOverride() {
-            super(new File(FormAuthenticationWebFailoverTestCase.class.getResource("users.properties").getFile()).getAbsolutePath(),
-                    new File(FormAuthenticationWebFailoverTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath(),
-                    SECURITY_DOMAIN_NAME);
+            super(SECURITY_DOMAIN_NAME);
         }
     }
 
