@@ -24,7 +24,7 @@ package org.wildfly.clustering.faces.mojarra.facelets.el;
 
 import java.io.IOException;
 
-import javax.el.ValueExpression;
+import jakarta.el.ValueExpression;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.faces.view.facelets.MockTagAttribute;

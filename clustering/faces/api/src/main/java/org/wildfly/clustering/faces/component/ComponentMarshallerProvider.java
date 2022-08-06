@@ -27,9 +27,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
 
-import javax.faces.component.StateHolder;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
+import jakarta.faces.component.StateHolder;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
 
 import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -43,7 +43,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public enum ComponentMarshallerProvider implements ProtoStreamMarshallerProvider {
     PROPERTY_KEYS(UIComponent.class, "PropertyKeys"),
     PROPERTY_KEYS_PRIVATE(UIComponent.class, "PropertyKeysPrivate"),
-    STATE_HOLDER_SAVER("javax.faces.component.StateHolderSaver"),
+    STATE_HOLDER_SAVER("jakarta.faces.component.StateHolderSaver"),
     ;
     private final ProtoStreamMarshaller<?> marshaller;
 

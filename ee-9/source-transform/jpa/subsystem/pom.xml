@@ -38,7 +38,7 @@
     <artifactId>wildfly-jpa-jakarta</artifactId>
 
     <name>WildFly: JPA Subsystem (Jakarta Namespace)</name>
-	
+
     <packaging>jar</packaging>
 
     <properties>

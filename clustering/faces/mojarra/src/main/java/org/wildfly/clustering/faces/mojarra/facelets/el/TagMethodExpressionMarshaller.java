@@ -24,7 +24,7 @@ package org.wildfly.clustering.faces.mojarra.facelets.el;
 
 import java.io.IOException;
 
-import javax.el.MethodExpression;
+import jakarta.el.MethodExpression;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.SimpleObjectOutput;

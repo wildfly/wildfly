@@ -38,7 +38,7 @@
     <artifactId>wildfly-ee-security-jakarta</artifactId>
 
     <name>WildFly: Jakarta EE Security (Jakarta Namespace)</name>
-	
+
     <packaging>jar</packaging>
 
     <properties>

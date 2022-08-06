@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.PrivilegedAction;
 
-import javax.enterprise.inject.spi.Decorator;
+import jakarta.enterprise.inject.spi.Decorator;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.weld.bean.proxy.DecoratorProxyMethodHandler;

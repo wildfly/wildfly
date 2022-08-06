@@ -38,7 +38,7 @@
     <artifactId>wildfly-weld-transactions-jakarta</artifactId>
 
     <name>WildFly: Weld Transactions (Jakarta Namespace)</name>
-	
+
     <packaging>jar</packaging>
 
     <properties>

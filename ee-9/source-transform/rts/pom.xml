@@ -56,7 +56,7 @@
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
-	<!-- skip org.jboss.staxmapper -->
+        <!-- skip org.jboss.staxmapper -->
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>
@@ -73,8 +73,8 @@
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-jaxrs-jakarta</artifactId>
         </dependency>
-	<!-- skip org.jboss.modules -->
-	<!-- skip org.jboss.msc -->
+        <!-- skip org.jboss.modules -->
+        <!-- skip org.jboss.msc -->
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
@@ -131,10 +131,10 @@
             <groupId>org.wildfly.transaction</groupId>
             <artifactId>wildfly-transaction-client-jakarta</artifactId>
         </dependency>
-	<!-- skip java.xml -->
+        <!-- skip java.xml -->
         <dependency>
-	    <groupId>org.jboss.narayana.jts</groupId>
-	    <artifactId>narayana-jts-idlj-jakarta</artifactId>
+            <groupId>org.jboss.narayana.jts</groupId>
+            <artifactId>narayana-jts-idlj-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.rts</groupId>
@@ -158,7 +158,7 @@
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
-	    <artifactId>wildfly-subsystem-test</artifactId>
+            <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>
             <scope>test</scope>
         </dependency>

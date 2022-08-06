@@ -42,8 +42,8 @@
     <name>WildFly: MicroProfile modules</name>
 
     <modules>
-		<module>config-smallrye</module>
-		<module>galleon-common</module>
+        <module>config-smallrye</module>
+        <module>galleon-common</module>
         <module>reactive-messaging-smallrye</module>
         <module>reactive-streams-operators-smallrye</module>
     </modules>

@@ -54,7 +54,7 @@
 
     <modules>
         <module>appclient</module>
-		<module>boms/common-ee</module>
+        <module>boms/common-ee</module>
         <module>boms/common-expansion</module>
         <module>boms/legacy-ee</module>
         <module>boms/legacy-expansion</module>
@@ -64,36 +64,36 @@
         <module>boms/standard-expansion</module>
         <module>build</module>
         <module>client/properties</module>
-		<module>clustering</module>
-		<module>dist</module>
-		<module>ee-build</module>
+        <module>clustering</module>
+        <module>dist</module>
+        <module>ee-build</module>
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
-		<module>ee-9</module>
-		<module>elytron-oidc-client</module>
+        <module>ee-9</module>
+        <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
         <module>health</module>
-		<module>jdr</module>
+        <module>jdr</module>
         <module>jpa</module>
-		<module>legacy/jacorb</module>
+        <module>legacy/jacorb</module>
         <module>legacy/jsr77</module>
         <module>legacy/keycloak</module>
         <module>legacy/messaging</module>
         <module>legacy/web</module>
-		<module>metrics</module>
+        <module>metrics</module>
         <module>microprofile</module>
         <module>mod_cluster</module>
         <module>naming</module>
-		<module>picketlink</module>
+        <module>picketlink</module>
         <module>pojo</module>
         <module>release</module>
-		<module>sar</module>
+        <module>sar</module>
         <module>security</module>
         <module>system-jmx</module>
         <module>spec-api</module>
-		<module>servlet-feature-pack</module>
-		<module>weld</module>
-		<module>testsuite/test-feature-pack</module>
+        <module>servlet-feature-pack</module>
+        <module>weld</module>
+        <module>testsuite/test-feature-pack</module>
         <module>testsuite</module>
     </modules>
 
@@ -282,10 +282,10 @@
             For example: <version.org.jboss.hal.release-stream>
             to sort automatically use
              mvn com.github.ekryd.sortpom:sortpom-maven-plugin:2.8.0:sort -Dsort.sortProperties=true -Dsort.nrOfIndentSpace=4 -Dsort.keepBlankLines=true -Dsort.sortDependencies=scope,groupId,artifactId
-			
-			For properties only used for building legacy modules not used in standard WildFly or WildFly Preview, prefix the property name with 'legacy.'
-			Place the property in the proper alphabetical location as if the 'legacy.' was not present. In the typical case where there's also the same
-			property without 'legacy.', put the legacy property first.
+
+            For properties only used for building legacy modules not used in standard WildFly or WildFly Preview, prefix the property name with 'legacy.'
+            Place the property in the proper alphabetical location as if the 'legacy.' was not present. In the typical case where there's also the same
+            property without 'legacy.', put the legacy property first.
          -->
         <legacy.version.antlr>2.7.7</legacy.version.antlr>
         <version.antlr>4.10</version.antlr>
@@ -608,7 +608,7 @@
 
         <!-- 
             WildFly Preview version properties.
-			Property names should be in the form 'preview.version.xxx'. 
+            Property names should be in the form 'preview.version.xxx'. 
         -->
 
         <!-- currently none-->
@@ -626,8 +626,8 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-			
-			<!-- Keep sorted -->
+
+            <!-- Keep sorted -->
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
@@ -922,7 +922,7 @@
                 <version>${ee.maven.version}</version>
                 <scope>test</scope>
             </dependency>
-			
+
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-testsuite-shared-jakarta</artifactId>

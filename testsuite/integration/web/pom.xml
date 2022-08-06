@@ -567,7 +567,7 @@
             </activation>
             <build>
                 <plugins>
-		            <!-- Disable the standard copy-based provisioning -->
+                    <!-- Disable the standard copy-based provisioning -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
@@ -676,7 +676,7 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-		                    <!-- Provision a datasources-web-server -->
+                            <!-- Provision a datasources-web-server -->
                             <execution>
                                 <id>web-legacy-security-provisioning</id>
                                 <goals>

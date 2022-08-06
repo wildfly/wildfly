@@ -40,9 +40,9 @@
 
     <artifactId>wildfly-standard-ee-bom</artifactId>
     <description>
-		Build of materials that can be used to build standard WildFly maven modules
-		that provide traditional capabilities like Jakarta EE.
-	</description>
+        Build of materials that can be used to build standard WildFly maven modules
+        that provide traditional capabilities like Jakarta EE.
+    </description>
     <packaging>pom</packaging>
 
     <dependencyManagement>
@@ -57,8 +57,7 @@
                 <scope>import</scope>
             </dependency>
 
-			<!-- Bom-specific dependencies. Keep sorted -->
-
+            <!-- Bom-specific dependencies. Keep sorted -->
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
@@ -146,7 +145,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-faces-api-jakarta</artifactId>
+                <artifactId>wildfly-clustering-faces-api</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -157,19 +156,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-faces-mojarra-jakarta</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-web-undertow-jakarta</artifactId>
+                <artifactId>wildfly-clustering-faces-mojarra</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -181,7 +168,19 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-weld-core-jakarta</artifactId>
+                <artifactId>wildfly-clustering-web-undertow</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-weld-core</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -192,7 +191,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-weld-ejb-jakarta</artifactId>
+                <artifactId>wildfly-clustering-weld-ejb</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -203,7 +202,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-weld-web-jakarta</artifactId>
+                <artifactId>wildfly-clustering-weld-web</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>

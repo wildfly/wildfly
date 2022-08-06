@@ -68,13 +68,13 @@
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
-	        <artifactId>wildfly-controller</artifactId>
-	        <exclusions>
-	            <exclusion>
-	                <groupId>*</groupId>
-	                <artifactId>*</artifactId>
-	            </exclusion>
-	        </exclusions>
+            <artifactId>wildfly-controller</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -86,22 +86,22 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>	
+        </dependency>
         
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>staxmapper</artifactId>
-        </dependency>	
+        </dependency>
         
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-dmr</artifactId>
         </dependency>
 
-	    <dependency>
-	        <groupId>org.jboss.logging</groupId>
-	        <artifactId>jboss-logging</artifactId>
-	    </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.logging</groupId>

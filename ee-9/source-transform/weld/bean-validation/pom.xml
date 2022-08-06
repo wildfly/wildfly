@@ -38,7 +38,7 @@
     <artifactId>wildfly-weld-bean-validation-jakarta</artifactId>
 
     <name>WildFly: Weld Bean Validation (Jakarta Namespace)</name>
-	
+
     <packaging>jar</packaging>
 
     <properties>
