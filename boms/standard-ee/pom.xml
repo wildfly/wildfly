@@ -1122,17 +1122,6 @@
             </dependency>
 
             <dependency>
-                <groupId>jakarta.xml.ws</groupId>
-                <artifactId>jakarta.xml.ws-api</artifactId>
-                <version>${version.jakarta.xml.ws.jakarta.xml.ws-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>jboss.jaxbintros</groupId>
                 <artifactId>jboss-jaxb-intros</artifactId>
                 <version>${version.jboss.jaxbintros}</version>
