@@ -446,4 +446,6 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 111, value = "The annotation: '%s' will have no effect on Servlet: '%s'")
     void badAnnotationOnServlet(String annotation, String servlet);
 
+    @Message(id = 112, value = "The request scheme '%s' has no matching Undertow listener.")
+    IllegalStateException requestSchemeHasNoListener(String requestScheme);
 }
