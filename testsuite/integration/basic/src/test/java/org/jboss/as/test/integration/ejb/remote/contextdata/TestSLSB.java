@@ -35,10 +35,17 @@ public class TestSLSB implements TestRemote {
     @Resource
     SessionContext sessionContext;
 
-
+    @Override
     public String invoke() {
         sessionContext.getContextData().put("data2", MESSAGE);
         return "ignore this";
     }
 
+    @Override
+    public UseCaseValidator invoke(UseCaseValidator useCaseValidator) throws TestException {
+
+        // test when the ejb is invoked
+        useCaseValidator.test(UseCaseValidator.InvocationPhase.SERVER_EJB_INVOKE, sessionContext.getContextData());
+        return useCaseValidator;
+    }
 }

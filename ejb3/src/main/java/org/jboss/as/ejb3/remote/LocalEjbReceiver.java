@@ -29,7 +29,9 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -263,10 +265,36 @@ public class LocalEjbReceiver extends EJBReceiver {
             }
             receiverContext.resultReady(new CloningResultProducer(invocation, resultCloner, result, allowPassByReference));
 
-            for(Map.Entry<String, Object> entry : interceptorContext.getContextData().entrySet()) {
-                if (entry.getValue() instanceof Serializable) {
-                    invocation.getContextData().put(entry.getKey(), entry.getValue());
-                }
+            handleReturningContextData(invocation, interceptorContext);
+        }
+    }
+
+    /**
+     * WFLY-16567 - ContextData not kept in sync when EJB modifies it
+     *
+     * @param invocation
+     * @param interceptorContext
+     */
+    private static void handleReturningContextData(EJBClientInvocationContext invocation,
+            InterceptorContext interceptorContext) {
+
+        // WFLY-16567 - clear out all returnKeys
+        Set<String> returnKeys = (Set<String>) invocation.getAttachments()
+                .get(EJBClientInvocationContext.RETURNED_CONTEXT_DATA_KEY);
+        if (returnKeys != null)
+            invocation.getContextData().keySet().removeAll(returnKeys);
+        // WFLY-16567 - the local receiver copies the contextData back, it should remove what the EJB removed
+        // keys in context data when client sent request
+        Set<String> keysRemovedOnServerSide = new HashSet<>(invocation.getContextData().keySet());
+        // remove keys returned, leaving keys on the client side that should be cleared
+        keysRemovedOnServerSide.removeAll(interceptorContext.getContextData().keySet());
+        // remove the keys that existed before but do not exist in the response
+        invocation.getContextData().keySet().removeAll(keysRemovedOnServerSide);
+
+        // copy the returned context data into the invocation
+        for (Map.Entry<String, Object> entry : interceptorContext.getContextData().entrySet()) {
+            if (entry.getValue() instanceof Serializable) {
+                invocation.getContextData().put(entry.getKey(), entry.getValue());
             }
         }
     }
