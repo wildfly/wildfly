@@ -26,6 +26,6 @@ import jakarta.ejb.Remote;
 @Remote
 public interface TestRemote {
 
-  String invoke();
+    UseCaseValidator invoke(UseCaseValidator useCaseValidator) throws TestException;
 
 }

@@ -107,8 +107,13 @@ public class ClientInterceptorReturnDataEjbOverHttpTestCase {
 
         ejbClientContext.runCallable(() -> {
             TestRemote bean = (TestRemote) getContext().lookup("ejb:/" + ClientInterceptorReturnDataEjbOverHttpTestCase.class.getSimpleName() + "/" + TestSLSB.class.getSimpleName() + "!" + TestRemote.class.getName());
-            Assert.assertEquals("DATA:client interceptor data(client data):bean context data", bean.invoke());
-            return null;
+            UseCaseValidator useCaseValidator = new UseCaseValidator(UseCaseValidator.Interface.REMOTE);
+            try {
+                useCaseValidator = bean.invoke(useCaseValidator);
+            } catch(TestException te) {
+                Assert.fail(te.getMessage());
+            }
+            return useCaseValidator;
         });
     }
 }
