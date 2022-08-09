@@ -33,9 +33,8 @@ import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -126,18 +125,12 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
         URI uri2 = TraceServlet.createURI(new URL(baseURL2.getProtocol(), baseURL2.getHost(), baseURL2.getPort(), "/" + this.moduleName + "/"));
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(uri1));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(uri2));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
                 Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
             this.undeploy(SINGLETON_DEPLOYMENT_1);
@@ -148,18 +141,12 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
             Assert.assertTrue(execute(client2, isPrimaryRequest).asBoolean(false));
             Assert.assertEquals(Collections.singletonList(NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
 
-            response = client.execute(new HttpGet(uri1));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(uri2));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
             this.deploy(SINGLETON_DEPLOYMENT_1);
@@ -173,18 +160,12 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
             Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
             Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
-            response = client.execute(new HttpGet(uri1));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(uri2));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
                 Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
             this.undeploy(SINGLETON_DEPLOYMENT_2);
@@ -195,18 +176,12 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
             Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
             Assert.assertEquals(Collections.singletonList(NODE_1), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
 
-            response = client.execute(new HttpGet(uri1));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(uri2));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
                 Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
             this.deploy(SINGLETON_DEPLOYMENT_2);
@@ -220,18 +195,12 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
             Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
             Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
-            response = client.execute(new HttpGet(uri1));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(uri2));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
                 Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
         } finally {
             this.undeploy(SINGLETON_DEPLOYMENT_1);
