@@ -26,7 +26,6 @@ import static org.jboss.as.test.clustering.ClusterTestUtil.execute;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -116,10 +115,10 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
 
         Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
         Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
-        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
         Assert.assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
         Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
-        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
         URI uri1 = TraceServlet.createURI(new URL(baseURL1.getProtocol(), baseURL1.getHost(), baseURL1.getPort(), "/" + this.moduleName + "/"));
         URI uri2 = TraceServlet.createURI(new URL(baseURL2.getProtocol(), baseURL2.getHost(), baseURL2.getPort(), "/" + this.moduleName + "/"));
@@ -155,10 +154,10 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
 
             Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
             Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
-            Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+            Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
             Assert.assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
             Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
-            Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+            Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -190,10 +189,10 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
 
             Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
             Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
-            Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+            Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
             Assert.assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
             Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
-            Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+            Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
