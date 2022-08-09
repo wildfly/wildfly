@@ -28,6 +28,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -46,7 +47,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.servlet.TraceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -240,12 +241,16 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
         }
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         ServerSetupTask() {
-            this.builder.node(TWO_NODES)
-                    .setup("/subsystem=singleton/singleton-policy=default/election-policy=simple:write-attribute(name=name-preferences,value=%s)", Arrays.toString(TWO_NODES))
-                    .teardown("/subsystem=singleton/singleton-policy=default/election-policy=simple:undefine-attribute(name=name-preferences)")
-                    ;
+            super(NODE_1_2, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                        .add("/subsystem=singleton/singleton-policy=default/election-policy=simple:write-attribute(name=name-preferences,value=%s)", List.of(NODE_1, NODE_2))
+                        .build())
+                    .tearDownScript(createScriptBuilder()
+                        .add("/subsystem=singleton/singleton-policy=default/election-policy=simple:undefine-attribute(name=name-preferences)")
+                        .build())
+                    .build());
         }
     }
 }
