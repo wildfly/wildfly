@@ -34,11 +34,11 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 
@@ -69,20 +69,24 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
         }
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<StringListAttributeDefinition.Builder> {
         NAME_PREFERENCES("name-preferences", "socket-binding-preferences"),
-        SOCKET_BINDING_PREFERENCES("socket-binding-preferences", "name-preferences", new CapabilityReference(Capability.ELECTION_POLICY, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING)),
+        SOCKET_BINDING_PREFERENCES("socket-binding-preferences", "name-preferences") {
+            @Override
+            public StringListAttributeDefinition.Builder apply(StringListAttributeDefinition.Builder builder) {
+                return builder.setAllowExpression(false)
+                        .setCapabilityReference(new CapabilityReference(Capability.ELECTION_POLICY, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))
+                        ;
+            }
+        }
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, String alternative) {
-            this.definition = createBuilder(name, alternative).build();
-        }
-
-        Attribute(String name, String alternative, CapabilityReferenceRecorder reference) {
-            this.definition = createBuilder(name, alternative)
-                    .setAllowExpression(false)
-                    .setCapabilityReference(reference)
+            this.definition = this.apply(new StringListAttributeDefinition.Builder(name).setAllowExpression(true))
+                    .setAlternatives(alternative)
+                    .setRequired(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
         }
 
@@ -91,12 +95,9 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
             return this.definition;
         }
 
-        private static StringListAttributeDefinition.Builder createBuilder(String name, String alternative) {
-            return new StringListAttributeDefinition.Builder(name)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setAlternatives(alternative)
-                    ;
+        @Override
+        public StringListAttributeDefinition.Builder apply(StringListAttributeDefinition.Builder builder) {
+            return builder;
         }
     }
 
