@@ -119,12 +119,11 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             IdentityService identityService = new IdentityService();
-
-            CapabilityServiceBuilder<Function<SecurityIdentity, Set<SecurityIdentity>>> capabilityServiceBuilder = context.getCapabilityServiceTarget().addCapability(IDENTITY_CAPABILITY, identityService);
+            CapabilityServiceBuilder<?> capabilityServiceBuilder = context.getCapabilityServiceTarget().addCapability(IDENTITY_CAPABILITY);
             for (String outflowSecurityDomain : outflowSecurityDomains) {
                 capabilityServiceBuilder.addCapabilityRequirement(SECURITY_DOMAIN_CAPABILITY_NAME, SecurityDomain.class, identityService.createOutflowSecurityDomainInjector(), outflowSecurityDomain);
             }
-            capabilityServiceBuilder.setInitialMode(Mode.ACTIVE).install();
+            capabilityServiceBuilder.setInitialMode(Mode.ACTIVE).setInstance(identityService).install();
         }
     }
 

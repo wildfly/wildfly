@@ -79,7 +79,7 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
         if (threadPoolName != null) {
-            context.getCapabilityServiceTarget().addCapability(TimerServiceResourceDefinition.TIMER_SERVICE_CAPABILITY, new TimerValueService()).install();
+            context.getCapabilityServiceTarget().addCapability(TimerServiceResourceDefinition.TIMER_SERVICE_CAPABILITY).setInstance(new TimerValueService()).install();
         }
     }
 

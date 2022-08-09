@@ -51,10 +51,11 @@ public class ContextServiceAdd extends AbstractAddStepHandler {
 
         // install the service which manages the default context service
         final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl(), useTransactionSetupProvider);
-        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ContextServiceResourceDefinition.CAPABILITY, contextServiceService);
+        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ContextServiceResourceDefinition.CAPABILITY);
         if (useTransactionSetupProvider) {
             serviceBuilder.requires(context.getCapabilityServiceSupport().getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider"));
         }
+        serviceBuilder.setInstance(contextServiceService);
         serviceBuilder.install();
     }
 }

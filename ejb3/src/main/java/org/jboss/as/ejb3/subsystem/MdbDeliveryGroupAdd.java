@@ -52,7 +52,7 @@ public class MdbDeliveryGroupAdd extends AbstractAddStepHandler {
         final boolean active = MdbDeliveryGroupResourceDefinition.ACTIVE.resolveModelAttribute(context, model).asBoolean();
 
         CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
-        serviceTarget.addCapability(MdbDeliveryGroupResourceDefinition.MDB_DELIVERY_GROUP_CAPABILITY, Service.NULL)
+        serviceTarget.addCapability(MdbDeliveryGroupResourceDefinition.MDB_DELIVERY_GROUP_CAPABILITY).setInstance(Service.NULL)
                 .setInitialMode(active? ServiceController.Mode.ACTIVE: ServiceController.Mode.NEVER)
                 .install();
     }
