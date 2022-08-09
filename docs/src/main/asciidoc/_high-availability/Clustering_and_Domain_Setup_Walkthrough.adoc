@@ -30,36 +30,35 @@ or they will cause network problems).
 
 Here are some details on what we are going to do:
 
-* Let's call one host as 'master', the other one as 'slave'.
+* Let's call one host as 'primary', the other one as 'secondary'.
 
-* Both master and slave will run WildFly, and master will run as
-domain controller, slave will under the domain management of master.
+* Both primary and secondary hosts will run WildFly, and the primary host
+will run as a domain controller, the secondary host will under the domain management of primary host.
 
-* Apache httpd will be run on master, and in httpd we will enable the
-mod_cluster module. The WildFly on master and slave will form a
+* Apache httpd will be run on the primary host, and in httpd we will enable the
+mod_cluster module. The WildFly on primary and secondary hosts will form a
 cluster and discovered by httpd.
 
 image:clustering/Clustering.jpg[images/clustering/Clustering.jpg]
 
-* We will deploy a demo project into domain, and verify that the project
-is deployed into both master and slave by domain controller. Thus we
-could see that domain management provide us a single point to manage the
+* We will deploy a demo project into the domain, and verify that the project
+is deployed into both primary and secondary Host Controllers by the domain controller.
+Thus we could see that domain management provide us a single point to manage the
 deployments across multiple hosts in a single domain.
 
 * We will access the cluster URL and verify that httpd has distributed
-the request to one of the WildFly host. So we could see the cluster is
+the request to one of the WildFly hosts. So we could see the cluster is
 working properly.
 
 * We will try to make a request on cluster, and if the request is
-forwarded to master, we then kill the WildFly process on master. After
+forwarded to the Domain Controller, we then kill the WildFly process on the primary host. After
 that we will go on requesting cluster and we should see the request is
-forwarded to slave, but the session is not lost. Our goal is to verify
+forwarded to the secondary Host Controller, but the session is not lost. Our goal is to verify
 the HA is working and sessions are replicated.
 
-* After previous step finished, we reconnect the master by restarting
-it. We should see the master is registered back into cluster, also we
-should see slave sees master as domain controller again and connect to
-it.
+* After previous step finished, we reconnect the Domain Controller by restarting
+it. We should see the Domain Controller is registered back into cluster, also we
+should see the secondary Host Controller sees the primary Host Controller as a domain controller again and connect to it.
 
 image:clustering/test_scenario.jpg[images/clustering/test_scenario.jpg]
 
@@ -71,7 +70,7 @@ move on and you will get the points step by step.
 
 First we should download WildFly from the http://wildfly.org/downloads/[WildFly website].
 
-Then I unzipped the package to master and try to make a test run:
+Then I unzipped the package to the primary host and try to make a test run:
 
 [source,subs="verbatim,attributes"]
 ----
@@ -87,35 +86,35 @@ mode:
 ----
 wildfly-{wildflyVersion}.0.0.Final/bin$ ./domain.sh
 =========================================================================
- 
+
   JBoss Bootstrap Environment
- 
+
   JBOSS_HOME: /Users/weli/Downloads/wildfly-{wildflyVersion}.0.0.Final
- 
+
   JAVA: /Library/Java/Home/bin/java
- 
+
   JAVA_OPTS: -Xms64m -Xmx512m -XX:MaxPermSize=256m -Djava.net.preferIPv4Stack=true -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true
- 
+
 =========================================================================
 ...
- 
+
 [Server:server-two] 14:46:12,375 INFO  [org.jboss.as] (Controller Boot Thread) JBAS015874: WildFly {wildflyVersion}.0.0.Final "Kenny" started in 8860ms - Started 210 of 258 services (8{wildflyVersion} services are lazy, passive or on-demand)
 ----
 
-Now exit master and let's repeat the same steps on slave host. Finally
-we get WildFly run on both master and slave, then we could move on to
+Now exit from the primary host and let's repeat the same steps on the secondary host. Finally,
+we get WildFly run on both primary and secondary hosts, then we could move on to
 next step.
 
 [[domain-configuration]]
 == Domain Configuration
 
-[[interface-config-on-master]]
-=== Interface config on master
+[[interface-config-on-primary-hc]]
+=== Interface config on the Primary Host Controller
 
-In this section we'll setup both master and slave for them to run in
-domain mode. And we will configure master to be the domain controller.
+In this section we'll setup both the primary and secondary hosts for them to run in
+domain mode. And we will configure the primary host to be the domain controller.
 
-First open the host.xml in master for editing:
+First open the host.xml in the primary host for editing:
 
 [source,options="nowrap"]
 ----
@@ -133,62 +132,62 @@ The default settings for interface in this file is like:
     <interface name="public">
        <inet-address value="${jboss.bind.address:127.0.0.1}"/>
     </interface>
-    <interface name="unsecured">       
-       <inet-address value="127.0.0.1" />    
+    <interface name="unsecured">
+       <inet-address value="127.0.0.1" />
     </interface>
 </interfaces>
 ----
 
-We need to change the address to the management interface so slave could
-connect to master. The public interface allows the application to be
+We need to change the address to the management interface so the secondary Host Controller could
+connect to the primary Host Controller. The public interface allows the application to be
 accessed by non-local HTTP, and the unsecured interface allows remote
-RMI access. My master's ip address is 10.211.55.7, so I change the
+RMI access. My primary host's ip address is 10.211.55.7, so I change the
 config to:
 
 [source,xml,options="nowrap"]
 ----
 <interfaces>
-    <interface name="management"
+    <interface name="management">
         <inet-address value="${jboss.bind.address.management:10.211.55.7}"/>
     </interface>
     <interface name="public">
        <inet-address value="${jboss.bind.address:10.211.55.7}"/>
-    </interface>    
-    <interface name="unsecured">
-       <inet-address value="10.211.55.7" />    
     </interface>
-</interfaces> 
+    <interface name="unsecured">
+       <inet-address value="10.211.55.7" />
+    </interface>
+</interfaces>
 ----
 
-[[interface-config-on-slave]]
-=== Interface config on slave
+[[interface-config-on-secondary-hc]]
+=== Interface config on the Secondary Host Controller
 
-Now we will setup interfaces on slave. Let's edit host.xml. Similar to
-the steps on master, open host.xml first:
+Now we will setup interfaces on the secondary host. Let's edit host.xml. Similar to
+the steps on the primary host, open host.xml first:
 
 [source,options="nowrap"]
 ----
 vi domain/configuration/host.xml
 ----
 
-The configuration we'll use on slave is a little bit different, because
-we need to let slave connect to master. First we need to set the
+The configuration we'll use on the secondary host is a little bit different, because
+we need to let the secondary Host Controller connect to the primary Host Controller. First we need to set the
 hostname. We change the name property from:
 
 [source,xml,options="nowrap"]
 ----
-<host name="master" xmlns="urn:jboss:domain:3.0">
+<host name="primary" xmlns="urn:jboss:domain:3.0">
 ----
 
 to:
 
 [source,xml,options="nowrap"]
 ----
-<host name="slave" xmlns="urn:jboss:domain:3.0">
+<host name="secondary" xmlns="urn:jboss:domain:3.0">
 ----
 
-Then we need to modify domain-controller section so slave can connect to
-master's management port:
+Then we need to modify domain-controller section so the secondary Host Controller can connect to
+primary Host Controller management port:
 
 [source,xml,options="nowrap"]
 ----
@@ -197,19 +196,19 @@ master's management port:
 </domain-controller>
 ----
 
-As we know, 10.211.55.7 is the ip address of master.
+As we know, 10.211.55.7 is the ip address of the primary host.
 You may use discovery options to define multiple mechanisms to connect
-to the remote domain controller :
+to the remote domain controller:
 
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
  <remote authentication-context="hcAuthContext" >
    <discovery-options>
-     <static-discovery name="master-native" protocol="remote"  host="10.211.55.7" port="9999" />
-     <static-discovery name="master-https" protocol="https-remoting" host="10.211.55.7" port="9993" 
+     <static-discovery name="primary-native" protocol="remote"  host="10.211.55.7" port="9999" />
+     <static-discovery name="primary-https" protocol="https-remoting" host="10.211.55.7" port="9993"
                        authentication-context="hcAuthContext"/>
-     <static-discovery name="master-http" protocol="http-remoting" host="10.211.55.7" port="9990" />
+     <static-discovery name="primary-http" protocol="http-remoting" host="10.211.55.7" port="9990" />
    </discovery-options>
  </remote>
 </domain-controller>
@@ -227,13 +226,13 @@ management ports to public address:
     <interface name="public">
        <inet-address value="${jboss.bind.address:10.211.55.2}"/>
     </interface>
-    <interface name="unsecured">       
-       <inet-address value="10.211.55.2" />    
+    <interface name="unsecured">
+       <inet-address value="10.211.55.2" />
     </interface>
 </interfaces>
 ----
 
-10.211.55.2 is the ip address of the slave. Refer to the domain
+10.211.55.2 is the ip address of the secondary host. Refer to the domain
 controller configuration above for an explanation of the management,
 public, and unsecured interfaces.
 
@@ -248,11 +247,11 @@ you need to enable the firewall and allow access to the following ports:
 
 Now everything is set for the two hosts to run in domain mode. Let's
 start them by running domain.sh on both hosts. If everything goes fine,
-we could see from the log on master:
+we could see from the log on the primary Host Controller:
 
 [source,options="nowrap"]
 ----
-[Host Controller] 21:30:52,042 INFO  [org.jboss.as.domain] (management-handler-threads - 1) JBAS010918: Registered remote slave host slave
+[Host Controller] 21:30:52,042 INFO  [org.jboss.as.domain] (management-handler-threads - 1) JBAS010918: Registered remote secondary host "secondary"
 ----
 
 That means all the configurations are correct and two hosts are run in
@@ -303,8 +302,8 @@ The time is <%= session.getAttribute("current.time") %>
 
 It's an extremely simple project but it could help us to test the
 cluster later: We will access put.jsp from cluster and see the request
-are distributed to master, then we disconnect master and access get.jsp.
-We should see the request is forwarded to slave but the 'current.time'
+are distributed to the primary host, then we disconnect the primary Host Controller and access get.jsp.
+We should see the request is forwarded to secondary host but the 'current.time'
 value is held by session replication. We'll cover more details on this
 one later.
 
@@ -318,7 +317,7 @@ mvn package
 
 It will generate cluster-demo.war. Then we need to deploy the war into
 domain. First we should access the http management console on
-master(Because master is acting as domain controller):
+primary host (Because primary host is acting as domain controller):
 
 [source,options="nowrap"]
 ----
@@ -340,7 +339,7 @@ We could see server-one and server-two are in running status and they
 belong to main-server-group; server-three is in idle status, and it
 belongs to other-server-group.
 
-All these servers and server groups are set in domain.xml on master as7.
+All these servers and server groups are set in domain.xml on the primary host.
 What we are interested in is the 'other-server-group' in domain.xml:
 
 [source,xml,options="nowrap"]
@@ -354,8 +353,8 @@ What we are interested in is the 'other-server-group' in domain.xml:
 ----
 
 We could see this server-group is using 'ha' profile, which then uses
-'ha-sockets' socket binding group. It enable all the modules we need to
-establish cluster later(including infinispan, jgroup and mod_cluster
+'ha-sockets' socket binding group. It enables all the modules we need to
+establish cluster later (including infinispan, jgroup and mod_cluster
 modules). So we will deploy our demo project into a server that belongs
 to 'other-server-group', so 'server-three' is our choice.
 
@@ -379,26 +378,26 @@ Now server-three is not running, so let's click on 'server-three' and
 then click the 'start' button at bottom right of the server list. Wait a
 moment and server-three should start now.
 
-Now we should also enable 'server-three' on slave: From the top of menu
-list on left side of the page, we could see now we are managing master
-currently. Click on the list, and click 'slave', then choose
-'server-three', and we are in slave host management page now.
+Now we should also enable 'server-three' on the secondary Host Controller: From the top of menu
+list on left side of the page, we could see now we are managing the primary Host Controller
+currently. Click on the list, and click 'secondary', then choose
+'server-three', and we are in secondary Host Controller management page now.
 
-Then repeat the steps we've done on master to start 'server-three' on
-slave.
+Then repeat the steps we've done on the primary host to start 'server-three' on
+secondary host.
 
 [TIP]
 
-server-three on master and slave are two different hosts, their names
+server-three on primary and secondary host are two different hosts, their names
 can be different.
 
-After server-three on both master and slave are started, we will add our
+After server-three on both primary and secondary hosts are started, we will add our
 cluster-demo.war for deployment. Click on the 'Manage Deployments' link
 at the bottom of left menu list.
 
 image:clustering/JBoss_Management.png[images/clustering/JBoss_Management.png] +
-(We should ensure the server-three should be started on both master and
-slave)
+(We should ensure the server-three should be started on both primary and
+secondary hosts)
 
 After enter 'Manage Deployments' page, click 'Add Content' at top right
 corner. Then we should choose our cluster-demo.war, and follow the
@@ -413,11 +412,11 @@ deployed into 'other-server-group'.：
 image:clustering/JBoss_Management_2.png[images/clustering/JBoss_Management_2.png]
 
 Please note we have two hosts participate in this server group, so the
-project should be deployed in both master and slave now - that's the
+project should be deployed in both primary and secondary hosts now - that's the
 power of domain management.
 
-Now let's verify this, trying to access cluster-demo from both master
-and slave, and they should all work now:
+Now let's verify this, trying to access cluster-demo from both primary
+and secondary hosts, and they should all work now:
 
 [source,options="nowrap"]
 ----
@@ -440,7 +439,7 @@ establish a cluster icon:smile-o[role="yellow"]
 [IMPORTANT]
 
 Why is the port number 8330 instead of 8080? Please check the settings
-in host.xml on both master and slave:
+in host.xml on both primary and secondary hosts:
 
 [source,xml,options="nowrap"]
 ----
@@ -453,8 +452,8 @@ in host.xml on both master and slave:
 
 The port-offset is set to 250, so 8080 + 250 = 8330
 
-Now we quit the WildFly process on both master and slave. We have some
-work left on host.xml configurations. Open the host.xml of master, and
+Now we quit the WildFly process on both primary and secondary hosts. We have some
+work left on host.xml configurations. Open the host.xml of primary host, and
 do some modifications the servers section from:
 
 [source,xml,options="nowrap"]
@@ -478,12 +477,12 @@ to:
 ----
 
 We've set auto-start to true so we don't need to enable it in management
-console each time WildFly restart. Now open slave's host.xml, and modify
+console each time WildFly restart. Now open secondary's host.xml, and modify
 the server-three section:
 
 [source,xml,options="nowrap"]
 ----
-<server name="server-three-slave" group="other-server-group" auto-start="true">
+<server name="server-three-secondary" group="other-server-group" auto-start="true">
     <!-- server-three avoids port conflicts by incrementing the ports in
          the default socket-group declared in the server-group -->
     <socket-bindings port-offset="250"/>
@@ -491,7 +490,7 @@ the server-three section:
 ----
 
 Besides setting auto-start to true, we've renamed the 'server-three' to
-'server-three-slave'. We need to do this because mod_cluster will fail
+'server-three-secondary'. We need to do this because mod_cluster will fail
 to register the hosts with same name in a single server group. It will
 cause name conflict.
 
@@ -501,14 +500,14 @@ go on cluster configuration.
 [[cluster-configuration]]
 == Cluster Configuration
 
-We will use mod_cluster + apache httpd on master as our cluster
+We will use mod_cluster + apache httpd on primary host as our cluster
 controller here. Because WildFly has been configured to support
 mod_cluster out of box so it's the easiest way.
 
 [IMPORTANT]
 
 The WildFly domain controller and httpd are not necessary to be on
-same host. But in this article I just install them all on master for
+same host. But in this article I just install them all on primary host for
 convenience.
 
 First we need to ensure that httpd is installed:
@@ -574,7 +573,7 @@ Please note we should comment out:
 
 This is conflicted with cluster module. And then we need to make httpd
 to listen to public address so we could do the testing. Because we
-installed httpd on master host so we know the ip address of it:
+installed httpd on primary host so we know the ip address of it:
 
 [source,options="nowrap"]
 ----
@@ -591,16 +590,16 @@ Listen 10.211.55.7:10001
 # This directive only applies to Red Hat Enterprise Linux. It prevents the temmporary
 # files from being written to /etc/httpd/logs/ which is not an appropriate location.
 MemManagerFile /var/cache/httpd
- 
+
 <VirtualHost 10.211.55.7:10001>
- 
+
   <Directory />
     Order deny,allow
     Deny from all
     Allow from 10.211.55.
   </Directory>
- 
- 
+
+
   # This directive allows you to view mod_cluster status at URL http://10.211.55.4:10001/mod_cluster-manager
   <Location /mod_cluster-manager>
    SetHandler mod_cluster-manager
@@ -608,13 +607,13 @@ MemManagerFile /var/cache/httpd
    Deny from all
    Allow from 10.211.55.
   </Location>
- 
+
   KeepAliveTimeout 60
   MaxKeepAliveRequests 0
- 
+
   ManagerBalancerName other-server-group
   AdvertiseFrequency 5
- 
+
 </VirtualHost>
 ----
 
@@ -646,16 +645,16 @@ http://10.211.55.7/cluster-demo/put.jsp
 
 image:clustering/http---10.211.55.7-cluster-demo-put.jsp.png[images/clustering/http---10.211.55.7-cluster-demo-put.jsp.png]
 
-We should see the request is distributed to one of the hosts(master or
-slave) from the WildFly log. For me the request is sent to master:
+We should see the request is distributed to one of the hosts (primary or
+secondary) from the WildFly log. For me the request is sent to primary host:
 
 [source,options="nowrap"]
 ----
 [Server:server-three] 16:06:22,256 INFO  [stdout] (http-10.211.55.7-10.211.55.7-8330-4) Putting date now
 ----
 
-Now I disconnect master by using the management interface. Select
-'runtime' and the server 'master' in the upper corners.
+Now I disconnect the Domain Controller by using the management interface. Select
+'runtime' and the server 'primary' in the upper corners.
 
 Select 'server-three' and kick the stop button, the active-icon should
 change.
@@ -672,26 +671,26 @@ http://10.211.55.7/cluster-demo/get.jsp
 
 image:clustering/http---10.211.55.7-cluster-demo-get.jsp.png[images/clustering/http---10.211.55.7-cluster-demo-get.jsp.png]
 
-Now the request should be served by slave and we should see the log from
-slave:
+Now the request should be served by the secondary host and we should see the log from
+the secondary Host Controller:
 
 [source,options="nowrap"]
 ----
-[Server:server-three-slave] 16:08:29,860 INFO  [stdout] (http-10.211.55.2-10.211.55.2-8330-1) Getting date now
+[Server:server-three-secondary] 16:08:29,860 INFO  [stdout] (http-10.211.55.2-10.211.55.2-8330-1) Getting date now
 ----
 
 And from the get.jsp we should see that the time we get is the same
 we've put by 'put.jsp'. Thus it's proven that the session is correctly
-replicated to slave.
+replicated to the secondary host.
 
-Now we restart master and should see the host is registered back to
+Now we restart the primary Host Controller and should see the host is registered back to
 cluster.
 
 [TIP]
 
-It doesn't matter if you found the request is distributed to slave at
-first time. Then just disconnect slave and do the testing, the request
-should be sent to master instead. The point is we should see the request
+It doesn't matter if you found the request is distributed to the secondary host at
+first time. Then just disconnect the secondary Host Controller and do the testing, the request
+should be sent to the primary host instead. The point is we should see the request
 is redirect from one host to another and the session is held.
 
 [[special-thanks]]
