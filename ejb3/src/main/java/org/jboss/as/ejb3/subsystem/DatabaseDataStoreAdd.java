@@ -72,10 +72,11 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
 
         // add the TimerPersistence instance
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
-        final CapabilityServiceBuilder<DatabaseTimerPersistence> builder = serviceTarget.addCapability(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY, databaseTimerPersistence);
+        final CapabilityServiceBuilder<?> builder = serviceTarget.addCapability(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY);
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, databaseTimerPersistence.getModuleLoader());
         builder.addDependency(ContextNames.bindInfoFor(jndiName).getBinderServiceName(), ManagedReferenceFactory.class, databaseTimerPersistence.getDataSourceInjectedValue());
         builder.addCapabilityRequirement(TIMER_SERVICE_CAPABILITY_NAME, java.util.Timer.class, databaseTimerPersistence.getTimerInjectedValue());
+        builder.setInstance(databaseTimerPersistence);
         builder.install();
     }
 
