@@ -354,7 +354,7 @@ ear deployment is as follows:
 [IMPORTANT]
 
 The xsd for jboss-deployment-structure.xml is available at
-https://github.com/wildfly/wildfly-core/blob/master/server/src/main/resources/schema/jboss-deployment-structure-1_2.xsd[https://github.com/wildfly/wildfly/blob/master/build/src/main/resources/docs/schema/jboss-deployment-structure-1_2.xsd]
+https://github.com/wildfly/wildfly-core/blob/master/server/src/main/resources/schema/jboss-deployment-structure-1_2.xsd[https://github.com/wildfly/wildfly-core/blob/main/server/src/main/resources/schema/jboss-deployment-structure-1_2.xsd]
 
 [[accessing-jdk-classes]]
 == Accessing JDK classes
@@ -479,12 +479,12 @@ If you are running WildFly in domain mode, this operation is available via the s
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /host=master/server=server-one/deployment=test-application.war:list-modules
+[domain@localhost:9990 /] /host=primary/server=server-one/deployment=test-application.war:list-modules
 ----
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /host=master/server=server-one/deployment=test-application.ear/subdeployment=test-application.war:list-modules
+[domain@localhost:9990 /] /host=primary/server=server-one/deployment=test-application.ear/subdeployment=test-application.war:list-modules
 ----
 
 By default, the _list-modules_ operation shows the list of dependencies in a compact view, including only the module name. You can control this output using the attribute _verbose=[false*|true]_ to enable/disable a detailed response.

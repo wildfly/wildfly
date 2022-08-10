@@ -17,7 +17,7 @@ complete information about child resources, recursively.
 resources should be included if `recursive` is `true`. If not set, the
 depth will be unlimited; i.e. all descendant resources will be included.
 * `proxies` – (boolean, default is `false`) – whether to include remote
-resources in a recursive query (i.e. host level resources from slave
+resources in a recursive query (i.e. host level resources from secondary
 Host Controllers in a query of the Domain Controller; running server
 resources in a query of a host).
 * `include-runtime` – (boolean, default is `false`) – whether to include
@@ -172,7 +172,7 @@ following parameters, none of which are required:
 * `recursive` – (boolean, default is `false`) – whether to include
 information about child resources, recursively.
 * `proxies` – (boolean, default is `false`) – whether to include remote
-resources in a recursive query (i.e. host level resources from slave
+resources in a recursive query (i.e. host level resources from secondary
 Host Controllers in a query of the Domain Controller; running server
 resources in a query of a host)
 * `operations` – (boolean, default is `false`) – whether to include
@@ -248,7 +248,7 @@ resources should be included if `recursive` is \{\{true}. If not set,
 the depth will be unlimited; i.e. all descendant resources will be
 included.
 * `proxies` – (boolean, default is `false`) – whether to include remote
-resources in a recursive query (i.e. host level resources from slave
+resources in a recursive query (i.e. host level resources from secondary
 Host Controllers in a query of the Domain Controller; running server
 resources in a query of a host)
 * `include-runtime` – (boolean, default is `false`) – whether to include

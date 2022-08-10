@@ -38,7 +38,7 @@ The parameter for `--git-repo` can be a URL or a remote alias provided you have 
 
 If a `--git-branch` parameter is added then the branch will be pulled, otherwise it will default to `master`.
 
-For example this is an elytron configuration file that you could use to connect to Github via the `--git-auth` parameter:
+For example this is an elytron configuration file that you could use to connect to GitHub via the `--git-auth` parameter:
 
 [source,xml,options="nowrap"]
 ----
@@ -260,6 +260,6 @@ When using PKCS formatted keys, the keys should not be encrypted with a passphra
 === Credential Store Reference
 
 It is possible to specify your SSH credentials as a reference to a credential store entry.
-See: https://github.com/wildfly/wildfly/blob/master/docs/src/main/asciidoc/_elytron/Credential_Store.adoc#adding-a-credential[Adding a Credential]
-to a credential store and https://github.com/wildfly/wildfly/blob/master/docs/src/main/asciidoc/_elytron/Credential_Store.adoc#referencing-credentials[Referencing Credentials]
+See: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_elytron/Credential_Store.adoc#adding-a-credential[Adding a Credential]
+to a credential store and https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_elytron/Credential_Store.adoc#referencing-credentials[Referencing Credentials]
 stored in a credential store.

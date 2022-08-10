@@ -136,8 +136,8 @@ Details on how to use the CLI can be found in the
 
 WildFly stores its configuration in centralized XML configuration files,
 one per server for standalone servers and, for managed domains, one per
-host with an additional domain wide policy controlled by the master
-host. These files are meant to be human-readable and human editable.
+host with an additional domain wide policy controlled by the Domain Controller.
+These files are meant to be human-readable and human editable.
 
 [TIP]
 
@@ -176,7 +176,7 @@ with the _[line-through]*c*_ or _-server-config_ command line argument:
 In a managed domain, the XML files are found in the
 `domain/configuration` directory. There are two types of configuration
 files – one per host, and then a single domain-wide file managed by the
-master host, aka the Domain Controller. (For more on the types of
+primary Host Controller, aka the Domain Controller. (For more on the types of
 processes in a managed domain, see <<Operating_modes,Operating
 Modes>>.)
 
@@ -210,7 +210,7 @@ and what server groups they belong to.
 
 |host.xml |The default host configuration, tailored for an easy out of
 the box experience experimenting with a managed domain. This
-configuration specifies the Host Controller should become the master,
+configuration specifies the Host Controller should become the primary Host Controller,
 aka the Domain Controller, but it also launches a couple of servers.
 |=======================================================================
 
@@ -226,7 +226,7 @@ $ bin/domain.sh --host-config=host-primary.xml
 ==== Domain Wide Configuration – domain.xml
 
 Once a Host Controller has processed its host-specific configuration, it
-knows whether it is configured to act as the master Domain Controller.
+knows whether it is configured to act as the Domain Controller.
 If it is, it must parse the domain wide configuration file, by default
 located at `domain/configuration/domain.xml`. This file contains the
 bulk of the settings that should be applied to the servers in the domain
@@ -243,16 +243,16 @@ $ bin/domain.sh --domain-config=domain-production.xml
 ----
 
 That argument is only relevant for hosts configured to act as the
-master.
+Domain Controller.
 
-A slave Host Controller does not usually parse the domain wide
-configuration file. A slave gets the domain wide configuration from the
-remote master Domain Controller when it registers with it. A slave also
+A secondary Host Controller does not usually parse the domain wide
+configuration file. A secondary Host Controller gets the domain wide configuration from the
+remote Domain Controller when it registers with it. A secondary Host Controller also
 will not persist changes to a `domain.xml` file if one is present on the
 filesystem. For that reason it is recommended that no `domain.xml` be
-kept on the filesystem of hosts that will only run as slaves.
+kept on the filesystem of hosts that will only run as secondary Host Controllers.
 
-A slave can be configured to keep a locally persisted copy of the domain
-wide configuration and then use it on boot (in case the master is not
+A secondary Host Controller can be configured to keep a locally persisted copy of the domain
+wide configuration and then use it on boot (in case the Domain Controller is not
 available.) See _--backup and --cached-dc_ under
 <<Command_line_parameters,Command line parameters>>.
