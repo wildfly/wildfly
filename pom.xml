@@ -391,7 +391,6 @@
         <version.jakarta.json.jakarta-json-api>2.1.0</version.jakarta.json.jakarta-json-api>
         <legacy.version.jakarta.json.jakarta-json-api>1.1.6</legacy.version.jakarta.json.jakarta-json-api>
         <legacy.version.jakarta.jws.jakarta.jws-api>2.1.0</legacy.version.jakarta.jws.jakarta.jws-api>
-        <version.jakarta.jws.jakarta-jws-api>3.0.0</version.jakarta.jws.jakarta-jws-api>
         <legacy.version.jakarta.mail>1.6.7</legacy.version.jakarta.mail>
         <version.jakarta.mail-api>2.1.0</version.jakarta.mail-api>
         <legacy.version.jakarta.persistence>2.2.3</legacy.version.jakarta.persistence>
