@@ -93,15 +93,15 @@
                                     <groupId>org.jboss</groupId>
                                     <artifactId>jboss-ejb-client-legacy</artifactId>
                                 </dependency>
-                                <!-- replaces ejb legacy client's dependency jboss-transaction-api_1.1_spec -->
+                                <!-- replaces org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec  -->
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.transaction</groupId>
-                                    <artifactId>jboss-transaction-api_1.3_spec</artifactId>
+                                    <groupId>jakarta.transaction</groupId>
+                                    <artifactId>jakarta.transaction-api</artifactId>
                                 </dependency>
-                                <!-- replaces ejb legacy client's dependency jboss-ejb-api_3.1_spec -->                                
+                                <!-- replaces org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec -->
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.ejb</groupId>
-                                    <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+                                    <groupId>jakarta.ejb</groupId>
+                                    <artifactId>jakarta.ejb-api</artifactId>
                                 </dependency>
                                 <!-- client for usage through jndi -->
                                 <dependency>

@@ -88,10 +88,11 @@
                             <licenses>true</licenses>
                             <inheritExclusions>UNMANAGED</inheritExclusions>
                             <includeDependencies>
-                                <!-- artemis jms client, the main artifact -->
+                                <!-- artemis jakarta jms client, the main artifact -->
+                                <!-- replaces org.apache.activemq:artemis-jms-client -->
                                 <dependency>
                                     <groupId>org.apache.activemq</groupId>
-                                    <artifactId>artemis-jms-client</artifactId>
+                                    <artifactId>artemis-jakarta-client</artifactId>
                                 </dependency>
                                 <!-- netty deps -->
                                 <dependency>
@@ -177,10 +178,11 @@
                                     <groupId>jakarta.json</groupId>
                                     <artifactId>jakarta.json-api</artifactId>
                                 </dependency>                                
-                                <!-- Required by the artemis-jms-client, replaces geronimo's jms spec artifact -->
+                                <!-- Required by the artemis-jms-client -->
+                                <!-- replaces org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec  -->
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.jms</groupId>
-                                    <artifactId>jboss-jms-api_2.0_spec</artifactId>
+                                    <groupId>jakarta.jms</groupId>
+                                    <artifactId>jakarta.jms-api</artifactId>
                                 </dependency>
                                 <!-- TODO review -->
                                 <dependency>
