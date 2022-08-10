@@ -34,4 +34,9 @@ public class NamePreference implements Preference {
     public boolean preferred(Node node) {
         return node.getName().equals(this.name);
     }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }
