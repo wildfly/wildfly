@@ -22,9 +22,7 @@
 
 package org.wildfly.extension.clustering.ejb;
 
-import static org.wildfly.extension.clustering.ejb.InfinispanTimerManagementResourceDefinition.Attribute.CACHE;
-import static org.wildfly.extension.clustering.ejb.InfinispanTimerManagementResourceDefinition.Attribute.CACHE_CONTAINER;
-import static org.wildfly.extension.clustering.ejb.InfinispanTimerManagementResourceDefinition.Attribute.MAX_ACTIVE_TIMERS;
+import static org.wildfly.extension.clustering.ejb.InfinispanTimerManagementResourceDefinition.Attribute.*;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -55,6 +53,7 @@ public class InfinispanTimerManagementServiceConfigurator extends CapabilityServ
     private volatile String containerName;
     private volatile String cacheName;
     private volatile Integer maxActiveTimers;
+    private volatile Function<Module, ByteBufferMarshaller> marshallerFactory;
 
     public InfinispanTimerManagementServiceConfigurator(PathAddress address) {
         super(InfinispanTimerManagementResourceDefinition.Capability.TIMER_MANAGEMENT_PROVIDER, address);
@@ -65,6 +64,7 @@ public class InfinispanTimerManagementServiceConfigurator extends CapabilityServ
         this.containerName = CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
         this.cacheName = CACHE.resolveModelAttribute(context, model).asStringOrNull();
         this.maxActiveTimers = MAX_ACTIVE_TIMERS.resolveModelAttribute(context, model).asIntOrNull();
+        this.marshallerFactory = TimerContextMarshallerFactory.valueOf(MARSHALLER.resolveModelAttribute(context, model).asString());
         return this;
     }
 
@@ -78,7 +78,7 @@ public class InfinispanTimerManagementServiceConfigurator extends CapabilityServ
 
     @Override
     public Function<Module, ByteBufferMarshaller> getMarshallerFactory() {
-        return TimerContextMarshallerFactory.JBOSS;
+        return this.marshallerFactory;
     }
 
     @Override

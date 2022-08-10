@@ -108,6 +108,7 @@ This provider stores timer metadata within an embedded Infinispan cache, and uti
 * `cache-container` specifies a cache container defined in the Infinispan subsystem
 * `cache` specifies the a cache configuration within the specified cache-container
 * `max-active-timers` specifies the maximum number active timers to retain in memory at a time, after which the least recently used will passivate
+* `marshaller` specifies the marshalling implementation used to serialize the timeout context of a timer.
 
 To ensure proper functioning, the associated cache configuration, regardless of type, should use:
 
