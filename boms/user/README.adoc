@@ -8,13 +8,13 @@ The following BOMs are available:
 * EJB Legacy Client (Maven coordinates "org.wildfly:wildfly-ejb-client-legacy-bom", built by /clients/ejb-legacy-client/pom.xml)
 * JAXWS Client (Maven coordinates "org.wildfly:wildfly-jaxws-client-bom", built by /clients/jaxws-client/pom.xml)
 * JMS Client (Maven coordinates "org.wildfly:wildfly-jms-client-bom", built by /clients/jms-client/pom.xml)
-* Jakarta EE 8 (Maven coordinates "org.wildfly.bom:wildfly-jakartaee8", built by /jakartaee8/pom.xml)
-* Jakarta EE 8 with Tools (Maven coordinates "org.wildfly.bom:wildfly-jakartaee8-with-tools", built by /jakartaee8/jakartaee8-with-tools/pom.xml)
+* EE (Maven coordinates "org.wildfly.bom:wildfly-ee", built by /ee/pom.xml)
+* EE with Tools (Maven coordinates "org.wildfly.bom:wildfly-ee-with-tools", built by /ee/ee-with-tools/pom.xml)
 * MicroProfile (Maven coordinates "org.wildfly.bom:wildfly-microprofile", built by /microprofile/pom.xml)
 
 == Usage
 
-To use a BOM, import into your dependency management. For example, if you want "Jakarta EE 8 with Tools" artifacts, use:
+To use a BOM, import into your dependency management. For example, if you want to import the traditional server's dependency management with tools, provided by the "EE With Tools" BOM, use:
 
 [source, xml]
 ----
@@ -22,7 +22,7 @@ To use a BOM, import into your dependency management. For example, if you want "
     <dependencies>
         <dependency>
             <groupId>org.wildfly.bom</groupId>
-            <artifactId>wildfly-jakartaee8-with-tools</artifactId>
+            <artifactId>wildfly-ee-with-tools</artifactId>
             <scope>import</scope>
             <type>pom</type>
             <version>${wildfly.version}</version>

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
   ~ JBoss, Home of Professional Open Source
-  ~ Copyright 2018, Red Hat, Inc., and individual contributors as indicated
+  ~ Copyright 2022, Red Hat, Inc., and individual contributors as indicated
   ~ by the @authors tag.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,10 @@
 
     <packaging>pom</packaging>
 
-    <artifactId>wildfly-jakartaee8-builder</artifactId>
+    <artifactId>wildfly-ee-builder</artifactId>
 
-    <name>WildFly BOMs: Jakarta EE 8 Builder</name>
-    <description>This artifact builds a bill of materials (BOM) for Jakarta EE 8 Dependency Management</description>
+    <name>WildFly BOMs: EE Builder</name>
+    <description>This artifact builds a bill of materials (BOM) for WildFly EE Dependency Management</description>
 
     <licenses>
         <license>
@@ -47,7 +47,6 @@
     </licenses>
 
     <properties>
-        <version.org.infinispan.infinispan-directory-provider>10.1.8.Final</version.org.infinispan.infinispan-directory-provider>
     </properties>
 
     <dependencyManagement>
@@ -84,11 +83,6 @@
                 <version>${project.version}</version>
                 <type>pom</type>
             </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-directory-provider</artifactId>
-                <version>${version.org.infinispan.infinispan-directory-provider}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -111,144 +105,170 @@
                                 <relativePath/>
                             </parent>
                             <bomGroupId>${project.groupId}</bomGroupId>
-                            <bomArtifactId>wildfly-jakartaee8</bomArtifactId>
+                            <bomArtifactId>wildfly-ee</bomArtifactId>
                             <bomVersion>${project.version}</bomVersion>
-                            <bomName>WildFly BOMs: Jakarta EE 8</bomName>
-                            <bomDescription>Jakarta EE 8 Dependency Management.</bomDescription>
+                            <bomName>WildFly BOMs: EE</bomName>
+                            <bomDescription>WildFly EE Dependency Management.</bomDescription>
                             <licenses>true</licenses>
                             <inheritExclusions>UNMANAGED</inheritExclusions>
                             <includeTransitives>true</includeTransitives>
                             <includeDependencies>
-                                <!-- include jakarta specs APIs -->
+                                <!-- Jakarta EE original and forked APIs -->
+                                <!-- replaces com.sun.activation:jakarta.activation -->
                                 <dependency>
-                                    <groupId>com.sun.activation</groupId>
-                                    <artifactId>jakarta.activation</artifactId>
+                                    <groupId>jakarta.activation</groupId>
+                                    <artifactId>jakarta.activation-api</artifactId>
                                 </dependency>
+                                <!-- replaces org.jboss.spec.javax.annotation:jboss-annotations-api_1.3_spec -->
+                                <dependency>
+                                    <groupId>jakarta.annotation</groupId>
+                                    <artifactId>jakarta.annotation-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.jboss.spec.javax.security.auth.message:jboss-jaspi-api_1.0_spec -->
+                                <dependency>
+                                    <groupId>jakarta.authentication</groupId>
+                                    <artifactId>jakarta.authentication-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.jboss.spec.javax.security.jacc:jboss-jacc-api_1.5_spec -->
+                                <dependency>
+                                    <groupId>jakarta.authorization</groupId>
+                                    <artifactId>jakarta.authorization-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.jboss.spec.javax.batch:jboss-batch-api_1.0_spec -->
+                                <dependency>
+                                    <groupId>jakarta.batch</groupId>
+                                    <artifactId>jakarta.batch-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec -->
+                                <dependency>
+                                    <groupId>jakarta.ejb</groupId>
+                                    <artifactId>jakarta.ejb-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.jboss.spec.javax.el:jboss-el-api_3.0_spec -->
+                                <dependency>
+                                    <groupId>org.jboss.spec.jakarta.el</groupId>
+                                    <artifactId>jboss-el-api_5.0_spec</artifactId>
+                                </dependency>
+                                <!-- already present -->
                                 <dependency>
                                     <groupId>jakarta.enterprise</groupId>
                                     <artifactId>jakarta.enterprise.cdi-api</artifactId>
                                 </dependency>
+                                <!-- replaces org.jboss.spec.javax.enterprise.concurrent:jboss-concurrency-api_1.0_spec -->
+                                <dependency>
+                                    <groupId>jakarta.enterprise.concurrent</groupId>
+                                    <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+                                </dependency>
+                                <!-- new in the BOM -->
+                                <dependency>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.lang-model</artifactId>
+                                </dependency>
+                                <!-- replaces org.jboss.spec.javax.faces:jboss-jsf-api_2.3_spec -->
+                                <dependency>
+                                    <groupId>jakarta.faces</groupId>
+                                    <artifactId>jakarta.faces-api</artifactId>
+                                </dependency>
+                                <!-- already present -->
                                 <dependency>
                                     <groupId>jakarta.inject</groupId>
                                     <artifactId>jakarta.inject-api</artifactId>
                                 </dependency>
+                                <!-- replaces org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.2_spec -->
+                                <dependency>
+                                    <groupId>jakarta.interceptor</groupId>
+                                    <artifactId>jakarta.interceptor-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec  -->
+                                <dependency>
+                                    <groupId>jakarta.jms</groupId>
+                                    <artifactId>jakarta.jms-api</artifactId>
+                                </dependency>
+                                <!-- already present -->
                                 <dependency>
                                     <groupId>jakarta.json</groupId>
                                     <artifactId>jakarta.json-api</artifactId>
                                 </dependency>
+                                <!-- already present -->
                                 <dependency>
                                     <groupId>jakarta.json.bind</groupId>
                                     <artifactId>jakarta.json.bind-api</artifactId>
                                 </dependency>
+                                <!-- replaces com.sun.mail:jakarta.mail -->                                
                                 <dependency>
-                                    <groupId>javax.jws</groupId>
-                                    <artifactId>jsr181-api</artifactId>
+                                    <groupId>jakarta.mail</groupId>
+                                    <artifactId>jakarta.mail-api</artifactId>
                                 </dependency>
-                                <dependency>
-                                    <groupId>com.sun.mail</groupId>
-                                    <artifactId>jakarta.mail</artifactId>
-                                </dependency>
+                                <!-- already present -->
                                 <dependency>
                                     <groupId>jakarta.persistence</groupId>
                                     <artifactId>jakarta.persistence-api</artifactId>
                                 </dependency>
+                                <!-- replaces org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec -->                                
+                                <dependency>
+                                    <groupId>jakarta.resource</groupId>
+                                    <artifactId>jakarta.resource-api</artifactId>
+                                </dependency>
+                                <!-- already present -->
                                 <dependency>
                                     <groupId>jakarta.security.enterprise</groupId>
                                     <artifactId>jakarta.security.enterprise-api</artifactId>
                                 </dependency>
+                                <!-- replaces org.jboss.spec.javax.servlet:jboss-servlet-api_4.0_spec -->
+                                <dependency>
+                                    <groupId>jakarta.servlet</groupId>
+                                    <artifactId>jakarta.servlet-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.jboss.spec.javax.servlet.jsp:jboss-jsp-api_2.3_spec -->
+                                <dependency>
+                                    <groupId>jakarta.servlet.jsp</groupId>
+                                    <artifactId>jakarta.servlet.jsp-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.apache.taglibs:taglibs-standard-spec -->
+                                <dependency>
+                                    <groupId>jakarta.servlet.jsp.jstl</groupId>
+                                    <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec  -->
+                                <dependency>
+                                    <groupId>jakarta.transaction</groupId>
+                                    <artifactId>jakarta.transaction-api</artifactId>
+                                </dependency>
+                                <!-- already present -->
                                 <dependency>
                                     <groupId>jakarta.validation</groupId>
                                     <artifactId>jakarta.validation-api</artifactId>
                                 </dependency>
-
-                                <!-- include JBoss spec APIs -->
+                                <!-- replaces org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.3_spec  -->
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.annotation</groupId>
-                                    <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+                                    <groupId>jakarta.xml.bind</groupId>
+                                    <artifactId>jakarta.xml.bind-api</artifactId>
                                 </dependency>
+                                <!-- replaces org.jboss.spec.javax.xml.ws:jboss-jaxws-api_2.3_spec and javax.jws:jsr181-api -->                                
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.batch</groupId>
-                                    <artifactId>jboss-batch-api_1.0_spec</artifactId>
+                                    <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
+                                    <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
                                 </dependency>
+                                <!-- replaces org.jboss.spec.javax.websocket:jboss-websocket-api_1.1_spec -->
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.ejb</groupId>
-                                    <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+                                    <groupId>jakarta.websocket</groupId>
+                                    <artifactId>jakarta.websocket-api</artifactId>
                                 </dependency>
+                                <!-- new in the BOM -->
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.el</groupId>
-                                    <artifactId>jboss-el-api_3.0_spec</artifactId>
+                                    <groupId>jakarta.websocket</groupId>
+                                    <artifactId>jakarta.websocket-client-api</artifactId>
                                 </dependency>
+                                <!-- replaces org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec -->
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
-                                    <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
+                                    <groupId>jakarta.ws.rs</groupId>
+                                    <artifactId>jakarta.ws.rs-api</artifactId>
                                 </dependency>
+                                <!-- org.jboss.spec.javax.management.j2ee:jboss-j2eemgmt-api_1.1_spec (and ee9 sucessor) was dropped from specs -->
+                                <!-- replaces org.jboss.spec.javax.xml.soap:jboss-saaj-api_1.4_spec -->
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.faces</groupId>
-                                    <artifactId>jboss-jsf-api_2.3_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.interceptor</groupId>
-                                    <artifactId>jboss-interceptors-api_1.2_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.management.j2ee</groupId>
-                                    <artifactId>jboss-j2eemgmt-api_1.1_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.resource</groupId>
-                                    <artifactId>jboss-connector-api_1.7_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.security.jacc</groupId>
-                                    <artifactId>jboss-jacc-api_1.5_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.security.auth.message</groupId>
-                                    <artifactId>jboss-jaspi-api_1.1_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.jms</groupId>
-                                    <artifactId>jboss-jms-api_2.0_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.servlet</groupId>
-                                    <artifactId>jboss-servlet-api_4.0_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
-                                    <artifactId>jboss-jsp-api_2.3_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.apache.taglibs</groupId>
-                                    <artifactId>taglibs-standard-spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.apache.taglibs</groupId>
-                                    <artifactId>taglibs-standard-impl</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.transaction</groupId>
-                                    <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.ws.rs</groupId>
-                                    <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.websocket</groupId>
-                                    <artifactId>jboss-websocket-api_1.1_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.xml.bind</groupId>
-                                    <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.xml.soap</groupId>
-                                    <artifactId>jboss-saaj-api_1.4_spec</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.jboss.spec.javax.xml.ws</groupId>
-                                    <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
+                                    <groupId>org.jboss.spec.jakarta.xml.soap</groupId>
+                                    <artifactId>jboss-saaj-api_3.0_spec</artifactId>
                                 </dependency>
 
                                 <!-- include client BOMs -->
@@ -271,26 +291,39 @@
                                     <transitive>false</transitive>
                                 </dependency>
 
+                                <!-- Server components -->
                                 <!-- include hibernate -->
                                 <dependency>
-                                    <groupId>org.hibernate</groupId>
+                                    <groupId>org.hibernate.orm</groupId>
                                     <artifactId>hibernate-core</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>org.hibernate</groupId>
-                                    <artifactId>hibernate-entitymanager</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.hibernate</groupId>
+                                    <groupId>org.hibernate.orm</groupId>
                                     <artifactId>hibernate-envers</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>org.hibernate</groupId>
+                                    <groupId>org.hibernate.search</groupId>
+                                    <artifactId>hibernate-search-backend-elasticsearch</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.hibernate.search</groupId>
+                                    <artifactId>hibernate-search-backend-lucene</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.hibernate.search</groupId>
                                     <artifactId>hibernate-search-engine</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>org.hibernate</groupId>
-                                    <artifactId>hibernate-search-orm</artifactId>
+                                    <groupId>org.hibernate.search</groupId>
+                                    <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.hibernate.search</groupId>
+                                    <artifactId>hibernate-search-mapper-pojo-base</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.hibernate.search</groupId>
+                                    <artifactId>hibernate-search-util-common</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>org.hibernate.validator</groupId>
@@ -298,28 +331,23 @@
                                 </dependency>
                                 <dependency>
                                     <groupId>org.hibernate.validator</groupId>
+                                    <artifactId>hibernate-validator-cdi</artifactId>
+                                </dependency>
+                                <!-- TODO hibernate extras via version ref, should we keep them? -->
+                                <dependency>
+                                    <groupId>org.hibernate.validator</groupId>
                                     <artifactId>hibernate-validator-annotation-processor</artifactId>
                                 </dependency>
-                                <!-- TODO still needed? -->
+                                <!-- replaces org.hibernate:hibernate-jpamodelgen -->
                                 <dependency>
-                                    <groupId>org.hibernate</groupId>
+                                    <groupId>org.hibernate.orm</groupId>
                                     <artifactId>hibernate-jpamodelgen</artifactId>
                                 </dependency>
-
-                                <!-- include ispn -->
+                                <!-- include ispn -->                        
                                 <dependency>
                                     <groupId>org.infinispan</groupId>
                                     <artifactId>infinispan-core</artifactId>
                                 </dependency>
-                                <dependency>
-                                    <groupId>org.infinispan</groupId>
-                                    <artifactId>infinispan-client-hotrod</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.infinispan</groupId>
-                                    <artifactId>infinispan-directory-provider</artifactId>
-                                </dependency>
-
                                 <!-- include jboss logging -->
                                 <dependency>
                                     <groupId>org.jboss.logging</groupId>
@@ -337,14 +365,13 @@
                                     <groupId>org.jboss.logging</groupId>
                                     <artifactId>commons-logging-jboss-logging</artifactId>
                                 </dependency>
-
                                 <!-- include narayana -->
+                                <!-- replaces org.jboss.narayana.xts:jbossxts -->
                                 <dependency>
                                     <groupId>org.jboss.narayana.xts</groupId>
-                                    <artifactId>jbossxts</artifactId>
+                                    <artifactId>jbossxts-jakarta</artifactId>
                                     <classifier>api</classifier>
                                 </dependency>
-
                                 <!-- include resteasy -->
                                 <dependency>
                                     <groupId>org.jboss.resteasy</groupId>
@@ -376,10 +403,6 @@
                                 </dependency>
                                 <!-- seems to be needed by resteasy clients, yet excluded by wildcard on wfly dep management -->
                                 <dependency>
-                                    <groupId>commons-io</groupId>
-                                    <artifactId>commons-io</artifactId>
-                                </dependency>
-                                <dependency>
                                     <groupId>org.jboss.resteasy</groupId>
                                     <artifactId>resteasy-multipart-provider</artifactId>
                                 </dependency>
@@ -400,7 +423,7 @@
                                     <artifactId>resteasy-validator-provider</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>org.jboss.resteasy</groupId>
+                                    <groupId>org.jboss.resteasy.spring</groupId>
                                     <artifactId>resteasy-spring</artifactId>
                                 </dependency>
                                 <dependency>
@@ -411,14 +434,12 @@
                                     <groupId>com.fasterxml.jackson.datatype</groupId>
                                     <artifactId>jackson-datatype-jdk8</artifactId>
                                 </dependency>
-
                                 <!-- include security: elytron  -->
                                 <dependency>
                                     <groupId>org.wildfly.security</groupId>
                                     <artifactId>wildfly-elytron</artifactId>
                                 </dependency>
-
-                                <!-- other WFLY APIs to include -->
+                                <!-- other server components to include -->
                                 <dependency>
                                     <groupId>org.wildfly.discovery</groupId>
                                     <artifactId>wildfly-discovery-client</artifactId>
@@ -435,33 +456,24 @@
                                     <groupId>org.wildfly</groupId>
                                     <artifactId>wildfly-clustering-singleton-api</artifactId>
                                 </dependency>
-
                                 <!-- other JBoss APIs to include -->
                                 <dependency>
                                     <groupId>org.jboss.ejb3</groupId>
                                     <artifactId>jboss-ejb3-ext-api</artifactId>
                                 </dependency>
                             </includeDependencies>
-                            <versionRefDependencies>
+                            <versionRefDependencies>                            
                                 <dependency>
                                     <groupId>org.hibernate.validator</groupId>
                                     <artifactId>hibernate-validator-annotation-processor</artifactId>
                                     <version>org.hibernate.validator:hibernate-validator:jar</version>
                                 </dependency>
                                 <dependency>
-                                    <groupId>org.hibernate</groupId>
+                                    <groupId>org.hibernate.orm</groupId>
                                     <artifactId>hibernate-jpamodelgen</artifactId>
-                                    <version>org.hibernate:hibernate-core:jar</version>
+                                    <version>org.hibernate.orm:hibernate-core:jar</version>
                                 </dependency>
-                            </versionRefDependencies>
-                            <addExclusions>
-                                <exclusion>
-                                    <dependencyGroupId>org.hibernate</dependencyGroupId>
-                                    <dependencyArtifactId>hibernate-jpamodelgen</dependencyArtifactId>
-                                    <exclusionGroupId>javax.xml.bind</exclusionGroupId>
-                                    <exclusionArtifactId>jaxb-api</exclusionArtifactId>
-                                </exclusion>
-                            </addExclusions>
+                            </versionRefDependencies>                            
                         </configuration>
                     </execution>
                 </executions>
@@ -470,7 +482,7 @@
     </build>
 
     <modules>
-        <module>jakartaee8-with-tools</module>
+        <module>ee-with-tools</module>
     </modules>
 
 </project>
