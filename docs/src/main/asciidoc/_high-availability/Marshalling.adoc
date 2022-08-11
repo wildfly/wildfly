@@ -1,7 +1,7 @@
 [[marshalling]]
 = Marshalling
 
-In general, the most effective way to improve the scalability of a system with persistent or distributed state is to reducing the number of bytes needed to be sent over the network or persisted to storage.
+In general, the most effective way to improve the scalability of a system with persistent or distributed state is to reduce the number of bytes needed to be sent over the network or persisted to storage.
 Marshalling is the process by which Java objects in heap space are converted to a byte buffer for replication to other JVMs or for persistence to local or shared storage.
 
 WildFly generally supports 2 marshalling mechanisms for use with its clustering modules: JBoss Marshalling and ProtoStream.
@@ -15,7 +15,7 @@ When configured to use JBoss Marshalling, an application can optimize the marsha
 An externalizer is an implementation of the `org.wildfly.clustering.marshalling.Externalizer` interface, which dictates how a given class should be marshalled.
 An externalizer reads/writes the state of an object directly from/to an input/output stream, but also:
 
-. Allows an application to replicate/persist and object that does not implement `java.io.Serializable`
+. Allows an application to replicate/persist an object that does not implement `java.io.Serializable`
 . Eliminates the need to serialize the class descriptor of an object along with its state
 
 e.g.
