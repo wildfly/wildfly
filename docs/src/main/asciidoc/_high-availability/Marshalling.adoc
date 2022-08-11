@@ -1,0 +1,121 @@
+[[marshalling]]
+= Marshalling
+
+In general, the most effective way to improve the scalability of a system with persistent or distributed state is to reduce the number of bytes needed to be sent over the network or persisted to storage.
+Marshalling is the process by which Java objects in heap space are converted to a byte buffer for replication to other JVMs or for persistence to local or shared storage.
+
+WildFly generally supports 2 marshalling mechanisms for use with its clustering modules: JBoss Marshalling and ProtoStream.
+
+[[jboss_marshalling]]
+== JBoss Marshalling
+
+https://jbossmarshalling.jboss.org/[JBoss Marshalling] is a serialization library for objects implementing `java.io.Serializable`.
+
+When configured to use JBoss Marshalling, an application can optimize the marshalling of a given object, either through custom JDK serialization logic, or by implementing a custom externalizer.
+An externalizer is an implementation of the `org.wildfly.clustering.marshalling.Externalizer` interface, which dictates how a given class should be marshalled.
+An externalizer reads/writes the state of an object directly from/to an input/output stream, but also:
+
+. Allows an application to replicate/persist an object that does not implement `java.io.Serializable`
+. Eliminates the need to serialize the class descriptor of an object along with its state
+
+e.g.
+[source,java]
+----
+public class MyObjectExternalizer implements org.wildfly.clustering.marshalling.Externalizer<MyObject> {
+
+    @Override
+    public Class<MyObject> getTargetClass() {
+        return MyObject.class;
+    }
+
+    @Override
+    public void writeObject(ObjectOutput output, MyObject object) throws IOException {
+        // Write object state to stream
+    }
+
+    @Override
+    public MyObject readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        // Construct and read object state from stream
+        return ...;
+    }
+}
+----
+
+Externalizers are dynamically loaded during deployment via the service loader mechanism.
+Implementations should be enumerated within a file named:
+`/META-INF/services/org.wildfly.clustering.marshalling.Externalizer`
+
+[[protostream]]
+== ProtoStream
+
+https://github.com/infinispan/protostream[ProtoStream] is serialization library based on the https://developers.google.com/protocol-buffers[Protobuf] data format.
+The nature of the Protobuf data format makes it very easy to evolve classes without breaking serialization compatibility.
+When compared to JBoss Marshalling, ProtoStream is generally more efficient and generates smaller payloads, especially for objects containing fields that are either optional or have a default value.
+Since marshallable classes are explicitly enumerated, ProtoStream is not vulnerable to the same arbitrary code execution exploits that affect JDK serialization.
+
+When configured to use ProtoStream, a web application will need to register ProtoStream marshallers/schemas for *every* application-specific type.
+WildFly initializes its ProtoStream marshaller using all instances of `org.infinispan.protostream.SerializationContextInitializer` that are visible to the deployment classpath.
+Implementations should be enumerated within a file named:
+`/META-INF/services/org.infinispan.protostream.SerializationContextInitializer`
+
+Simple objects can leverage ProtoStream annotations and https://infinispan.org/docs/stable/titles/encoding/encoding.html#adding-protostream-processor_marshalling[auto-generate marshallers and schemas at build time].
+
+e.g.
+[source,java]
+----
+@AutoProtoSchemaBuilder(includeClasses = { Person.class })
+public interface PersonInitalizer extends SerializationContextInitializer {
+}
+
+public class Person {
+    @ProtoField(number = 1)
+    final String name;
+    @ProtoField(number = 2, type = Type.UINT32, defaultValue = "0")
+    final int age;
+    @ProtoField(number = 3)
+    Person parent;
+    @ProtoField(number = 4, collectionImplementation = LinkedList.class)
+    final List<Person> children;
+
+    @ProtoFactory
+    Person(String name, int age, Person parent, List<Person> children) {
+        this.name = name;
+        this.age = age;
+        this.parent = parent;
+        this.children = children;
+    }
+
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+        this.children = new LinkedList<>();
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public int getAge() {
+        return this.age;
+    }
+
+    public Person getParent() {
+        return this.parent;
+    }
+
+    public List<Person> getChildren() {
+        return this.children;
+    }
+
+    public void setParent(Person parent) {
+        this.parent = parent;
+    }
+
+    public void addChild(Person child) {
+        this.children.add(child);
+    }
+}
+----
+
+Sufficiently complex objects may require a custom `org.infinispan.protostream.SerializationContextInitializer` implementation to register custom marshaller implementations and schemas.
+Refer to the https://infinispan.org/docs/stable/titles/encoding/encoding.html#marshalling_user_types[Infinispan documentation] for details.

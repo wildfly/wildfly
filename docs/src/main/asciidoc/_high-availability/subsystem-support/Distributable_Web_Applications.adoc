@@ -89,6 +89,12 @@ affinity=ranked:::
 Web requests will have an affinity to the first available node in a ranked list comprised of: primary owner, backup nodes, local node (if not a primary nor backup owner).
 Only for use with load balancers that support multiple routes.
 Behaves the same as affinity=local if cache is not distributed nor replicated.
+marshaller::
+Specifies the marshalling implementation used to serialize session attributes.
+JBOSS:::
+Marshals session attributes using <<jboss_marshalling>>.
+PROTOSTREAM:::
+Marshals session attributes using <<protostream>>.
 
 e.g. Creating a new session management profile, using ATTRIBUTE granularity with local session affinity:
 
@@ -134,6 +140,12 @@ This option is intended for use cases where web session state is not maintained 
 affinity=local:::
 Web requests will have an affinity to the server that last handled a request for a given session.
 This option corresponds to traditional sticky session behavior.
+marshaller::
+Specifies the marshalling implementation used to serialize session attributes.
+JBOSS:::
+Marshals session attributes using <<jboss_marshalling>>.
+PROTOSTREAM:::
+Marshals session attributes using <<protostream>>.
 
 e.g. Creating a new session management profile "foo" using the cache configuration "bar" defined on a remote infinispan server "datagrid" with ATTRIBUTE granularity:
 
@@ -353,115 +365,4 @@ e.g.
 === Session attribute marshalling
 
 Minimizing the replication/persistence payload for individual session attributes has a direct impact on performance by reducing the number of bytes sent over the network or persisted to storage.
-
-==== JBoss Marshalling
-
-https://jbossmarshalling.jboss.org/[JBoss Marshalling] is a serialization library for objects implementing `java.io.Serializable`.
-
-When configured to use JBoss Marshalling, a web application can optimize the marshalling of a given session attribute, either through custom JDK serialization logic, or by implementing a custom externalizer.
-An externalizer is an implementation of the `org.wildfly.clustering.marshalling.Externalizer` interface, which dictates how a given class should be marshalled.
-An externalizer reads/writes the state of an object directly from/to an input/output stream, but also:
-
-. Allows an application to store an object in the session that does not implement `java.io.Serializable`
-. Eliminates the need to serialize the class descriptor of an object along with its state
-
-e.g.
-[source,java]
-----
-public class MyObjectExternalizer implements org.wildfly.clustering.marshalling.Externalizer<MyObject> {
-
-    @Override
-    public Class<MyObject> getTargetClass() {
-        return MyObject.class;
-    }
-
-    @Override
-    public void writeObject(ObjectOutput output, MyObject object) throws IOException {
-        // Write object state to stream
-    }
-
-    @Override
-    public MyObject readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        // Construct and read object state from stream
-        return ...;
-    }
-}
-----
-
-Externalizers are dynamically loaded during deployment via the service loader mechanism.
-Implementations should be enumerated within a file named:
-`/META-INF/services/org.wildfly.clustering.marshalling.Externalizer`
-
-==== ProtoStream
-
-https://github.com/infinispan/protostream[ProtoStream] is serialization library based on the https://developers.google.com/protocol-buffers[Protobuf] data format.
-The nature of the Protobuf data format makes it very easy to evolve classes without breaking serialization compatibility.
-When compared to JBoss Marshalling, ProtoStream is generally more efficient and generates smaller payloads, especially for objects containing fields that are either optional or have a default value.
-Since marshallable classes are explicitly enumerated, ProtoStream is not vulnerable to the same arbitrary code execution exploits that affect JDK serialization.
-
-When configured to use ProtoStream, a web application will need to register ProtoStream marshallers/schemas for any session attribute of a custom type.
-WildFly initializes its ProtoStream marshaller using all instances of `org.infinispan.protostream.SerializationContextInitializer` visible to the deployment classpath.
-Implementations should be enumerated within a file named:
-`/META-INF/services/org.infinispan.protostream.SerializationContextInitializer`
-
-Simple objects can leverage ProtoStream annotations and https://infinispan.org/docs/stable/titles/encoding/encoding.html#adding-protostream-processor_marshalling[auto-generate marshallers and schemas at build time].
-
-e.g.
-[source,java]
-----
-@AutoProtoSchemaBuilder(includeClasses = { Person.class })
-public interface PersonInitalizer extends SerializationContextInitializer {
-}
-
-public class Person {
-    @ProtoField(number = 1)
-    final String name;
-    @ProtoField(number = 2, type = Type.UINT32, defaultValue = "0")
-    final int age;
-    @ProtoField(number = 3)
-    Person parent;
-    @ProtoField(number = 4, collectionImplementation = LinkedList.class)
-    final List<Person> children;
-
-    @ProtoFactory
-    Person(String name, int age, Person parent, List<Person> children) {
-        this.name = name;
-        this.age = age;
-        this.parent = parent;
-        this.children = children;
-    }
-
-    public Person(String name, int age) {
-        this.name = name;
-        this.age = age;
-        this.children = new LinkedList<>();
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public int getAge() {
-        return this.age;
-    }
-
-    public Person getParent() {
-        return this.parent;
-    }
-
-    public List<Person> getChildren() {
-        return this.children;
-    }
-
-    public void setParent(Person parent) {
-        this.parent = parent;
-    }
-
-    public void addChild(Person child) {
-        this.children.add(child);
-    }
-}
-----
-
-Sufficiently complex objects may require a custom `org.infinispan.protostream.SerializationContextInitializer` implementation to register custom marshaller implementations and schemas.
-Refer to the https://infinispan.org/docs/stable/titles/encoding/encoding.html#marshalling_user_types[Infinispan documentation] for details.
+See the <<marshalling>> section for more details.
