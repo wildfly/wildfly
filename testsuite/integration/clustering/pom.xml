@@ -454,6 +454,7 @@
                                 </feature-pack>
                             </feature-packs>
                             <layers>
+                                <layer>management</layer>
                                 <layer>undertow-load-balancer</layer>
                             </layers>
                         </configuration>
@@ -1383,6 +1384,7 @@
                                             <model>standalone</model>
                                             <name>standalone-load-balancer.xml</name>
                                             <layers>
+                                                <layer>management</layer>
                                                 <layer>undertow-load-balancer</layer>
                                             </layers>
                                         </config>
@@ -1399,6 +1401,79 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>web-clustering</layer>
                                                 <layer>h2-default-datasource</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- Provision a server with 'mod_cluster' layer -->
+                            <execution>
+                                <id>cloud-profile-mod_cluster-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-clustering-mod_cluster</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>${galleon.offline}</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <!-- Also produce a standalone-full-ha.xml file with the same content
+                                             as standalone-ha.xml.
+                                             This doesn't actually get used in any tests we run with this
+                                             profile but the clustering-all.cli script wants to modify it
+                                             so to keep it simple create the file so that doesn't fail.
+                                        -->
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone-full-ha.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>mod_cluster</layer>
+                                                <layer>web-clustering</layer>
+                                                <layer>ejb</layer>
+                                            </layers>
+                                        </config>
+                                        <!-- Provision the configuration that the ts.surefire.clustering.mod_cluster surefire execution tests. -->
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone-ha.xml</name>
+                                            <layers>
+                                                <layer>cloud-server</layer>
+                                                <layer>mod_cluster</layer>
+                                                <layer>web-clustering</layer>
+                                                <layer>ejb</layer>
+                                            </layers>
+                                        </config>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone-load-balancer.xml</name>
+                                            <layers>
+                                                <!-- Arquillian requires 'management' to manage the container. -->
+                                                <layer>management</layer>
+                                                <layer>undertow-load-balancer</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -1768,6 +1843,46 @@
                         <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
+                                <id>ts.config-as.configure-wildfly-clustering-mod_cluster</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <offline>true</offline>
+                                    <scripts>
+                                        <script>clustering-all.cli</script>
+                                    </scripts>
+                                    <jboss-home>${project.build.directory}/wildfly-clustering-mod_cluster</jboss-home>
+                                    <stdout>${project.build.directory}/wildfly-clustering-mod_cluster-plugin.log</stdout>
+                                    <java-opts>${modular.jdk.args}</java-opts>
+                                    <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                        <module.path>${project.build.directory}/wildfly-clustering-mod_cluster/modules</module.path>
+                                    </system-properties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.config-as.configure-lb-clustering-mod_cluster</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <offline>true</offline>
+                                    <scripts>
+                                        <script>clustering-lb.cli</script>
+                                    </scripts>
+                                    <jboss-home>${project.build.directory}/wildfly-clustering-mod_cluster</jboss-home>
+                                    <stdout>${project.build.directory}/wildfly-clustering-mod_cluster-lb-plugin.log</stdout>
+                                    <java-opts>${modular.jdk.args}</java-opts>
+                                    <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                        <module.path>${project.build.directory}/wildfly-clustering-mod_cluster/modules</module.path>
+                                    </system-properties>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-ejb</id>
                                 <phase>process-test-resources</phase>
                                 <goals>
@@ -1854,6 +1969,26 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
+                            <execution>
+                                <id>ts.config-as.clustering.mod_cluster</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <target name="build-clustering"/>
+                                            <property name="wildfly1" value="wildfly-clustering-mod_cluster-1"/>
+                                            <property name="wildfly2" value="wildfly-clustering-mod_cluster-2"/>
+                                            <property name="wildfly3" value="wildfly-clustering-mod_cluster-3"/>
+                                            <property name="wildfly4" value="wildfly-clustering-mod_cluster-4"/>
+                                            <property name="wildfly-original" value="wildfly-clustering-mod_cluster"/>
+                                            <property name="wildfly-load-balancer1" value="wildfly-clustering-mod_cluster-load-balancer-1"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
                             <execution>
                                 <id>ts.config-as.clustering.ejb</id>
                                 <phase>test-compile</phase>
@@ -2011,6 +2146,46 @@
                                         <wildfly4>wildfly-jpa-dist-4</wildfly4>
                                         <wildfly-load-balancer1>wildfly-jpa-dist-load-balancer-1</wildfly-load-balancer1>
                                         <!-- end required by arquillian.xml -->
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.mod_cluster</id>
+                                <!-- Disabled by default; other profiles turn it on -->
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>${test-group}/**/affinity/*TestCase.java</include>
+                                        <include>${test-group}/**/modcluster/*TestCase.java</include>
+                                    </includes>
+                                    <systemPropertyVariables>
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
+                                        <!-- Override the standard module path that points at the shared module set from dist.
+                                        Have all the servers use wildfly-clustering-mod_cluster-1 for the modules -->
+                                        <module.path>${project.build.directory}/wildfly-clustering-mod_cluster-1/modules${path.separator}${basedir}/target/modules</module.path>
+                                        <!-- arquillian.xml -->
+                                        <wildfly1>wildfly-clustering-mod_cluster-1</wildfly1>
+                                        <wildfly2>wildfly-clustering-mod_cluster-2</wildfly2>
+                                        <wildfly3>wildfly-clustering-mod_cluster-3</wildfly3>
+                                        <wildfly4>wildfly-clustering-mod_cluster-4</wildfly4>
+                                        <wildfly-load-balancer1>wildfly-clustering-mod_cluster-load-balancer-1</wildfly-load-balancer1>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
