@@ -140,10 +140,10 @@
                                     <groupId>jakarta.json.bind</groupId>
                                     <artifactId>jakarta.json.bind-api</artifactId>
                                 </dependency>
-                                <!-- include JBoss spec APIs -->
+                                <!-- replaces org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec -->
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.ws.rs</groupId>
-                                    <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
+                                    <groupId>jakarta.ws.rs</groupId>
+                                    <artifactId>jakarta.ws.rs-api</artifactId>
                                 </dependency>
                                 <!-- include Kafka client API -->
                                 <dependency>

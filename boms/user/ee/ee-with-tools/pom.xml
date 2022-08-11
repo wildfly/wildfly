@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source
-  ~ Copyright 2018, Red Hat, Inc., and individual contributors as indicated
+  ~ Copyright 2022, Red Hat, Inc., and individual contributors as indicated
   ~ by the @authors tag.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@
 
     <parent>
         <groupId>org.wildfly.bom</groupId>
-        <artifactId>wildfly-jakartaee8-builder</artifactId>
+        <artifactId>wildfly-ee-builder</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -34,10 +34,10 @@
 
     <packaging>pom</packaging>
 
-    <artifactId>wildfly-jakartaee8-with-tools-builder</artifactId>
+    <artifactId>wildfly-ee-with-tools-builder</artifactId>
 
-    <name>WildFly BOMs: Jakarta EE 8 with Tools Builder</name>
-    <description>This artifact builds a bill of materials (BOM) for Jakarta EE 8 Specification APIs with Deployment and Testing Tools</description>
+    <name>WildFly BOMs: EE with Tools Builder</name>
+    <description>This artifact builds a bill of materials (BOM) for WildFly EE with Deployment and Testing Tools</description>
 
     <licenses>
         <license>
@@ -127,15 +127,15 @@
                         <configuration>
                             <parent>
                                 <groupId>${project.groupId}</groupId>
-                                <artifactId>wildfly-jakartaee8</artifactId>
+                                <artifactId>wildfly-ee</artifactId>
                                 <version>${project.version}</version>
                                 <relativePath/>
                             </parent>
                             <bomGroupId>${project.groupId}</bomGroupId>
-                            <bomArtifactId>wildfly-jakartaee8-with-tools</bomArtifactId>
+                            <bomArtifactId>wildfly-ee-with-tools</bomArtifactId>
                             <bomVersion>${project.version}</bomVersion>
-                            <bomName>WildFly BOMs: Jakarta EE 8 with Tools</bomName>
-                            <bomDescription>Dependency Management for Jakarta EE 8 Specification APIs with Deployment and Testing Tools.</bomDescription>
+                            <bomName>WildFly BOMs: EE with Tools</bomName>
+                            <bomDescription>Dependency Management for WildFly EE with Deployment and Testing Tools.</bomDescription>
                             <licenses>true</licenses>
                             <inheritExclusions>NONE</inheritExclusions>
                             <includeTransitives>false</includeTransitives>

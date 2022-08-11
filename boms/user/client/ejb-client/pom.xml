@@ -91,19 +91,19 @@
                                 <!-- ejb client, the main artifact -->
                                 <dependency>
                                     <groupId>org.jboss</groupId>
-                                    <artifactId>jboss-ejb-client</artifactId>
+                                    <artifactId>jboss-ejb-client-jakarta</artifactId>
                                 </dependency>
-                                <!-- needed by ejb-client transitive's transaction-client -->
+                                <!-- replaces org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec -->
                                 <dependency>
-                                    <groupId>org.jboss.spec.javax.resource</groupId>
-                                    <artifactId>jboss-connector-api_1.7_spec</artifactId>
+                                    <groupId>jakarta.resource</groupId>
+                                    <artifactId>jakarta.resource-api</artifactId>
                                 </dependency>
                                 <!-- http ejb client, extension of main artifact -->
                                 <dependency>
                                     <groupId>org.wildfly.wildfly-http-client</groupId>
-                                    <artifactId>wildfly-http-ejb-client</artifactId>
+                                    <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
                                 </dependency>
-                                <!-- TODO review removal, artifact for server side ejb apps and already included by jakartaee8 BOM -->
+                                <!-- TODO review removal, artifact for server side ejb apps and already included by EE BOM -->
                                 <dependency>
                                     <groupId>org.jboss.ejb3</groupId>
                                     <artifactId>jboss-ejb3-ext-api</artifactId>
