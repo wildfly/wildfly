@@ -63,9 +63,12 @@ The available bean management provider is:
 The infinispan-bean-management provider element represents a bean manager implementation based on an Infinispan cache. The
 attributes for the infinispan-bean-manager element are:
 
-* `cache-container` specifies a cache container defined in the Infinispan subsystem used to support the session state cache
-* `cache` specifies the session state cache and its configured properties
-* `max-active-beans` specifies the maximum number of non-passivated session state entries allowed in the cache
+cache-container::
+Specifies a cache container defined in the Infinispan subsystem used to support the session state cache
+cache::
+Specifies the session state cache and its configured properties
+max-active-beans::
+Specifies the maximum number of non-passivated session state entries allowed in the cache
 
 
 [[client-mappings-registries]]
@@ -84,8 +87,11 @@ The available client mappings registry providers are:
 
 The infinispan-client-mappings-registry provider is a provider based on an Infinispan cache and suitable for a clustered server.
 
-* `cache-container` specifies a cache container defined in the Infinispan subsystem used to support the client mappings registry
-* `cache` specifies the cache and its configured properties used to support the client mappings registry
+cache-container::
+Specifies a cache container defined in the Infinispan subsystem used to support the client mappings registry
+cache::
+Specifies the cache and its configured properties used to support the client mappings registry
+
 
 [[local-client-mappings-registry]]
 ==== local-client-mappings-registry
@@ -105,10 +111,19 @@ See link:Developer_Guide{outfilesuffix}#Jakarta_Enterprise_Beans_Distributed_Per
 
 This provider stores timer metadata within an embedded Infinispan cache, and utilizes consistent hashing to distribute timer execution between cluster members.
 
-* `cache-container` specifies a cache container defined in the Infinispan subsystem
-* `cache` specifies the a cache configuration within the specified cache-container
-* `max-active-timers` specifies the maximum number active timers to retain in memory at a time, after which the least recently used will passivate
-* `marshaller` specifies the marshalling implementation used to serialize the timeout context of a timer.
+cache-container::
+Specifies a cache container defined in the Infinispan subsystem
+cache::
+Specifies the a cache configuration within the specified cache-container
+max-active-timers::
+Specifies the maximum number active timers to retain in memory at a time, after which the least recently used will passivate
+marshaller::
+Specifies the marshalling implementation used to serialize the timeout context of a timer.
+JBOSS:::
+Marshals session attributes using <<jboss_marshalling>>.
+PROTOSTREAM:::
+Marshals session attributes using <<protostream>>.
+
 
 To ensure proper functioning, the associated cache configuration, regardless of type, should use:
 
