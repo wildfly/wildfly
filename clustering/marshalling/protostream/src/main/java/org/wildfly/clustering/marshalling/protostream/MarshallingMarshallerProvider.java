@@ -30,7 +30,8 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue;
  * @author Paul Ferraro
  */
 public enum MarshallingMarshallerProvider implements ProtoStreamMarshallerProvider {
-    BYTE_BUFFER_MARSHALLED_VALUE(new FunctionalScalarMarshaller<>(Scalar.BYTE_BUFFER.cast(ByteBuffer.class), ByteBufferMarshalledValue::new, ByteBufferMarshalledValue::isEmpty, ByteBufferMarshalledValue::getBuffer, ByteBufferMarshalledValue::new)),
+    BYTE_BUFFER_MARSHALLED_KEY(new ByteBufferMarshalledKeyMarshaller()),
+    BYTE_BUFFER_MARSHALLED_VALUE(new FunctionalScalarMarshaller<>(Scalar.BYTE_BUFFER.cast(ByteBuffer.class), () -> new ByteBufferMarshalledValue<>(null), ByteBufferMarshalledValue::isEmpty, ByteBufferMarshalledValue::getBuffer, ByteBufferMarshalledValue::new)),
     ;
     private final ProtoStreamMarshaller<?> marshaller;
 

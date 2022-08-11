@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.infinispan.logging.InfinispanLogger.ROOT_LOGGER;
 
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
@@ -47,6 +47,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
 
 /**
  * XML reader for the Infinispan subsystem.
@@ -140,6 +141,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
+            }
+        }
+
+        if (!operation.hasDefined(CacheContainerResourceDefinition.Attribute.MARSHALLER.getName())) {
+            if (!this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                // Apply legacy default value
+                operation.get(CacheContainerResourceDefinition.Attribute.MARSHALLER.getName()).set(new ModelNode(InfinispanMarshallerFactory.LEGACY.name()));
             }
         }
 
@@ -1481,6 +1489,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
+            }
+        }
+
+        if (!operation.hasDefined(CacheContainerResourceDefinition.Attribute.MARSHALLER.getName())) {
+            if (!this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                // Apply legacy default value
+                operation.get(CacheContainerResourceDefinition.Attribute.MARSHALLER.getName()).set(new ModelNode(InfinispanMarshallerFactory.LEGACY.name()));
             }
         }
 

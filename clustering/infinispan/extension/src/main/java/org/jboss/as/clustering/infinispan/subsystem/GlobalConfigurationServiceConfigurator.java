@@ -53,8 +53,8 @@ import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.as.clustering.infinispan.MBeanServerProvider;
+import org.jboss.as.clustering.infinispan.jmx.MBeanServerProvider;
+import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -69,6 +69,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
+import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -170,14 +171,12 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
                 .enabled(this.server != null)
                 ;
 
+        // Disable triangle algorithm - we optimize for originator as primary owner
         // Do not enable server-mode for the Hibernate 2LC use case:
         // * The 2LC stack already overrides the interceptor for distribution caches
         // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
         // See ISPN-12252 for details
-        if (modules.stream().map(Module::getName).noneMatch("org.infinispan.hibernate-cache"::equals)) {
-            // Disable triangle algorithm - we optimize for originator as primary owner
-            builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
-        }
+        builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(marshaller.mediaType().equals(ProtoStreamMarshaller.MEDIA_TYPE));
 
         String path = InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.name;
         ServerEnvironment environment = this.environment.get();

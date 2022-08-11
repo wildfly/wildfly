@@ -203,7 +203,7 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
             super(NODE_1_2_3_4, createContainerConfigurationBuilder()
                     .setupScript(createScriptBuilder()
                             .startBatch()
-                                .add("/subsystem=infinispan/cache-container=foo:add")
+                                .add("/subsystem=infinispan/cache-container=foo:add(marshaller=JBOSS)")
                                 .add("/subsystem=infinispan/cache-container=foo/transport=jgroups:add")
                                 .add("/subsystem=infinispan/cache-container=foo/distributed-cache=bar:add")
                             .endBatch()

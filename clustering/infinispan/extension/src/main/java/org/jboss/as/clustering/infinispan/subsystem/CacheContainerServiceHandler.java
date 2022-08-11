@@ -45,6 +45,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.lifecycle.WildFlyInfinispanModuleLifecycle;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
@@ -92,7 +93,9 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
             }
 
             if (!defaultCache.equals(JndiNameFactory.DEFAULT_LOCAL_NAME)) {
-                new BinderServiceConfigurator(InfinispanBindingFactory.createCacheBinding(name, JndiNameFactory.DEFAULT_LOCAL_NAME), DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CACHE).getServiceName(address)).build(target).install();
+                ServiceName lazyCacheServiceName = DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CACHE).getServiceName(address).append("lazy");
+                new LazyCacheServiceConfigurator(lazyCacheServiceName, name, defaultCache).configure(context).build(target).install();
+                new BinderServiceConfigurator(InfinispanBindingFactory.createCacheBinding(name, JndiNameFactory.DEFAULT_LOCAL_NAME), lazyCacheServiceName).build(target).install();
                 new BinderServiceConfigurator(InfinispanBindingFactory.createCacheConfigurationBinding(name, JndiNameFactory.DEFAULT_LOCAL_NAME), DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CONFIGURATION).getServiceName(address)).build(target).install();
             }
 

@@ -743,6 +743,7 @@
                                         <exclude>${test-group}/**/jms/*TestCase.java</exclude>
                                         <!-- These are run by ts.clustering.cluster.ha-infinispan-server.profile -->
                                         <exclude>${test-group}/**/ejb/timer/remote/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/infinispan/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/web/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/sso/remote/*TestCase.java</exclude>
                                         <!-- These are run by ts.clustering.cluster.byteman.profile -->
@@ -810,6 +811,7 @@
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <include>${test-group}/**/ejb/timer/remote/*TestCase.java</include>
+                                        <include>${test-group}/**/infinispan/remote/*TestCase.java</include>
                                         <include>${test-group}/**/web/remote/*TestCase.java</include>
                                         <include>${test-group}/**/sso/remote/*TestCase.java</include>
                                     </includes>
@@ -1111,6 +1113,8 @@
                                         <!-- Uses TopologyChangeListener EJB -->
                                         <exclude>org/jboss/as/test/clustering/cluster/affinity/RankedAffinityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/cdi/**</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/infinispan/embedded/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/infinispan/remote/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/singleton/SingletonPartitionTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/CoarseImmutableWebFailoverTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/CoarseWebFailoverTestCase.java</exclude>
@@ -2822,6 +2826,8 @@
                                              TODO figure out how to avoid this -->
                                         <exclude>${test-group}/**/ejb/stateful/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/group/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/infinispan/embedded/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/infinispan/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/jms/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/web/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/sso/remote/*TestCase.java</exclude>

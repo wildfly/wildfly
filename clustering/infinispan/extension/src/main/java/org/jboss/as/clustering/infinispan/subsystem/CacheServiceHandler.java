@@ -79,13 +79,17 @@ public class CacheServiceHandler<P extends CacheServiceConfiguratorProvider> imp
 
         this.configuratorFactory.createServiceConfigurator(cacheAddress).configure(context, model).build(target).install();
 
-        new CacheServiceConfigurator<>(CACHE.getServiceName(cacheAddress), containerName, cacheName).configure(context).build(target).install();
+        ServiceName cacheServiceName = CACHE.getServiceName(cacheAddress);
+        new CacheServiceConfigurator<>(cacheServiceName, containerName, cacheName).configure(context).build(target).install();
         if (context.hasOptionalCapability(XA_RESOURCE_RECOVERY_REGISTRY.getName(), null, null)) {
             new XAResourceRecoveryServiceConfigurator(cacheAddress).configure(context).build(target).install();
         }
 
+        ServiceName lazyCacheServiceName = cacheServiceName.append("lazy");
+        new LazyCacheServiceConfigurator(lazyCacheServiceName, containerName, cacheName).configure(context).build(target).install();
+
         new BinderServiceConfigurator(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName), CONFIGURATION.getServiceName(cacheAddress)).build(target).install();
-        new BinderServiceConfigurator(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), CACHE.getServiceName(cacheAddress)).build(target).install();
+        new BinderServiceConfigurator(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), lazyCacheServiceName).build(target).install();
 
         new ProvidedCacheServiceConfigurator<>(this.providerClass, containerName, cacheName).configure(context).build(target).install();
     }

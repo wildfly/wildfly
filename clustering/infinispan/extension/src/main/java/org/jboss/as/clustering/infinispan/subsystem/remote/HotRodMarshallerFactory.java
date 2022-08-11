@@ -38,6 +38,12 @@ import org.wildfly.clustering.infinispan.marshalling.MarshallerFactory;
  */
 public enum HotRodMarshallerFactory implements BiFunction<ModuleLoader, List<Module>, Marshaller> {
 
+    DEFAULT() {
+        @Override
+        public Marshaller apply(ModuleLoader moduleLoader, List<Module> modules) {
+            return MarshallerFactory.DEFAULT.apply(moduleLoader, modules);
+        }
+    },
     LEGACY() {
         private final Set<String> protoStreamModules = Collections.singleton("org.wildfly.clustering.web.hotrod");
         private final Predicate<String> protoStreamPredicate = this.protoStreamModules::contains;
