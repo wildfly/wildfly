@@ -36,11 +36,11 @@
     <dependencies>
         <module name="java.desktop"/>
         <module name="java.sql"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
-        <module name="javax.annotation.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.json.api"/>
-        <module name="javax.ws.rs.api"/>
+
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.json.api"/>
+        <module name="jakarta.ws.rs.api"/>
 
         <module name="com.fasterxml.jackson.core.jackson-annotations"/>
         <module name="com.fasterxml.jackson.core.jackson-core"/>

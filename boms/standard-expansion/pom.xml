@@ -125,7 +125,7 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-openapi-smallrye-jakarta</artifactId>
+                <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
