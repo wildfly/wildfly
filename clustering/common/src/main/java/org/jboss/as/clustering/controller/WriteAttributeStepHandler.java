@@ -89,7 +89,7 @@ public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandl
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handback) throws OperationFailedException {
         boolean updated = super.applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
-        if (updated && handler != null) {
+        if (updated && (this.handler != null)) {
             PathAddress address = context.getCurrentAddress();
             if (context.isResourceServiceRestartAllowed() && this.getAttributeDefinition(attributeName).getFlags().contains(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES) && context.markResourceRestarted(address, this.handler)) {
                 this.restartServices(context);

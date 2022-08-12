@@ -93,7 +93,7 @@ public class InfinispanLegacySessionManagementProviderFactory implements LegacyS
         }
         String containerName = ((replicationConfigServiceName.length() > 3) ? replicationConfigServiceName.getParent() : replicationConfigServiceName).getSimpleName();
         String cacheName = (replicationConfigServiceName.length() > 3) ? replicationConfigServiceName.getSimpleName() : null;
-        InfinispanSessionManagementConfiguration<DeploymentUnit> configuration = new InfinispanSessionManagementConfiguration<DeploymentUnit>() {
+        InfinispanSessionManagementConfiguration<DeploymentUnit> configuration = new InfinispanSessionManagementConfiguration<>() {
             @Override
             public String getContainerName() {
                 return containerName;

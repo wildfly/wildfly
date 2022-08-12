@@ -69,7 +69,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new RecordableInactiveSessionStatistics() : null;
         Supplier<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
         SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, this.listeners);
-        SessionManagerConfiguration<ServletContext> configuration = new SessionManagerConfiguration<ServletContext>() {
+        SessionManagerConfiguration<ServletContext> configuration = new SessionManagerConfiguration<>() {
             @Override
             public ServletContext getServletContext() {
                 return deployment.getServletContext();
@@ -95,7 +95,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         info.addThreadSetupAction(new ThreadSetupHandler() {
             @Override
             public <T, C> Action<T, C> create(Action<T, C> action) {
-                return new Action<T, C>() {
+                return new Action<>() {
                     @Override
                     public T call(HttpServerExchange exchange, C context) throws Exception {
                         Batch batch = batcher.suspendBatch();

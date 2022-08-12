@@ -41,7 +41,7 @@ import org.wildfly.clustering.ee.Manager;
 public class ConcurrentManager<K, V> implements Manager<K, V> {
 
     private final Map<K, Map.Entry<Integer, AtomicReference<V>>> objects = new ConcurrentHashMap<>();
-    private final BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>> addFunction = new BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>>() {
+    private final BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>> addFunction = new BiFunction<>() {
         @Override
         public Map.Entry<Integer, AtomicReference<V>> apply(K id, Map.Entry<Integer, AtomicReference<V>> entry) {
             int count = (entry != null) ? entry.getKey() + 1 : 0;
@@ -54,7 +54,7 @@ public class ConcurrentManager<K, V> implements Manager<K, V> {
 
     public ConcurrentManager(Consumer<V> createTask, Consumer<V> closeTask) {
         this.createTask = createTask;
-        this.removeFunction = new BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>>() {
+        this.removeFunction = new BiFunction<>() {
             @Override
             public Map.Entry<Integer, AtomicReference<V>> apply(K key, Map.Entry<Integer, AtomicReference<V>> entry) {
                 // Entry can be null if entry was already removed, i.e. managed object was already closed

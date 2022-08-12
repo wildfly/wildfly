@@ -55,7 +55,7 @@ public enum SessionIdentifierMarshaller implements ScalarMarshaller<String> {
     }
 
     private static <T> Iterable<T> load(Class<T> providerClass) {
-        PrivilegedAction<Iterable<T>> action = new PrivilegedAction<Iterable<T>>() {
+        PrivilegedAction<Iterable<T>> action = new PrivilegedAction<>() {
             @Override
             public Iterable<T> run() {
                 return ServiceLoader.load(providerClass, providerClass.getClassLoader());

@@ -219,7 +219,7 @@ public class SimpleDataInput implements DataInput {
         @Override
         public Iterator<T> iterator() {
             Object array = this.array;
-            return new Iterator<T>() {
+            return new Iterator<>() {
                 private int index = 0;
 
                 @Override

@@ -48,7 +48,7 @@ public class SingletonServiceConfiguratorFactoryServiceConfiguratorProvider impl
     public Iterable<ServiceConfigurator> getServiceConfigurators(CapabilityServiceSupport support, String containerName, String cacheName) {
         ServiceName name = SingletonCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY.getServiceName(support, containerName, cacheName);
         ServiceConfigurator configurator = this.factory.createServiceConfigurator(name, containerName, cacheName).configure(support);
-        @SuppressWarnings("deprecation")
+        @SuppressWarnings("removal")
         ServiceName legacyName = SingletonCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.getServiceName(support, containerName, cacheName);
         ServiceConfigurator legacyConfigurator = new IdentityServiceConfigurator<>(legacyName, name);
         return List.of(configurator, legacyConfigurator);

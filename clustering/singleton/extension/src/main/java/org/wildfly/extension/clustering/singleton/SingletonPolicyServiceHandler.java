@@ -41,7 +41,7 @@ import org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinit
 /**
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({ "removal", "deprecation" })
 public class SingletonPolicyServiceHandler implements ResourceServiceHandler {
 
     private final ServiceValueRegistry<Singleton> registry;

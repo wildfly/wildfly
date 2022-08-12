@@ -60,7 +60,6 @@ public class DecoratorProxyMethodHandlerMarshaller implements ProtoStreamMarshal
         return DecoratorProxyMethodHandler.class;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public DecoratorProxyMethodHandler readFrom(ProtoStreamReader reader) throws IOException {
         SerializableContextualInstance<Decorator<Object>, Object> decorator = null;

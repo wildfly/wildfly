@@ -780,6 +780,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
     }
 
+    @SuppressWarnings({ "static-method", "deprecation" })
     private void parseBackup(XMLExtendedStreamReader reader, PathAddress backupsAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String site = require(reader, XMLAttribute.SITE);

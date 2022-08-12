@@ -66,6 +66,7 @@ public class InfinispanCachePropertiesTestCase {
         Assert.assertFalse(new InfinispanCacheProperties(nonTx).isLockOnWrite());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void isMarshalling() {
         for (CacheMode mode : EnumSet.allOf(CacheMode.class)) {
@@ -88,6 +89,7 @@ public class InfinispanCachePropertiesTestCase {
         Assert.assertFalse(new InfinispanCacheProperties(noStore).isMarshalling());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void isPersistent() {
         for (CacheMode mode : EnumSet.allOf(CacheMode.class)) {

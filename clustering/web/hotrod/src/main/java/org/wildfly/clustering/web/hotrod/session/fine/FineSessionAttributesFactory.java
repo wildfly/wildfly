@@ -147,7 +147,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     }
 
     private static Function<UUID, SessionAttributeKey> getKeyFactory(String id) {
-        return new Function<UUID, SessionAttributeKey>() {
+        return new Function<>() {
             @Override
             public SessionAttributeKey apply(UUID attributeId) {
                 return new SessionAttributeKey(id, attributeId);

@@ -82,7 +82,7 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         }
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
                 .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "binding0", "binding1")

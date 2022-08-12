@@ -61,7 +61,7 @@ public class ConcurrentSessionManager<L, B extends Batch> implements SessionMana
     @Override
     public Session<L> findSession(String id) {
         SessionManager<L, B> manager = this.manager;
-        Function<Runnable, Session<L>> factory = new Function<Runnable, Session<L>>() {
+        Function<Runnable, Session<L>> factory = new Function<>() {
             @Override
             public ConcurrentSession<L> apply(Runnable closeTask) {
                 Session<L> session = manager.findSession(id);
@@ -82,7 +82,7 @@ public class ConcurrentSessionManager<L, B extends Batch> implements SessionMana
     @Override
     public Session<L> createSession(String id) {
         SessionManager<L, B> manager = this.manager;
-        Function<Runnable, Session<L>> factory = new Function<Runnable, Session<L>>() {
+        Function<Runnable, Session<L>> factory = new Function<>() {
             @Override
             public ConcurrentSession<L> apply(Runnable closeTask) {
                 Session<L> session = manager.createSession(id);

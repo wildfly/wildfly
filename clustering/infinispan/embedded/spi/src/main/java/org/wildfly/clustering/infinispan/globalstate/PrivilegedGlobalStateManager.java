@@ -36,6 +36,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 @Scope(Scopes.GLOBAL)
+@SuppressWarnings("synthetic-access")
 public class PrivilegedGlobalStateManager extends GlobalStateManagerImpl {
     @Override
     public void start() {

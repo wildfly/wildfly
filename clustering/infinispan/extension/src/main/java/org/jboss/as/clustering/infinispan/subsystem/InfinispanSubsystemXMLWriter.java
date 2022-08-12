@@ -50,6 +50,7 @@ import org.wildfly.common.iteration.CompositeIterable;
  */
 public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemMarshallingContext> {
 
+    @SuppressWarnings("deprecation")
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(InfinispanSchema.CURRENT.getNamespaceUri(), false);

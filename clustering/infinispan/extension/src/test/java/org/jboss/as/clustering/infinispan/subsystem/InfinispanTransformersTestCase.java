@@ -159,6 +159,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     private static ModelFixer createModelFixer(ModelVersion version) {
         return model -> {
             if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+                @SuppressWarnings("deprecation")
                 Map<String, List<PathElement>> containers = Map.ofEntries(Map.entry("minimal", List.of(DistributedCacheResourceDefinition.pathElement("dist"))),
                         Map.entry("maximal", List.of(DistributedCacheResourceDefinition.pathElement("dist"), LocalCacheResourceDefinition.pathElement("local"), ReplicatedCacheResourceDefinition.pathElement("cache-with-jdbc-store"), ScatteredCacheResourceDefinition.pathElement("scattered"))));
                 for (Map.Entry<String, List<PathElement>> entry : containers.entrySet()) {
