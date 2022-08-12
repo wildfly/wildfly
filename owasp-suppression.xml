@@ -189,18 +189,18 @@
         <cve>CVE-2018-8039</cve>
     </suppress>
 
-    <!-- [wildfly] False-positive: it was fixed in 2.7.1.jbossorg-4 (https://github.com/jboss/xalan-j/commit/8cd0c151456475f57961b0987d9f985202f81eec) -->
+    <!-- [wildfly] False-positive: it was fixed. It contains https://github.com/jboss/xalan-j/commit/534f2d3315cd4805e27932130f87e8de07796fab#diff-5e6c53e1f2b941e3d1c35ca0e5859272813d6a398137fd934fdb394b24ac4c97 commit. -->
     <suppress>
         <notes><![CDATA[
-        file name: xalan-2.7.1.jbossorg-4.jar
+        file name: xalan-2.7.1.redhat-00013.jar
         ]]></notes>
         <gav regex="true">^xalan:xalan:.*$</gav>
         <cve>CVE-2014-0107</cve>
     </suppress>
-    <!-- [wildfly] False-positive: it was fixed in 2.7.1.jbossorg-4 (https://github.com/jboss/xalan-j/commit/8cd0c151456475f57961b0987d9f985202f81eec) -->
+    <!-- [wildfly] False-positive: it was fixed. It contains https://github.com/jboss/xalan-j/commit/534f2d3315cd4805e27932130f87e8de07796fab#diff-5e6c53e1f2b941e3d1c35ca0e5859272813d6a398137fd934fdb394b24ac4c97 commit -->
     <suppress>
         <notes><![CDATA[
-        file name: serializer-2.7.1.jbossorg-4.jar
+        file name: serializer-2.7.1.redhat-00013.jar
         ]]></notes>
         <gav regex="true">^xalan:serializer:.*$</gav>
         <cve>CVE-2014-0107</cve>
