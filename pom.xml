@@ -589,7 +589,7 @@
         <version.org.wildfly.arquillian>5.0.0.Alpha3</version.org.wildfly.arquillian>
         <version.org.wildfly.core>19.0.0.Beta15</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
-        <version.org.wildfly.http-client>1.1.12.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>1.1.13.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.15.Final</version.org.wildfly.naming-client>
         <legacy.version.org.wildfly.security.elytron>1.19.0.Final</legacy.version.org.wildfly.security.elytron>
         <version.org.wildfly.security.elytron>2.0.0.Beta2</version.org.wildfly.security.elytron>
