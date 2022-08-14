@@ -85,19 +85,8 @@ public final class KeycloakExtension extends AbstractLegacyExtension {
     protected Set<ManagementResourceRegistration> initializeLegacyModel(final ExtensionContext context) {
         KeycloakLogger.ROOT_LOGGER.debug("Activating Keycloak Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MGMT_API_VERSION);
-
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(KEYCLOAK_SUBSYSTEM_RESOURCE);
-        registration.registerSubModel(REALM_DEFINITION);
-        ManagementResourceRegistration secureDeploymentRegistration = registration.registerSubModel(SECURE_DEPLOYMENT_DEFINITION);
-        secureDeploymentRegistration.registerSubModel(CREDENTIAL_DEFINITION);
-        secureDeploymentRegistration.registerSubModel(REDIRECT_RULE_DEFINITON);
-
-        ManagementResourceRegistration secureServerRegistration = registration.registerSubModel(SECURE_SERVER_DEFINITION);
-        secureServerRegistration.registerSubModel(CREDENTIAL_DEFINITION);
-        secureServerRegistration.registerSubModel(REDIRECT_RULE_DEFINITON);
-
         subsystem.registerXMLElementWriter(PARSER);
-
         return Collections.singleton(registration);
     }
 }
