@@ -85,8 +85,8 @@
             <artifactId>wildfly-webservices-server-integration-jakarta</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.xml.ws</groupId>
-            <artifactId>jakarta.xml.ws-api</artifactId>
+            <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
+            <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.enterprise</groupId>
