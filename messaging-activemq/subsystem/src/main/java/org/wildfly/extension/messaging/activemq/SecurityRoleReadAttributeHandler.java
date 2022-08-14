@@ -72,9 +72,7 @@ public class SecurityRoleReadAttributeHandler extends AbstractRuntimeOnlyHandler
         }
 
         try {
-            String rolesAsJSON = control.getRolesAsJSON();
-            ModelNode res = ModelNode.fromJSONString(rolesAsJSON);
-            ModelNode roles = ManagementUtil.convertSecurityRole(res);
+            ModelNode roles = ManagementUtil.convertRoles(control.getRoles());
             ModelNode matchedRole = findRole(roleName, roles);
             if (matchedRole == null || !matchedRole.hasDefined(attributeName)) {
                 throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(attributeName);
