@@ -25,6 +25,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.CONNECTION_DEFINITIONS_NODE_ATTRIBUTE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION;
@@ -104,6 +105,31 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             throw ConnectorLogger.ROOT_LOGGER.archiveOrModuleRequired();
         }
         ModelNode resourceModel = resource.getModel();
+
+        // add extra security validation: authentication contexts should only be defined when Elytron Enabled is true
+        // domains/application attributes should only be defined when Elytron enabled is undefined or false (default value)
+        if (ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean()) {
+            if (resourceModel.hasDefined(SECURITY_DOMAIN.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN.getName(), ELYTRON_ENABLED.getName());
+            else if (resourceModel.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
+            else if (resourceModel.hasDefined(APPLICATION.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(APPLICATION.getName(), ELYTRON_ENABLED.getName());
+        } else {
+            if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT.getName(), ELYTRON_ENABLED.getName());
+            else if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
+        }
+        // do the same for recovery security attributes
+        if (RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean()) {
+            if (resourceModel.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(RECOVERY_SECURITY_DOMAIN.getName(), RECOVERY_ELYTRON_ENABLED.getName());
+        } else {
+            if (resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(RECOVERY_AUTHENTICATION_CONTEXT.getName(), RECOVERY_ELYTRON_ENABLED.getName());
+        }
+
         final boolean elytronEnabled = ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean();
         final boolean elytronRecoveryEnabled = RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean();
         final ModelNode credentialReference = RECOVERY_CREDENTIAL_REFERENCE.resolveModelAttribute(context, resourceModel);
