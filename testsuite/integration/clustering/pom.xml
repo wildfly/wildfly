@@ -351,6 +351,46 @@
             <artifactId>okhttp</artifactId>
             <version>${legacy.version.com.squareup.okhttp}</version>
         </dependency>
+
+        <!-- Infinispan modules tests -->
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-cdi-common</artifactId>
+            <classifier>jakarta</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-cdi-embedded</artifactId>
+            <classifier>jakarta</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-cdi-remote</artifactId>
+            <classifier>jakarta</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-clustered-lock</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-query-dsl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-remote-query-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-commons</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -961,6 +1001,7 @@
                                         <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
                                     </includes>
                                     <excludes>
+                                        <exclude>org/jboss/as/test/clustering/single/infinispan/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</exclude>
                                     </excludes>
                                     <systemPropertyVariables combine.children="append">
@@ -986,6 +1027,51 @@
                                         <wildfly1>wildfly-1</wildfly1>
                                         <arquillian.launch>node-non-ha</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Run single node tests using testable deployments with standalone-ha.xml profile and with Infinispan Server provisioned -->
+        <profile>
+            <id>ts.clustering.single.testable.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noClustering</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>ts.surefire.clustering.single.testable</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <runOrder>alphabetical</runOrder>
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/single/infinispan/InfinispanModulesTestSuite.java</include>
+                                    </includes>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExclude>org.jboss.arquillian.extension:arquillian-extension-byteman</classpathDependencyExclude>
+                                    </classpathDependencyExcludes>
+                                    <systemPropertyVariables>
+                                        <node0>${node0}</node0>
+                                        <mcast>${mcast}</mcast>
+                                        <arquillian.xml>arquillian-testable.xml</arquillian.xml>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -2826,7 +2912,7 @@
                                 <!--<phase>none</phase>-->
                                 <configuration>
                                     <excludes>
-                                        <!-- Requires the /subsystem=messaging-activemq/server=default to exist for it's setup tasks -->
+                                        <!-- Requires the /subsystem=messaging-activemq/server=default to exist for its setup tasks -->
                                         <exclude>${test-group}/jms/ClusteredMessagingTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
