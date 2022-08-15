@@ -355,7 +355,6 @@
         <version.io.smallrye.smallrye-common>2.0.0</version.io.smallrye.smallrye-common>
         <legacy.version.io.smallrye.smallrye-config>2.10.1</legacy.version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-config>3.0.0</version.io.smallrye.smallrye-config>
-        <legacy.version.io.smallrye.smallrye-fault-tolerance>5.5.0</legacy.version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC4</version.io.smallrye.smallrye-fault-tolerance>
         <legacy.version.io.smallrye.smallrye-health>3.2.1</legacy.version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-health>4.0.0-RC2</version.io.smallrye.smallrye-health>
@@ -452,9 +451,7 @@
         <version.org.eclipse.microprofile>4.1</version.org.eclipse.microprofile>
         <legacy.version.org.eclipse.microprofile.config.api>2.0</legacy.version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.config.api>3.0.1</version.org.eclipse.microprofile.config.api>
-        <legacy.version.org.eclipse.microprofile.fault-tolerance.api>3.0</legacy.version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
-        <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
         <legacy.version.org.eclipse.microprofile.health.api>3.1</legacy.version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.health.api>4.0</version.org.eclipse.microprofile.health.api>
         <legacy.version.org.eclipse.microprofile.jwt.api>1.2.1</legacy.version.org.eclipse.microprofile.jwt.api>

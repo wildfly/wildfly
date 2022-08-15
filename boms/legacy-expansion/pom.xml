@@ -70,22 +70,6 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-fault-tolerance-smallrye</artifactId>
-                <version>${full.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
-                <version>${full.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
-                <version>${full.maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-health-smallrye</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
@@ -118,18 +102,6 @@
                 <groupId>io.opentracing.contrib</groupId>
                 <artifactId>opentracing-tracerresolver</artifactId>
                 <version>${legacy.version.io.opentracing.tracerresolver}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.smallrye</groupId>
-                <artifactId>smallrye-fault-tolerance</artifactId>
-                <version>${legacy.version.io.smallrye.smallrye-fault-tolerance}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -228,12 +200,6 @@
                 <groupId>org.eclipse.microprofile.config</groupId>
                 <artifactId>microprofile-config-api</artifactId>
                 <version>${legacy.version.org.eclipse.microprofile.config.api}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
-                <artifactId>microprofile-fault-tolerance-api</artifactId>
-                <version>${legacy.version.org.eclipse.microprofile.fault-tolerance.api}</version>
             </dependency>
 
             <dependency>
