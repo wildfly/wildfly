@@ -31,6 +31,7 @@ import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.clustering.InfinispanServerUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -47,7 +48,7 @@ import org.junit.rules.TestRule;
 public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailoverTestCase {
 
     @ClassRule
-    public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
+    public static final TestRule INFINISPAN_SERVER_RULE = InfinispanServerUtil.infinispanServerTestRule();
 
     @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1)
     private ManagementClient client1;
