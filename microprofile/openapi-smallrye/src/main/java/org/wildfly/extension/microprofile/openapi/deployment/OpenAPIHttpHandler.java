@@ -37,7 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.jboss.resteasy.util.AcceptParser;
@@ -135,7 +135,7 @@ public class OpenAPIHttpHandler implements HttpHandler {
         }
     }
 
-    private static final Comparator<MediaType> MEDIA_TYPE_SORTER = new Comparator<MediaType>() {
+    private static final Comparator<MediaType> MEDIA_TYPE_SORTER = new Comparator<>() {
         @Override
         public int compare(MediaType type1, MediaType type2) {
             float quality1 = Float.parseFloat(type1.getParameters().getOrDefault("q", "1"));
