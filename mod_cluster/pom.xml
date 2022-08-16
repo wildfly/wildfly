@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha4-SNAPSHOT</version>
+        <version>27.0.0.Alpha5-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-mod_cluster</artifactId>
@@ -43,7 +43,6 @@
 
     <modules>
         <module>extension</module>
-        <module>undertow</module>
     </modules>
 
     <dependencyManagement>
@@ -57,5 +56,20 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>ee8.build.profile</id>
+            <activation>
+                <property>
+                    <name>!skip.ee8</name>
+                </property>
+            </activation>
+            <modules>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>undertow</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>

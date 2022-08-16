@@ -35,7 +35,7 @@ vi:ts=4:sw=4:expandtab
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha4-SNAPSHOT</version>
+        <version>27.0.0.Alpha5-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -60,7 +60,10 @@ vi:ts=4:sw=4:expandtab
             <groupId>org.jboss.common</groupId>
             <artifactId>jboss-common-beans</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.jboss.invocation</groupId>
+            <artifactId>jboss-invocation</artifactId>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-connector</artifactId>
@@ -81,6 +84,12 @@ vi:ts=4:sw=4:expandtab
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ejb-spi</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

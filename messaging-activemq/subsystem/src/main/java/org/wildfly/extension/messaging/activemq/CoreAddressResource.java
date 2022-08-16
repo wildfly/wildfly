@@ -22,12 +22,13 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ROLE;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.activemq.artemis.api.core.management.AddressControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
@@ -162,14 +163,8 @@ public class CoreAddressResource implements Resource {
         if (addressControl == null) {
             return Collections.emptySet();
         } else {
-            Set<String> names = new HashSet<String>();
             try {
-                ModelNode res = ModelNode.fromJSONString(addressControl.getRolesAsJSON());
-                ModelNode converted = ManagementUtil.convertSecurityRole(res);
-                for (ModelNode role : converted.asList()) {
-                    names.add(role.get(NAME).asString());
-                }
-                return names;
+                return Stream.of(addressControl.getRoles()).map(objRole -> ((Object[])objRole)[0].toString()).collect(Collectors.toSet());
             } catch (Exception e) {
                 return Collections.emptySet();
             }

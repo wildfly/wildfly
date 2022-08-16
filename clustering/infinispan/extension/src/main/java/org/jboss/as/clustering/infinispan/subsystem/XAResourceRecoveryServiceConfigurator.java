@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.infinispan.InfinispanXAResourceRecovery;
+import org.jboss.as.clustering.infinispan.tx.InfinispanXAResourceRecovery;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.Service;

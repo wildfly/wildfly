@@ -29,6 +29,9 @@ import java.util.stream.Collectors;
 
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.AggregatedClassLoader;
+import org.infinispan.protostream.ProtobufUtil;
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
@@ -42,6 +45,19 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilde
  */
 public enum MarshallerFactory implements BiFunction<ModuleLoader, List<Module>, Marshaller> {
 
+    DEFAULT() {
+        @Override
+        public Marshaller apply(ModuleLoader moduleLoader, List<Module> modules) {
+            SerializationContext context = ProtobufUtil.newSerializationContext();
+            for (Module module : modules) {
+                for (SerializationContextInitializer initializer : module.loadService(SerializationContextInitializer.class)) {
+                    initializer.registerSchema(context);
+                    initializer.registerMarshallers(context);
+                }
+            }
+            return new org.infinispan.commons.marshall.ProtoStreamMarshaller(context);
+        }
+    },
     JBOSS() {
         @Override
         public Marshaller apply(ModuleLoader moduleLoader, List<Module> modules) {

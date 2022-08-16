@@ -28,6 +28,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
  * @author Paul Ferraro
  */
 public enum MarshallingExternalizerProvider implements ExternalizerProvider {
+    MARSHALLED_KEY(new ByteBufferMarshalledKeyExternalizer()),
     MARSHALLED_VALUE(new ByteBufferMarshalledValueExternalizer()),
     ;
     private final Externalizer<?> externalizer;

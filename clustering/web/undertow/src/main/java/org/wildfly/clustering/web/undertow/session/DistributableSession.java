@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;

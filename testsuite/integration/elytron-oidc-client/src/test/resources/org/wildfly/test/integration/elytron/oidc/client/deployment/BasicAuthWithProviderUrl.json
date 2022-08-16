@@ -1,0 +1,9 @@
+{
+    "client-id" : "DirectAccessGrantEnabledClient",
+    "provider-url" : "${oidc.provider.url}",
+    "ssl-required" : "EXTERNAL",
+    "enable-basic-auth" : "true",
+    "credentials" : {
+        "secret" : "secret"
+    }
+}

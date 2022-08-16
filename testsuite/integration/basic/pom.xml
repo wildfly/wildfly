@@ -19,7 +19,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha4-SNAPSHOT</version>
+        <version>27.0.0.Alpha5-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -2279,9 +2279,9 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-test-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2295,7 +2295,6 @@
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>ejb</layer>
                                                 <layer>embedded-activemq</layer>
-                                                <layer>remote-naming</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -3478,8 +3477,8 @@
                                         <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
                                         which is not sustainable for all tests. -->
                                         <exclude>org/jboss/as/test/integration/weld/modules/deployment/ModuleBeanDiscoveryModeTest.java</exclude>
-					<exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
-					<exclude>org/jboss/as/test/integration/jca/classloading/custommodule/DatasourceCustomModulesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/classloading/custommodule/DatasourceCustomModulesTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>

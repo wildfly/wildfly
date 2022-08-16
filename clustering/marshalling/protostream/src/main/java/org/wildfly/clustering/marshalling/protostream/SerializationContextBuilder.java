@@ -105,25 +105,26 @@ public class SerializationContextBuilder {
     }
 
     private boolean tryLoad(ClassLoader loader) {
-        PrivilegedAction<Iterator<SerializationContextInitializer>> action = new PrivilegedAction<Iterator<SerializationContextInitializer>>() {
+        PrivilegedAction<Boolean> action = new PrivilegedAction<>() {
             @Override
-            public Iterator<SerializationContextInitializer> run() {
-                return ServiceLoader.load(SerializationContextInitializer.class, loader).iterator();
+            public Boolean run() {
+                Iterator<SerializationContextInitializer> initializers = ServiceLoader.load(SerializationContextInitializer.class, loader).iterator();
+                boolean init = false;
+                while (initializers.hasNext()) {
+                    SerializationContextInitializer initializer = initializers.next();
+                    // Do not load initializers from protostream-types
+                    if (!initializer.getClass().getName().startsWith(PROTOSTREAM_BASE_PACKAGE_NAME)) {
+                        SerializationContextBuilder.this.init(initializer);
+                        init = true;
+                    }
+                }
+                return init;
             }
         };
-        Iterator<SerializationContextInitializer> initializers = WildFlySecurityManager.doUnchecked(action);
-        boolean init = initializers.hasNext();
-        while (initializers.hasNext()) {
-            SerializationContextInitializer initializer = initializers.next();
-            // Do not load initializers from protostream-types
-            if (!initializer.getClass().getName().startsWith(PROTOSTREAM_BASE_PACKAGE_NAME)) {
-                this.init(initializer);
-            }
-        }
-        return init;
+        return WildFlySecurityManager.doUnchecked(action);
     }
 
-    private void init(SerializationContextInitializer initializer) {
+    void init(SerializationContextInitializer initializer) {
         initializer.registerSchema(this.context);
         initializer.registerMarshallers(this.context);
     }

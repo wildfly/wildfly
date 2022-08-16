@@ -23,7 +23,7 @@
     <cache-container name="minimal" default-cache="local" marshaller="LEGACY" modules="org.wildfly.clustering.singleton.server org.wildfly.clustering.server.infinispan">
         <local-cache name="local"/>
     </cache-container>
-    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" modules="org.infinispan" statistics-enabled="true">
+    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" modules="org.infinispan" marshaller="LEGACY" statistics-enabled="true">
         <transport channel="maximal-channel" lock-timeout="120000"/>
         <listener-thread-pool min-threads="21"
                               max-threads="22"
@@ -114,6 +114,7 @@
                             key-size-estimate="512"
                             max-retries="2"
                             modules="org.infinispan"
+                            marshaller="LEGACY"
                             name="my-remote-container"
                             protocol-version="2.5"
                             socket-timeout="1000"

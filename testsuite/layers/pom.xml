@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha4-SNAPSHOT</version>
+        <version>27.0.0.Alpha5-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-layers</artifactId>
@@ -447,6 +447,34 @@
                                             <layers>
                                                 <layer>datasources-web-server</layer>
                                                 <layer>observability</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>embedded-activemq-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/embedded-activemq</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>embedded-activemq</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -1592,6 +1620,36 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+
+                            <execution>
+                                <id>mod_cluster-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/mod_cluster</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>mod_cluster</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                             <execution>
                                 <id>observability-provisioning</id>
                                 <goals>
@@ -2247,6 +2305,7 @@
                                                 <layer>ejb-lite</layer>
                                                 <layer>ejb-local-cache</layer>
                                                 <layer>elytron</layer>
+                                                <layer>embedded-activemq</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>h2-driver</layer>
@@ -2266,11 +2325,11 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>messaging-activemq</layer>
+                                                <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
                                                 <layer>opentelemetry</layer>
                                                 <layer>pojo</layer>
-                                                <layer>remote-activemq</layer>
                                                 <layer>remoting</layer>
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>
@@ -2368,6 +2427,7 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>messaging-activemq</layer>
+                                                <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
                                                 <layer>opentelemetry</layer>

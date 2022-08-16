@@ -2,7 +2,7 @@
 = The native management API
 
 A standalone WildFly process, or a managed domain Domain Controller or
-slave Host Controller process can be configured to listen for remote
+secondary Host Controller process can be configured to listen for remote
 management requests using its "native management interface":
 
 [source,xml,options="nowrap"]
@@ -74,7 +74,7 @@ Python or some other language.)
 
 The `org.jboss.as.controller.client.ModelControllerClient` class is the
 main class a custom client would use to manage a WildFly server instance
-or a Domain Controller or slave Host Controller.
+or a Domain Controller or secondary Host Controller.
 
 The custom client must have maven artifact
 `org.jboss.as:jboss-as-controller-client` and its dependencies on the
@@ -689,7 +689,7 @@ Simple responses are provided by the following types of operations:
 
 * Non-composite operations that target a single server. (See below for
 more on composite operations).
-* Non-composite operations that target a Domain Controller or slave Host
+* Non-composite operations that target a Domain Controller or secondary Host
 Controller and don't require the responder to apply the operation on
 multiple servers and aggregate their results (e.g. a simple read of a
 domain configuration property.)
@@ -822,7 +822,7 @@ Basic composite responses are provided by the following types of
 operations:
 
 * Composite operations that target a single server.
-* Composite operations that target a Domain Controller or a slave Host
+* Composite operations that target a Domain Controller or a secondary Host
 Controller and don't require the responder to apply the operation on
 multiple servers and aggregate their results (e.g. a list of simple
 reads of domain configuration properties.)
@@ -959,7 +959,7 @@ rollback of the others:
 === Multi-Server Responses
 
 Multi-server responses are provided by operations that target a Domain
-Controller or slave Host Controller and require the responder to apply
+Controller or secondary Host Controller and require the responder to apply
 the operation on multiple servers and aggregate their results (e.g.
 nearly all domain or host configuration updates.)
 
@@ -982,7 +982,7 @@ automatically rolled back, with a response like this:
 ----
 
 If the operation was addressed to the domain model, in the next stage
-the Domain Controller will ask each slave Host Controller to apply it to
+the Domain Controller will ask each secondary Host Controller to apply it to
 its local copy of the domain model. If any Host Controller fails to do
 so, the Domain Controller will tell all Host Controllers to revert the
 change, and it will revert the change locally as well. The response to

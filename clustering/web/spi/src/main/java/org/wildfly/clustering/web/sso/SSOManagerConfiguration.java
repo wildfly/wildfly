@@ -24,16 +24,15 @@ package org.wildfly.clustering.web.sso;
 
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.web.LocalContextFactory;
 
 /**
  * @author Paul Ferraro
- * @param <C> marshalling context type
  * @param <L> local context type
  */
-public interface SSOManagerConfiguration<C, L> {
+public interface SSOManagerConfiguration<L> {
     Supplier<String> getIdentifierFactory();
-    MarshalledValueFactory<C> getMarshalledValueFactory();
+    ByteBufferMarshaller getMarshaller();
     LocalContextFactory<L> getLocalContextFactory();
 }

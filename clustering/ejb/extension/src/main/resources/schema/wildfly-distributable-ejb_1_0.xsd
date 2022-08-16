@@ -112,9 +112,33 @@
                 <xs:documentation>The maximum number active timers to retain in memory at a time, after which the least recently used will passivate.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="marshaller" type="tns:marshaller" default="JBOSS">
+            <xs:annotation>
+                <xs:documentation>Indicates the marshalling implementation used for serializing the timeout context of a timer.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="empty">
         <xs:sequence/>
     </xs:complexType>
+
+    <xs:simpleType name="marshaller">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="JBOSS">
+                <xs:annotation>
+                    <xs:documentation>
+                        Marshaller based on JBoss Marshalling.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="PROTOSTREAM">
+                <xs:annotation>
+                    <xs:documentation>
+                        Marshaller based on ProtoStream.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

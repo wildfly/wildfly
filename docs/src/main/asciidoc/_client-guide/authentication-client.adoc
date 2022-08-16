@@ -654,7 +654,7 @@ The following attributes are used to define the masked password:
 
 `algorithm`:: The algorithm that was used to encrypt the password. If this attribute is not specified, the default value is "masked-MD5-DES".
 A list of the supported algorithm types can be found in
-link:https://github.com/wildfly/wildfly/blob/master/docs/src/main/asciidoc/_elytron/Passwords.adoc#masked-password-types[Masked Password Type]
+link:https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_elytron/Passwords.adoc#masked-password-types[Masked Password Type]
 `key-material`:: The initial key material that was used to encrypt the password. If this attribute is not specified, the default value is "somearbitrarycrazystringthatdoesnotmatter".
 `iteration-count`:: The iteration count that was used to encrypt the password. This attribute is required.
 `salt`:: The salt that was used to encrypt the password. This attribute is required.

@@ -49,8 +49,6 @@ public class ContextServiceAdd extends AbstractAddStepHandler {
         // TODO *FOLLOW UP* deprecate USE_TRANSACTION_SETUP_PROVIDER_AD since it's of no use anymore (replaced by spec's context service config of context type Transaction)
         // install the service which manages the default context service
         final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl(), ContextServiceTypesConfiguration.DEFAULT);
-        context.getCapabilityServiceTarget()
-                .addCapability(ContextServiceResourceDefinition.CAPABILITY, contextServiceService)
-                .install();
+        context.getCapabilityServiceTarget().addCapability(ContextServiceResourceDefinition.CAPABILITY).setInstance(contextServiceService).install();
     }
 }

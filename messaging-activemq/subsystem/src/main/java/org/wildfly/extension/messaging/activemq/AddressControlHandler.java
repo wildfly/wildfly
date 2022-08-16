@@ -34,7 +34,6 @@ import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService
 import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.rollbackOperationIfServerNotActive;
 import static org.wildfly.extension.messaging.activemq.ManagementUtil.reportListOfStrings;
 import static org.wildfly.extension.messaging.activemq.ManagementUtil.reportRoles;
-import static org.wildfly.extension.messaging.activemq.ManagementUtil.reportRolesAsJSON;
 
 import org.apache.activemq.artemis.api.core.management.AddressControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
@@ -96,8 +95,7 @@ class AddressControlHandler extends AbstractRuntimeOnlyHandler {
 
         try {
             if (ROLES_ATTR_NAME.equals(name)) {
-                String json = addressControl.getRolesAsJSON();
-                reportRoles(context, json);
+                reportRoles(context, addressControl.getRoles());
             } else if (QUEUE_NAMES.equals(name)) {
                 String[] queues = addressControl.getQueueNames();
                 reportListOfStrings(context, queues);
@@ -114,18 +112,6 @@ class AddressControlHandler extends AbstractRuntimeOnlyHandler {
                 // Bug
                 throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(name);
             }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            context.getFailureDescription().set(e.getLocalizedMessage());
-        }
-    }
-
-    private void handleGetRolesAsJson(final OperationContext context, final ModelNode operation) {
-        final AddressControl addressControl = getAddressControl(context, operation);
-        try {
-            String json = addressControl.getRolesAsJSON();
-            reportRolesAsJSON(context, json);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

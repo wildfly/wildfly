@@ -49,7 +49,7 @@ import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.infinispan.MBeanServerProvider;
+import org.jboss.as.clustering.infinispan.jmx.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
 import org.jboss.as.controller.OperationContext;

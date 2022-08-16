@@ -32,7 +32,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;

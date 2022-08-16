@@ -94,7 +94,7 @@ spotted along the way - do another pull request for such.
 which are difficult to merge.
 * Keep the code consistent across commits - e.g. when renaming
 something, be sure to update all references to it.
-* Describe your commits properly as they will appear in master's linear
+* Describe your commits properly as they will appear in main's linear
 history.
 * If you're working on a jira issue, include it's ID in the commit
 message(s).

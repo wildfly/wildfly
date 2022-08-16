@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha4-SNAPSHOT</version>
+        <version>27.0.0.Alpha5-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-microprofile-jakarta</artifactId>
@@ -45,7 +45,6 @@
         <module>fault-tolerance-smallrye</module>
         <module>health-smallrye</module>
         <module>jwt-smallrye</module>
-        <module>openapi-smallrye</module>
         <module>reactive-streams-operators-smallrye/cdi-provider</module>
         <module>opentracing-extension</module>
         <module>opentracing-smallrye</module>

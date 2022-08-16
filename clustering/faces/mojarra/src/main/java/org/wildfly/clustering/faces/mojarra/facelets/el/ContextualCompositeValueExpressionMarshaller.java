@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.PrivilegedAction;
 
-import javax.el.ValueExpression;
-import javax.faces.view.Location;
+import jakarta.el.ValueExpression;
+import jakarta.faces.view.Location;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;

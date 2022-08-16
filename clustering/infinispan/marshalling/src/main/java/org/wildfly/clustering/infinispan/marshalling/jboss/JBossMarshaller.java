@@ -26,7 +26,7 @@ import java.util.AbstractMap;
 
 import org.infinispan.commons.dataconversion.MediaType;
 import org.jboss.marshalling.ClassResolver;
-import org.wildfly.clustering.infinispan.marshalling.AbstractUserMarshaller;
+import org.wildfly.clustering.infinispan.marshalling.UserMarshaller;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
@@ -34,18 +34,13 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRe
 /**
  * @author Paul Ferraro
  */
-public class JBossMarshaller extends AbstractUserMarshaller {
+public class JBossMarshaller extends UserMarshaller {
 
     public JBossMarshaller(ClassResolver resolver, ClassLoader loader) {
         this(new SimpleMarshallingConfigurationRepository(JBossMarshallingVersion.class, JBossMarshallingVersion.CURRENT, new AbstractMap.SimpleImmutableEntry<>(resolver, loader)), loader);
     }
 
     public JBossMarshaller(MarshallingConfigurationRepository repository, ClassLoader loader) {
-        super(new JBossByteBufferMarshaller(repository, loader));
-    }
-
-    @Override
-    public MediaType mediaType() {
-        return MediaType.APPLICATION_JBOSS_MARSHALLING;
+        super(MediaType.APPLICATION_JBOSS_MARSHALLING, new JBossByteBufferMarshaller(repository, loader));
     }
 }

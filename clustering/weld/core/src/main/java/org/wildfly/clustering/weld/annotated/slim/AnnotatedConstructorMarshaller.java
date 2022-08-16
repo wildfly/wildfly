@@ -23,8 +23,8 @@ package org.wildfly.clustering.weld.annotated.slim;
 
 import java.lang.reflect.Constructor;
 
-import javax.enterprise.inject.spi.AnnotatedConstructor;
-import javax.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.AnnotatedConstructor;
+import jakarta.enterprise.inject.spi.AnnotatedType;
 
 import org.jboss.weld.annotated.slim.SlimAnnotatedType;
 import org.jboss.weld.util.reflection.DeclaredMemberIndexer;

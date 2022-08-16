@@ -32,9 +32,9 @@ WILDFLY_HOME/modules/com/sun/jsf-impl/mojarra-2.2.11
 * Place the Jakarta Server Faces implementation JAR in the <JSF_IMPL_NAME>-<JSF_VERSION>
 subdirectory. In the same subdirectory, add a `module.xml` file similar
 to the
-https://github.com/wildfly/wildfly/blob/master/jsf/multi-jsf-installer/src/main/resources/mojarra-impl-module.xml[Mojarra]
+https://github.com/wildfly/wildfly/blob/main/jsf/multi-jsf-installer/src/main/resources/mojarra-impl-module.xml[Mojarra]
 or
-https://github.com/wildfly/wildfly/blob/master/jsf/multi-jsf-installer/src/main/resources/myfaces-impl-module.xml[MyFaces]
+https://github.com/wildfly/wildfly/blob/main/jsf/multi-jsf-installer/src/main/resources/myfaces-impl-module.xml[MyFaces]
 template examples. Change the `resource-root-path` to the name of your
 Jakarta Server Faces implementation JAR and fill in appropriate values for $\{
 `jsf-impl-name`} and $\{ `jsf-version`}.
@@ -49,9 +49,9 @@ WILDFLY_HOME/modules/javax/faces/api/<JSF_IMPL_NAME>-<JSF_VERSION>
 * Place the JSF API JAR in the <JSF_IMPL_NAME>-<JSF_VERSION>
 subdirectory. In the same subdirectory, add a `module.xml` file similar
 to the
-https://github.com/wildfly/wildfly/blob/master/jsf/multi-jsf-installer/src/main/resources/mojarra-api-module.xml[Mojarra]
+https://github.com/wildfly/wildfly/blob/main/jsf/multi-jsf-installer/src/main/resources/mojarra-api-module.xml[Mojarra]
 or
-https://github.com/wildfly/wildfly/blob/master/jsf/multi-jsf-installer/src/main/resources/myfaces-api-module.xml[MyFaces]
+https://github.com/wildfly/wildfly/blob/main/jsf/multi-jsf-installer/src/main/resources/myfaces-api-module.xml[MyFaces]
 template examples. Change the `resource-root-path` to the name of your
 Jakarta Server Faces API JAR and fill in appropriate values for $\{ `jsf-impl-name`} and
 $\{ `jsf-version`}.
@@ -89,7 +89,7 @@ WILDFLY_HOME/modules/org/apache/commons/digester/main
 http://search.maven.org/remotecontent?filepath=commons-digester/commons-digester/1.8/commons-digester-1.8.jar[commons-digester]
 JAR in WILDFLY_HOME/modules/org/apache/commons/digester/main. In the
 `main` subdirectory, add a `module.xml` file similar to this
-https://github.com/wildfly/wildfly/blob/master/jsf/multi-jsf-installer/src/main/resources/myfaces-digester-module.xml[template].
+https://github.com/wildfly/wildfly/blob/main/jsf/multi-jsf-installer/src/main/resources/myfaces-digester-module.xml[template].
 Fill in the appropriate value for $\{ `version.commons-digester`}.
 
 [[start-the-server]]

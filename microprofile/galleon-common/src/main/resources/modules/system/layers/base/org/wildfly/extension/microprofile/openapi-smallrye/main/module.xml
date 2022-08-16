@@ -32,11 +32,11 @@
     </exports>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-microprofile-openapi-smallrye@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-microprofile-openapi-smallrye}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.ws.rs.api"/>
+        <module name="jakarta.ws.rs.api"/>
 
         <module name="io.smallrye.openapi"/>
 

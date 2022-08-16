@@ -57,6 +57,6 @@ public class EJB3IIOPAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.getCapabilityServiceTarget().addCapability(EJB3IIOPResourceDefinition.EJB3_IIOP_SETTINGS_CAPABILITY, settingsService).install();
+        context.getCapabilityServiceTarget().addCapability(EJB3IIOPResourceDefinition.EJB3_IIOP_SETTINGS_CAPABILITY).setInstance(settingsService).install();
     }
 }

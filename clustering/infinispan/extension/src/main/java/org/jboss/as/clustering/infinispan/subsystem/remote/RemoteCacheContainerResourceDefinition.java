@@ -42,7 +42,7 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
@@ -99,7 +99,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 return builder.setAllowExpression(false).setCapabilityReference(new CapabilityReference(Capability.CONFIGURATION, RemoteClusterResourceDefinition.Requirement.REMOTE_CLUSTER, WILDCARD_PATH));
             }
         },
-        MARSHALLER("marshaller", ModelType.STRING, new ModelNode(HotRodMarshallerFactory.LEGACY.name())) {
+        MARSHALLER("marshaller", ModelType.STRING, new ModelNode(HotRodMarshallerFactory.DEFAULT.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new EnumValidator<>(HotRodMarshallerFactory.class) {

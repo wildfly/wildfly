@@ -29,5 +29,6 @@ include::_high-availability/Clustering_API.adoc[]
 
 include::_high-availability/HA_Singleton_Features.adoc[]
 
-include::_high-availability/Clustering_and_Domain_Setup_Walkthrough.adoc[]
+include::_high-availability/Marshalling.adoc[]
 
+include::_high-availability/Clustering_and_Domain_Setup_Walkthrough.adoc[]

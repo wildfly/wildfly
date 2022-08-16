@@ -64,7 +64,7 @@ is created. These timestamped folders are kept for 30 days.
 == Snapshots
 
 In addition to the backups taken by the server as described above you
-can manually take take snapshots which will be stored in the `snapshot`
+can manually take snapshots which will be stored in the `snapshot`
 folder under the `_xml_history` folder, the automatic backups described
 above are subject to automatic house keeping so will eventually be
 automatically removed, the snapshots on the other hand can be entirely
@@ -124,7 +124,7 @@ to navigate to the host in question:
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /host=master:list-snapshots
+[domain@localhost:9990 /] /host=primary:list-snapshots
 {
     "outcome" => "success",
     "result" => {
@@ -149,7 +149,7 @@ items an abbreviated reverence to the file can be used:
 
 [cols=",,",options="header"]
 |=======================================================================
-|Abreviation |Parameter |Description
+|Abbreviation |Parameter |Description
 
 |initial |--server-config=initial |This will start the server using the
 initial configuration first used to start the server.

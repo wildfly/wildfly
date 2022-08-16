@@ -91,11 +91,11 @@ This ability is useful when you need to configure JVM settings without specifyin
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /host=master/jvm=default:add-jvm-option(jvm-option="-Xlog:gc:file=${jboss.server.log.dir}/gc.log")
+[domain@localhost:9990 /] /host=primary/jvm=default:add-jvm-option(jvm-option="-Xlog:gc:file=${jboss.server.log.dir}/gc.log")
 {
     "outcome" => "success",
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {"server-two" => {"response" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {"server-two" => {"response" => {
         "outcome" => "success",
         "response-headers" => {
             "operation-requires-restart" => true,

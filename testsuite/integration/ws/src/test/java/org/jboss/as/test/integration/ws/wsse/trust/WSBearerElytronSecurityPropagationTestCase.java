@@ -77,7 +77,7 @@ public class WSBearerElytronSecurityPropagationTestCase {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, BEARER_STS_DEP + ".war");
         archive
                 .setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.jboss.ws.cxf.sts annotations\n"))
+                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.jboss.ws.cxf.sts export services\n"))
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.stsbearer.STSBearerCallbackHandler.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.stsbearer.SampleSTSBearer.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.shared.WSTrustAppUtils.class)

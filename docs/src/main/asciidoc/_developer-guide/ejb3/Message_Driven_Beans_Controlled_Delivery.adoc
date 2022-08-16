@@ -32,16 +32,16 @@ deployed:
 <?xml version="1.1" encoding="UTF-8"?>
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
                xmlns="http://java.sun.com/xml/ns/javaee"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xmlns:d="urn:delivery-active:1.2"
-               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"                version="3.1"
-               impl-version="2.0">
-    <assembly-descriptor>
-        <d:delivery>
-            <ejb-name>HelloWorldQueueMDB</ejb-name>
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:d="urn:delivery-active:1.2"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"                version="3.1"
+               impl-version="2.0">
+    <assembly-descriptor>
+        <d:delivery>
+            <ejb-name>HelloWorldQueueMDB</ejb-name>
             <d:active>false</d:active>
-        </d:delivery>
-    </assembly-descriptor>
+        </d:delivery>
+    </assembly-descriptor>
 </jboss:ejb-jar>
 ----
 
@@ -56,15 +56,15 @@ annotation, as in the example below:
 [source,java,options="nowrap"]
 ----
 @MessageDriven(name = "HelloWorldMDB", activationConfig = {
- 
+
  @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
- 
+
  @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
- 
+
  @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
- 
+
 @DeliveryActive(false)
- 
+
 public class HelloWorldMDB implements MessageListener {
     public void onMessage(Message rcvMessage) {
       // ...
@@ -83,10 +83,10 @@ path of the MDB you want to manage delivery for:
 [source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] cd deployment=jboss-helloworld-mdb.war/subsystem=ejb3/message-driven-bean=HelloWorldMDB
- 
+
 [standalone@localhost:9990 message-driven-bean=HelloWorldMDB] :stop-delivery
 {"outcome" => "success"}
- 
+
 [standalone@localhost:9990 message-driven-bean=HelloWorldMDB] :start-delivery
 {"outcome" => "success"}
 ----
@@ -111,7 +111,7 @@ standalone.xml)
 ----
 <subsystem xmlns="urn:jboss:domain:ejb3:4.0">
     ...
-    <mdb>
+    <mdb>
         ...
         <delivery-groups>
             <delivery-group name="mdb-group-name" active="true"/>
@@ -158,7 +158,7 @@ with a false value:
 ----
 [standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:write-attribute(name=active,value=false)
 {"outcome" => "success"}
- 
+
 [standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:read-attribute(name=active)
 { "outcome" => "success", "result" => false }
 ----
@@ -169,7 +169,7 @@ To make it active again, write the attribute with a true value:
 ----
 [standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:write-attribute(name=active,value=true)
 {"outcome" => "success"}
- 
+
 [standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:read-attribute(name=active)
 { "outcome" => "success", "result" => true }
 ----
@@ -183,7 +183,7 @@ jboss-ejb3.xml file:
 [source,xml,options="nowrap"]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
- 
+
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
                xmlns="http://java.sun.com/xml/ns/javaee"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -237,9 +237,9 @@ annotation on each MDB class belonging to a group:
  @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
  @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
  @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
- 
+
 @DeliveryGroup("group2")
- 
+
 public class HelloWorldMDB implements MessageListener {
     ...
 }
@@ -249,7 +249,7 @@ A MDB can belong to more than one delivery group. See the following example:
 [source,xml]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
- 
+
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
                xmlns="http://java.sun.com/xml/ns/javaee"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -289,10 +289,10 @@ The same could be specified using the @DeliveryGroup annotation:
  @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
  @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
  @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
- 
+
 @DeliveryGroup("mdb-delivery-group2")
 @DeliveryGroup("mdb-delivery-group3")
- 
+
 public class HelloWorldMDB implements MessageListener {
     ...
 }
@@ -314,7 +314,7 @@ except for the MDBs that are marked as clustered singleton. For those
 MDBs, only one cluster node will be processing their messages. In case
 that node stops, another node will have delivery activated, guaranteeing
 that there is always one node processing the messages. This node is what
-we call the MDB clustered singleton master node.
+we call primary singleton provider of the MDB.
 
 Notice that applications using clustered singleton delivery can only be
 deployed in clustered WildFly servers (i.e., servers that are using the
@@ -359,9 +359,9 @@ to mark an MDB as clustered singleton:
  @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
  @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
  @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
- 
+
 @ClusteredSingleton
- 
+
 public class HelloWorldMDB implements MessageListener { ... }
 ----
 
@@ -375,7 +375,7 @@ delivery to be active in a MDB.
 For example, if an MDB belongs to one or more delivery groups and is also a
 clustered singleton MDB, the delivery will be active for that MDB only
 if the delivery groups are active in the cluster node that was elected as
-the singleton master.
+the primary singleton provider.
 
 Also, if you use jboss-cli to stopDelivery on a MDB that belongs to one or more
 delivery groups, the MDB will stop receiving messages in case all groups
@@ -386,9 +386,9 @@ operation is executed to revert the previously executed stopDelivery operation.
 
 Invoking stopDelivery on an MDB that is marked as clustered singleton
 will work in a similar way: no visible effect if the current node is not
-the clustered singleton master; but it will stop delivery of messages
-for that MDB if the current node is the clustered singleton master. If
-the current node is not the master, but eventually becomes so, the
+the primary singleton provider; but it will stop delivery of messages
+for that MDB if the current node is the primary singleton provider. If
+the current node is not the primary singleton provider, but eventually becomes so, the
 delivery of messages will not be active for that MDB, unless a
 startDelivery operation is invoked.
 
@@ -401,12 +401,12 @@ needs to be active and the delivery needs to be restarted (via start-delivery) i
 for that MDB to start receiving messages;
 
 * * MDB belongs to one delivery-group + MDB is clustered singleton*: the delivery group
-needs to be active and the current node needs to be the clustered singleton master
+needs to be active and the current node needs to be the primary singleton provider
 node in order for that MDB to start receiving messages;
 
 * * MDB belongs to one delivery-group + MDB is clustered singleton + stop-delivery was invoked*:
 as above, the delivery-group has to be active, the current cluster node must be the
-clustered singleton master node, plus, start-delivery needs to be invoked on that MDB,
+primary singleton provider node, plus, start-delivery needs to be invoked on that MDB,
 only with these three factors being true the MDB will start receiving messages.
 
 * * MDB belongs to multiple delivery-groups + stop-delivery was invoked*: all the delivery
@@ -414,10 +414,10 @@ groups need to be active and the delivery needs to be restarted (via start-deliv
 order for that MDB to start receiving messages;
 
 * * MDB belongs to multiple delivery-groups + MDB is clustered singleton*: all the delivery
-groups need to be active and the current node needs to be the clustered singleton
-master node in order for that MDB to start receiving messages;
+groups need to be active and the current node needs to be the primary singleton
+provider node in order for that MDB to start receiving messages;
 
 * * MDB belongs to multiple delivery-groups + MDB is clustered singleton + stop-delivery was
 invoked*: as above, all delivery-groups must be active, and current cluster node has to be the
-clustered singleton master node, plus, start-delivery needs to be invoked on that MDB, only
+primary singleton provider node, plus, start-delivery needs to be invoked on that MDB, only
 with these three factors being true the MDB will start receiving messages.

@@ -34,7 +34,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
 import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
 import org.jboss.dmr.ModelNode;
 
@@ -65,10 +64,11 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
         final StrictMaxPoolConfigService poolConfigService = new StrictMaxPoolConfigService(poolName, maxPoolSize, derive, timeout, TimeUnit.valueOf(unit));
 
         CapabilityServiceTarget capabilityServiceTarget = context.getCapabilityServiceTarget();
-        CapabilityServiceBuilder<StrictMaxPoolConfig> capabilityServiceBuilder = capabilityServiceTarget.addCapability(StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY, poolConfigService);
+        CapabilityServiceBuilder<?> capabilityServiceBuilder = capabilityServiceTarget.addCapability(StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY);
         if (context.hasOptionalCapability(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, null, null)) {
             capabilityServiceBuilder.addCapabilityRequirement(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, Integer.class, poolConfigService.getMaxThreadsInjector());
         }
+        capabilityServiceBuilder.setInstance(poolConfigService);
         capabilityServiceBuilder.install();
     }
 }
