@@ -26,7 +26,7 @@ jobs:
       - name: Output
         env:
           MESSAGE: ${{ toJSON(github.event) }}
-        run: echo $MESSAGE
+        run: echo "$MESSAGE"
 
       - name: Checkout run-status branch
         if: ${{ env.TOKEN }}
@@ -42,9 +42,11 @@ jobs:
           FILENAME="$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER-$GITHUB_RUN_ATTEMPT.json"
           echo "FILENAME=$FILENAME" >> $GITHUB_ENV
           
+          REFERENCE="refs/pull/${{github.event.number}}/merge"
+          
           CLIENT_PAYLOAD=$( jq -n \
                   --arg tr "$GITHUB_REPOSITORY" \
-                  --arg ref "$GITHUB_REF" \
+                  --arg ref "$REFERENCE" \
                   --arg sf "$FILENAME" \
                   '{triggerRepo: $tr, ref: $ref, statusFile: $sf}' )
           
