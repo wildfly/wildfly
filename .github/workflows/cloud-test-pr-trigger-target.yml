@@ -1,0 +1,105 @@
+name: Cloud Tests Trigger
+on:
+  pull_request_target:
+    branches:
+      - main
+env:
+  # Repository where the cloud tests will be run
+  REPOSITORY: wildfly-extras/wildfly-cloud-tests
+  # Branch in the above repository where the remote job will commit its results
+  STATUS_BRANCH: run-status
+  # This must be set to a PAT with 'repo' permission for the target repository
+  TOKEN: ${{ secrets.REMOTE_DISPATCH_TOKEN }}
+  # Just an identifier for the event - this one triggers the cloud tests
+  EVENT_TYPE: trigger-cloud-tests-run
+  # Parameters for polling the $STATUS_BRANCH for the results (they currently take 18-25 minutes)
+  #   Initial wait before polling starts
+  RESULT_INITIAL_WAIT_SECONDS: 1200
+  #   Time between each poll
+  RESULT_POLL_WAIT_SECONDS: 300
+  #   Maximum number of polls before we time out
+  RESULT_MAX_POLL_ATTEMPTS: 10
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout run-status branch
+        if: ${{ env.TOKEN }}
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.REPOSITORY }}
+          ref: ${{ env.STATUS_BRANCH }}
+
+      - name: Remote Dispatch
+        if: ${{ env.TOKEN }}
+        run: |
+          echo $GITHUB_REPOSITORY
+          FILENAME="$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER-$GITHUB_RUN_ATTEMPT.json"
+          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+          
+          CLIENT_PAYLOAD=$( jq -n \
+                  --arg tr "$GITHUB_REPOSITORY" \
+                  --arg ref "$GITHUB_REF" \
+                  --arg sf "$FILENAME" \
+                  '{triggerRepo: $tr, ref: $ref, statusFile: $sf}' )
+          
+          echo "CLIENT_PAYLOAD: $CLIENT_PAYLOAD"
+
+          resp=$(curl -X POST -s "https://api.github.com/repos/${REPOSITORY}/dispatches" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${TOKEN}" \
+              -d "{\"event_type\": \"${EVENT_TYPE}\", \"client_payload\": ${CLIENT_PAYLOAD} }")
+          if [ -z "$resp" ]
+          then
+            sleep 2
+          else
+            echo "Workflow failed to trigger"
+            echo "$resp"
+            exit 1
+          fi
+      - name: Wait for remote job completion
+        if: ${{ env.TOKEN }}
+        run: |
+          echo "Waiting/polling for remote test execution to complete"
+          echo "Sleeping $RESULT_INITIAL_WAIT_SECONDS seconds before polling"
+          sleep $RESULT_INITIAL_WAIT_SECONDS
+          i=0
+          while [[ "${RESULT}" != '0' ]]
+          do
+            echo "debug - fetching"
+            git fetch origin
+            echo "debug - resetting"
+            git reset --hard origin/$STATUS_BRANCH
+          
+            echo "debug - is $FILENAME there?"
+            # Check file is there and break if it is
+            if [ -f "$FILENAME" ]; then
+              echo "debug - file is there"
+              break
+            fi
+          
+          
+            echo "debug - incrementing counter"
+            i=$((i+1))
+            echo "debug - checking max poll attempts"
+            if [ $i -eq $RESULT_MAX_POLL_ATTEMPTS ]; then
+              1>&2 echo "Timeout receiving the results"
+              exit 1
+            fi
+            echo "Sleeping $RESULT_POLL_WAIT_SECONDS seconds before polling again"
+            sleep $RESULT_POLL_WAIT_SECONDS
+          done
+          # cat $FILENAME
+          STATUS="$(jq -r .status $FILENAME)"
+          MESSAGE="$(jq -r .message $FILENAME)"
+          
+          # echo "Status: $STATUS"
+          
+          if [[ "${STATUS}" == "failed" ]]; then
+            echo -e "\e[31m${MESSAGE}\e[0m"
+            exit 1
+          fi
+          
+          echo -e "\e[32m${MESSAGE}\e[0m"
