@@ -251,11 +251,18 @@ public final class EndpointService implements Service {
                         .getCapabilityServiceName(domainName, ApplicationSecurityDomainService.ApplicationSecurityDomain.class);
                 ejbApplicationSecurityDomain = builder.requires(ejbSecurityDomainServiceName);
             } else {
-                ServiceName securityDomainName = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
-                        .getCapabilityServiceName(
-                                Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN,
-                                domainName).append(Constants.SECURITY_DOMAIN);
-                elytronSecurityDomain = builder.requires(securityDomainName);
+                CapabilityServiceSupport capabilityServiceSupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+                if (capabilityServiceSupport != null) {
+                    ServiceName securityDomainName = capabilityServiceSupport.getCapabilityServiceName(
+                            Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN,
+                            domainName).append(Constants.SECURITY_DOMAIN);
+                    elytronSecurityDomain = builder.requires(securityDomainName);
+                } else {
+                    //There is no CAPABILITY_SERVICE_SUPPORT attachment in the DeploymentUnit created by org.jboss.as.webservices.service.EndpointPublisherImpl
+                    ServiceName publishEndpointSecurityDomainName = ServiceNameFactory.parseServiceName(WEB_APPLICATION_SECURITY_DOMAIN).append(domainName)
+                            .append(Constants.SECURITY_DOMAIN);
+                    elytronSecurityDomain = builder.requires(publishEndpointSecurityDomainName);
+                }
             }
             endpoint.setProperty(ELYTRON_SECURITY_DOMAIN, true);
         }
