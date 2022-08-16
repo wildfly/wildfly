@@ -388,7 +388,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         // Sort the add params alphabetically to match what DefaultResourceAddDescriptionProvider does
         SortedSet<AttributeDefinition> sorted = new TreeSet<>(Comparator.comparing(AttributeDefinition::getName));
         for (AttributeDefinition ad : add_attributes) {
-            if (!ad.getImmutableFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
+            if (!ad.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                 sorted.add(ad);
             }
         }
