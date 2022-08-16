@@ -315,7 +315,7 @@ For write-heavy applications, this typically improves the throughput of concurre
 
 NOTE: Relaxing transaction isolation currently prevents WildFly from enforcing that a given session is handled by one JVM at a time, a constraint dictated by the servlet specification.
 
-[[session_attribute_immmutability]]
+[[session_attribute_immutability]]
 === Session attribute immutability
 
 In WildFly, distributed session attributes are presumed to be mutable objects, unless of a known immutable type, or unless otherwise specified.
