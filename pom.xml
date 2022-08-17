@@ -487,7 +487,7 @@
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hamcrest>1.3</version.org.hamcrest>
         <version.org.hamcrest.java-hamcrest>2.0.0.0</version.org.hamcrest.java-hamcrest>
-        <legacy.version.org.hibernate>5.3.27.Final</legacy.version.org.hibernate>
+        <legacy.version.org.hibernate>5.3.28.Final</legacy.version.org.hibernate>
         <version.org.hibernate>6.0.2.Final</version.org.hibernate>
         <legacy.version.org.hibernate.commons.annotations>5.0.5.Final</legacy.version.org.hibernate.commons.annotations>
         <version.org.hibernate.commons.annotations>6.0.1.Final</version.org.hibernate.commons.annotations>
