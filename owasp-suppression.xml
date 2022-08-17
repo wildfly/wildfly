@@ -196,6 +196,7 @@
         ]]></notes>
         <gav regex="true">^xalan:xalan:.*$</gav>
         <cve>CVE-2014-0107</cve>
+		<cve>CVE-2022-34169</cve>
     </suppress>
     <!-- [wildfly] False-positive: it was fixed. It contains https://github.com/jboss/xalan-j/commit/534f2d3315cd4805e27932130f87e8de07796fab#diff-5e6c53e1f2b941e3d1c35ca0e5859272813d6a398137fd934fdb394b24ac4c97 commit -->
     <suppress>
@@ -204,6 +205,7 @@
         ]]></notes>
         <gav regex="true">^xalan:serializer:.*$</gav>
         <cve>CVE-2014-0107</cve>
+		<cve>CVE-2022-34169</cve>
     </suppress>
     <!-- [wildfly] False-positive: it was fixed in 1.8.3 (https://bugzilla.redhat.com/show_bug.cgi?id=1258310) -->
     <suppress>
