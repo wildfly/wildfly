@@ -3260,7 +3260,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-mod_cluster-undertow-jakarta</artifactId>
+      <artifactId>wildfly-mod_cluster-undertow</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>

@@ -22,18 +22,17 @@
 
 package org.wildfly.mod_cluster.undertow;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.ServletRequestListener;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
+
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.ListenerInfo;
 import io.undertow.servlet.core.InMemorySessionManagerFactory;
 import io.undertow.servlet.core.ManagedListener;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
-
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
 
@@ -46,8 +45,8 @@ import org.jboss.modcluster.container.Host;
  */
 public class UndertowContext implements Context {
 
-    private Deployment deployment;
-    private UndertowHost host;
+    private final Deployment deployment;
+    private final UndertowHost host;
 
     public UndertowContext(Deployment deployment, UndertowHost host) {
         this.deployment = deployment;

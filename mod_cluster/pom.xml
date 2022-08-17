@@ -43,33 +43,19 @@
 
     <modules>
         <module>extension</module>
+        <module>undertow</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <profiles>
-        <profile>
-            <id>ee8.build.profile</id>
-            <activation>
-                <property>
-                    <name>!skip.ee8</name>
-                </property>
-            </activation>
-            <modules>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>undertow</module>
-            </modules>
-        </profile>
-    </profiles>
 
 </project>
