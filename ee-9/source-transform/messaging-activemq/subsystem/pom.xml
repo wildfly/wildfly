@@ -361,6 +361,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- javax dependencies required to bootstrap the legacy controllers for transformer tests -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>

@@ -1144,7 +1144,7 @@
             </dependency>
 
             <!--
-            TODO used both in both a testsuite/integration/microprofile-tck and in legacy code.
+            TODO used both in testsuite/integration/microprofile-tck, ee-9/source-transform/messaging-activemq/subsystem and in legacy code.
             Once the legacy use is removed, this can become a <scope>test</scope> dependency.
             TODO double-check that the testsuite use is really needed
             -->
