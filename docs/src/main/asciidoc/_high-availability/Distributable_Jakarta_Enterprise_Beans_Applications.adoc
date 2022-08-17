@@ -18,7 +18,7 @@ Additionally, the EJB application needs to be deployed into a server which uses 
 or standalone-full-ha.xml.
 
 Since Jakarta Enterprise Beans are passivation-capable by default, generally, users already using an HA profile will not need to make any configuration changes
-for their beans to be distributable and, consequently, to support failover. More fine-grained control over whether a bean is distrubutable can be
+for their beans to be distributable and, consequently, to support failover. More fine-grained control over whether a bean is distributable can be
 achieved using the _passivationCapable_ attribute of the @Stateful annotation (or the equivalent deployment descriptor override). A bean which is marked as
 @Stateful(passivationCapable=false) will not exhibit distributable behavior (i.e. failover), even when the application containing it is deployed in a cluster.
 

@@ -8,8 +8,8 @@ new singleton provider is chosen and started. Thus, other than a brief
 interval when one provider has stopped and another has yet to start, the
 service is always running on one node.
 
-include::ha-singleton/Singleton_subsystem.adoc[]
+include::ha-singleton-features/Singleton_subsystem.adoc[leveloffset=+1]
 
-include::ha-singleton/Singleton_deployments.adoc[]
+include::ha-singleton-features/Singleton_deployments.adoc[leveloffset=+1]
 
-include::ha-singleton/Singleton_MSC_services.adoc[]
+include::ha-singleton-features/Singleton_MSC_services.adoc[leveloffset=+1]

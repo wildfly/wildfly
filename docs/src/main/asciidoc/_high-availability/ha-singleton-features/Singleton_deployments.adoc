@@ -53,6 +53,7 @@ providers:: Identifies the set of nodes on which the given singleton deployment 
 
 e.g.
 
+[source,options="nowrap"]
 ----
 /subsystem=singleton/singleton-policy=foo/deployment=bar.ear:read-attribute(name=primary-provider)
 ----

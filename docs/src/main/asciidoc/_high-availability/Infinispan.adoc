@@ -1,0 +1,5 @@
+= Infinispan
+
+include::infinispan/Infinispan_Subsystem.adoc[leveloffset=+1]
+
+// TODO Infinispan modules

@@ -1,0 +1,7 @@
+= Advanced Topics
+
+This section aims to describe cross-cutting topics, such as marshalling.
+
+include::advanced-topics/Marshalling.adoc[leveloffset=+1]
+
+// TODO Topics for expansion e.g. JPA 2LC, Upgrading/Migrating/Changes from previous versions, Performance Tuning
