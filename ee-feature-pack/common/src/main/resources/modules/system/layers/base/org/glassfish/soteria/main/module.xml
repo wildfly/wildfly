@@ -28,6 +28,7 @@
     </properties>
 
     <resources>
+        <artifact name="${org.glassfish.soteria:soteria.spi.bean.decorator.weld}"/>
         <artifact name="${org.glassfish.soteria:jakarta.security.enterprise}"/>
     </resources>
 
