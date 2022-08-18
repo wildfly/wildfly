@@ -30,9 +30,6 @@ import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -54,9 +51,9 @@ import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
  */
 public class DistributableSession implements io.undertow.server.session.Session {
     // These mechanisms can auto-reauthenticate and thus use local context (instead of replicating)
-    private static final Set<String> AUTO_REAUTHENTICATING_MECHANISMS = new HashSet<>(Arrays.asList(HttpServletRequest.BASIC_AUTH, HttpServletRequest.DIGEST_AUTH, HttpServletRequest.CLIENT_CERT_AUTH));
+    private static final Set<String> AUTO_REAUTHENTICATING_MECHANISMS = Set.of(HttpServletRequest.BASIC_AUTH, HttpServletRequest.DIGEST_AUTH, HttpServletRequest.CLIENT_CERT_AUTH);
     static final String WEB_SOCKET_CHANNELS_ATTRIBUTE = "io.undertow.websocket.current-connections";
-    private static final Set<String> LOCAL_CONTEXT_ATTRIBUTES = new HashSet<>(Arrays.asList(WEB_SOCKET_CHANNELS_ATTRIBUTE));
+    private static final Set<String> LOCAL_CONTEXT_ATTRIBUTES = Set.of(WEB_SOCKET_CHANNELS_ATTRIBUTE);
 
     private final UndertowSessionManager manager;
     private final Batch batch;
@@ -71,7 +68,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public DistributableSession(UndertowSessionManager manager, Session<Map<String, Object>> session, SessionConfig config, Batch batch, Consumer<HttpServerExchange> closeTask) {
         this.manager = manager;
         this.id = session.getId();
-        this.entry = new SimpleImmutableEntry<>(session, config);
+        this.entry = Map.entry(session, config);
         this.batch = batch;
         this.closeTask = closeTask;
         this.startTime = session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
@@ -85,7 +82,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
             synchronized (this) {
                 if (this.entry == null) {
                     // N.B. If entry is null, id and localContext will already have been set
-                    this.entry = new SimpleImmutableEntry<>(new OOBSession<>(this.manager.getSessionManager(), this.id, this.localContext), new SimpleSessionConfig(this.id));
+                    this.entry = Map.entry(new OOBSession<>(this.manager.getSessionManager(), this.id, this.localContext), new SimpleSessionConfig(this.id));
                 }
                 entry = this.entry;
             }
@@ -316,7 +313,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 newSession.getLocalContext().putAll(oldSession.getLocalContext());
                 oldSession.invalidate();
                 config.setSessionId(exchange, id);
-                this.entry = new SimpleImmutableEntry<>(newSession, config);
+                this.entry = Map.entry(newSession, config);
             } catch (IllegalStateException e) {
                 this.closeIfInvalid(exchange, oldSession);
                 newSession.invalidate();
