@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 
+    <!--undertow 2.2.19.Final fixed CVE-2022-2053  based on https://bugzilla.redhat.com/show_bug.cgi?id=2095862-->
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-core-2.2.19.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-2053</vulnerabilityName>
+    </suppress>
+    <!-- undertow server uses undertow-core, so it also has fixed CVE-2022-2053 when using undertow-core-2.2.19.Final-->
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-server-1.10.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server@.*$</packageUrl>
+        <cve>CVE-2022-2053</cve>
+    </suppress>
     <!-- [wildfly] vulnerability concerns jackson-databind -->
     <suppress>
         <notes><![CDATA[
