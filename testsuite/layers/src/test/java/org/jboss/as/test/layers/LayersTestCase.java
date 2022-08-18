@@ -106,6 +106,14 @@ public class LayersTestCase {
             "org.wildfly.extension.opentelemetry",
             "org.wildfly.extension.opentelemetry-api",
             "io.opentelemetry.trace",
+            // JGroups external protocols - AWS
+            "com.amazon.aws.core",
+            "com.amazon.aws.jmespath",
+            "com.amazon.aws.kms",
+            "com.amazon.aws.s3",
+            "com.amazon.ion",
+            "com.fasterxml.jackson.dataformat.jackson-dataformat-cbor",
+            "org.jgroups.aws",
     };
     private static final String[] NOT_USED;
     // Packages that are not referenced from the module graph but needed.

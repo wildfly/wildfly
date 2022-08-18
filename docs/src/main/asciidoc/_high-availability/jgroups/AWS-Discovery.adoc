@@ -2,6 +2,8 @@
 
 The `org.jgroups.protocols.aws.S3_PING` is a discovery protocol for AWS EC2.
 
+For provisioning using Galleon, use the `jgroups-aws` layer.
+
 The following example updates the `tcp` stack to use this discovery protocol instead of `MPING`:
 
 [source,options="nowrap"]
