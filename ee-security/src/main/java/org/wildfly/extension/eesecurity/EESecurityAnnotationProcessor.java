@@ -34,18 +34,18 @@ class EESecurityAnnotationProcessor implements DeploymentUnitProcessor {
     static final AttachmentKey<Boolean> SECURITY_PRESENT = AttachmentKey.create(Boolean.class);
 
     static final DotName[] ANNOTATIONS = {
-            DotName.createSimple("javax.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition"),
-            DotName.createSimple("javax.security.enterprise.authentication.mechanism.http.CustomFormAuthenticationMechanismDefinition"),
-            DotName.createSimple("javax.security.enterprise.authentication.mechanism.http.FormAuthenticationMechanismDefinition"),
-            DotName.createSimple("javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition"),
-            DotName.createSimple("javax.security.enterprise.identitystore.LdapIdentityStoreDefinition")
+            DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition"),
+            DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.CustomFormAuthenticationMechanismDefinition"),
+            DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.FormAuthenticationMechanismDefinition"),
+            DotName.createSimple("jakarta.security.enterprise.identitystore.DatabaseIdentityStoreDefinition"),
+            DotName.createSimple("jakarta.security.enterprise.identitystore.LdapIdentityStoreDefinition")
     };
 
     static final DotName[] INTERFACES = {
-            DotName.createSimple("javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism"),
-            DotName.createSimple("javax.security.enterprise.identitystore.IdentityStoreHandler"),
-            DotName.createSimple("javax.security.enterprise.identitystore.IdentityStore"),
-            DotName.createSimple("javax.security.enterprise.identitystore.RememberMeIdentityStore")
+            DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism"),
+            DotName.createSimple("jakarta.security.enterprise.identitystore.IdentityStoreHandler"),
+            DotName.createSimple("jakarta.security.enterprise.identitystore.IdentityStore"),
+            DotName.createSimple("jakarta.security.enterprise.identitystore.RememberMeIdentityStore")
     };
 
     @Override

@@ -69,6 +69,7 @@
         <module>ee-build</module>
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
+        <module>ee-security</module>
         <module>ee-9</module>
         <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
@@ -2039,8 +2040,6 @@
                 <module>datasources-agroal</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>ee</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>ee-security</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>ejb3</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->

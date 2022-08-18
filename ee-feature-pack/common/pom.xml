@@ -1157,7 +1157,7 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-security-jakarta</artifactId>
+            <artifactId>wildfly-ee-security</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
