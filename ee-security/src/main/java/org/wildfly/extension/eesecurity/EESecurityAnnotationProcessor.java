@@ -37,6 +37,13 @@ class EESecurityAnnotationProcessor implements DeploymentUnitProcessor {
             DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition"),
             DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.CustomFormAuthenticationMechanismDefinition"),
             DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.FormAuthenticationMechanismDefinition"),
+            DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.OpenIdAuthenticationMechanismDefinition"),
+            DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.LoginToContinue"),
+            DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.RememberMe"),
+            DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.AutoApplySession"),
+            DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.openid.ClaimsDefinition"),
+            DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.openid.LogoutDefinition"),
+            DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.openid.OpenIdProviderMetadata"),
             DotName.createSimple("jakarta.security.enterprise.identitystore.DatabaseIdentityStoreDefinition"),
             DotName.createSimple("jakarta.security.enterprise.identitystore.LdapIdentityStoreDefinition")
     };
