@@ -61,8 +61,6 @@
             <artifactId>wildfly-ee-jakarta</artifactId>
         </dependency>
 
-        <!-- Other deps consistent with the javax.* ee-security module -->
-        
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
