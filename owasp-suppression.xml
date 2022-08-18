@@ -17,6 +17,15 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server@.*$</packageUrl>
         <cve>CVE-2022-2053</cve>
     </suppress>
+    <!-- undertow server servlet uses undertow-core, so it also has fixed CVE-2022-2053 when using undertow-core-2.2.19
+    .Final-->
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-server-servlet-1.10.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server\-servlet@.*$</packageUrl>
+        <cve>CVE-2022-2053</cve>
+    </suppress>
     <!-- [wildfly] vulnerability concerns jackson-databind -->
     <suppress>
         <notes><![CDATA[
