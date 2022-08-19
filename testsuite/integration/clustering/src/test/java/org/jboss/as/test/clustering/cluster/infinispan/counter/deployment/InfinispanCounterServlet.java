@@ -55,14 +55,13 @@ public class InfinispanCounterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final String SERVLET_NAME = "counter";
     static final String SERVLET_PATH = "/" + SERVLET_NAME;
-    public static final String COUNTER_TYPE_PARAMETER = "counter-type";
     public static final String COUNTER_NAME_PARAMETER = "counter-name";
     public static final String STORAGE_PARAMETER = "define";
 
     @Resource(lookup = "java:jboss/infinispan/container/counter")
-    private EmbeddedCacheManager cm;
+    private EmbeddedCacheManager ecm;
 
-    private CounterManager ecm;
+    private CounterManager cm;
 
     public static URI createURI(URL baseURL, String counterName) throws URISyntaxException {
         return baseURL.toURI().resolve(buildQuery(counterName).toString());
@@ -78,7 +77,7 @@ public class InfinispanCounterServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        ecm = EmbeddedCounterManagerFactory.asCounterManager(cm);
+        cm = EmbeddedCounterManagerFactory.asCounterManager(ecm);
     }
 
     @Override
@@ -91,10 +90,10 @@ public class InfinispanCounterServlet extends HttpServlet {
                     .storage(Storage.valueOf(storage))
                     .build();
 
-            ecm.defineCounter(counterName, cc);
+            cm.defineCounter(counterName, cc);
         }
 
-        StrongCounter strongCounter = ecm.getStrongCounter(counterName);
+        StrongCounter strongCounter = cm.getStrongCounter(counterName);
 
         CompletableFuture<Long> longCompletableFuture = strongCounter.addAndGet(1);
         try {

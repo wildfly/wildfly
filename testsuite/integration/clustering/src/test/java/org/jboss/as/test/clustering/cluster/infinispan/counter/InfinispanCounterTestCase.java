@@ -26,11 +26,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.UUID;
+
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.infinispan.counter.api.Storage;
@@ -42,9 +42,8 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.infinispan.counter.deployment.InfinispanCounterServlet;
-import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -55,9 +54,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test case to verify Infinispan counter module usage. Verifies both VOLATILE and PERSISTENT timers.
+ * Test case to verify Infinispan counter module usage.
+ * Verifies both VOLATILE and PERSISTENT timers.
  * The server setup configures a new cache container with org.infinispan.counter module and a default replicated cache.
- * Test creates a counter on one node, then tests counter availability on other node.
+ * Test creates a counter on one node, then tests counter availability on the other node.
  *
  * @author Radoslav Husar
  */
@@ -80,12 +80,11 @@ public class InfinispanCounterTestCase extends AbstractClusteringTestCase {
     }
 
     private static Archive<?> createDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war")
+        return ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war")
                 .addPackage(InfinispanCounterServlet.class.getPackage())
                 .setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan, org.infinispan.commons, org.infinispan.counter\n"))
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .setWebXML(SimpleServlet.class.getPackage(), "web.xml");
-        return war;
+                ;
     }
 
     @Test
@@ -107,61 +106,54 @@ public class InfinispanCounterTestCase extends AbstractClusteringTestCase {
         String counterName = storage.name() + UUID.randomUUID();
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(InfinispanCounterServlet.createURI(baseURL1, counterName, storage.name())));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanCounterServlet.createURI(baseURL1, counterName, storage.name())))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(1, Integer.parseInt(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(InfinispanCounterServlet.createURI(baseURL1, counterName)));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanCounterServlet.createURI(baseURL1, counterName)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(2, Integer.parseInt(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
             // -> node2
 
-            response = client.execute(new HttpGet(InfinispanCounterServlet.createURI(baseURL2, counterName)));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanCounterServlet.createURI(baseURL2, counterName)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(3, Integer.parseInt(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(InfinispanCounterServlet.createURI(baseURL2, counterName)));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanCounterServlet.createURI(baseURL2, counterName)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(4, Integer.parseInt(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
             // -> node1
 
-            response = client.execute(new HttpGet(InfinispanCounterServlet.createURI(baseURL1, counterName)));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanCounterServlet.createURI(baseURL1, counterName)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(5, Integer.parseInt(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
         }
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder
-                    .node(TWO_NODES)
-                    .setup("/subsystem=infinispan/cache-container=counter:add(default-cache=repl, modules=[org.infinispan.counter])")
-                    .setup("/subsystem=infinispan/cache-container=counter/transport=jgroups:add")
-                    .setup("/subsystem=infinispan/cache-container=counter/replicated-cache=repl:add")
-                    .teardown("/subsystem=infinispan/cache-container=counter:remove")
-            ;
+            super(NODE_1_2, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=infinispan/cache-container=counter:add(default-cache=repl, modules=[org.infinispan.counter])")
+                            .add("/subsystem=infinispan/cache-container=counter/transport=jgroups:add")
+                            .add("/subsystem=infinispan/cache-container=counter/replicated-cache=repl:add")
+                            .endBatch()
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=infinispan/cache-container=counter:remove")
+                            .endBatch()
+                            .build())
+                    .build());
         }
     }
+
 }
