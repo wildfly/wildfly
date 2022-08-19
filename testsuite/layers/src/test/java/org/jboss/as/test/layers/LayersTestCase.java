@@ -102,7 +102,8 @@ public class LayersTestCase {
         "com.carrotsearch.hppc",
         "org.apache.lucene",
         // Used by Hibernate Search but only in preview
-        "org.apache.avro", // Will be used by outboxpolling, present only in preview (see https://github.com/wildfly/wildfly/pull/15974)
+        "org.hibernate.search.mapper.orm.coordination.outboxpolling", // Present only in preview
+        "org.apache.avro", // Used by outboxpolling
         // TODO these implement SPIs from RESTEasy or JBoss WS but I don't know how they integrate
         // as there is no ref to them in any module.xml nor any in WF java code.
         // Perhaps via deployment descriptor? In any case, no layer provides them
@@ -193,11 +194,13 @@ public class LayersTestCase {
         "org.hibernate.search.orm",
         "org.hibernate.search.backend.elasticsearch",
         "org.hibernate.search.backend.lucene",
+        "org.hibernate.search.mapper.orm.coordination.outboxpolling", // Present only in preview
         // Used by the hibernate search that's injected by jpa
         "org.elasticsearch.client.rest-client",
         "com.google.code.gson",
         "com.carrotsearch.hppc",
         "org.apache.lucene",
+        "org.apache.avro",
         // injected by jsf
         "org.jboss.as.jsf-injection",
         // injected by sar

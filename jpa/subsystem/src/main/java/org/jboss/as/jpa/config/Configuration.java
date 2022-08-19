@@ -207,6 +207,11 @@ public class Configuration {
     public static final String HIBERNATE_SEARCH_MODULE_MAPPER_ORM = "org.hibernate.search.mapper.orm";
 
     /**
+     * name of the Hibernate Search module providing the outbox-polling coordination strategy
+     */
+    public static final String HIBERNATE_SEARCH_MODULE_MAPPER_ORM_COORDINATION_OUTBOXPOLLING = "org.hibernate.search.mapper.orm.coordination.outboxpolling";
+
+    /**
      * name of the Hibernate Search module providing the Lucene backend
      */
     public static final String HIBERNATE_SEARCH_MODULE_BACKEND_LUCENE = "org.hibernate.search.backend.lucene";
@@ -230,6 +235,16 @@ public class Configuration {
      * The value of the {@link #HIBERNATE_SEARCH_BACKEND_TYPE} property that identifies the use of an Elasticsearch backend.
      */
     public static final String HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_ELASTICSEARCH = "elasticsearch";
+
+    /**
+     * Name of the Hibernate Search configuration property allowing to set the coordination strategy
+     */
+    public static final String HIBERNATE_SEARCH_COORDINATION_STRATEGY = "hibernate.search.coordination.strategy";
+
+    /**
+     * The value of the {@link #HIBERNATE_SEARCH_COORDINATION_STRATEGY} property that identifies the use of an Elasticsearch backend.
+     */
+    public static final String HIBERNATE_SEARCH_COORDINATION_STRATEGY_VALUE_OUTBOX_POLLING = "outbox-polling";
 
     private static final String EE_DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";
     // key = provider class name, value = module name
