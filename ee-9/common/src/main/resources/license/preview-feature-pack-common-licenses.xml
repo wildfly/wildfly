@@ -655,7 +655,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-ee-security-jakarta</artifactId>
+      <artifactId>wildfly-ee-security</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
