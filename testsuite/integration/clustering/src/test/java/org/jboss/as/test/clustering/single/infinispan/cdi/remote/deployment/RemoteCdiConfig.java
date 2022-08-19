@@ -24,6 +24,8 @@ package org.jboss.as.test.clustering.single.infinispan.cdi.remote.deployment;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_PASSWORD;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_USER;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_ADDRESS;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_PORT;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
@@ -48,7 +50,7 @@ public class RemoteCdiConfig {
     @RemoteGreetingCache
     public static RemoteCacheManager defaultRemoteCacheManager() {
         Configuration configuration = new ConfigurationBuilder()
-                .addServer().host("127.0.0.1").port(11222)
+                .addServer().host(INFINISPAN_SERVER_ADDRESS).port(INFINISPAN_SERVER_PORT)
                 .security().authentication().username(INFINISPAN_APPLICATION_USER).password(INFINISPAN_APPLICATION_PASSWORD)
                 .build();
         return new RemoteCacheManager(configuration);

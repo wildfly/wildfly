@@ -29,6 +29,7 @@ import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.IN
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+
 import jakarta.annotation.Resource;
 
 import org.infinispan.client.hotrod.RemoteCache;
@@ -38,7 +39,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Person;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -72,15 +73,25 @@ public class ContainerManagedHotRodClientTestCase {
                 ;
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node("default")
-                    .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=%d,host=%s)", INFINISPAN_SERVER_PORT, INFINISPAN_SERVER_ADDRESS)
-                    .setup("/subsystem=infinispan/remote-cache-container=query:add(default-remote-cluster=infinispan-server-cluster, tcp-keep-alive=true, marshaller=PROTOSTREAM, modules=[org.wildfly.clustering.web.hotrod], properties={infinispan.client.hotrod.auth_username=%s, infinispan.client.hotrod.auth_password=%s}, statistics-enabled=true)", INFINISPAN_APPLICATION_USER, INFINISPAN_APPLICATION_PASSWORD)
-                    .setup("/subsystem=infinispan/remote-cache-container=query/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
-                    .teardown("/subsystem=infinispan/remote-cache-container=query:remove")
-                    .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
-            ;
+            super("default", createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=%d,host=%s)", INFINISPAN_SERVER_PORT, INFINISPAN_SERVER_ADDRESS)
+                            .add("/subsystem=infinispan/remote-cache-container=query:add(default-remote-cluster=infinispan-server-cluster, tcp-keep-alive=true, marshaller=PROTOSTREAM, modules=[org.wildfly.clustering.web.hotrod], properties={infinispan.client.hotrod.auth_username=%s, infinispan.client.hotrod.auth_password=%s}, statistics-enabled=true)", INFINISPAN_APPLICATION_USER, INFINISPAN_APPLICATION_PASSWORD)
+                            .add("/subsystem=infinispan/remote-cache-container=query/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
+                            .endBatch()
+                            .build()
+                    )
+                    .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=infinispan/remote-cache-container=query:remove")
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
+                            .endBatch()
+                            .build())
+                    .build()
+            );
         }
     }
 
@@ -98,16 +109,6 @@ public class ContainerManagedHotRodClientTestCase {
     @Test
     public void testPutGetCustomObject() throws IOException {
         remoteCache = createRemoteCache();
-
-        /*
-        SerializationContext serializationContext = MarshallerUtil.getSerializationContext(remoteCache.getRemoteCacheManager());
-        ProtoSchemaBuilder protoSchemaBuilder = new ProtoSchemaBuilder();
-        String protoFile = protoSchemaBuilder.fileName("test.proto")
-                .addClass(Person.class)
-                .build(serializationContext);
-
-        remoteCache.put("test.proto", protoFile);
-         */
 
         Person p = new Person("Martin");
         remoteCache.put("k1", p);

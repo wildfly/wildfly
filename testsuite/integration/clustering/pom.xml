@@ -2508,6 +2508,10 @@
                                 <id>ts.surefire.clustering.single.manual</id>
                                 <phase>none</phase>
                             </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.single.testable</id>
+                                <phase>none</phase>
+                            </execution>
                             <!-- Tests against the standalone-microprofile-ha.xml config -->
                             <execution>
                                 <id>ts.surefire.clustering.microprofile</id>
@@ -2659,6 +2663,10 @@
                             </execution>
                             <execution>
                                 <id>ts.surefire.clustering.single.manual</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.single.testable</id>
                                 <phase>none</phase>
                             </execution>
                             <!-- Run the ts.surefire.clustering.microprofile execution but exclude incompatible tests -->

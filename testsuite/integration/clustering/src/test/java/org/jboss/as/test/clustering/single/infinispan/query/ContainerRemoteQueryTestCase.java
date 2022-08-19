@@ -52,7 +52,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Book;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Person;
 import org.jboss.as.test.clustering.single.infinispan.query.proto.BookQuerySchema;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -63,7 +63,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test for remote query using Container-managed objects.
+ * Test for remote query using container-managed objects.
  *
  * @author Radoslav Husar
  * @since 27
@@ -72,15 +72,25 @@ import org.junit.runner.RunWith;
 @ServerSetup({ContainerRemoteQueryTestCase.ServerSetupTask.class})
 public class ContainerRemoteQueryTestCase {
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node("default")
-                    .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=%d, host=%s)", INFINISPAN_SERVER_PORT, INFINISPAN_SERVER_ADDRESS)
-                    .setup("/subsystem=infinispan/remote-cache-container=query:add(default-remote-cluster=infinispan-server-cluster, tcp-keep-alive=true, marshaller=DEFAULT, modules=[], properties={infinispan.client.hotrod.auth_username=%s, infinispan.client.hotrod.auth_password=%s}, statistics-enabled=true)", INFINISPAN_APPLICATION_USER, INFINISPAN_APPLICATION_PASSWORD)
-                    .setup("/subsystem=infinispan/remote-cache-container=query/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
-                    .teardown("/subsystem=infinispan/remote-cache-container=query:remove")
-                    .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
-            ;
+            super("default", createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=%d, host=%s)", INFINISPAN_SERVER_PORT, INFINISPAN_SERVER_ADDRESS)
+                            .add("/subsystem=infinispan/remote-cache-container=query:add(default-remote-cluster=infinispan-server-cluster, tcp-keep-alive=true, marshaller=DEFAULT, modules=[], properties={infinispan.client.hotrod.auth_username=%s, infinispan.client.hotrod.auth_password=%s}, statistics-enabled=true)", INFINISPAN_APPLICATION_USER, INFINISPAN_APPLICATION_PASSWORD)
+                            .add("/subsystem=infinispan/remote-cache-container=query/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
+                            .endBatch()
+                            .build()
+                    )
+                    .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=infinispan/remote-cache-container=query:remove")
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
+                            .endBatch()
+                            .build())
+                    .build()
+            );
         }
     }
 
@@ -93,14 +103,15 @@ public class ContainerRemoteQueryTestCase {
                 .addPackage(BookQuerySchema.class.getPackage().getName())
                 .addAsResource("proto/book.proto")
                 .addAsServiceProvider(SerializationContextInitializer.class.getName(), BookQuerySchema.class.getName() + "Impl")
-                .add(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan meta-inf, org.infinispan.commons meta-inf, org.infinispan.client.hotrod meta-inf, org.infinispan.protostream meta-inf, org.infinispan.query meta-inf, org.infinispan.query.dsl meta-inf,org.infinispan.query.client meta-inf, org.infinispan.query.core meta-inf").exportAsString()), "META-INF/MANIFEST.MF");
+                .add(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan meta-inf, org.infinispan.commons meta-inf, org.infinispan.client.hotrod meta-inf, org.infinispan.protostream meta-inf, org.infinispan.query meta-inf, org.infinispan.query.dsl meta-inf,org.infinispan.query.client meta-inf, org.infinispan.query.core meta-inf").exportAsString()), "META-INF/MANIFEST.MF")
+                ;
     }
 
     @Resource(lookup = "java:jboss/infinispan/remote-container/query")
     private RemoteCacheContainer remoteCacheContainer;
 
     @Test
-    public void testRemoteBookQuery() throws Exception {
+    public void testRemoteBookQuery() {
         RemoteCache<String, Book> cache = remoteCacheContainer.getCache();
 
         SerializationContext serializationContext = MarshallerUtil.getSerializationContext(cache.getRemoteCacheManager());

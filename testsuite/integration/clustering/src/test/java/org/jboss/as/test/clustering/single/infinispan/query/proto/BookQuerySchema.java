@@ -40,7 +40,6 @@ import org.jboss.as.test.clustering.single.infinispan.query.data.Book;
         },
         schemaFileName = "book.proto",
         schemaFilePath = "proto/"
-//        schemaPackageName = "book_sample"
 )
 public interface BookQuerySchema extends GeneratedSchema {
 }

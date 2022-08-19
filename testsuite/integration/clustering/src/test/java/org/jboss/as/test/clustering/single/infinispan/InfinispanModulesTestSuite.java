@@ -27,7 +27,6 @@ import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.DuplicatedDom
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.GreetingCacheManagerTestCase;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.GreetingServiceTestCase;
 import org.jboss.as.test.clustering.single.infinispan.cdi.remote.RemoteGreetingServiceTestCase;
-import org.jboss.as.test.clustering.single.infinispan.embedded.EmbeddedCacheGenericMarshallerTestCase;
 import org.jboss.as.test.clustering.single.infinispan.embedded.InfinispanCoreTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.ContainerManagedHotRodClientTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.HotRodClientTestCase;
@@ -48,13 +47,13 @@ import org.junit.runners.Suite.SuiteClasses;
  * For a workaround, to run a single test, comment out the undesired classes in this file.
  *
  * @author Radoslav Husar
+ * @since 27
  */
 @RunWith(Suite.class)
 @SuiteClasses({
         HotRodClientTestCase.class,
         RemoteQueryTestCase.class,
         ContainerRemoteQueryTestCase.class,
-        EmbeddedCacheGenericMarshallerTestCase.class,
         InfinispanCoreTestCase.class,
         RemoteGreetingServiceTestCase.class,
         DuplicatedDomainsCdiTestCase.class,

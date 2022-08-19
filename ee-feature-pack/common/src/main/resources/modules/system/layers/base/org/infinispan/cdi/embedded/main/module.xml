@@ -27,8 +27,9 @@
     </resources>
 
     <dependencies>
-        <module name="javax.enterprise.api" />
-        <module name="javax.inject.api"/>
+        <module name="jakarta.enterprise.api" />
+        <module name="jakarta.inject.api"/>
+
         <module name="org.infinispan"/>
         <module name="org.infinispan.cdi.common"/>
         <module name="org.infinispan.commons"/>

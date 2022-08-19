@@ -24,6 +24,7 @@ package org.jboss.as.test.clustering.single.infinispan.query;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_PASSWORD;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_USER;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_ADDRESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -70,8 +71,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class RemoteQueryTestCase {
-
-    private static final String HOST = "127.0.0.1";
 
     @Deployment
     public static Archive<?> deployment() throws IOException {
@@ -182,7 +181,7 @@ public class RemoteQueryTestCase {
 
     private ConfigurationBuilder localServerConfiguration() {
         ConfigurationBuilder config = new ConfigurationBuilder();
-        config.addServer().host(HOST);
+        config.addServer().host(INFINISPAN_SERVER_ADDRESS);
         config.security().authentication().username(INFINISPAN_APPLICATION_USER).password(INFINISPAN_APPLICATION_PASSWORD);
         return config;
     }

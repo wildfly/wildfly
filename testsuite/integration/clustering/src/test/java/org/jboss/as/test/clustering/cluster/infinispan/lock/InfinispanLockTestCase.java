@@ -42,7 +42,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.infinispan.lock.deployment.InfinispanLockServlet;
 import org.jboss.as.test.clustering.cluster.infinispan.lock.deployment.InfinispanLockServlet.LockOperation;
-import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
@@ -80,12 +79,11 @@ public class InfinispanLockTestCase extends AbstractClusteringTestCase {
     }
 
     private static Archive<?> createDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war")
+        return ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war")
                 .addPackage(InfinispanLockServlet.class.getPackage())
                 .setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan, org.infinispan.commons, org.infinispan.lock\n"))
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .setWebXML(SimpleServlet.class.getPackage(), "web.xml");
-        return war;
+                ;
     }
 
     @Test

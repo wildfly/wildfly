@@ -24,6 +24,7 @@ package org.jboss.as.test.clustering.single.infinispan.query;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_PASSWORD;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_USER;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_ADDRESS;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -68,7 +69,8 @@ public class HotRodClientTestCase {
                 .create(WebArchive.class, HotRodClientTestCase.class.getSimpleName() + ".war")
                 .addClass(HotRodClientTestCase.class)
                 .addClass(Person.class)
-                .add(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan, org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.query, org.infinispan.protostream").exportAsString()), "META-INF/MANIFEST.MF");
+                .add(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan, org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.query, org.infinispan.protostream").exportAsString()), "META-INF/MANIFEST.MF")
+                ;
     }
 
     private static RemoteCache<String, Object> createRemoteCache() {
@@ -80,7 +82,7 @@ public class HotRodClientTestCase {
 
     private static Configuration createConfiguration() {
         ConfigurationBuilder config = new ConfigurationBuilder();
-        config.addServer().host("127.0.0.1");
+        config.addServer().host(INFINISPAN_SERVER_ADDRESS);
         config.marshaller(new ProtoStreamMarshaller());
         config.security().authentication().username(INFINISPAN_APPLICATION_USER).password(INFINISPAN_APPLICATION_PASSWORD);
         return config.build();

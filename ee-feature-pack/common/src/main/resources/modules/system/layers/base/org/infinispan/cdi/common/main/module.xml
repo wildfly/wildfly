@@ -29,8 +29,10 @@
     <dependencies>
         <module name="java.logging"/>
         <module name="java.naming"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.inject.api"/>
+
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.inject.api"/>
+
         <module name="org.infinispan.commons"/>
         <module name="org.jboss.logging"/>
     </dependencies>
