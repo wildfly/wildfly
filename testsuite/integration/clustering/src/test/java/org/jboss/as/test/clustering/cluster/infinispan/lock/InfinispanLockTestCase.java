@@ -29,9 +29,8 @@ import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -45,7 +44,7 @@ import org.jboss.as.test.clustering.cluster.infinispan.lock.deployment.Infinispa
 import org.jboss.as.test.clustering.cluster.infinispan.lock.deployment.InfinispanLockServlet.LockOperation;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -58,7 +57,7 @@ import org.junit.runner.RunWith;
 /**
  * Test case to verify Infinispan lock module usage.
  * The server setup configures a new cache container with org.infinispan.lock module and a default replicated cache.
- * Test creates a lock on one node, then tests lock availability on other node.
+ * Test creates a lock on one node, then tests lock availability on the other node.
  *
  * @author Radoslav Husar
  */
@@ -97,88 +96,74 @@ public class InfinispanLockTestCase extends AbstractClusteringTestCase {
         String lockName = UUID.randomUUID().toString();
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.DEFINE)));
-            try {
+
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.DEFINE)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.IS_LOCKED)));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.IS_LOCKED)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertFalse(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.LOCK)));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.LOCK)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.IS_LOCKED)));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.IS_LOCKED)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
             // -> node2
 
-            response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL2, lockName, LockOperation.IS_LOCKED)));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL2, lockName, LockOperation.IS_LOCKED)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
             // -> node 1
-            response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.UNLOCK)));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.UNLOCK)));) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 // unlock has no output – only check SC
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
             // -> node 2
 
-            response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL2, lockName, LockOperation.IS_LOCKED)));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL2, lockName, LockOperation.IS_LOCKED)));) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertFalse(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
             // -> node1
 
-            response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.IS_LOCKED)));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.IS_LOCKED)));) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertFalse(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
+
         }
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder
-                    .node(TWO_NODES)
-                    .setup("/subsystem=infinispan/cache-container=lock:add(default-cache=repl, modules=[org.infinispan.lock])")
-                    .setup("/subsystem=infinispan/cache-container=lock/transport=jgroups:add")
-                    .setup("/subsystem=infinispan/cache-container=lock/replicated-cache=repl:add")
-                    .teardown("/subsystem=infinispan/cache-container=lock:remove")
-            ;
+            super(NODE_1_2, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=infinispan/cache-container=lock:add(default-cache=repl, modules=[org.infinispan.lock])")
+                            .add("/subsystem=infinispan/cache-container=lock/transport=jgroups:add")
+                            .add("/subsystem=infinispan/cache-container=lock/replicated-cache=repl:add")
+                            .endBatch()
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=infinispan/cache-container=lock:remove")
+                            .endBatch()
+                            .build())
+                    .build());
         }
     }
+
 }
