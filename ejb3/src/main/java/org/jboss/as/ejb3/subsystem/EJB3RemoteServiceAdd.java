@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -146,21 +147,21 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the Jakarta Enterprise Beans remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
-        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(channelCreationOptions,
-                FilterSpecClassResolverFilter.getFilterForOperationContext(context));
-        CapabilityServiceBuilder<?> builder = (CapabilityServiceBuilder<?>) context.getCapabilityServiceTarget()
-                .addCapability(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY)
-                .setInstance(ejbRemoteConnectorService)
-                .addCapabilityRequirement(EJB3RemoteResourceDefinition.REMOTING_ENDPOINT_CAPABILITY_NAME, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector());
+        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY);
+        final Consumer<EJBRemoteConnectorService> serviceConsumer = builder.provides(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY);
+        final Supplier<Endpoint> endpointSupplier = builder.requiresCapability(EJB3RemoteResourceDefinition.REMOTING_ENDPOINT_CAPABILITY_NAME, Endpoint.class);
+        Supplier<ExecutorService> executorServiceSupplier = null;
         if (!executeInWorker) {
-            builder.addCapabilityRequirement(EJB3RemoteResourceDefinition.THREAD_POOL_CAPABILITY_NAME, ExecutorService.class, ejbRemoteConnectorService.getExecutorService(), threadPoolName);
+            executorServiceSupplier = builder.requiresCapability(EJB3RemoteResourceDefinition.THREAD_POOL_CAPABILITY_NAME, ExecutorService.class, threadPoolName);
         }
         // add rest of the dependencies
-        builder.addDependency(AssociationService.SERVICE_NAME, AssociationService.class, ejbRemoteConnectorService.getAssociationServiceInjector())
-                .addCapabilityRequirement(EJB3RemoteResourceDefinition.REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME, RemotingTransactionService.class, ejbRemoteConnectorService.getRemotingTransactionServiceInjector())
-                .addAliases(EJBRemoteConnectorService.SERVICE_NAME)
-                .setInitialMode(ServiceController.Mode.LAZY)
-                .install();
+        final Supplier<AssociationService> associationServiceSupplier = builder.requires(AssociationService.SERVICE_NAME);
+        final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier = builder.requiresCapability(EJB3RemoteResourceDefinition.REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME, RemotingTransactionService.class);
+        builder.addAliases(EJBRemoteConnectorService.SERVICE_NAME).setInitialMode(ServiceController.Mode.LAZY);
+        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(serviceConsumer, endpointSupplier, executorServiceSupplier, associationServiceSupplier, remotingTransactionServiceSupplier, channelCreationOptions,
+                FilterSpecClassResolverFilter.getFilterForOperationContext(context));
+        builder.setInstance(ejbRemoteConnectorService);
+        builder.install();
     }
 
     private OptionMap getChannelCreationOptions(final OperationContext context) throws OperationFailedException {

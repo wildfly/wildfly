@@ -23,15 +23,16 @@ package org.jboss.as.ejb3.remote;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jboss.ejb.protocol.remote.RemoteEJBService;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.OpenListener;
 import org.jboss.remoting3.Registration;
@@ -42,38 +43,46 @@ import org.xnio.OptionMap;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class EJBRemoteConnectorService implements Service<Void> {
+public class EJBRemoteConnectorService implements Service {
 
     // TODO: Should this be exposed via the management APIs?
     private static final String EJB_CHANNEL_NAME = "jboss.ejb";
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
-    private final InjectedValue<Endpoint> endpointValue = new InjectedValue<>();
-    private final InjectedValue<ExecutorService> executorService = new InjectedValue<>();
-    private final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
-    private final InjectedValue<RemotingTransactionService> remotingTransactionServiceInjectedValue = new InjectedValue<>();
+    private final Consumer<EJBRemoteConnectorService> serviceConsumer;
+    private final Supplier<Endpoint> endpointSupplier;
+    private final Supplier<ExecutorService> executorServiceSupplier;
+    private final Supplier<AssociationService> associationServiceSupplier;
+    private final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier;
     private volatile Registration registration;
     private final OptionMap channelCreationOptions;
     private final Function<String, Boolean> classResolverFilter;
 
-    public EJBRemoteConnectorService(final OptionMap channelCreationOptions,
-                                     final Function<String, Boolean> classResolverFilter) {
+    public EJBRemoteConnectorService(
+            final Consumer<EJBRemoteConnectorService> serviceConsumer, final Supplier<Endpoint> endpointSupplier, final Supplier<ExecutorService> executorServiceSupplier,
+            final Supplier<AssociationService> associationServiceSupplier, final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier,
+            final OptionMap channelCreationOptions, final Function<String, Boolean> classResolverFilter) {
+        this.serviceConsumer = serviceConsumer;
+        this.endpointSupplier = endpointSupplier;
+        this.executorServiceSupplier = executorServiceSupplier;
+        this.associationServiceSupplier = associationServiceSupplier;
+        this.remotingTransactionServiceSupplier = remotingTransactionServiceSupplier;
         this.channelCreationOptions = channelCreationOptions;
         this.classResolverFilter = classResolverFilter;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        final AssociationService associationService = associationServiceInjectedValue.getValue();
-        final Endpoint endpoint = endpointValue.getValue();
-        Executor executor = executorService.getOptionalValue();
+        final AssociationService associationService = associationServiceSupplier.get();
+        final Endpoint endpoint = endpointSupplier.get();
+        Executor executor = executorServiceSupplier != null ? executorServiceSupplier.get() : null;
         if (executor != null) {
             associationService.setExecutor(executor);
         }
         RemoteEJBService remoteEJBService = RemoteEJBService.create(
             associationService.getAssociation(),
-            remotingTransactionServiceInjectedValue.getValue(),
+            remotingTransactionServiceSupplier.get(),
             classResolverFilter
         );
         remoteEJBService.serverUp();
@@ -85,34 +94,16 @@ public class EJBRemoteConnectorService implements Service<Void> {
         } catch (ServiceRegistrationException e) {
             throw new StartException(e);
         }
+        serviceConsumer.accept(this);
     }
 
     @Override
     public void stop(StopContext context) {
-        final AssociationService associationService = associationServiceInjectedValue.getValue();
+        serviceConsumer.accept(null);
+        final AssociationService associationService = associationServiceSupplier.get();
         associationService.sendTopologyUpdateIfLastNodeToLeave();
         associationService.setExecutor(null);
         registration.close();
     }
 
-    @Override
-    public Void getValue() {
-        return null;
-    }
-
-    public InjectedValue<Endpoint> getEndpointInjector() {
-        return endpointValue;
-    }
-
-    public InjectedValue<RemotingTransactionService> getRemotingTransactionServiceInjector() {
-        return remotingTransactionServiceInjectedValue;
-    }
-
-    public InjectedValue<AssociationService> getAssociationServiceInjector() {
-        return associationServiceInjectedValue;
-    }
-
-    public InjectedValue<ExecutorService> getExecutorService() {
-        return executorService;
-    }
 }
