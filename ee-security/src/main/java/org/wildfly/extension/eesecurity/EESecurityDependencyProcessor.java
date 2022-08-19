@@ -44,7 +44,7 @@ class EESecurityDependencyProcessor implements DeploymentUnitProcessor {
 
         Boolean securityPresent = top.getAttachment(EESecurityAnnotationProcessor.SECURITY_PRESENT);
         if(securityPresent != null && securityPresent) {
-            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.fromString("org.glassfish.soteria"), false, false, true, false));
+            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.fromString("org.wildfly.security.jakarta.security"), false, false, true, false));
         }
 
     }

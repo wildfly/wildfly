@@ -4526,6 +4526,27 @@
         </license>
       </licenses>
     </dependency>
+        <dependency>
+      <groupId>org.wildfly.security.jakarta</groupId>
+      <artifactId>jakarta-security</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+            <name>EPL 2.0</name>
+            <url>http://www.eclipse.org/legal/epl-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+        <license>
+            <name>GPL2 w/ CPE</name>
+            <url>https://www.gnu.org/software/classpath/license.html</url>
+            <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
     <dependency>
       <groupId>org.wildfly.security.jakarta</groupId>
       <artifactId>jakarta-client-resteasy</artifactId>

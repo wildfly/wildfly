@@ -3533,6 +3533,18 @@
 
             <dependency>
                 <groupId>org.wildfly.security.jakarta</groupId>
+                <artifactId>jakarta-security</artifactId>
+                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.jakarta</groupId>
                 <artifactId>jakarta-client-resteasy</artifactId>
                 <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
                 <exclusions>
