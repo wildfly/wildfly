@@ -437,6 +437,7 @@
                                 <layer>cloud-server</layer>
                                 <layer>web-clustering</layer>
                                 <layer>h2-default-datasource</layer>
+                                <layer>infinispan</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -1478,6 +1479,7 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>web-clustering</layer>
                                                 <layer>h2-default-datasource</layer>
+                                                <layer>infinispan</layer>
                                             </layers>
                                         </config>
                                         <!-- Some tests launch an lb process, and this gets set up
@@ -1511,6 +1513,7 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>web-clustering</layer>
                                                 <layer>h2-default-datasource</layer>
+                                                <layer>infinispan</layer>
                                             </layers>
                                         </config>
                                     </configurations>
