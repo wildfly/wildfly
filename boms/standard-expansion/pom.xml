@@ -50,7 +50,7 @@
     <dependencyManagement>
         <dependencies>
 
-            <!-- Inherit the preview ee deps -->
+            <!-- Inherit the standard ee deps -->
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-standard-ee-bom</artifactId>
