@@ -152,7 +152,6 @@ public class OidcActivationProcessorTest {
         public <T> void addDependency(ServiceName arg0, AttachmentKey<T> arg1) {
         }
 
-        @Override
         public <T> void addDependency(ServiceName arg0, Class<T> arg1, Injector<T> arg2) {
         }
 

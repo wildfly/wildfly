@@ -33,7 +33,8 @@
     </resources>
 
     <dependencies>
-        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.el.api"/>
+
         <module name="org.glassfish.expressly" />
         <module name="org.infinispan.protostream"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>

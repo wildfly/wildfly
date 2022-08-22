@@ -66,6 +66,15 @@ public class TransactionRollbackSetupAction implements SetupAction, Service<Tran
         if (changeDepth(-1)) {
             checkTransactionStatus();
         }
+
+        // reset transaction timeout to the default value
+        final TransactionManager tm = transactionManager.getOptionalValue();
+        if (tm != null) {
+            try {
+                tm.setTransactionTimeout(0);
+            } catch (Exception ignore) {
+            }
+        }
     }
 
     @Override

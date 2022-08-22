@@ -38,8 +38,6 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.marshalling.protostream.ModuleClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -58,7 +56,7 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<SSOManager<A, D, S, L, Batch>>, Consumer<SSOManager<A, D, S, L, Batch>>, SSOManagerConfiguration<ByteBufferMarshaller, L> {
+public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<SSOManager<A, D, S, L, Batch>>, Consumer<SSOManager<A, D, S, L, Batch>>, SSOManagerConfiguration<L> {
 
     private final SupplierDependency<SSOManagerFactory<A, D, S, Batch>> factory;
     private final SupplierDependency<SessionIdGenerator> generator;
@@ -107,7 +105,7 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     }
 
     @Override
-    public MarshalledValueFactory<ByteBufferMarshaller> getMarshalledValueFactory() {
-        return new ByteBufferMarshalledValueFactory(this.marshaller);
+    public ByteBufferMarshaller getMarshaller() {
+        return this.marshaller;
     }
 }

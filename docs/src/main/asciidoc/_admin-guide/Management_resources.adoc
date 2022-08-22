@@ -507,9 +507,9 @@ what's in `domain.xml`, the host specific configuration for each host
 application server. The Host Controller processes in a managed domain
 provide access to all or part of the overall resource tree. How much is
 available depends on whether the management client is interacting with
-the Host Controller that is acting as the master Domain Controller. If
-the Host Controller is the master Domain Controller, then the section of
-the tree for each host is available. If the Host Controller is a slave
+the Host Controller that is acting as the Domain Controller. If
+the Host Controller is the Domain Controller, then the section of
+the tree for each host is available. If the Host Controller is a secondary Host Controller
 to a remote Domain Controller, then only the portion of the tree
 associated with that host is available.
 

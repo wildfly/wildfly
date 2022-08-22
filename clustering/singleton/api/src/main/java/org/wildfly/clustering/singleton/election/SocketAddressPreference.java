@@ -36,4 +36,9 @@ public class SocketAddressPreference implements Preference {
     public boolean preferred(Node node) {
         return node.getSocketAddress().getAddress().getHostAddress().equals(this.address.getAddress().getHostAddress()) && (node.getSocketAddress().getPort() == this.address.getPort());
     }
+
+    @Override
+    public String toString() {
+        return this.address.toString();
+    }
 }

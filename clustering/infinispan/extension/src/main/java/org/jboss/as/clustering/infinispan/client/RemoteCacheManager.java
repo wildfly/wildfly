@@ -59,13 +59,9 @@ public class RemoteCacheManager extends org.infinispan.client.hotrod.RemoteCache
     }
 
     @Override
-    public <K, V> RemoteCache<K, V> getCache(String cacheName, TransactionMode transactionMode, TransactionManager transactionManager) {
-        return this.getCache(cacheName, this.getConfiguration().forceReturnValues(), transactionMode, transactionManager);
-    }
-
-    @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue, TransactionMode transactionMode, TransactionManager transactionManager) {
-        return new RegisteredRemoteCache<>(this, super.getCache(cacheName, forceReturnValue, transactionMode, transactionManager), this.registrar);
+        RemoteCache<K, V> cache = super.getCache(cacheName, forceReturnValue, transactionMode, transactionManager);
+        return (cache != null) ? new RegisteredRemoteCache<>(this, cache, this.registrar) : null;
     }
 
     @Override

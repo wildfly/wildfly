@@ -29,11 +29,11 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-clustering-faces-api@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-clustering-faces-api}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.faces.api"/>
+        <module name="jakarta.faces.api"/>
 
         <module name="org.infinispan.protostream"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>

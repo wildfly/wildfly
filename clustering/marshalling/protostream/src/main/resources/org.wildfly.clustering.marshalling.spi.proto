@@ -6,3 +6,11 @@ package org.wildfly.clustering.marshalling.spi;
 message ByteBufferMarshalledValue {
 	optional	bytes	buffer	= 1;
 }
+
+/**
+ * @TypeId(129)
+ */
+message ByteBufferMarshalledKey {
+	optional	bytes	buffer	 = 1;
+	optional	sfixed32	hashCode	 = 2;
+}

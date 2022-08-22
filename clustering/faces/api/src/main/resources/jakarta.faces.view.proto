@@ -1,4 +1,4 @@
-package javax.faces.view;
+package jakarta.faces.view;
 
 /**
  * @TypeId(505)

@@ -27,7 +27,7 @@ import java.lang.reflect.Field;
 import java.security.PrivilegedAction;
 import java.util.Collections;
 
-import javax.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.Bean;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.weld.Container;

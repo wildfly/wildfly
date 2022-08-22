@@ -89,7 +89,6 @@ container interceptor(s) can be configured in jboss-ejb3.xml:
 <jboss xmlns="http://www.jboss.com/xml/ns/javaee"
        xmlns:jee="http://java.sun.com/xml/ns/javaee"
        xmlns:ci ="urn:container-interceptors:1.0">
- 
     <jee:assembly-descriptor>
         <ci:container-interceptors>
             <!-- Default interceptor -->
@@ -134,14 +133,14 @@ bindings
 * The interceptor bindings themselves are the same elements as what the
 EJB3.1 xsd allows for standard Jakarta Interceptors
 * The interceptors can be bound either to all EJBs in the deployment
-(using the the * wildcard) or individual bean level (using the specific
+(using the * wildcard) or individual bean level (using the specific
 EJB name) or at specific method level for the EJBs.
 
 [IMPORTANT]
 
 The xsd for the urn:container-interceptors:1.0 namespace is available
 here
-https://github.com/jbossas/jboss-as/blob/master/ejb3/src/main/resources/jboss-ejb-container-interceptors_1_0.xsd
+https://github.com/wildfly/wildfly/blob/main/ejb3/src/main/resources/schema/jboss-ejb-container-interceptors_1_0.xsd
 
 The interceptor classes themselves are simple POJOs and use the
 `@javax.annotation.AroundInvoke` to mark the around invoke method which
@@ -157,7 +156,6 @@ public class ClassLevelContainerInterceptor {
     private Object iAmAround(final InvocationContext invocationContext) throws Exception {
         return this.getClass().getName() + " " + invocationContext.proceed();
     }
- 
 }
 ----
 
@@ -185,6 +183,6 @@ the EJB components are setup or instantiated.
 
 This testcase in the WildFly codebase can be used for reference for
 implementing container interceptors in user applications
-https://github.com/wildfly/wildfly/blob/master/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration/ejb/container/interceptor/ContainerInterceptorsTestCase.java
+https://github.com/wildfly/wildfly/blob/main/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration/ejb/container/interceptor/ContainerInterceptorsTestCase.java
 
 NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

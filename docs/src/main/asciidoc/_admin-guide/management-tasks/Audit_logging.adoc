@@ -137,8 +137,8 @@ operation has been logged via the CLI on the same machine as the running
 server, so the special $local user is used
 
 |domainUUID |An ID to link together all operations as they are
-propagated from the Doman Controller to it servers, slave Host
-Controllers, and slave Host Controller servers
+propagated from the Domain Controller to its servers, secondary Host
+Controllers, and secondary Host Controller servers
 
 |access |This can have one of the following values:*NATIVE - The
 operation came in through the native management interface, for example
@@ -421,7 +421,7 @@ is the default configuration:
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /host=master/core-service=management/access=audit:read-resource(recursive=true)
+[domain@localhost:9990 /] /host=primary/core-service=management/access=audit:read-resource(recursive=true)
 {
     "outcome" => "success",
     "result" => {

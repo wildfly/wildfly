@@ -17,6 +17,9 @@
  */
 package org.keycloak.subsystem.adapter.extension;
 
+import static org.keycloak.subsystem.adapter.extension.KeycloakExtension.CREDENTIAL_DEFINITION;
+import static org.keycloak.subsystem.adapter.extension.KeycloakExtension.REDIRECT_RULE_DEFINITON;
+
 import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
@@ -24,6 +27,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -41,67 +45,56 @@ abstract class AbstractAdapterConfigurationDefinition extends ModelOnlyResourceD
 
     protected static final SimpleAttributeDefinition REALM =
             new SimpleAttributeDefinitionBuilder("realm", ModelType.STRING, true)
-                    .setXmlName("realm")
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .build();
     protected static final SimpleAttributeDefinition RESOURCE =
             new SimpleAttributeDefinitionBuilder("resource", ModelType.STRING, true)
-                    .setXmlName("resource")
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .build();
     protected static final SimpleAttributeDefinition USE_RESOURCE_ROLE_MAPPINGS =
             new SimpleAttributeDefinitionBuilder("use-resource-role-mappings", ModelType.BOOLEAN, true)
-                    .setXmlName("use-resource-role-mappings")
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
     protected static final SimpleAttributeDefinition BEARER_ONLY =
             new SimpleAttributeDefinitionBuilder("bearer-only", ModelType.BOOLEAN, true)
-                    .setXmlName("bearer-only")
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
     protected static final SimpleAttributeDefinition ENABLE_BASIC_AUTH =
             new SimpleAttributeDefinitionBuilder("enable-basic-auth", ModelType.BOOLEAN, true)
-                    .setXmlName("enable-basic-auth")
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
     protected static final SimpleAttributeDefinition PUBLIC_CLIENT =
             new SimpleAttributeDefinitionBuilder("public-client", ModelType.BOOLEAN, true)
-                    .setXmlName("public-client")
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
     protected static final SimpleAttributeDefinition TURN_OFF_CHANGE_SESSION =
             new SimpleAttributeDefinitionBuilder("turn-off-change-session-id-on-login", ModelType.BOOLEAN, true)
-                    .setXmlName("turn-off-change-session-id-on-login")
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
     protected static final SimpleAttributeDefinition TOKEN_MINIMUM_TIME_TO_LIVE =
             new SimpleAttributeDefinitionBuilder("token-minimum-time-to-live", ModelType.INT, true)
-                    .setXmlName("token-minimum-time-to-live")
                     .setValidator(new IntRangeValidator(-1, true))
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition MIN_TIME_BETWEEN_JWKS_REQUESTS =
             new SimpleAttributeDefinitionBuilder("min-time-between-jwks-requests", ModelType.INT, true)
-                    .setXmlName("min-time-between-jwks-requests")
                     .setValidator(new IntRangeValidator(-1, true))
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition PUBLIC_KEY_CACHE_TTL =
             new SimpleAttributeDefinitionBuilder("public-key-cache-ttl", ModelType.INT, true)
-                    .setXmlName("public-key-cache-ttl")
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(-1, true))
                     .build();
     protected static final SimpleAttributeDefinition ADAPTER_STATE_COOKIE_PATH =
             new SimpleAttributeDefinitionBuilder("adapter-state-cookie-path", ModelType.STRING, true)
-                    .setXmlName("adapter-state-cookie-path")
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .build();
@@ -157,4 +150,11 @@ abstract class AbstractAdapterConfigurationDefinition extends ModelOnlyResourceD
     public static SimpleAttributeDefinition lookup(String name) {
         return DEFINITION_LOOKUP.get(name);
     }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(CREDENTIAL_DEFINITION);
+        resourceRegistration.registerSubModel(REDIRECT_RULE_DEFINITON);
+    }
+
 }

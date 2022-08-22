@@ -44,8 +44,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSessionActivationListener;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSessionActivationListener;
 
 import io.undertow.UndertowOptions;
 import io.undertow.connector.ByteBufferPool;

@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.inject.spi.PassivationCapable;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.inject.spi.PassivationCapable;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.weld.Container;

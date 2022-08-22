@@ -36,18 +36,18 @@ Host and its server instances
 
 [source,options="nowrap"]
 ----
-[domain@IP_ADDRESS:9990 /] /host=master/system-property=foo:add(value=bar)
-[domain@IP_ADDRESS:9990 /] /host=master/system-property=foo:read-resource
-[domain@IP_ADDRESS:9990 /] /host=master/system-property=foo:remove
+[domain@IP_ADDRESS:9990 /] /host=primary/system-property=foo:add(value=bar)
+[domain@IP_ADDRESS:9990 /] /host=primary/system-property=foo:read-resource
+[domain@IP_ADDRESS:9990 /] /host=primary/system-property=foo:remove
 ----
 
 Just one server instance
 
 [source,options="nowrap"]
 ----
-[domain@IP_ADDRESS:9990 /] /host=master/server-config=server-one/system-property=foo:add(value=bar)
-[domain@IP_ADDRESS:9990 /] /host=master/server-config=server-one/system-property=foo:read-resource
-[domain@IP_ADDRESS:9990 /] /host=master/server-config=server-one/system-property=foo:remove
+[domain@IP_ADDRESS:9990 /] /host=primary/server-config=server-one/system-property=foo:add(value=bar)
+[domain@IP_ADDRESS:9990 /] /host=primary/server-config=server-one/system-property=foo:read-resource
+[domain@IP_ADDRESS:9990 /] /host=primary/server-config=server-one/system-property=foo:remove
 ----
 
 [[overview-of-all-system-properties]]
@@ -68,8 +68,8 @@ Domain
 
 [source,options="nowrap"]
 ----
-[domain@IP_ADDRESS:9990 /] /host=master/core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)
-[domain@IP_ADDRESS:9990 /] /host=master/server=server-one/core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)
+[domain@IP_ADDRESS:9990 /] /host=primary/core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)
+[domain@IP_ADDRESS:9990 /] /host=primary/server=server-one/core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)
 ----
 
 == Configuration
@@ -178,11 +178,11 @@ shown by the read-resource-description command.
 [[view-configuration-as-xml-for-domain-model-or-host-model]]
 === View configuration as XML for domain model or host model
 
-Assume you have a host that is called master
+Assume you have a host that is called "primary"
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /host=master:read-config-as-xml
+[domain@localhost:9990 /] /host=primary:read-config-as-xml
 ----
 
 Just for the domain or standalone
@@ -210,11 +210,11 @@ Just for the domain or standalone
 [[take-the-latest-snapshot-of-the-host.xml-for-a-particular-host]]
 === Take the latest snapshot of the host.xml for a particular host
 
-Assume you have a host that is called master
+Assume you have a host that is called "primary"
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /]  /host=master:take-snapshot
+[domain@localhost:9990 /]  /host=primary:take-snapshot
 {
     "outcome" => "success",
     "result" => {
@@ -274,7 +274,7 @@ It's similar for domain, just specify path to server instance:
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /host=master/server=server-one/interface=public:read-attribute(name=resolved-address)
+[domain@localhost:9990 /] /host=primary/server=server-one/interface=public:read-attribute(name=resolved-address)
 {
     "outcome" => "success",
     "result" => "127.0.0.1"

@@ -6,7 +6,7 @@ import "jakarta.faces.view.proto";
  * @TypeId(520)
  */
 message ContextualCompositeValueExpression {
-	optional	javax.faces.view.Location	location	 = 1;
+	optional	jakarta.faces.view.Location	location	 = 1;
 	optional	bytes	expression	 = 2;
 }
 

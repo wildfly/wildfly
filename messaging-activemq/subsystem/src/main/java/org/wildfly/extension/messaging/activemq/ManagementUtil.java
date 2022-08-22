@@ -22,6 +22,15 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
+import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.CONSUME;
+import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.CREATE_DURABLE_QUEUE;
+import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE;
+import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.DELETE_DURABLE_QUEUE;
+import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE;
+import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.MANAGE;
+import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.SEND;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -40,10 +49,28 @@ public class ManagementUtil {
         context.getResult().set(json);
     }
 
-    public static void reportRoles(OperationContext context, String rolesAsJSON) {
-        ModelNode camelCase = ModelNode.fromJSONString(rolesAsJSON);
-        ModelNode converted = convertSecurityRole(camelCase);
-        context.getResult().set(converted);
+    public static void reportRoles(OperationContext context, Object[] roles) {
+        context.getResult().set(convertRoles(roles));
+    }
+
+    public static ModelNode convertRoles(Object[] roles) {
+        final ModelNode result = new ModelNode();
+        result.setEmptyList();
+        if (roles != null && roles.length > 0) {
+            for (Object objRole : roles) {
+                Object[] role = (Object[])objRole;
+                final ModelNode roleNode = result.add();
+                roleNode.get(NAME).set(role[0].toString());
+                roleNode.get(SEND.getName()).set((Boolean)role[1]);
+                roleNode.get(CONSUME.getName()).set((Boolean)role[2]);
+                roleNode.get(CREATE_DURABLE_QUEUE.getName()).set((Boolean)role[3]);
+                roleNode.get(DELETE_DURABLE_QUEUE.getName()).set((Boolean)role[4]);
+                roleNode.get(CREATE_NON_DURABLE_QUEUE.getName()).set((Boolean)role[5]);
+                roleNode.get(DELETE_NON_DURABLE_QUEUE.getName()).set((Boolean)role[6]);
+                roleNode.get(MANAGE.getName()).set((Boolean)role[7]);
+            }
+        }
+        return result;
     }
 
     public static void reportListOfStrings(OperationContext context, String[] strings) {

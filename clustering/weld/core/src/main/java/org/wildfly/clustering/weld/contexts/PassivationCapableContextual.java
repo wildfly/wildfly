@@ -22,8 +22,8 @@
 
 package org.wildfly.clustering.weld.contexts;
 
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.inject.spi.PassivationCapable;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.inject.spi.PassivationCapable;
 
 import org.jboss.weld.serialization.spi.helpers.SerializableContextual;
 

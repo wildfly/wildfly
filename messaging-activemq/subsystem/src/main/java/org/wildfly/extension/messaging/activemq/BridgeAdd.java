@@ -40,7 +40,6 @@ import static org.wildfly.extension.messaging.activemq.BridgeDefinition.USE_DUPL
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.activemq.artemis.api.core.management.ResourceNames;
 
 import org.apache.activemq.artemis.core.config.BridgeConfiguration;
 import org.apache.activemq.artemis.core.config.TransformerConfiguration;
@@ -195,9 +194,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
         clearIO(server);
 
         try {
-            server.deployBridge(bridgeConfig);
-            if(server.getManagementService().getResource(ResourceNames.BRIDGE + bridgeConfig.getName()) == null) {
-                //The bridge didn't deploy properly We can replace this once ARTEMIS-3682 is available
+            if(!server.deployBridge(bridgeConfig)) {
                 throw MessagingLogger.ROOT_LOGGER.failedBridgeDeployment(bridgeConfig.getName());
             }
         } catch (OperationFailedException | RuntimeException e) {

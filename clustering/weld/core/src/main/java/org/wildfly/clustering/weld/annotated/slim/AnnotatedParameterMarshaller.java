@@ -24,10 +24,10 @@ package org.wildfly.clustering.weld.annotated.slim;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
-import javax.enterprise.inject.spi.AnnotatedCallable;
-import javax.enterprise.inject.spi.AnnotatedConstructor;
-import javax.enterprise.inject.spi.AnnotatedMethod;
-import javax.enterprise.inject.spi.AnnotatedParameter;
+import jakarta.enterprise.inject.spi.AnnotatedCallable;
+import jakarta.enterprise.inject.spi.AnnotatedConstructor;
+import jakarta.enterprise.inject.spi.AnnotatedMethod;
+import jakarta.enterprise.inject.spi.AnnotatedParameter;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.weld.annotated.slim.SlimAnnotatedType;

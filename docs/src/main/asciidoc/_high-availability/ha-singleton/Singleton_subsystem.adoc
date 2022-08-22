@@ -55,7 +55,7 @@ service and will typically use a replicated-cache configuration.
 WildFly includes two singleton election policy implementations:
 
 * *simple* +
-Elects the provider (a.k.a. master) of a singleton service based on a
+Elects the provider (a.k.a. primary provider) of a singleton service based on a
 specified position in a circular linked list of eligible nodes sorted by
 descending age. Position=0, the default value, refers to the oldest
 node, 1 is second oldest, etc. ; while position=-1 refers to the

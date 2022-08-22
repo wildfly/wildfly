@@ -9,7 +9,7 @@ toc::[]
 == Managed Domain
 
 In a managed domain, deployments are associated with a `server-group`
-(see ﻿ <<Core_management_concepts,Core management concepts>>).
+(see <<Core_management_concepts,Core management concepts>>).
 Any server within the server group will then be provided with that
 deployment.
 
@@ -30,7 +30,7 @@ You can do this in one sweep with the CLI:
 ----
 [domain@localhost:9990 /] deploy ~/Desktop/test-application.war
 Either --all-server-groups or --server-groups must be specified.
- 
+
 [domain@localhost:9990 /] deploy ~/Desktop/test-application.war --all-server-groups
 'test-application.war' deployed successfully.
 ----
@@ -48,7 +48,7 @@ server group, and deployed on all running servers in that group:
        "test-application.war"
    ]
 }
- 
+
 [domain@localhost:9990 /] /server-group=main-server-group/deployment=test-application.war:read-resource(include-runtime)
 {
    "outcome" => "success",
@@ -86,7 +86,7 @@ You can remove binaries from server groups with the `undeploy` command:
 ----
 [domain@localhost:9990 /] undeploy test-application.war --all-relevant-server-groups
 Successfully undeployed test-application.war.
- 
+
 [domain@localhost:9990 /] /server-group=main-server-group:read-children-names(child-type=deployment)
 {
    "outcome" => "success",
@@ -353,12 +353,12 @@ stream, this is not displayable from the CLI.
 ----
 [domain@localhost:9990 /] /deployment=kitchensink.ear:read-content(path=META-INF/MANIFEST.MF)
 {
-    "outcome" => "success",
-    "result" => {"uuid" => "b373d587-72ee-4b1e-a02a-71fbb0c85d32"},
-    "response-headers" => {"attached-streams" => [{
-        "uuid" => "b373d587-72ee-4b1e-a02a-71fbb0c85d32",
-        "mime-type" => "text/plain"
-    }]}
+  "outcome" => "success",
+    "result" => {"uuid" => "b373d587-72ee-4b1e-a02a-71fbb0c85d32"},
+    "response-headers" => {"attached-streams" => [{
+        "uuid" => "b373d587-72ee-4b1e-a02a-71fbb0c85d32",
+        "mime-type" => "text/plain"
+    }]}
 }
 ----
 
@@ -428,7 +428,7 @@ servers when deploying and removing an application:
 ----
 [standalone@localhost:9990 /] deploy ~/Desktop/test-application.war
 'test-application.war' deployed successfully.
- 
+
 [standalone@localhost:9990 /] undeploy test-application.war
 Successfully undeployed test-application.war.
 ----
@@ -512,47 +512,47 @@ The relevant marker file types are:
 |File |Purpose
 
 |.dodeploy |Placed by the user to indicate that the given content
-shouldbe deployed into the runtime (or redeployed if alreadydeployed in
+should be deployed into the runtime (or redeployed if already deployed in
 the runtime.)
 
 |.skipdeploy |Disables auto-deploy of the content for as long as the
-fileis present. Most useful for allowing updates to explodedcontent
-without having the scanner initiate redeploy in themiddle of the update.
-Can be used with zipped content aswell, although the scanner will detect
-in-progress changesto zipped content and wait until changes are
+file is present. Most useful for allowing updates to exploded content
+without having the scanner initiate redeploy in the middle of the update.
+Can be used with zipped content as well, although the scanner will detect
+in-progress changes to zipped content and wait until changes are
 complete.
 
 |.isdeploying |Placed by the deployment scanner service to indicate that
-ithas noticed a .dodeploy file or new or updated auto-deploymode content
+it has noticed a .dodeploy file or new or updated auto-deploymode content
 and is in the process of deploying the content.This marker file will be
-deleted when the deployment processcompletes.
+deleted when the deployment process completes.
 
 |.deployed |Placed by the deployment scanner service to indicate that
-thegiven content has been deployed into the runtime. If an enduser
+the given content has been deployed into the runtime. If an end user
 deletes this file, the content will be undeployed.
 
 |.failed |Placed by the deployment scanner service to indicate that
-thegiven content failed to deploy into the runtime. The contentof the
+the given content failed to deploy into the runtime. The contentof the
 file will include some information about the cause ofthe failure. Note
-that with auto-deploy mode, removing thisfile will make the deployment
+that with auto-deploy mode, removing this file will make the deployment
 eligible for deployment again.
 
 |.isundeploying |Placed by the deployment scanner service to indicate
-that ithas noticed a .deployed file has been deleted and thecontent is
-being undeployed. This marker file will be deletedwhen the undeployment
+that it has noticed a .deployed file has been deleted and the content is
+being undeployed. This marker file will be deleted when the undeployment
 process completes.
 
 |.undeployed |Placed by the deployment scanner service to indicate that
-thegiven content has been undeployed from the runtime. If an enduser
+the given content has been undeployed from the runtime. If an end user
 deletes this file, it has no impact.
 
 |.pending |Placed by the deployment scanner service to indicate that
-ithas noticed the need to deploy content but has not yetinstructed the
-server to deploy it. This file is created ifthe scanner detects that
-some auto-deploy content is still inthe process of being copied or if
-there is some problem thatprevents auto-deployment. The scanner will not
-instruct theserver to deploy or undeploy any content (not just
-thedirectly affected content) as long as this condition holds.
+it has noticed the need to deploy content but has not yet instructed the
+server to deploy it. This file is created if the scanner detects that
+some auto-deploy content is still in the process of being copied or if
+there is some problem that prevents auto-deployment. The scanner will not
+instruct the server to deploy or undeploy any content (not just
+the directly affected content) as long as this condition holds.
 |=======================================================================
 
 ==== Basic workflows:
@@ -630,7 +630,7 @@ is thereafter responsible for the content it uses.
 
 With an unmanaged deployment the user provides the local filesystem path
 of deployment content, and the server directly uses that content.
-However the user is responsible for ensuring that content, e.g. for
+However, the user is responsible for ensuring that content, e.g. for
 making sure that no changes are made to it that will negatively impact
 the functioning of the deployed application.
 
@@ -705,7 +705,7 @@ where to find the deployment content in its internal content repository.
 
 In a domain each host will have a copy of the content needed by its
 servers in its own local content repository. The WildFly domain
-controller and slave host controller processes take responsibility for
+controller and secondary Host Controller processes take responsibility for
 ensuring each host has the needed content.
 
 [[unmanaged-deployments]]

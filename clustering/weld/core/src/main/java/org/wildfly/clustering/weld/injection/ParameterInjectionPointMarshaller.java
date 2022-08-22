@@ -25,9 +25,9 @@ package org.wildfly.clustering.weld.injection;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-import javax.enterprise.inject.spi.AnnotatedConstructor;
-import javax.enterprise.inject.spi.AnnotatedMethod;
-import javax.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.AnnotatedConstructor;
+import jakarta.enterprise.inject.spi.AnnotatedMethod;
+import jakarta.enterprise.inject.spi.Bean;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.weld.Container;

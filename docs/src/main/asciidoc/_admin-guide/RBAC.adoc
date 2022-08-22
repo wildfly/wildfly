@@ -197,7 +197,7 @@ to take effect.
 
 In a managed domain, the access control configuration is part of the
 domain wide configuration, so the resource address is the same as above,
-but the CLI is connected to the master Domain Controller:
+but the CLI is connected to the Domain Controller:
 
 [source,options="nowrap"]
 ----
@@ -210,7 +210,7 @@ but the CLI is connected to the master Domain Controller:
         "process-state" => "reload-required"
     },
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {
         "server-one" => {"response" => {
             "outcome" => "success",
             "response-headers" => {
@@ -227,12 +227,12 @@ but the CLI is connected to the master Domain Controller:
         }}
     }}}}
 }
-[domain@localhost:9990 access=authorization] reload --host=master
+[domain@localhost:9990 access=authorization] reload --host=primary
 ----
 
 As with a standalone server, a reload or restart is required for the
 change to take effect. In this case, all hosts and servers in the domain
-will need to be reloaded or restarted, starting with the master Domain
+will need to be reloaded or restarted, starting with the Domain
 Controller, so be sure to plan well before making this change.
 
 [[mapping-users-and-groups-to-roles]]
@@ -267,7 +267,7 @@ role.
 {
     "outcome" => "success",
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {
         "server-one" => {"response" => {"outcome" => "success"}},
         "server-two" => {"response" => {"outcome" => "success"}}
     }}}}
@@ -282,7 +282,7 @@ Once this is done, map a user to the role:
 {
     "outcome" => "success",
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {
         "server-one" => {"response" => {"outcome" => "success"}},
         "server-two" => {"response" => {"outcome" => "success"}}
     }}}}
@@ -332,7 +332,7 @@ individual user mapping is the value of the `type` attribute should be
 {
     "outcome" => "success",
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {
         "server-one" => {"response" => {"outcome" => "success"}},
         "server-two" => {"response" => {"outcome" => "success"}}
     }}}}
@@ -367,7 +367,7 @@ The same change can be made using the CLI:
 {
     "outcome" => "success",
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {
         "server-one" => {"response" => {"outcome" => "success"}},
         "server-two" => {"response" => {"outcome" => "success"}}
     }}}}
@@ -396,7 +396,7 @@ address element:
 {
     "outcome" => "success",
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {
         "server-one" => {"response" => {"outcome" => "success"}},
         "server-two" => {"response" => {"outcome" => "success"}}
     }}}}
@@ -488,7 +488,7 @@ But you can also use the CLI to create a server-group scoped role.
 {
     "outcome" => "success",
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {
         "server-one" => {"response" => {"outcome" => "success"}},
         "server-two" => {"response" => {"outcome" => "success"}}
     }}}}
@@ -530,11 +530,11 @@ But you can also use the CLI to create a host scoped role.
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /core-service=management/access=authorization/host-scoped-role=MasterOperators:add(base-role=Operator,hosts=[master]}
+[domain@localhost:9990 /] /core-service=management/access=authorization/host-scoped-role=DCOperators:add(base-role=Operator,hosts=[primary]}
 {
     "outcome" => "success",
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {
         "server-one" => {"response" => {"outcome" => "success"}},
         "server-two" => {"response" => {"outcome" => "success"}}
     }}}}
@@ -644,7 +644,7 @@ setting:
 {
     "outcome" => "success",
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {
         "server-one" => {"response" => {"outcome" => "success"}},
         "server-two" => {"response" => {"outcome" => "success"}}
     }}}}
@@ -661,14 +661,14 @@ classification applies:
 {
     "outcome" => "success",
     "result" => {
-        "/host=master" => {
-            "address" => "/host=master",
+        "/host=primary" => {
+            "address" => "/host=primary",
             "attributes" => [],
             "entire-resource" => false,
             "operations" => ["resolve-internet-address"]
         },
-        "/host=master/core-service=host-environment" => {
-            "address" => "/host=master/core-service=host-environment",
+        "/host=primary/core-service=host-environment" => {
+            "address" => "/host=primary/core-service=host-environment",
             "attributes" => [
                 "host-controller-port",
                 "host-controller-address",
@@ -678,8 +678,8 @@ classification applies:
             "entire-resource" => false,
             "operations" => []
         },
-        "/host=master/core-service=management/management-interface=http-interface" => {
-            "address" => "/host=master/core-service=management/management-interface=http-interface",
+        "/host=primary/core-service=management/management-interface=http-interface" => {
+            "address" => "/host=primary/core-service=management/management-interface=http-interface",
             "attributes" => [
                 "port",
                 "secure-interface",
@@ -689,8 +689,8 @@ classification applies:
             "entire-resource" => false,
             "operations" => []
         },
-        "/host=master/core-service=management/management-interface=native-interface" => {
-            "address" => "/host=master/core-service=management/management-interface=native-interface",
+        "/host=primary/core-service=management/management-interface=native-interface" => {
+            "address" => "/host=primary/core-service=management/management-interface=native-interface",
             "attributes" => [
                 "port",
                 "interface"
@@ -698,14 +698,14 @@ classification applies:
             "entire-resource" => false,
             "operations" => []
         },
-        "/host=master/interface=*" => {
-            "address" => "/host=master/interface=*",
+        "/host=primary/interface=*" => {
+            "address" => "/host=primary/interface=*",
             "attributes" => [],
             "entire-resource" => true,
             "operations" => ["resolve-internet-address"]
         },
-        "/host=master/server-config=*/interface=*" => {
-            "address" => "/host=master/server-config=*/interface=*",
+        "/host=primary/server-config=*/interface=*" => {
+            "address" => "/host=primary/server-config=*/interface=*",
             "attributes" => [],
             "entire-resource" => true,
             "operations" => []
@@ -831,7 +831,7 @@ expressions to be security sensitive, you can change that setting:
 {
     "outcome" => "success",
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {
         "server-one" => {"response" => {"outcome" => "success"}},
         "server-two" => {"response" => {"outcome" => "success"}}
     }}}}
@@ -912,7 +912,7 @@ Deployer role, set the `configured-application` attribute to true.
 {
     "outcome" => "success",
     "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
+    "server-groups" => {"main-server-group" => {"host" => {"primary" => {
         "server-one" => {"response" => {"outcome" => "success"}},
         "server-two" => {"response" => {"outcome" => "success"}}
     }}}}

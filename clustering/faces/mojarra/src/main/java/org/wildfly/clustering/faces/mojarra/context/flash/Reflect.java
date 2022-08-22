@@ -24,7 +24,7 @@ package org.wildfly.clustering.faces.mojarra.context.flash;
 
 import java.security.PrivilegedAction;
 
-import javax.servlet.http.HttpSessionActivationListener;
+import jakarta.servlet.http.HttpSessionActivationListener;
 
 import org.wildfly.security.manager.WildFlySecurityManager;
 

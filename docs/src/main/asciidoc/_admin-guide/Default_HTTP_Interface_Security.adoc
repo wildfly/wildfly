@@ -52,8 +52,8 @@ want to add the user and the properties files will be updated.
 
 For the final question, as this is a user that is going to be accessing
 the admin console just answer 'n' - this option will be described later
-for adding slave host controllers that authenticate against a master
-domain controller but that is a later topic.
+for adding secondary host controllers that authenticate against a
+Domain Controller but that is a later topic.
 
 After a new user has been added the server should be restarted or the
 `load` operation should be executed on the `ManagementRealm` or

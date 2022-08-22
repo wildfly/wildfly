@@ -22,10 +22,11 @@
 package org.wildfly.clustering.infinispan.service;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -93,7 +94,34 @@ public class CacheServiceConfigurator<K, V> extends SimpleServiceNameProvider im
     public final ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
         Consumer<Cache<K, V>> cache = new CompositeDependency(this.configuration, this.container, this.dependency).register(builder).provides(this.getServiceName());
-        Service service = new FunctionalService<>(cache, Function.identity(), this, this);
+        Service service = new FunctionalService<>(cache, ManagedCache::new, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    }
+
+    private static class ManagedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
+
+        ManagedCache(Cache<K, V> cache) {
+            this(cache.getAdvancedCache());
+        }
+
+        private ManagedCache(AdvancedCache<K, V> cache) {
+            super(cache.getAdvancedCache());
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public AdvancedCache rewrap(AdvancedCache delegate) {
+            return new ManagedCache<>(delegate);
+        }
+
+        @Override
+        public void start() {
+            // No-op.  Lifecycle managed by container.
+        }
+
+        @Override
+        public void stop() {
+            // No-op.  Lifecycle managed by container.
+        }
     }
 }

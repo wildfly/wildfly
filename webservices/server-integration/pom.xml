@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha4-SNAPSHOT</version>
+        <version>27.0.0.Alpha5-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-webservices-server-integration</artifactId>
@@ -56,6 +56,11 @@
     <dependency>
        <groupId>org.jboss.msc</groupId>
        <artifactId>jboss-msc</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.jboss.invocation</groupId>
+        <artifactId>jboss-invocation</artifactId>
     </dependency>
 
     <dependency>

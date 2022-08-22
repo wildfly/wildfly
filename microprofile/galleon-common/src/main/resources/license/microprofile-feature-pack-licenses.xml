@@ -723,7 +723,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-openapi-smallrye-jakarta</artifactId>
+      <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>

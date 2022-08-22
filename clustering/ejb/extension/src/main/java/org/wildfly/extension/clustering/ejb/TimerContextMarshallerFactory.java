@@ -30,6 +30,9 @@ import org.jboss.modules.Module;
 import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
@@ -44,6 +47,13 @@ public enum TimerContextMarshallerFactory implements Function<Module, ByteBuffer
             config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
             config.setObjectTable(new DynamicExternalizerObjectTable(module.getClassLoader()));
             return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(config), module.getClassLoader());
+        }
+    },
+    PROTOSTREAM() {
+        @Override
+        public ByteBufferMarshaller apply(Module module) {
+            SerializationContextBuilder builder = new SerializationContextBuilder(new ModuleClassLoaderMarshaller(module.getModuleLoader())).load(module.getClassLoader());
+            return new ProtoStreamByteBufferMarshaller(builder.build());
         }
     },
     ;

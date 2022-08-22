@@ -32,12 +32,14 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.timer.TimerServiceRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
@@ -90,6 +92,14 @@ public class InfinispanTimerManagementResourceDefinition extends ChildResourceDe
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new IntRangeValidatorBuilder().min(1).configure(builder).build());
+            }
+        },
+        MARSHALLER("marshaller", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(TimerContextMarshallerFactory.JBOSS.name()))
+                        .setValidator(new EnumValidator<>(TimerContextMarshallerFactory.class))
+                        ;
             }
         },
         ;

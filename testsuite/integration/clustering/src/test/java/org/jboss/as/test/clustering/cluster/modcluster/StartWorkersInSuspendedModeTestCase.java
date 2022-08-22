@@ -21,24 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster.modcluster;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
-import org.jboss.as.test.shared.CLIServerSetupTask;
-import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADDRESS;
 import static org.jboss.as.controller.client.helpers.ClientConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
@@ -49,6 +31,32 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
+import java.util.Set;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+/**
+ * Verifies behavior of mod_cluster interaction when a worker node is started in suspended mode.
+ *
+ * @author Bartosz Spyrko-Smietanko
+ * @author Radoslav Husar
+ */
 @RunAsClient
 @RunWith(Arquillian.class)
 @ServerSetup(StartWorkersInSuspendedModeTestCase.ServerSetupTask.class)
@@ -68,7 +76,7 @@ public class StartWorkersInSuspendedModeTestCase extends AbstractClusteringTestC
     }
 
     public StartWorkersInSuspendedModeTestCase() {
-        super(new String[] { NODE_1, LOAD_BALANCER_1 }, new String[]{DEPLOYMENT_1});
+        super(Set.of(LOAD_BALANCER_1, NODE_1), Set.of(DEPLOYMENT_1));
     }
 
     @Test
@@ -83,8 +91,7 @@ public class StartWorkersInSuspendedModeTestCase extends AbstractClusteringTestC
 
     private void assertWorkerNodeContextIsStopped() throws Exception {
 
-        ModelNode op = createOpNode("subsystem=undertow/configuration=filter/mod-cluster=load-balancer/balancer=mycluster/node=" + NODE_1,
-                                    READ_RESOURCE_OPERATION);
+        ModelNode op = createOpNode("subsystem=undertow/configuration=filter/mod-cluster=load-balancer/balancer=mycluster/node=" + NODE_1, READ_RESOURCE_OPERATION);
         op.get(ADDRESS).add("context", "/" + MODULE_NAME);
         op.get(RECURSIVE).set(true);
         op.get(INCLUDE_RUNTIME).set(true);
@@ -109,17 +116,26 @@ public class StartWorkersInSuspendedModeTestCase extends AbstractClusteringTestC
         Assert.assertEquals("stopped", modelNode.get(RESULT).get(STATUS).asString());
     }
 
-    static class ServerSetupTask extends CLIServerSetupTask {
+    static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder
-               .node(NODE_1)
-               .setup("/subsystem=modcluster/proxy=default:write-attribute(name=advertise,value=false)")
-               .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy1:add(host=localhost,port=8590)")
-               .setup("/subsystem=modcluster/proxy=default:list-add(name=proxies,value=proxy1)")
-               .teardown("/subsystem=modcluster/proxy=default:list-remove(name=proxies,value=proxy1)")
-               .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy1:remove()")
-               .teardown("/subsystem=modcluster/proxy=default:write-attribute(name=advertise,value=true)")
-            ;
+            super(NODE_1, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=modcluster/proxy=default:write-attribute(name=advertise, value=false)")
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy1:add(host=localhost, port=8590)")
+                            .add("/subsystem=modcluster/proxy=default:list-add(name=proxies, value=proxy1)")
+                            .endBatch()
+                            .build()
+                    )
+                    .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=modcluster/proxy=default:list-remove(name=proxies, value=proxy1)")
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy1:remove")
+                            .add("/subsystem=modcluster/proxy=default:write-attribute(name=advertise, value=true)")
+                            .endBatch()
+                            .build())
+                    .build()
+            );
         }
     }
 

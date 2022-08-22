@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.clustering;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.util.PropertyPermission;
+
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
@@ -42,6 +46,7 @@ public class ClusterTestUtil {
     public static <A extends Archive<A> & ClassContainer<A> & ManifestContainer<A>> A addTopologyListenerDependencies(A archive) {
         archive.addClasses(TopologyChangeListener.class, TopologyChangeListenerBean.class, TopologyChangeListenerServlet.class);
         archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"));
+        archive.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("getClassLoader"), new PropertyPermission("jboss.node.name", "read")), "permissions.xml");
         return archive;
     }
 

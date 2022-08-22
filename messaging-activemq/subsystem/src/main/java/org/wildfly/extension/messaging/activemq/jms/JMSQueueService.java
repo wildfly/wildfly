@@ -22,7 +22,6 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.server.Services.addServerExecutorDependency;
-import static org.wildfly.extension.messaging.activemq.jms.JMSTopicService.JMS_TOPIC_PREFIX;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -62,8 +61,8 @@ public class JMSQueueService implements Service<Queue> {
     private Queue queue;
 
     public JMSQueueService(final String name, String selectorString, boolean durable) {
-        if (name.startsWith(JMS_TOPIC_PREFIX)) {
-            this.queueName = name.substring(JMS_TOPIC_PREFIX.length());
+        if (name.startsWith(JMS_QUEUE_PREFIX)) {
+            this.queueName = name.substring(JMS_QUEUE_PREFIX.length());
         } else {
             this.queueName = name;
         }

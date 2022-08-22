@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.security.PrivilegedAction;
 
 import org.infinispan.protostream.FileDescriptorSource;
 import org.infinispan.protostream.SerializationContext;
@@ -33,7 +34,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractSerializationContextInitializer implements SerializationContextInitializer {
+public abstract class AbstractSerializationContextInitializer implements SerializationContextInitializer, PrivilegedAction<FileDescriptorSource> {
 
     private final String resourceName;
     private final ClassLoader loader;
@@ -65,8 +66,13 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 
     @Override
     public void registerSchema(SerializationContext context) {
+        context.registerProtoFiles(WildFlySecurityManager.doUnchecked(this));
+    }
+
+    @Override
+    public FileDescriptorSource run() {
         try {
-            context.registerProtoFiles(FileDescriptorSource.fromResources(this.loader, this.resourceName));
+            return FileDescriptorSource.fromResources(this.loader, this.resourceName);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
