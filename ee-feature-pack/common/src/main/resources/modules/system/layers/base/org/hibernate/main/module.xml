@@ -55,5 +55,9 @@
         <module name="org.infinispan.hibernate-cache" services="import" optional="true"/>
         <module name="net.bytebuddy"/>
         <module name="java.xml"/>
+        <!-- If the Oracle JDBC driver classes are accessible, Hibernate ORM will use them to tailor OracleDialect behavior -->
+        <module name="com.oracle.ojdbc" optional="true"/>
+        <!-- If the PostgreSQL JDBC driver classes are accessible, Hibernate ORM will use them to tailor PostgresDialect and CockroachDialect behavior -->
+        <module name="org.postgresql.jdbc" optional="true"/>
     </dependencies>
 </module>
