@@ -20,8 +20,8 @@ import io.vertx.core.Vertx;
 import org.wildfly.extension.vertx.VertxProxy;
 import org.wildfly.extension.vertx.VertxRegistry;
 
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.spi.InjectionPoint;
 
 /**
  * CDI Producer which produce the Vertx instance by the member name.

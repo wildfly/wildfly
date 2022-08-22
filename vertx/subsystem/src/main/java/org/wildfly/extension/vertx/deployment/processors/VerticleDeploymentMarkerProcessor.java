@@ -35,13 +35,12 @@ import org.wildfly.extension.vertx.deployment.VertxDeploymentAttachment;
 import org.wildfly.extension.vertx.deployment.VerticleDeploymentsMetaData;
 import org.wildfly.extension.vertx.logging.VertxLogger;
 
-import javax.annotation.Resource;
-import javax.inject.Inject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.jboss.as.server.deployment.Attachments.*;
@@ -60,9 +59,15 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
     public static final Phase PHASE = Phase.PARSE;
     public static final int PRIORITY = 0x4000;
 
-    private static final DotName INJECT_ANNOTATION_NAME = DotName.createSimple(Inject.class.getName());
-    private static final DotName RESOURCE_ANNOTATION_NAME = DotName.createSimple(Resource.class.getName());
     private static final String VERTX_ANNOTATION_NAME = "io.vertx.core.Vertx";
+
+    private static final List<DotName> dotNames = new ArrayList<>();
+    static {
+        dotNames.add(DotName.createSimple("javax.inject.Inject"));
+        dotNames.add(DotName.createSimple("jakarta.inject.Inject"));
+        dotNames.add(DotName.createSimple("javax.annotation.Resource"));
+        dotNames.add(DotName.createSimple("jakarta.annotation.Resource"));
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
@@ -83,7 +88,7 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
         } else {
             // check '@Injection Vertx' or '@Resource Vertx' in case of no vertx-deployment.json file found
             final CompositeIndex index = deploymentUnit.getAttachment(COMPOSITE_ANNOTATION_INDEX);
-            if (annotated(index, RESOURCE_ANNOTATION_NAME) || annotated(index, INJECT_ANNOTATION_NAME)) {
+            if (dotNames.stream().anyMatch(dotName -> annotated(index, dotName))) {
                 VertxDeploymentAttachment.attachVertxDeployments(deploymentUnit, new VerticleDeploymentsMetaData(new JsonObject()));
             }
         }
