@@ -29,7 +29,7 @@ import io.undertow.servlet.handlers.ServletHandler;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.Servlet;
+import jakarta.servlet.Servlet;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;

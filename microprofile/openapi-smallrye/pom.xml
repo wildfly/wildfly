@@ -77,7 +77,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-jaxrs-jakarta</artifactId>
+            <artifactId>wildfly-jaxrs</artifactId>
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>

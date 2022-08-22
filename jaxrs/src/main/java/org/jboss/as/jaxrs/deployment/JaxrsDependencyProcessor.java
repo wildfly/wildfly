@@ -72,7 +72,7 @@ import org.jboss.vfs.VirtualFile;
  */
 public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final String CLIENT_BUILDER = "META-INF/services/javax.ws.rs.client.ClientBuilder";
+    private static final String CLIENT_BUILDER = "META-INF/services/jakarta.ws.rs.client.ClientBuilder";
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);

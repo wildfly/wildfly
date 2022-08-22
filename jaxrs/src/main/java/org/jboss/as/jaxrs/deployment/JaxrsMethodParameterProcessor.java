@@ -15,9 +15,9 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.Indexer;
 import org.jboss.modules.Module;
 
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.ext.ParamConverter;
-import javax.ws.rs.ext.ParamConverterProvider;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.ext.ParamConverter;
+import jakarta.ws.rs.ext.ParamConverterProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,13 +44,13 @@ import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
  */
 public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
     private final DotName PARAM_CONVERTER_PROVIDER_DOTNAME =
-            DotName.createSimple("javax.ws.rs.ext.ParamConverterProvider");
+            DotName.createSimple("jakarta.ws.rs.ext.ParamConverterProvider");
     private final DotName PARAM_CONVERTER_DOTNAME =
-            DotName.createSimple("javax.ws.rs.ext.ParamConverter");
+            DotName.createSimple("jakarta.ws.rs.ext.ParamConverter");
     private final DotName PARAM_CONVERTER_LAZY_DOTNAME =
-            DotName.createSimple("javax.ws.rs.ext.ParamConverter$Lazy");
+            DotName.createSimple("jakarta.ws.rs.ext.ParamConverter$Lazy");
     private final DotName DEFAULT_VALUE_DOTNAME =
-            DotName.createSimple("javax.ws.rs.DefaultValue");
+            DotName.createSimple("jakarta.ws.rs.DefaultValue");
     @Override
     public void deploy(DeploymentPhaseContext phaseContext)
             throws DeploymentUnitProcessingException {
@@ -162,7 +162,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                     if (Modifier.isPublic(fromValue.getModifiers())) {
                         for (Annotation ann : baseType.getAnnotations()) {
                             if (ann.annotationType().getName()
-                                    .equals("javax.xml.bind.annotation.XmlEnum")) {
+                                    .equals("jakarta.xml.bind.annotation.XmlEnum")) {
                                 valueOf = fromValue;
                             }
                         }

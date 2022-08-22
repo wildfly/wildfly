@@ -603,7 +603,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-jaxrs-jakarta</artifactId>
+            <artifactId>wildfly-jaxrs</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

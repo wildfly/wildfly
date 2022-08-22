@@ -1,6 +1,6 @@
 package org.jboss.as.jaxrs.rsources;
 
-import javax.ws.rs.ext.ParamConverter;
+import jakarta.ws.rs.ext.ParamConverter;
 
 @ParamConverter.Lazy
 public class SimpleClassLazyParamConverter implements ParamConverter<SimpleClass> {
