@@ -25,6 +25,9 @@ package org.wildfly.test.integration.elytron.oidc.client.deployment;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.getRealmRepresentation;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -72,7 +75,27 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
     private static final String MISSING_EXPRESSION_APP = "MissingExpressionOidcApp";
     private static final String OIDC_JSON_WITH_MISSING_EXPRESSION_FILE = "OidcWithMissingExpression.json";
 
-    private static final String[] APP_NAMES = new String[] {PROVIDER_URL_APP, AUTH_SERVER_URL_APP, WRONG_PROVIDER_URL_APP, WRONG_SECRET_APP, MISSING_EXPRESSION_APP};
+    private static final String BEARER_ONLY_WITH_AUTH_SERVER_URL_FILE = "BearerOnlyWithAuthServerUrl.json";
+
+    private static final String BEARER_ONLY_WITH_PROVIDER_URL_FILE = "BearerOnlyWithProviderUrl.json";
+    private static final String BASIC_AUTH_WITH_PROVIDER_URL_FILE = "BasicAuthWithProviderUrl.json";
+    private static final String CORS_WITH_PROVIDER_URL_FILE = "CorsWithProviderUrl.json";
+
+    private static Map<String, KeycloakConfiguration.ClientAppType> APP_NAMES;
+    static {
+        APP_NAMES = new HashMap<>();
+        APP_NAMES.put(PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(AUTH_SERVER_URL_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(WRONG_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(WRONG_SECRET_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(MISSING_EXPRESSION_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(DIRECT_ACCCESS_GRANT_ENABLED_CLIENT, KeycloakConfiguration.ClientAppType.DIRECT_ACCESS_GRANT_OIDC_CLIENT);
+        APP_NAMES.put(BEARER_ONLY_AUTH_SERVER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
+        APP_NAMES.put(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
+        APP_NAMES.put(BASIC_AUTH_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
+        APP_NAMES.put(CORS_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
+        APP_NAMES.put(CORS_CLIENT, KeycloakConfiguration.ClientAppType.CORS_CLIENT);
+    }
 
     @ArquillianResource
     protected static Deployer deployer;
@@ -122,6 +145,42 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
                 .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_JSON_WITH_MISSING_EXPRESSION_FILE, "oidc.json");
     }
 
+    @Deployment(name = BEARER_ONLY_AUTH_SERVER_URL_APP, managed = false, testable = false)
+    public static WebArchive createBearerOnlyAuthServerUrlDeployment() {
+        return ShrinkWrap.create(WebArchive.class, BEARER_ONLY_AUTH_SERVER_URL_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleSecuredServlet.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), BEARER_ONLY_WITH_AUTH_SERVER_URL_FILE, "oidc.json");
+    }
+
+    @Deployment(name = BEARER_ONLY_PROVIDER_URL_APP, managed = false, testable = false)
+    public static WebArchive createBearerOnlyProviderUrlDeployment() {
+        return ShrinkWrap.create(WebArchive.class, BEARER_ONLY_PROVIDER_URL_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleSecuredServlet.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), BEARER_ONLY_WITH_PROVIDER_URL_FILE, "oidc.json");
+    }
+
+    @Deployment(name = BASIC_AUTH_PROVIDER_URL_APP, managed = false, testable = false)
+    public static WebArchive createBasicAuthProviderUrlDeployment() {
+        return ShrinkWrap.create(WebArchive.class, BASIC_AUTH_PROVIDER_URL_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleSecuredServlet.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), BASIC_AUTH_WITH_PROVIDER_URL_FILE, "oidc.json");
+    }
+
+    @Deployment(name = CORS_PROVIDER_URL_APP, managed = false, testable = false)
+    public static WebArchive createCorsProviderUrlDeployment() {
+        return ShrinkWrap.create(WebArchive.class, CORS_PROVIDER_URL_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleSecuredServlet.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), CORS_WITH_PROVIDER_URL_FILE, "oidc.json");
+    }
+
     @Test
     @InSequence(1)
     public void testWrongPasswordWithProviderUrl() throws Exception {
@@ -138,28 +197,46 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
     @Test
     @InSequence(3)
     public void testWrongRoleWithProviderUrl() throws Exception {
+        super.testWrongRoleWithProviderUrl();
+    }
+
+    @Test
+    @InSequence(4)
+    public void testTokenProvidedBearerOnlyNotSet() throws Exception {
+        super.testTokenProvidedBearerOnlyNotSet();
+    }
+
+    @Test
+    @InSequence(5)
+    public void testTokenNotProvidedBearerOnlyNotSet() throws Exception {
+        super.testTokenNotProvidedBearerOnlyNotSet();
+    }
+
+    @Test
+    @InSequence(6)
+    public void testBasicAuthenticationWithoutEnableBasicAuthSetAndWithoutBearerOnlySet() throws Exception {
         try {
-            super.testWrongRoleWithProviderUrl();
+            super.testBasicAuthenticationWithoutEnableBasicAuthSetAndWithoutBearerOnlySet();
         } finally {
             deployer.undeploy(PROVIDER_URL_APP);
         }
     }
 
     @Test
-    @InSequence(4)
+    @InSequence(7)
     public void testWrongPasswordWithAuthServerUrl() throws Exception {
         deployer.deploy(AUTH_SERVER_URL_APP);
         super.testWrongPasswordWithAuthServerUrl();
     }
 
     @Test
-    @InSequence(5)
+    @InSequence(8)
     public void testSucessfulAuthenticationWithAuthServerUrl() throws Exception {
         super.testSucessfulAuthenticationWithAuthServerUrl();
     }
 
     @Test
-    @InSequence(6)
+    @InSequence(9)
     public void testWrongRoleWithAuthServerUrl() throws Exception {
         try {
             super.testWrongRoleWithAuthServerUrl();
@@ -195,6 +272,129 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
             loginToApp(MISSING_EXPRESSION_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, -1, null, false);
         } finally {
             deployer.undeploy(MISSING_EXPRESSION_APP);
+        }
+    }
+
+    @Test
+    @InSequence(10)
+    public void testSucessfulBearerOnlyAuthenticationWithAuthServerUrl() throws Exception {
+        deployer.deploy(BEARER_ONLY_AUTH_SERVER_URL_APP);
+        super.testSucessfulBearerOnlyAuthenticationWithAuthServerUrl();
+
+    }
+
+    @Test
+    @InSequence(11)
+    public void testNoTokenProvidedWithAuthServerUrl() throws Exception {
+        try {
+            super.testNoTokenProvidedWithAuthServerUrl();
+        } finally {
+            deployer.undeploy(BEARER_ONLY_AUTH_SERVER_URL_APP);
+        }
+    }
+
+    @Test
+    @InSequence(12)
+    public void testSucessfulBearerOnlyAuthenticationWithProviderUrl() throws Exception {
+        deployer.deploy(BEARER_ONLY_PROVIDER_URL_APP);
+        super.testSucessfulBearerOnlyAuthenticationWithProviderUrl();
+    }
+
+    @Test
+    @InSequence(13)
+    public void testWrongToken() throws Exception {
+        super.testWrongToken();
+    }
+
+    @Test
+    @InSequence(14)
+    public void testInvalidToken() throws Exception {
+        super.testInvalidToken();
+    }
+
+    @Test
+    @InSequence(15)
+    public void testNoTokenProvidedWithProviderUrl() throws Exception {
+        super.testNoTokenProvidedWithProviderUrl();
+    }
+
+    @Test
+    @InSequence(16)
+    public void testValidTokenViaQueryParameter() throws Exception {
+        super.testValidTokenViaQueryParameter();
+    }
+
+    @Test
+    @InSequence(17)
+    public void testWrongTokenViaQueryParameter() throws Exception {
+        super.testWrongTokenViaQueryParameter();
+    }
+
+    @Test
+    @InSequence(18)
+    public void testInvalidTokenViaQueryParameter() throws Exception {
+        super.testInvalidTokenViaQueryParameter();
+    }
+
+    @Test
+    @InSequence(19)
+    public void testBasicAuthenticationWithoutEnableBasicAuthSet() throws Exception {
+        super.testBasicAuthenticationWithoutEnableBasicAuthSet();
+    }
+
+    @Test
+    @InSequence(20)
+    public void testCorsRequestWithoutEnableCors() throws Exception {
+        try {
+            super.testCorsRequestWithoutEnableCors();
+        } finally {
+            deployer.undeploy(BEARER_ONLY_PROVIDER_URL_APP);
+        }
+    }
+
+    @Test
+    @InSequence(21)
+    public void testValidCredentialsBasicAuthentication() throws Exception {
+        deployer.deploy(BASIC_AUTH_PROVIDER_URL_APP);
+        super.testValidCredentialsBasicAuthentication();
+    }
+
+    @Test
+    @InSequence(22)
+    public void testInvalidCredentialsBasicAuthentication() throws Exception {
+        try {
+            super.testInvalidCredentialsBasicAuthentication();
+        } finally {
+            deployer.undeploy(BASIC_AUTH_PROVIDER_URL_APP);
+        }
+    }
+
+    @Test
+    @InSequence(23)
+    public void testCorsRequestWithEnableCors() throws Exception {
+        deployer.deploy(CORS_PROVIDER_URL_APP);
+        super.testCorsRequestWithEnableCors();
+    }
+
+    @Test
+    @InSequence(24)
+    public void testCorsRequestWithEnableCorsWithWrongToken() throws Exception {
+        super.testCorsRequestWithEnableCorsWithWrongToken();
+    }
+
+    @Test
+    @InSequence(25)
+    public void testCorsRequestWithEnableCorsWithInvalidToken() throws Exception {
+        super.testCorsRequestWithEnableCorsWithInvalidToken();
+    }
+
+    @Test
+    @InSequence(26)
+    public void testCorsRequestWithEnableCorsWithInvalidOrigin() throws Exception {
+        try {
+            super.testCorsRequestWithEnableCorsWithInvalidOrigin();
+        } finally {
+            deployer.undeploy(CORS_PROVIDER_URL_APP);
         }
     }
 
