@@ -595,7 +595,7 @@
         <version.org.wildfly.security.elytron-mp>2.0.0.Beta3</version.org.wildfly.security.elytron-mp>
         <legacy.version.org.wildfly.security.elytron-web>1.10.1.Final</legacy.version.org.wildfly.security.elytron-web>
         <version.org.wildfly.security.elytron-web>3.0.0.Beta1</version.org.wildfly.security.elytron-web>
-        <version.org.wildfly.security.jakarta.elytron-ee>3.0.0.Beta2</version.org.wildfly.security.jakarta.elytron-ee>
+        <version.org.wildfly.security.jakarta.elytron-ee>3.0.0.Beta3</version.org.wildfly.security.jakarta.elytron-ee>
         <version.org.wildfly.transaction.client>2.0.1.Final</version.org.wildfly.transaction.client>
         <version.sun.jaxb>${version.org.glassfish.jaxb}</version.sun.jaxb>
         <version.wsdl4j>1.6.3</version.wsdl4j>
