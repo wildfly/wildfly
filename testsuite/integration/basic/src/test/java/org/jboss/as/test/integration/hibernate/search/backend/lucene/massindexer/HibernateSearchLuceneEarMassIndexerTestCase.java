@@ -97,6 +97,7 @@ public class HibernateSearchLuceneEarMassIndexerTestCase {
                 .getOrCreateProperties()
                 .createProperty().name("hibernate.hbm2ddl.auto").value("create").up()
                 .createProperty().name("hibernate.search.schema_management.strategy").value("drop-and-create-and-drop").up()
+                .createProperty().name("hibernate.search.backend.type").value("lucene").up()
                 .createProperty().name("hibernate.search.backend.lucene_version").value("LUCENE_CURRENT").up()
                 .createProperty().name("hibernate.search.backend.directory.type").value("local-heap").up()
                 .createProperty().name("hibernate.search.automatic_indexing.enabled").value("false").up()
