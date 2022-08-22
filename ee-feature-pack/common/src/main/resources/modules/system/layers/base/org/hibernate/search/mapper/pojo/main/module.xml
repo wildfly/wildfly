@@ -22,7 +22,7 @@
   -->
 
 <!-- Hibernate Search Pojo-base Mapper: base code for mappers such as org.hibernate.search.mapper.orm -->
-<module xmlns="urn:jboss:module:1.9" name="org.hibernate.search.mapper.pojo-base">
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.search.mapper.pojo">
 
     <resources>
         <artifact name="${org.hibernate.search:hibernate-search-mapper-pojo-base}"/>
