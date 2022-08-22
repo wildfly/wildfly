@@ -660,4 +660,34 @@
 	   <vulnerabilityName>CVE-2022-33915</vulnerabilityName>
     </suppress>
 
+    <!-- This is false positive because the affected code is in Payara server and fix is in the catalina web-subystem.
+    The corresponding issue is listed in Payara release notes and points to https://github.com/payara/Payara/pull/5886/files. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: microprofile-config-api-3.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.microprofile\.config/microprofile\-config\-api@.*$</packageUrl>
+        <cve>CVE-2022-37422</cve>
+    </suppress>
+
+    <!-- This is false positive because the affected code is in Payara server and fix is in the catalina web-subystem.
+    The corresponding issue is listed in Payara release notes and points to https://github.com/payara/Payara/pull/5886/files. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: microprofile-config-api-2.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.microprofile\.config/microprofile\-config\-api@.*$</packageUrl>
+        <cve>CVE-2022-37422</cve>
+    </suppress>
+
+    <!-- This is false positive because the affected code is in Payara server and fix is in the catalina web-subystem.
+    The corresponding issue is listed in Payara release notes and points to https://github.com/payara/Payara/pull/5886/files. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jakarta.resource-api-2.0.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/jakarta\.resource/jakarta\.resource\-api@.*$</packageUrl>
+        <cve>CVE-2022-37422</cve>
+    </suppress>
+
 </suppressions>
