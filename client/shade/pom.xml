@@ -327,7 +327,12 @@
         <dependency>
             <groupId>org.jboss.remotingjmx</groupId>
             <artifactId>remoting-jmx</artifactId>
-        </dependency>
+        </dependency>   
+
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron</artifactId>
+        </dependency> 
 
     </dependencies>
 
