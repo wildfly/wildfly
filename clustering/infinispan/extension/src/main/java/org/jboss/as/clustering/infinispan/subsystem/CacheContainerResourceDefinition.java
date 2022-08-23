@@ -112,7 +112,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         MARSHALLER("marshaller", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(InfinispanMarshallerFactory.DEFAULT.name()))
+                return builder.setDefaultValue(new ModelNode(InfinispanMarshallerFactory.LEGACY.name()))
                         .setValidator(new EnumValidator<>(InfinispanMarshallerFactory.class) {
                             @Override
                             public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {

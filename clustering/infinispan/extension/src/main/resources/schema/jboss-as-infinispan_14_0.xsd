@@ -118,7 +118,7 @@
                 <xs:documentation>Indicates the default cache for this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="marshaller" type="tns:marshaller" default="DEFAULT">
+        <xs:attribute name="marshaller" type="tns:marshaller" default="LEGACY">
             <xs:annotation>
                 <xs:documentation>Defines the marshalling implementation used to marshal cache entries.</xs:documentation>
             </xs:annotation>
@@ -1017,13 +1017,6 @@
 
     <xs:simpleType name="marshaller">
         <xs:restriction base="xs:token">
-            <xs:enumeration value="DEFAULT">
-                <xs:annotation>
-                    <xs:documentation>
-                        Marshals cache entries using Infinispan's default marshaller (based on ProtoStream) configured to use schemas/marshallers loaded modules associated with this container.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
             <xs:enumeration value="LEGACY">
                 <xs:annotation>
                     <xs:documentation>Deprecated. Selects the marshaller dynamically based on the associated modules.</xs:documentation>
@@ -1037,8 +1030,7 @@
             <xs:enumeration value="PROTOSTREAM">
                 <xs:annotation>
                     <xs:documentation>
-                        Marshals cache entries using an enhanced ProtoStream marshaller configured to use schemas/marshallers loaded from modules associated with this container.
-                        Entries using this marshaller will be completely opaque to Infinispan server.
+                        Marshals cache entries using ProtoStream configured to use schemas/marshallers loaded from modules associated with this container.
                     </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
@@ -1149,7 +1141,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="marshaller" type="tns:marshaller" default="DEFAULT">
+        <xs:attribute name="marshaller" type="tns:marshaller" default="LEGACY">
             <xs:annotation>
                 <xs:documentation>Defines the marshalling implementation used to marshal cache entries.</xs:documentation>
             </xs:annotation>

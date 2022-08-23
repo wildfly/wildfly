@@ -63,7 +63,7 @@ public class RemoteInfinispanCacheTestCase extends AbstractCacheTestCase {
                     .setupScript(createScriptBuilder()
                         .startBatch()
                             .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=%d,host=%s)", INFINISPAN_SERVER_PORT, INFINISPAN_SERVER_ADDRESS)
-                            .add("/subsystem=infinispan/remote-cache-container=remote:add(default-remote-cluster=infinispan-server-cluster, properties={infinispan.client.hotrod.auth_username=%s, infinispan.client.hotrod.auth_password=%s})", INFINISPAN_APPLICATION_USER, INFINISPAN_APPLICATION_PASSWORD)
+                            .add("/subsystem=infinispan/remote-cache-container=remote:add(default-remote-cluster=infinispan-server-cluster, marshaller=PROTOSTREAM, properties={infinispan.client.hotrod.auth_username=%s, infinispan.client.hotrod.auth_password=%s})", INFINISPAN_APPLICATION_USER, INFINISPAN_APPLICATION_PASSWORD)
                             .add("/subsystem=infinispan/remote-cache-container=remote/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
                         .endBatch()
                         .build())
