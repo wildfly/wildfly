@@ -35,7 +35,10 @@
         <module name="java.sql"/>
         <module name="java.xml"/>
         <module name="jdk.xml.dom"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
+        <!-- The jbossorg xalan artifacts used in this module no longer shades in Apache BCEL.
+             Users who want to provide access to those classes can create the non-existent
+             OOTB "xalan.org.apache.bcel" module and include a bcel jar in it. -->
+        <module name="xalan.org.apache.bcel" optional="true"/>
     </dependencies>
 
 </module>
