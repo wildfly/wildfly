@@ -95,5 +95,8 @@
             <include path="org.jboss.jbossts.txbridge.outbound"/>
           </imports>
         </module>
+        <module name="org.codehaus.woodstox" services="import"/>
+        <module name="org.apache.commons.codec" />
+        <module name="org.wildfly.security.elytron" />
     </dependencies>
 </module>

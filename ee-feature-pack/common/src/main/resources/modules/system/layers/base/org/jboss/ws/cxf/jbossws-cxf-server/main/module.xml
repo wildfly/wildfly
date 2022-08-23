@@ -71,5 +71,7 @@
         <module name="org.apache.ws.security" />
         <module name="org.picketbox" />
         <module name="java.xml"/>
+        <module name="org.apache.commons.codec" />
+        <module name="org.wildfly.security.elytron" />
     </dependencies>
 </module>
