@@ -33,6 +33,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 
 
 /**
@@ -41,6 +42,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class MicroProfileSubsystemDefinition extends PersistentResourceDefinition {
+
+    static final String EE_SECURITY_IMPL = "org.wildfly.security.jakarta.security";
 
     static final RuntimeCapability<Void> CONFIG_CAPABILITY =
             RuntimeCapability.Builder.of(JWT_CAPABILITY_NAME)
@@ -54,6 +57,7 @@ class MicroProfileSubsystemDefinition extends PersistentResourceDefinition {
                 .setAddHandler(new MicroProfileJWTSubsystemAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(CONFIG_CAPABILITY)
+                .setAdditionalPackages(RuntimePackageDependency.required(EE_SECURITY_IMPL))
         );
     }
 
