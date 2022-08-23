@@ -220,6 +220,7 @@ public class LayersTestCase {
         "ibm.jdk",
         // TODO just a testsuite utility https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
         "org.jboss.ws.cxf.sts",
+        "org.wildfly.security.jakarta.security" // Dynamically added by ee-security and mp-jwt-smallrye DUPs but not referenced by subsystems.
     };
 
     /**

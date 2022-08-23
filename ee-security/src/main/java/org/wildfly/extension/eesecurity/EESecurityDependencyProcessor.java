@@ -20,6 +20,8 @@
  */
 package org.wildfly.extension.eesecurity;
 
+import static org.wildfly.extension.eesecurity.EESecuritySubsystemDefinition.ELYTRON_JAKARTA_SECURITY;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -44,7 +46,7 @@ class EESecurityDependencyProcessor implements DeploymentUnitProcessor {
 
         Boolean securityPresent = top.getAttachment(EESecurityAnnotationProcessor.SECURITY_PRESENT);
         if(securityPresent != null && securityPresent) {
-            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.fromString("org.glassfish.soteria"), false, false, true, false));
+            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.fromString(ELYTRON_JAKARTA_SECURITY), false, false, true, false));
         }
 
     }
