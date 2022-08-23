@@ -865,7 +865,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly.security</groupId>
+      <groupId>org.wildfly.security.mp</groupId>
       <artifactId>wildfly-elytron-jwt</artifactId>
       <licenses>
         <license>

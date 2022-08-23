@@ -25,7 +25,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly.security:wildfly-elytron-jwt}"/>
+        <artifact name="${org.wildfly.security.mp:wildfly-elytron-jwt}"/>
     </resources>
 
     <dependencies>
