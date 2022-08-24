@@ -25,9 +25,10 @@
 <module xmlns="urn:jboss:module:1.9" name="org.elasticsearch.client.rest-client">
 
     <properties>
-        <!-- Elasticsearch clients won't be supported in JBoss EAP;
-             only indirect usage through other modules (Hibernate Search, ...) may be. -->
-        <property name="jboss.api" value="private"/>
+        <!-- Direct access to the Elasticsearch client is allowed in WildFly,
+             though it may not be supported by product vendors
+             (because its APIs could change without prior notice). -->
+        <property name="jboss.api" value="public"/>
     </properties>
 
     <resources>
