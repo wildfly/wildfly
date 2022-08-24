@@ -34,6 +34,5 @@
         <module name="java.logging"/>
         <!-- PersistenceUnitInfo needs javax.sql.DataSource -->
         <module name="java.sql" export="true"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
     </dependencies>
 </module>

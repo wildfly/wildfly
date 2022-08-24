@@ -38,7 +38,6 @@
 
     <dependencies>
         <module name="java.management"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.jboss.staxmapper"/>

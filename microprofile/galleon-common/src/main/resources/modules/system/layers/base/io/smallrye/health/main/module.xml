@@ -33,7 +33,6 @@
     </resources>
 
     <dependencies>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.eclipse.microprofile.config.api" />
         <module name="org.eclipse.microprofile.health.api"/>
         <module name="javax.enterprise.api" />

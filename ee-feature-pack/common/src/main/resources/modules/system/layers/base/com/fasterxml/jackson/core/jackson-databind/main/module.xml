@@ -31,7 +31,6 @@
         <module name="java.logging"/>
         <module name="java.sql"/>
         <module name="java.xml"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="com.fasterxml.jackson.core.jackson-annotations"/>
         <module name="com.fasterxml.jackson.core.jackson-core"/>
     </dependencies>

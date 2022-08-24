@@ -34,7 +34,6 @@
 
     <dependencies>
         <module name="java.naming"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.activation.api"/>
         <module name="javax.mail.api"/>
         <module name="org.apache.james.mime4j"/>

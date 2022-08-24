@@ -41,7 +41,6 @@
         <module name="io.smallrye.metrics"/>
         <module name="io.smallrye.reactive.converters.api"/>
         <module name="javax.annotation.api"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
         <module name="javax.enterprise.concurrent.api"/>
         <module name="org.eclipse.microprofile.config.api"/>

@@ -30,7 +30,6 @@
     </resources>
 
     <dependencies>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.ws.rs.api"/>
         <module name="javax.xml.bind.api"/>
         <module name="com.fasterxml.jackson.core.jackson-annotations"/>

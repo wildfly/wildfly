@@ -34,7 +34,6 @@
 
     <dependencies>
         <module name="javax.annotation.api"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.faces.api" />
         <module name="javax.enterprise.api"/>
         <module name="com.sun.jsf-impl"/>

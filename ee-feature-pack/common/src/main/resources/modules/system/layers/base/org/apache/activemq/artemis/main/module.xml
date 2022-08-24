@@ -47,7 +47,6 @@
         <module name="java.transaction.xa"/>
         <module name="javax.transaction.api"/>
         <module name="com.google.guava"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.jms.api" />
         <module name="internal.javax.json.api.ee8" services="import"/>
         <module name="org.apache.commons.beanutils" />

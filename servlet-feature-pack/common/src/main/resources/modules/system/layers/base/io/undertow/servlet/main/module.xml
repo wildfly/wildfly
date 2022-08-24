@@ -28,7 +28,6 @@
     </resources>
 
     <dependencies>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.annotation.api"/>
         <module name="sun.jdk"/>
         <module name="javax.servlet.api"/>

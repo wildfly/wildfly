@@ -35,7 +35,6 @@
     <dependencies>
         <module name="java.management"/>
         <module name="java.naming"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.annotation.api"/>
         <module name="javax.xml.stream.api"/>
         <module name="javax.jws.api"/>

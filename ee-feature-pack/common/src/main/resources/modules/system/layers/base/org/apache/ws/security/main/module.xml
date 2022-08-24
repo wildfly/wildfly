@@ -35,7 +35,6 @@
 
     <dependencies>
       <module name="java.security.jgss"/>
-      <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
       <module name="javax.xml.bind.api" services="import"/>
       <module name="com.sun.xml.bind" services="import"/>
       <module name="com.sun.xml.messaging.saaj" export="true" services="export"/>

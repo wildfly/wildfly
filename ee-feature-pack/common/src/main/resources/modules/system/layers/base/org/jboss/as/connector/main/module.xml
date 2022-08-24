@@ -45,7 +45,6 @@
         <module name="java.transaction.xa"/>
         <module name="javax.security.auth.message.api" />
         <module name="sun.jdk"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.annotation.api"/>

@@ -29,7 +29,6 @@
     </resources>
 
     <dependencies>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.sql.api"/>
         <module name="java.compiler"/>
         <module name="java.logging"/>

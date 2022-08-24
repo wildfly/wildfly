@@ -33,7 +33,6 @@
 
     <dependencies>
         <module name="org.jboss.metadata.common"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="java.xml"/>
     </dependencies>
 </module>

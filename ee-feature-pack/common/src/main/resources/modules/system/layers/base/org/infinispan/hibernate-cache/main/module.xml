@@ -33,7 +33,6 @@
         <module name="java.naming"/>
         <module name="java.sql"/>
         <module name="org.hibernate"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="internal.javax.transaction.api"/>
         <module name="org.hibernate.jipijapa-hibernate6" services="import"/>
         <module name="org.infinispan" services="import"/>

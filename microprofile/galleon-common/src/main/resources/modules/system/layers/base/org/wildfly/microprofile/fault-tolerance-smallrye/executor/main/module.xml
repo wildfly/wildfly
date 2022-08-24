@@ -35,7 +35,6 @@
     <dependencies>
         <module name="java.naming"/>
         <module name="io.smallrye.fault-tolerance"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.concurrent.api"/>
     </dependencies>
 </module>

@@ -30,7 +30,6 @@
         <module name="java.management"/>
         <module name="java.naming"/>
         <module name="java.security.sasl"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="internal.javax.transaction.api"/>
 
         <module name="com.github.ben-manes.caffeine"/>
