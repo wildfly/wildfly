@@ -35,6 +35,7 @@
         <module name="io.netty.netty-common" />
         <module name="io.netty.netty-buffer" />
         <module name="io.netty.netty-transport" />
+        <module name="io.netty.netty-transport-native-unix-common"/>
         <module name="io.netty.netty-codec" />
         <module name="io.netty.netty-resolver" />
     </dependencies>
