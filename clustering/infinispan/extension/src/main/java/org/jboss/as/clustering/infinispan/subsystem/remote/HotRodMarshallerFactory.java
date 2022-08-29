@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -39,7 +38,7 @@ import org.wildfly.clustering.infinispan.marshalling.MarshallerFactory;
 public enum HotRodMarshallerFactory implements BiFunction<ModuleLoader, List<Module>, Marshaller> {
 
     LEGACY() {
-        private final Set<String> protoStreamModules = Collections.singleton("org.wildfly.clustering.web.hotrod");
+        private final Set<String> protoStreamModules = Set.of("org.wildfly.clustering.web.hotrod");
         private final Predicate<String> protoStreamPredicate = this.protoStreamModules::contains;
 
         @Override
