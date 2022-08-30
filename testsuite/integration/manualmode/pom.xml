@@ -341,7 +341,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-client-all-jakarta</artifactId>
+            <artifactId>wildfly-client-all</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -64,6 +64,7 @@
         <module>boms/standard-expansion</module>
         <module>build</module>
         <module>client/properties</module>
+        <module>client/shade</module>
         <module>clustering</module>
         <module>dist</module>
         <module>ee-build</module>
@@ -2032,8 +2033,6 @@
                 <module>batch-jberet</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>bean-validation</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>client/shade</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>connector</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
