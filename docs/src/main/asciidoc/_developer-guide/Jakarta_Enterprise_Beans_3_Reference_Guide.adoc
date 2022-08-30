@@ -254,7 +254,9 @@ fired only once like a recurring timer!
 
 include::ejb3/Container_interceptors.adoc[]
 
-include::ejb3/Jakarta_Enterprise_Beans_3_Clustered_Database_Timers.adoc[]
+include::ejb3/Jakarta_Enterprise_Beans_Database_Persistent_Timers.adoc[]
+
+include::ejb3/Jakarta_Enterprise_Beans_Distributed_Timers.adoc[]
 
 include::ejb3/Jakarta_Enterprise_Beans_IIOP_Guide.adoc[]
 
