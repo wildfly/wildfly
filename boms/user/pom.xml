@@ -68,7 +68,7 @@
 
     <issueManagement>
         <system>JIRA</system>
-        <url>https://issues.jboss.org/</url>
+        <url>https://issues.redhat.com/browse/WFLY</url>
     </issueManagement>
 
     <properties>
