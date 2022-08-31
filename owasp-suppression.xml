@@ -619,6 +619,7 @@
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server.*$</packageUrl>
         <cve>CVE-2021-3629</cve>
+		<cve>CVE-2021-3690</cve>
         <cve>CVE-2021-3597</cve>
         <cve>CVE-2020-10687</cve>
         <cve>CVE-2021-20220</cve>
