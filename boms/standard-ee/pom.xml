@@ -121,7 +121,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-client-all-jakarta</artifactId>
+                <artifactId>wildfly-client-all</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
