@@ -476,7 +476,6 @@
         <version.org.eclipselink.version>3.0.2</version.org.eclipselink.version>
         <version.org.glassfish.expressly>5.0.0-M2</version.org.glassfish.expressly>
         <legacy.version.org.glassfish.jakarta.el>3.0.3.jbossorg-4</legacy.version.org.glassfish.jakarta.el>
-        <version.org.glassfish.jakarta.el>5.0.0-M1</version.org.glassfish.jakarta.el>
         <legacy.version.org.glassfish.jakarta.enterprise.concurrent>1.1.1</legacy.version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.enterprise.concurrent>3.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <legacy.version.org.glassfish.jakarta.json>1.1.6</legacy.version.org.glassfish.jakarta.json>
