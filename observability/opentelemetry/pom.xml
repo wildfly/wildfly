@@ -245,10 +245,6 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-web-common</artifactId>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-jaxrs</artifactId>
-        </dependency>
 
         <!--Test dependencies -->
         <dependency>

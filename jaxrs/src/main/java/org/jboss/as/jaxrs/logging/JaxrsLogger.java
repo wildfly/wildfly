@@ -89,7 +89,7 @@ public interface JaxrsLogger extends BasicLogger {
 
 //    /**
 //     * Logs a warning message indicating no servlet mappings found for the Jakarta RESTful Web Services application, represented by the
-//     * {@code servletName} parameter, either annotate with {@link javax.ws.rs.ApplicationPath @ApplicationPath} or add
+//     * {@code servletName} parameter, either annotate with {@link jakarta.ws.rs.ApplicationPath @ApplicationPath} or add
 //     * a {@code servlet-mapping} in the web.xml.
 //     *
 //     * @param servletName the servlet name.
@@ -168,7 +168,7 @@ public interface JaxrsLogger extends BasicLogger {
     void failedToRegisterManagementViewForRESTResources(String resClass, @Cause Exception e);
 
     @LogMessage(level = WARN)
-    @Message(id = 15, value = "No Servlet declaration found for Jakarta RESTful Web Services application.  In %s either provide a class that extends javax.ws.rs.core.Application or declare a servlet class in web.xml.")
+    @Message(id = 15, value = "No Servlet declaration found for Jakarta RESTful Web Services application.  In %s either provide a class that extends jakarta.ws.rs.core.Application or declare a servlet class in web.xml.")
     void noServletDeclaration(String archiveName);
 
     @LogMessage(level = INFO)
