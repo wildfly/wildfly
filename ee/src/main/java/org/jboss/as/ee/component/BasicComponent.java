@@ -249,8 +249,8 @@ public class BasicComponent implements Component {
         // This is an identity map.  This means that only <b>certain</b> {@code Method} objects will
         // match - specifically, they must equal the objects provided to the proxy.
         final IdentityHashMap<Method, Interceptor> interceptorMap = new IdentityHashMap<Method, Interceptor>();
-        for (Method method : interceptorFactoryMap.keySet()) {
-            interceptorMap.put(method, interceptorFactoryMap.get(method).create(context));
+        for (Map.Entry<Method, InterceptorFactory> entry : interceptorFactoryMap.entrySet()) {
+            interceptorMap.put(entry.getKey(), entry.getValue().create(context));
         }
         this.interceptorInstanceMap = interceptorMap;
     }
