@@ -15,7 +15,6 @@ Note that for this to work correctly the underlying database must
 support the READ_COMMITTED or SERIALIZABLE isolation mode and the
 datasource must be configured accordingly
 
-[[setup]]
 == Setup
 
 In order to use clustered timers it is necessary to add a database
