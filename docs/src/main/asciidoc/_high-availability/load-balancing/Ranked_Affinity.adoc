@@ -1,7 +1,7 @@
 [[ranked-affinity-load-balancer]]
-== Enabling ranked affinity support in load balancer
+= Enabling ranked affinity support in load balancer
 
-Enabling ranked affinity support in the <<distributable-web-subsystem,server>> must be accompanied with a compatible load balancer with ranked affinity support enabled.
+Enabling ranked affinity support in the <<distributable-web-subsystem,server>> must be accompanied by a compatible load balancer with ranked affinity support enabled.
 When using WildFly as a load balancer ranked routing can be enabled with the following CLI command:
 
 [source,options="nowrap"]

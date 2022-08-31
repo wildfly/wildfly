@@ -1,5 +1,4 @@
 [[Clustering_API]]
-
 = Clustering API
 
 WildFly exposes a public API to deployments for performing common clustering operations, such as:

@@ -1,0 +1,58 @@
+[[High_Availability_Guide]]
+= High Availability Guide
+WildFly clustering team;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 3
+:toc-title: High Availability Guide
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+:wildflyVersion: 27
+:leveloffset: +1
+
+ifndef::ebook-format[:leveloffset: 1]
+
+(C) 2017–2022 The original authors.
+
+ifdef::basebackend-html[toc::[]]
+:numbered:
+
+// EDITING NOTES FOR AUTHORS
+
+// While editing, ensure that each section .adoc file *and* its includes contain only a single level 1 heading.
+
+// Each section is organized as main topic .adoc file and optionally includes in the section's directory if composed of multiple files.
+
+// Included files can start with heading 1 (single =) *but* when being included set an offset at appropriate level, e.g.:
+// include::infinispan/Infinispan_Subsystem.adoc[leveloffset=+1]
+
+// Check by rendering the guide, e.g.
+// $ mvn clean install -f docs/pom.xml
+// and ensuring the rendered section numbers match the current static outline.
+// $ open docs/target/generated-docs/High_Availability_Guide.html
+
+// While building, also ensure there aren't errors such as broken links as CI does not check this at the moment.
+
+include::Introduction_To_High_Availability_Services.adoc[]
+
+include::Distributable_Web_Applications.adoc[]
+
+include::Distributable_Jakarta_Enterprise_Beans_Applications.adoc[]
+
+include::Messaging.adoc[]
+
+include::Load_Balancing.adoc[]
+
+include::HA_Singleton_Features.adoc[]
+
+include::Clustering_API.adoc[]
+
+include::JGroups.adoc[]
+
+include::Infinispan.adoc[]
+
+include::Advanced_Topics.adoc[]
+
+include::Clustering_and_Domain_Setup_Walkthrough.adoc[]
