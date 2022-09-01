@@ -29,14 +29,12 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker.SimpleRejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute;
 import org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.ListAttribute;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
 
 /**
  * Transformer for cache container resources.
@@ -70,13 +68,11 @@ public class CacheContainerResourceTransformer implements Consumer<ModelVersion>
                             }
                         }
                     }, ListAttribute.MODULES.getDefinition())
-                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())
-                    .addRejectCheck(new SimpleRejectAttributeChecker(new ModelNode(InfinispanMarshallerFactory.DEFAULT.name())), Attribute.MARSHALLER.getDefinition())
                     .end();
         }
         if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(InfinispanMarshallerFactory.LEGACY.name())), Attribute.MARSHALLER.getDefinition())
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())
                     .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MARSHALLER.getDefinition().getDefaultValue()), Attribute.MARSHALLER.getDefinition())
                     .end();
         }
