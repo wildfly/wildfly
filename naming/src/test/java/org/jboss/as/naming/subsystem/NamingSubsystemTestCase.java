@@ -21,6 +21,7 @@
 */
 package org.jboss.as.naming.subsystem;
 
+import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.List;
 
@@ -121,6 +122,37 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addStep(Operations.createWriteAttributeOperation(addr, NamingSubsystemModel.LOOKUP, "java:global/b"))
                 .build().getOperation();
         ModelTestUtils.checkOutcome(services.executeOperation(compositeOp));
+    }
+
+    @Test
+    public void testExpressionInAttributeValue() throws Exception{
+
+        final KernelServices services = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(readResource("subsystem_expression.xml")).build();
+        final ModelNode addr = Operations.createAddress("subsystem", "naming");
+        final ModelNode op = Operations.createReadResourceOperation(addr, true);
+        op.get(ModelDescriptionConstants.RESOLVE_EXPRESSIONS).set(true);
+        final ModelNode result = services.executeOperation(op).get("result");
+
+        ModelNode attribute = result.get(NamingSubsystemModel.BINDING).get("java:global/a");
+
+        final String value = attribute.get(NamingSubsystemModel.VALUE).asString();
+        assertEquals("100", value);
+
+        final String type = attribute.get(NamingSubsystemModel.TYPE).asString();
+        assertEquals("int", type);
+
+        attribute = result.get(NamingSubsystemModel.BINDING).get("java:global/b");
+
+        final String objclass = attribute.get(NamingSubsystemModel.CLASS).asString();
+        assertEquals("org.jboss.as.naming.ManagedReferenceObjectFactory", objclass);
+
+        final String module = attribute.get(NamingSubsystemModel.MODULE).asString();
+        assertEquals("org.jboss.as.naming", module);
+
+        attribute = result.get(NamingSubsystemModel.BINDING).get("java:global/c");
+
+        final String lookup = attribute.get(NamingSubsystemModel.LOOKUP).asString();
+        assertEquals("java:global/b", lookup);
     }
 
     @Override
