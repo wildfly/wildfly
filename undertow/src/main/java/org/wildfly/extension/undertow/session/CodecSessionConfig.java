@@ -21,6 +21,7 @@
  */
 package org.wildfly.extension.undertow.session;
 
+import io.undertow.servlet.handlers.ServletRequestContext;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 
 import io.undertow.server.HttpServerExchange;
@@ -59,6 +60,12 @@ public class CodecSessionConfig implements SessionConfig {
         String encodedSessionId = this.config.findSessionId(exchange);
         if (encodedSessionId == null) return null;
         CharSequence sessionId = this.codec.decode(encodedSessionId);
+
+        // Checks if a session with sessionId exists. If not, then the encoding doesn't happen
+        ServletRequestContext key = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+        if (key != null && key.getDeployment().getSessionManager().getSession(sessionId.toString()) == null) {
+            return sessionId.toString();
+        }
         // Check if the encoding for this session has changed
         CharSequence reencodedSessionId = this.codec.encode(sessionId);
         if ((exchange.getAttachment(SESSION_ID_SET) == null) && !encodedSessionId.contentEquals(reencodedSessionId)) {
