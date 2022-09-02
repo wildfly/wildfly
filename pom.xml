@@ -352,7 +352,7 @@
         <legacy.version.io.smallrye.opentracing>2.0.0</legacy.version.io.smallrye.opentracing>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
         <legacy.version.io.smallrye.smallrye-common>1.12.0</legacy.version.io.smallrye.smallrye-common>
-        <version.io.smallrye.smallrye-common>2.0.0-RC3</version.io.smallrye.smallrye-common>
+        <version.io.smallrye.smallrye-common>2.0.0</version.io.smallrye.smallrye-common>
         <legacy.version.io.smallrye.smallrye-config>2.10.1</legacy.version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-config>3.0.0-RC3</version.io.smallrye.smallrye-config>
         <legacy.version.io.smallrye.smallrye-fault-tolerance>5.5.0</legacy.version.io.smallrye.smallrye-fault-tolerance>
