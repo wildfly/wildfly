@@ -332,7 +332,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     }
 
     void clearUnknownProperties(final Map<String, String> props) {
-        Set<String> attributeNames = PooledConnectionFactoryDefinition.getAttributesMap().keySet();
+        Map<String, ConnectionFactoryAttribute> attributesMap = PooledConnectionFactoryDefinition.getAttributesMap();
 
         final Iterator<Map.Entry<String, String>> it = props.entrySet().iterator();
         while (it.hasNext()) {
@@ -340,7 +340,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
             String value = entry.getKey();
             if (value == null || "".equals(value)) {
                 it.remove();
-            } else if (!attributeNames.contains(entry.getKey())) {
+            } else if (!attributesMap.containsKey(entry.getKey())) {
                 MessagingLogger.ROOT_LOGGER.unknownPooledConnectionFactoryAttribute(entry.getKey());
                 it.remove();
             }
