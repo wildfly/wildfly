@@ -53,7 +53,7 @@ public class WildFlyConversationAwareViewHandler extends ViewHandlerWrapper {
         super();
 
         if (isCDIApp()) {
-            wrapped = new ConversationAwareViewHandler(parent);
+            wrapped = parent instanceof ConversationAwareViewHandler ? parent : new ConversationAwareViewHandler(parent);
         } else {
             wrapped = parent;
         }
