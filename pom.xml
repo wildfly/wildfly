@@ -511,7 +511,7 @@
         <version.org.jboss.hal.console>3.6.4.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.2.Final</version.org.jboss.iiop-client>
         <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
-        <version.org.jboss.ironjacamar>1.5.7.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>1.5.8.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
