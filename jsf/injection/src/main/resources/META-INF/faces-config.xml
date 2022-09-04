@@ -9,7 +9,7 @@
    </factory>
 
    <application>
-      <view-handler>org.jboss.as.jsf.injection.weld.WildFlyConversationAwareViewHandler</view-handler>
+      <view-handler>org.jboss.weld.module.jsf.ConversationAwareViewHandler</view-handler>
    </application>
 
 </faces-config>
