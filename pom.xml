@@ -295,8 +295,8 @@
         <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
         <version.org.elasticsearch.client.rest-client>7.16.3</version.org.elasticsearch.client.rest-client>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.12.7</version.com.fasterxml.jackson>
-        <version.com.fasterxml.jackson.databind>2.12.7</version.com.fasterxml.jackson.databind>
+        <version.com.fasterxml.jackson>2.13.4</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
         <version.com.github.ben-manes.caffeine>2.9.3</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
@@ -517,7 +517,7 @@
         <version.org.jboss.narayana>5.13.0.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.9.Final</version.org.jboss.openjdk-orb>
         <legacy.version.org.jboss.resteasy>4.7.4.Final</legacy.version.org.jboss.resteasy>
-        <version.org.jboss.resteasy>6.1.0.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>6.2.0.Beta1</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.microprofile>2.0.0.Beta1</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.0.0.Beta1</version.org.jboss.resteasy.spring>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
