@@ -668,7 +668,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor-jakarta</artifactId>
+      <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -679,7 +679,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension-jakarta</artifactId>
+      <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
