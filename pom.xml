@@ -388,7 +388,6 @@
         <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.1.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.json.bind.api>3.0.0</version.jakarta.json.bind.api>
-        <version.jakarta.json.jakarta-json-api>2.1.0</version.jakarta.json.jakarta-json-api>
         <legacy.version.jakarta.json.jakarta-json-api>1.1.6</legacy.version.jakarta.json.jakarta-json-api>
         <legacy.version.jakarta.jws.jakarta.jws-api>2.1.0</legacy.version.jakarta.jws.jakarta.jws-api>
         <legacy.version.jakarta.mail>1.6.7</legacy.version.jakarta.mail>
