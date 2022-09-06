@@ -832,6 +832,16 @@
             <groupId>wsdl4j</groupId>
             <artifactId>wsdl4j</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.jakarta.el</groupId>
+            <artifactId>jboss-el-api_5.0_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
