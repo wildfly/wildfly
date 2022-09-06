@@ -63,6 +63,19 @@
 
         <!-- By default (i.e. Java EE) use the following directory as an additional source -->
         <ts.microprofile-tck.build-helper.source.dir>src/test/javax/java</ts.microprofile-tck.build-helper.source.dir>
+
+        <!-- Use the complete WF dependencyManagement set, not just the default EE set -->
+        <dependency.management.import.artifact>wildfly-feature-pack-parent</dependency.management.import.artifact>
+        
+        <!-- Properties used in certification script -->
+        <version.config>${version.org.eclipse.microprofile.config.api}</version.config>
+        <version.fault-tolerance>${version.org.eclipse.microprofile.fault-tolerance.api}</version.fault-tolerance>
+        <version.health>${version.org.eclipse.microprofile.health.api}</version.health>
+        <version.jwt>${version.org.eclipse.microprofile.jwt.api}</version.jwt>
+        <version.metrics>${version.org.eclipse.microprofile.metrics.api}</version.metrics>
+        <version.openapi>${version.org.eclipse.microprofile.openapi}</version.openapi>
+        <version.opentracing>${version.org.eclipse.microprofile.opentracing}</version.opentracing>
+        <version.rest-client>${version.org.eclipse.microprofile.rest.client.api}</version.rest-client>
     </properties>
 
     <modules>
@@ -76,6 +89,7 @@
         <module>rest-client</module>
         <module>reactive-messaging</module>
         <module>reactive-streams-operators</module>
+        <module>certification</module>
     </modules>
 
     <build>
