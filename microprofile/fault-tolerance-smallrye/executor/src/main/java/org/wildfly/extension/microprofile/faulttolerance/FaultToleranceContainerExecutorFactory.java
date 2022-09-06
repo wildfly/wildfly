@@ -25,16 +25,17 @@ package org.wildfly.extension.microprofile.faulttolerance;
 import java.util.OptionalInt;
 import java.util.concurrent.ThreadFactory;
 
-import javax.enterprise.concurrent.ManagedThreadFactory;
-import javax.enterprise.inject.Alternative;
-import javax.inject.Inject;
 import javax.naming.InitialContext;
+
+import jakarta.enterprise.concurrent.ManagedThreadFactory;
+import jakarta.enterprise.inject.Alternative;
+import jakarta.inject.Inject;
 
 import io.smallrye.faulttolerance.DefaultAsyncExecutorProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
- * Subclass of {@link io.smallrye.faulttolerance.DefaultAsyncExecutorProvider} that provides a ThreadFactory as
+ * Subclass of {@link DefaultAsyncExecutorProvider} that provides a ThreadFactory as
  * configured in the server.
  *
  * @author Radoslav Husar

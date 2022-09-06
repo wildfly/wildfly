@@ -70,7 +70,7 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor-jakarta</artifactId>
+                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -81,7 +81,7 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension-jakarta</artifactId>
+                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -92,7 +92,7 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-jakarta</artifactId>
+                <artifactId>wildfly-microprofile-fault-tolerance-smallrye</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>

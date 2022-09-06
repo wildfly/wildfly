@@ -42,7 +42,6 @@
     <name>WildFly: Microprofile integration modules (Jakarta Namespace)</name>
 
     <modules>
-        <module>fault-tolerance-smallrye</module>
         <module>health-smallrye</module>
         <module>jwt-smallrye</module>
         <module>reactive-streams-operators-smallrye/cdi-provider</module>

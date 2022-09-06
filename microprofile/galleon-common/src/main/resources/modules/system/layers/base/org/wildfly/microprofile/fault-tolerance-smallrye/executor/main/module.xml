@@ -29,12 +29,15 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-microprofile-fault-tolerance-smallrye-executor@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-microprofile-fault-tolerance-smallrye-executor}"/>
     </resources>
 
     <dependencies>
         <module name="java.naming"/>
+
+        <module name="jakarta.enterprise.concurrent.api"/>
+
         <module name="io.smallrye.fault-tolerance"/>
-        <module name="javax.enterprise.concurrent.api"/>
     </dependencies>
+
 </module>

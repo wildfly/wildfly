@@ -591,7 +591,7 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-mod_cluster-undertow-jakarta</artifactId>
+                <artifactId>wildfly-mod_cluster-undertow</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>

@@ -43,6 +43,7 @@
 
     <modules>
         <module>config-smallrye</module>
+        <module>fault-tolerance-smallrye</module>
         <module>galleon-common</module>
         <module>openapi-smallrye</module>
         <module>reactive-messaging-smallrye</module>
@@ -70,8 +71,6 @@
                 </property>
             </activation>
             <modules>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>fault-tolerance-smallrye</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>health-smallrye</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->

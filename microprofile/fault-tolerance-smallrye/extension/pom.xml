@@ -37,18 +37,6 @@
 
     <name>WildFly: MicroProfile Fault Tolerance - Extension</name>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-legacy-expansion-bom</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <!-- MicroProfile Fault Tolerance and SmallRye dependencies -->
         <dependency>
@@ -65,13 +53,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-weld-common</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>wildfly-weld-common-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.enterprise</groupId>
@@ -81,6 +63,7 @@
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
         </dependency>
+
         <!-- Subsystem dependencies -->
         <dependency>
             <groupId>org.jboss</groupId>
@@ -105,42 +88,18 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-clustering-service</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -154,6 +113,7 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.projectodd.vdx</groupId>
@@ -172,8 +132,18 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-credential</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager-action</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-util</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

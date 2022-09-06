@@ -355,22 +355,21 @@
         <version.io.smallrye.smallrye-common>2.0.0</version.io.smallrye.smallrye-common>
         <legacy.version.io.smallrye.smallrye-config>2.10.1</legacy.version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-config>3.0.0</version.io.smallrye.smallrye-config>
-        <legacy.version.io.smallrye.smallrye-fault-tolerance>5.5.0</legacy.version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC4</version.io.smallrye.smallrye-fault-tolerance>
         <legacy.version.io.smallrye.smallrye-health>3.2.1</legacy.version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-health>4.0.0-RC2</version.io.smallrye.smallrye-health>
         <legacy.version.io.smallrye.smallrye-jwt>3.1.1</legacy.version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-jwt>4.0.0-RC2</version.io.smallrye.smallrye-jwt>
         <legacy.version.io.smallrye.smallrye-metrics>3.0.4</legacy.version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.smallrye-metrics>4.0.0-RC1</version.io.smallrye.smallrye-metrics>
+        <version.io.smallrye.smallrye-metrics>4.0.0</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.smallrye-mutiny>1.6.0</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>2.23.0</version.io.smallrye.smallrye-mutiny-vertx>
-        <version.io.smallrye.smallrye-opentracing>3.0.0-RC1</version.io.smallrye.smallrye-opentracing>
+        <version.io.smallrye.smallrye-opentracing>3.0.0</version.io.smallrye.smallrye-opentracing>
         <version.io.smallrye.smallrye-reactive-messaging>4.0.0.RC1</version.io.smallrye.smallrye-reactive-messaging>
         <legacy.version.io.undertow>2.2.19.Final</legacy.version.io.undertow>
         <version.io.undertow>2.3.0.Alpha2</version.io.undertow>
         <legacy.version.io.undertow.jastow>2.0.11.Final</legacy.version.io.undertow.jastow>
-        <version.io.undertow.jastow>2.2.2.Final</version.io.undertow.jastow>
+        <version.io.undertow.jastow>2.2.3.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.3.1</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
@@ -412,7 +411,7 @@
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>2.0.0</version.jboss.jaxbintros>
         <version.joda-time>2.11.0</version.joda-time>
-        <version.jsoup>1.14.2</version.jsoup>
+        <version.jsoup>1.15.3</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>8.0.0</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>2.23.1</version.org.apache.activemq.artemis>
@@ -446,15 +445,13 @@
         <version.org.codehaus.woodstox.woodstox-core>6.2.8</version.org.codehaus.woodstox.woodstox-core>
         <version.org.eclipse.angus.angus-activation>1.0.0</version.org.eclipse.angus.angus-activation>
         <version.org.eclipse.angus.angus-mail>1.0.0</version.org.eclipse.angus.angus-mail>
-        <version.org.eclipse.jdt>3.26.0</version.org.eclipse.jdt>
+        <version.org.eclipse.jdt>3.30.0</version.org.eclipse.jdt>
         <!-- Required by the Wiremock used in the MicroProfile REST Client TCK -->
         <version.org.eclipse.jetty>9.2.30.v20200428</version.org.eclipse.jetty>
         <version.org.eclipse.microprofile>4.1</version.org.eclipse.microprofile>
         <legacy.version.org.eclipse.microprofile.config.api>2.0</legacy.version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.config.api>3.0.1</version.org.eclipse.microprofile.config.api>
-        <legacy.version.org.eclipse.microprofile.fault-tolerance.api>3.0</legacy.version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
-        <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
         <legacy.version.org.eclipse.microprofile.health.api>3.1</legacy.version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.health.api>4.0</version.org.eclipse.microprofile.health.api>
         <legacy.version.org.eclipse.microprofile.jwt.api>1.2.1</legacy.version.org.eclipse.microprofile.jwt.api>
@@ -511,7 +508,7 @@
         <version.org.jboss.hal.console>3.6.4.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.2.Final</version.org.jboss.iiop-client>
         <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
-        <version.org.jboss.ironjacamar>1.5.7.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>1.5.8.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>

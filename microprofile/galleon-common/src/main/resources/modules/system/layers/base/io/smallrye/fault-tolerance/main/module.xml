@@ -36,13 +36,14 @@
     </resources>
 
     <dependencies>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.enterprise.concurrent.api"/>
+
         <module name="io.smallrye.common.annotation"/>
         <module name="io.smallrye.config"/>
         <module name="io.smallrye.metrics"/>
         <module name="io.smallrye.reactive.converters.api"/>
-        <module name="javax.annotation.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.enterprise.concurrent.api"/>
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.eclipse.microprofile.fault-tolerance.api"/>
         <module name="org.eclipse.microprofile.metrics.api"/>
