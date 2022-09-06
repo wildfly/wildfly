@@ -369,7 +369,7 @@
         <legacy.version.io.undertow>2.2.19.Final</legacy.version.io.undertow>
         <version.io.undertow>2.3.0.Alpha2</version.io.undertow>
         <legacy.version.io.undertow.jastow>2.0.11.Final</legacy.version.io.undertow.jastow>
-        <version.io.undertow.jastow>2.2.2.Final</version.io.undertow.jastow>
+        <version.io.undertow.jastow>2.2.3.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.3.1</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
@@ -445,7 +445,7 @@
         <version.org.codehaus.woodstox.woodstox-core>6.2.8</version.org.codehaus.woodstox.woodstox-core>
         <version.org.eclipse.angus.angus-activation>1.0.0</version.org.eclipse.angus.angus-activation>
         <version.org.eclipse.angus.angus-mail>1.0.0</version.org.eclipse.angus.angus-mail>
-        <version.org.eclipse.jdt>3.26.0</version.org.eclipse.jdt>
+        <version.org.eclipse.jdt>3.30.0</version.org.eclipse.jdt>
         <!-- Required by the Wiremock used in the MicroProfile REST Client TCK -->
         <version.org.eclipse.jetty>9.2.30.v20200428</version.org.eclipse.jetty>
         <version.org.eclipse.microprofile>4.1</version.org.eclipse.microprofile>
