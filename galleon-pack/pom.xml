@@ -41,6 +41,8 @@
     <description>Parent for various Galleon feature pack modules</description>
     <packaging>pom</packaging>
 
+    <name>WildFly: Feature Pack Parent</name>
+
     <modules>
         <module>galleon-content</module>
         <module>galleon-feature-pack</module>

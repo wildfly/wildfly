@@ -37,6 +37,8 @@
     <artifactId>wildfly-feature-pack-galleon-content</artifactId>
     <packaging>pom</packaging>
 
+    <name>WildFly: Feature Pack Galleon Content</name>
+
     <build>
         <plugins>
             <plugin>

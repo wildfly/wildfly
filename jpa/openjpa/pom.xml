@@ -17,7 +17,7 @@
 
     <artifactId>jipijapa-openjpa</artifactId>
 
-    <name>jipijapa OpenJPA integration</name>
+    <name>WildFly: Jipijapa OpenJPA integration</name>
 
     <dependencies>
 

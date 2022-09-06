@@ -44,6 +44,8 @@
         capabilities like MicroProfile. Not meant for direct use as a bom.</description>
     <packaging>pom</packaging>
 
+    <name>WildFly: Common Dependency Management (Expansion Dependencies)</name>
+
     <dependencyManagement>
         <dependencies>
 

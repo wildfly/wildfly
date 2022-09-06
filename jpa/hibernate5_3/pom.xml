@@ -34,7 +34,7 @@
 
     <artifactId>jipijapa-hibernate5-3</artifactId>
 
-    <name>jipijapa Hibernate 5.3.x (JPA 2.2) integration</name>
+    <name>WildFly: Jipijapa Hibernate 5.3.x (JPA 2.2) integration</name>
 
     <dependencies>
         <!-- testing -->

@@ -34,7 +34,7 @@
 
     <artifactId>jipijapa-hibernate5</artifactId>
 
-    <name>jipijapa Hibernate 5.1.x (JPA 2.1) integration</name>
+    <name>WildFly: Jipijapa Hibernate 5.1.x (JPA 2.1) integration</name>
 
     <dependencies>
         <!-- testing -->

@@ -31,6 +31,8 @@
 
     <artifactId>wildfly-testsuite-scripts</artifactId>
 
+    <name>WildFly Test Suite: Scripts</name>
+
     <properties>
         <!-- By default the scripts and configurations expect an IPv4 address so we should use one by default -->
         <jboss.test.script.address>127.0.0.1</jboss.test.script.address>
