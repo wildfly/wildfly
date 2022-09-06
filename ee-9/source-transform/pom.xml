@@ -61,7 +61,6 @@
         <module>jsf</module>
         <module>mail</module>
         <module>microprofile</module>
-        <module>mod_cluster/undertow</module>
         <module>shared</module>
         <module>web-common</module>
         <module>webservices</module>
