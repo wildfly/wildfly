@@ -177,9 +177,8 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
                 if (session == null) {
                     throw UndertowClusteringLogger.ROOT_LOGGER.sessionAlreadyExists(id);
                 }
-                if (requestedId == null) {
-                    config.setSessionId(exchange, id);
-                }
+                // Apply session ID encoding
+                config.setSessionId(exchange, id);
 
                 io.undertow.server.session.Session result = new DistributableSession(this, session, config, batcher.suspendBatch(), closeTask);
                 this.listeners.sessionCreated(result, exchange);
@@ -237,6 +236,8 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
                 if (session == null) {
                     return null;
                 }
+                // Update session ID encoding
+                config.setSessionId(exchange, id);
 
                 io.undertow.server.session.Session result = new DistributableSession(this, session, config, batcher.suspendBatch(), closeTask);
                 if (exchange != null) {
