@@ -104,7 +104,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 import org.jipijapa.plugin.spi.ManagementAdaptor;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
@@ -701,12 +700,12 @@ public class PersistenceUnitServiceHandler {
                     public void inject(final PersistenceUnitServiceImpl value) throws
                             InjectionException {
                         binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(
-                                new ImmediateValue<Object>(
+                                () ->
                                         new TransactionScopedEntityManager(
                                                 pu.getScopedPersistenceUnitName(),
                                                 Collections.emptyMap(),
                                                 value.getEntityManagerFactory(),
-                                                SynchronizationType.SYNCHRONIZED, transactionSynchronizationRegistry, transactionManager))));
+                                                SynchronizationType.SYNCHRONIZED, transactionSynchronizationRegistry, transactionManager)));
                     }
 
                     @Override
@@ -735,7 +734,7 @@ public class PersistenceUnitServiceHandler {
                     @Override
                     public void inject(final PersistenceUnitServiceImpl value) throws
                             InjectionException {
-                        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value.getEntityManagerFactory())));
+                        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(() -> value.getEntityManagerFactory()));
                     }
 
                     @Override

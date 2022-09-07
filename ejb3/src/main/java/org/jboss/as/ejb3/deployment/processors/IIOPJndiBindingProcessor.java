@@ -40,7 +40,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 import org.omg.CORBA.ORB;
 import org.wildfly.iiop.openjdk.deployment.IIOPDeploymentMarker;
 import org.wildfly.iiop.openjdk.service.CorbaORBService;
@@ -105,7 +104,7 @@ public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
 
         final ServiceName handleDelegateServiceName = contextServiceName.append("HandleDelegate");
         final BinderService handleDelegateBindingService = new BinderService("HandleDelegate");
-        handleDelegateBindingService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue(new HandleDelegateImpl(module.getClassLoader()))));
+        handleDelegateBindingService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(() -> new HandleDelegateImpl(module.getClassLoader())));
         serviceTarget.addService(handleDelegateServiceName, handleDelegateBindingService)
                 .addDependency(contextServiceName, ServiceBasedNamingStore.class, handleDelegateBindingService.getNamingStoreInjector())
                 .install();

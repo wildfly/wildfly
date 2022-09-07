@@ -41,7 +41,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * Processor responsible for binding java:comp/InAppClientContainer
@@ -86,7 +85,7 @@ public class InApplicationClientBindingProcessor implements DeploymentUnitProces
     private void bindServices(DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, ServiceName contextServiceName) {
         BinderService inAppClientContainerService = new BinderService("InAppClientContainer");
         final ServiceName inAppClientServiceName = contextServiceName.append("InAppClientContainer");
-        inAppClientContainerService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue(appclient)));
+        inAppClientContainerService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(() -> appclient));
         serviceTarget.addService(inAppClientServiceName, inAppClientContainerService)
             .addDependency(contextServiceName, ServiceBasedNamingStore.class, inAppClientContainerService.getNamingStoreInjector())
             .install();

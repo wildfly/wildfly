@@ -27,7 +27,6 @@ import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * <p>
@@ -58,7 +57,7 @@ public class CorbaServiceUtil {
      */
     public static void bindObject(final ServiceTarget target, final String contextName, final Object value) {
         final BinderService binderService = new BinderService(contextName);
-        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue(value)));
+        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(() -> value));
         target.addService(ContextNames.buildServiceName(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, contextName), binderService)
                 .addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                 .install();

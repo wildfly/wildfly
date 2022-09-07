@@ -28,7 +28,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * A description of an env-entry.
@@ -48,7 +47,7 @@ public final class EnvEntryInjectionSource extends InjectionSource {
     }
 
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
-        injector.inject(new ValueManagedReferenceFactory(new ImmediateValue(value)));
+        injector.inject(new ValueManagedReferenceFactory(() -> value));
     }
 
     public boolean equals(final Object injectionSource) {

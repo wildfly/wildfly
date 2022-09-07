@@ -23,37 +23,37 @@
 package org.jboss.as.naming;
 
 import java.io.Serializable;
+import java.util.function.Supplier;
 
-import org.jboss.msc.value.Value;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * A JNDI injectable which simply uses an MSC {@link Value}
+ * A JNDI injectable which simply uses an MSC {@link java.util.function.Supplier}
  * to fetch the injected value, and takes no action when the value is returned.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Eduardo Martins
  */
 public final class ValueManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
-    private final Value<?> value;
+    private final Supplier<Object> value;
 
     /**
      * Construct a new instance.
      *
      * @param value the value to wrap
      */
-    public ValueManagedReferenceFactory(final Value<?> value) {
+    public ValueManagedReferenceFactory(final Supplier<Object> value) {
         this.value = value;
     }
 
     @Override
     public ManagedReference getReference() {
-        return new ValueManagedReference(value.getValue());
+        return new ValueManagedReference(value.get());
     }
 
     @Override
     public String getInstanceClassName() {
-        final Object instance = value != null ? value.getValue() : null;
+        final Object instance = value != null ? value.get() : null;
         if(instance == null) {
             return ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
         }
@@ -62,7 +62,7 @@ public final class ValueManagedReferenceFactory implements ContextListAndJndiVie
 
     @Override
     public String getJndiViewInstanceValue() {
-        final Object instance = value != null ? value.getValue() : null;
+        final Object instance = value != null ? value.get() : null;
         if (instance == null) {
             return "null";
         }
