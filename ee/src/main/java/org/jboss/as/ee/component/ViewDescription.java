@@ -46,7 +46,7 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
+import org.jboss.msc.value.ImmediateValue;
 
 import static java.lang.reflect.Modifier.ABSTRACT;
 import static java.lang.reflect.Modifier.PUBLIC;
@@ -262,7 +262,7 @@ public class ViewDescription {
             // Create view bindings
             final List<BindingConfiguration> bindingConfigurations = configuration.getBindingConfigurations();
             for (String bindingName : description.getBindingNames()) {
-                bindingConfigurations.add(new BindingConfiguration(bindingName, description.createInjectionSource(description.getServiceName(), Values.immediateValue(componentConfiguration.getModuleClassLoader()), appclient)));
+                bindingConfigurations.add(new BindingConfiguration(bindingName, description.createInjectionSource(description.getServiceName(), new ImmediateValue(componentConfiguration.getModuleClassLoader()), appclient)));
             }
         }
     }
