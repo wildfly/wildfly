@@ -81,8 +81,6 @@ public class WeldApplication extends ApplicationWrapper {
 
     @Override
     public ExpressionFactory getExpressionFactory() {
-        // may be improved for thread safety, but right now the only risk is to invoke wrapExpressionFactory
-        // multiple times for concurrent threads. This is ok, as the call is
         if (expressionFactory == null) {
             init();
             synchronized (this) {
