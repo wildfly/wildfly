@@ -107,12 +107,12 @@ public class InterceptorAnnotationProcessor implements DeploymentUnitProcessor {
         if (excludeDefaultInterceptors.getClassAnnotations().containsKey(componentClass.getName())) {
             description.setExcludeDefaultInterceptors(true);
         }
-        for (final Map.Entry<Method, List<Boolean>> entry : excludeDefaultInterceptors.getMethodAnnotations().entrySet()) {
-            description.excludeDefaultInterceptors(MethodIdentifier.getIdentifierForMethod(entry.getKey()));
+        for (final Method method : excludeDefaultInterceptors.getMethodAnnotations().keySet()) {
+            description.excludeDefaultInterceptors(MethodIdentifier.getIdentifierForMethod(method));
         }
         final RuntimeAnnotationInformation<Boolean> excludeClassInterceptors = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, ExcludeClassInterceptors.class);
-        for (final Map.Entry<Method, List<Boolean>> entry : excludeClassInterceptors.getMethodAnnotations().entrySet()) {
-            description.excludeClassInterceptors(MethodIdentifier.getIdentifierForMethod(entry.getKey()));
+        for (final Method method : excludeClassInterceptors.getMethodAnnotations().keySet()) {
+            description.excludeClassInterceptors(MethodIdentifier.getIdentifierForMethod(method));
         }
 
         final RuntimeAnnotationInformation<String[]> interceptors = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, Interceptors.class);

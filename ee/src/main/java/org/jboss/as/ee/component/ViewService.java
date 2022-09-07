@@ -120,8 +120,8 @@ public final class ViewService implements Service<ComponentView> {
 
         final Map<Method, InterceptorFactory> clientInterceptorFactories = ViewService.this.clientInterceptorFactories;
         clientInterceptors = new IdentityHashMap<Method, Interceptor>(clientInterceptorFactories.size());
-        for (Method method : clientInterceptorFactories.keySet()) {
-            clientInterceptors.put(method, clientInterceptorFactories.get(method).create(factoryContext));
+        for (Map.Entry<Method, InterceptorFactory> entry : clientInterceptorFactories.entrySet()) {
+            clientInterceptors.put(entry.getKey(), entry.getValue().create(factoryContext));
         }
 
 
@@ -157,14 +157,14 @@ public final class ViewService implements Service<ComponentView> {
         void initializeInterceptors() {
             final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
             final Map<Method, InterceptorFactory> viewInterceptorFactories = ViewService.this.viewInterceptorFactories;
-            final Map<Method, Interceptor> viewEntryPoints = viewInterceptors;
             factoryContext.getContextData().put(Component.class, component);
             //we don't have this code in the constructor so we avoid passing around
             //a half constructed instance
             factoryContext.getContextData().put(ComponentView.class, this);
 
-            for (Method method : viewInterceptorFactories.keySet()) {
-                viewEntryPoints.put(method, viewInterceptorFactories.get(method).create(factoryContext));
+            for (Map.Entry<Method, InterceptorFactory> entry : viewInterceptorFactories.entrySet()) {
+                Method method = entry.getKey();
+                viewInterceptors.put(method, entry.getValue().create(factoryContext));
                 methods.put(new MethodDescription(method.getName(), DescriptorUtils.methodDescriptor(method)), method);
             }
 
