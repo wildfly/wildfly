@@ -27,7 +27,7 @@
 
     <dependencies>
         <module name="java.naming"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> --> <!-- for javax.naming -->
+        <!-- for javax.naming -->
 
         <module name="javax.annotation.api"/>
         <module name="javax.enterprise.api"/>

@@ -37,6 +37,5 @@
         <module name="javax.xml.stream.api"/>
         <!-- Export the implementation and services as the TCCL is typically the CL of a deployment -->
         <module name="org.glassfish.jaxb" services="export" export="true"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
     </dependencies>
 </module>

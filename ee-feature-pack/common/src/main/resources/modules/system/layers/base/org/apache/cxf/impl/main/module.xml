@@ -73,7 +73,6 @@
         <module name="java.rmi"/>
         <module name="java.security.jgss"/>
         <module name="asm.asm"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.annotation.api"/>
         <module name="javax.jms.api"/>
         <module name="javax.jws.api"/>

@@ -30,7 +30,6 @@
 
   <dependencies>
       <module name="java.desktop"/>
-      <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
       <module name="com.sun.xml.bind"/>
       <module name="org.jaxen"/>
       <module name="java.xml"/>

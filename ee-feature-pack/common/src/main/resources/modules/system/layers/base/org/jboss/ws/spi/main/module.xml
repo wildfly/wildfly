@@ -34,7 +34,6 @@
 
     <dependencies>
         <module name="java.management"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.servlet.api"/>
         <module name="javax.xml.stream.api"/>
         <module name="javax.xml.ws.api"/>

@@ -31,7 +31,6 @@
     <dependencies>
         <module name="java.naming"/>
         <module name="java.xml"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.jboss.xnio" />
         <module name="org.wildfly.client.config"/>
         <module name="io.undertow.core" />
