@@ -23,7 +23,7 @@ command:
 
 [source,options="nowrap"]
 ----
-/subsystem=ejb3/service=timer-service/database-data-store=my-clustered-store:add(allow-execution=true, datasource-jndi-name='java:/MyDatasource', refresh-interval=60000, database='postgresql', partition='mypartition')
+/subsystem=ejb3/service=timer-service/database-data-store=my-clustered-store:add(allow-execution=true, datasource-jndi-name="java:/MyDatasource", refresh-interval=60000, database=postgresql, partition=mypartition)
 ----
 
 An explanation of the parameters is below:
