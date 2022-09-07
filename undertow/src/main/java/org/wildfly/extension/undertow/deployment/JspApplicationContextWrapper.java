@@ -61,6 +61,9 @@ public class JspApplicationContextWrapper extends JspApplicationContextImpl {
 
     @Override
     public ELContextImpl createELContext(JspContext arg0) {
+        // Before providing any ELContext, ensure we allow any ExpressionFactoryWrappers to execute
+        getExpressionFactory();
+
         return delegate.createELContext(arg0);
     }
 
