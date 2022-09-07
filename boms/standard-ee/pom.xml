@@ -926,18 +926,6 @@
             </dependency>
 
             <dependency>
-                <groupId>jakarta.interceptor</groupId>
-                <artifactId>jakarta.interceptor-api</artifactId>
-                <version>${version.jakarta.interceptor.jakarta-interceptors-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>jakarta.jms</groupId>
                 <artifactId>jakarta.jms-api</artifactId>
                 <version>${version.jakarta.jms.jakarta-jms-api}</version>
