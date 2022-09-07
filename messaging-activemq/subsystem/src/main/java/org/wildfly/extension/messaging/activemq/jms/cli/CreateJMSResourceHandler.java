@@ -140,9 +140,7 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
             builder.setOperationName("add");
             builder.getModelNode().get("entries").add(jndiName);
 
-            for(String prop : props.keySet()) {
-                builder.addProperty(prop, props.get(prop));
-            }
+            addProperties(props, builder);
 
             return builder.buildRequest();
 
@@ -155,9 +153,7 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
             builder.setOperationName("add");
             builder.getModelNode().get("entries").add(jndiName);
 
-            for(String prop : props.keySet()) {
-                builder.addProperty(prop, props.get(prop));
-            }
+            addProperties(props, builder);
 
             return builder.buildRequest();
 
@@ -172,14 +168,18 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
             builder.setOperationName("add");
             builder.getModelNode().get("entries").add(jndiName);
 
-            for(String prop : props.keySet()) {
-                builder.addProperty(prop, props.get(prop));
-            }
+            addProperties(props, builder);
 
             return builder.buildRequest();
 
         } else {
             throw new OperationFormatException("Resource type " + restype + " isn't supported.");
+        }
+    }
+
+    private void addProperties(Map<String, String> props, DefaultOperationRequestBuilder builder) {
+        for (Map.Entry<String, String> entry : props.entrySet()) {
+            builder.addProperty(entry.getKey(), entry.getValue());
         }
     }
 }
