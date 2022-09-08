@@ -33,6 +33,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 /**
  * @author Paul Ferraro
  */
+@org.junit.Ignore("WFLY-16973")
 public class SingletonDeploymentDescriptorTestCase extends SingletonDeploymentTestCase {
 
     private static final String MODULE_NAME = SingletonDeploymentDescriptorTestCase.class.getSimpleName();
