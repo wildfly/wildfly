@@ -28,7 +28,6 @@ import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
 * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -54,6 +53,6 @@ class MailSessionManagedReferenceFactory implements ContextListAndJndiViewManage
 
     @Override
     public ManagedReference getReference() {
-        return new ValueManagedReference(new ImmediateValue<Object>(service.getValue()));
+        return new ValueManagedReference(service.getValue());
     }
 }

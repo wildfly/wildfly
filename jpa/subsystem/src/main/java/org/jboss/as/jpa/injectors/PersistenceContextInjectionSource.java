@@ -56,7 +56,6 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.value.ImmediateValue;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
@@ -257,10 +256,10 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 if (ROOT_LOGGER.isDebugEnabled())
                     ROOT_LOGGER.debugf("injecting entity manager into a '%s' (unit name=%s)", extensionClass.getName(), unitName);
 
-                return new ValueManagedReference(new ImmediateValue<Object>(proxyForUnwrappedObject));
+                return new ValueManagedReference(proxyForUnwrappedObject);
             }
 
-            return new ValueManagedReference(new ImmediateValue<Object>(entityManager));
+            return new ValueManagedReference(entityManager);
         }
 
     }

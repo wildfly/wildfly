@@ -31,7 +31,6 @@ import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBIdentifier;
 import org.jboss.ejb.client.StatelessEJBLocator;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * @author Stuart Douglas
@@ -51,8 +50,7 @@ public class StatelessRemoteViewInstanceFactory implements ViewInstanceFactory {
     @Override
     public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) {
         Object value = EJBClient.createProxy(StatelessEJBLocator.create(componentView.getViewClass(), identifier, Affinity.LOCAL));
-        return new ValueManagedReference(new ImmediateValue<>(value));
+        return new ValueManagedReference(value);
     }
-
 
 }
