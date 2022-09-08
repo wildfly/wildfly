@@ -77,7 +77,7 @@ public class EntityTestCase {
     @BeforeClass
     public static void beforeClass() {
 
-        // TODO WFLY-16552
+        // TODO WFLY-16974
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
 
         assumeTrue(System.getProperty("ts.ee9") == null && System.getProperty("ts.bootable.ee9") == null);
