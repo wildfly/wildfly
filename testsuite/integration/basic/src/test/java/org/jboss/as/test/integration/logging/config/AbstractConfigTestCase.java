@@ -254,14 +254,13 @@ abstract class AbstractConfigTestCase {
                 }
             }
             boolean isFirst = true;
-            for (String key : params.keySet()) {
+            for (Map.Entry<String, String> entry : params.entrySet()) {
                 if (isFirst) {
                     result.append('?');
                 } else {
                     result.append('&');
                 }
-                final String value = params.get(key);
-                result.append(URLEncoder.encode(key, "UTF-8")).append('=').append(URLEncoder.encode(value, "UTF-8"));
+                result.append(URLEncoder.encode(entry.getKey(), "UTF-8")).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                 isFirst = false;
             }
             return result.toString();

@@ -117,9 +117,9 @@ public class KeycloakConfiguration {
         realm.getRoles().getRealm().add(new RoleRepresentation(USER_ROLE, null, false));
         realm.getRoles().getRealm().add(new RoleRepresentation(JBOSS_ADMIN_ROLE, null, false));
 
-        for (String clientApp : clientApps.keySet()) {
-            ClientAppType clientAppType = clientApps.get(clientApp);
-            switch (clientAppType) {
+        for (Map.Entry<String, ClientAppType> entry : clientApps.entrySet()) {
+            String clientApp = entry.getKey();
+            switch (entry.getValue()) {
                 case DIRECT_ACCESS_GRANT_OIDC_CLIENT:
                     realm.getClients().add(createWebAppClient(clientApp, clientSecret, clientHostName, clientPort, clientApp, true));
                     break;

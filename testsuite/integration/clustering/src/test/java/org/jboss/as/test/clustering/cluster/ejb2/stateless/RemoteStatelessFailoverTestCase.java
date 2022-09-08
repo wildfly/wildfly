@@ -298,9 +298,9 @@ public class RemoteStatelessFailoverTestCase {
     }
 
     private void undeployAll() {
-        for (String container : container2deployment.keySet()) {
-            for (String deployment : container2deployment.get(container)) {
-                undeploy(container, deployment);
+        for (Map.Entry<String, List<String>> entry : container2deployment.entrySet()) {
+            for (String deployment : entry.getValue()) {
+                undeploy(entry.getKey(), deployment);
             }
         }
     }

@@ -121,9 +121,7 @@ public class LifecycleTestCase  {
         StringBuilder failureMessages = new StringBuilder();
         final Callable<Void> callable = () -> {
             Map<String, String> result = entryBean.testStatlessBean();
-            for (String current : result.keySet()) {
-                log.trace(current + " = " + result.get(current));
-            }
+            logResult(result);
             verifyResult(result, BaseBean.BUSINESS, USER1, TRUE, failureMessages);
             return null;
         };
@@ -140,9 +138,7 @@ public class LifecycleTestCase  {
         StringBuilder failureMessages = new StringBuilder();
         final Callable<Void> callable = () -> {
             Map<String, String> result = entryBean.testStatlessBean();
-            for (String current : result.keySet()) {
-                log.trace(current + " = " + result.get(current));
-            }
+            logResult(result);
             verifyResult(result, BaseBean.DEPENDENCY_INJECTION, ILLEGAL_STATE, ILLEGAL_STATE,
                     failureMessages);
             return null;
@@ -151,6 +147,12 @@ public class LifecycleTestCase  {
 
         if (failureMessages.length() > 0) {
             fail(failureMessages.toString());
+        }
+    }
+
+    private static void logResult(Map<String, String> result) {
+        for (Map.Entry<String, String> entry : result.entrySet()) {
+            log.trace(entry.getKey() + " = " + entry.getValue());
         }
     }
 

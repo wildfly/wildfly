@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -125,9 +126,9 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
         checkURL(path, content, false);
     }
     private void checkURL(String path, String content, boolean shouldFail) throws Exception {
-        for (String host : CLITestSuite.hostAddresses.keySet()) {
-            String address = CLITestSuite.hostAddresses.get(host);
-            for (String server : CLITestSuite.hostServers.get(host)) {
+        for (Map.Entry<String, String> entry : CLITestSuite.hostAddresses.entrySet()) {
+            String address = entry.getValue();
+            for (String server : CLITestSuite.hostServers.get(entry.getKey())) {
                 if (! CLITestSuite.serverStatus.get(server)) continue;
                 Integer portOffset = CLITestSuite.portOffsets.get(server);
 

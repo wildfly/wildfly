@@ -384,11 +384,11 @@ public abstract class RequestDumpingHandlerTestImpl {
         private Header[] retrieveHeaders(Map<String, List<String>> headers) {
             //System.out.println("---- PRINTING HEADERS ----");
             LinkedList<Header> hdrsList = new LinkedList<Header>();
-            for (String header : headers.keySet()) {
-                for (String value : headers.get(header)) {
-                    if (header != null) {
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                for (String value : entry.getValue()) {
+                    if (entry.getKey() != null) {
                         //System.out.println(header + ": " + value);
-                        hdrsList.add(new BasicHeader(header, value));
+                        hdrsList.add(new BasicHeader(entry.getKey(), value));
                     }
                 }
             }

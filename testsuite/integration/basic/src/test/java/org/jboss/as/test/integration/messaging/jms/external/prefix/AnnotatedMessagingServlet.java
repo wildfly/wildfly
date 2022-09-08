@@ -79,7 +79,7 @@ public class AnnotatedMessagingServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        boolean useTopic = req.getParameterMap().keySet().contains("topic");
+        boolean useTopic = req.getParameterMap().containsKey("topic");
         final Destination destination = useTopic ? topic : queue;
         final String text = req.getParameter("text");
 

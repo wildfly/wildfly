@@ -182,14 +182,13 @@ public abstract class AbstractBatchTestCase {
                 }
             }
             boolean isFirst = true;
-            for (String key : params.keySet()) {
+            for (Map.Entry<String, String> entry : params.entrySet()) {
                 if (isFirst) {
                     result.append('?');
                 } else {
                     result.append('&');
                 }
-                final String value = params.get(key);
-                result.append(URLEncoder.encode(key, ENCODING)).append('=').append(URLEncoder.encode(value, ENCODING));
+                result.append(URLEncoder.encode(entry.getKey(), ENCODING)).append('=').append(URLEncoder.encode(entry.getValue(), ENCODING));
                 isFirst = false;
             }
             return result.toString();
