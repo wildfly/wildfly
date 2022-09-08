@@ -33,7 +33,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -48,7 +47,7 @@ public class AdminObjectReferenceFactoryService implements Service<ManagedRefere
     private ManagedReference reference;
 
     public synchronized void start(StartContext startContext) throws StartException {
-        reference = new ValueManagedReference(new ImmediateValue<Object>(adminObjectValue.getValue()));
+        reference = new ValueManagedReference(() -> adminObjectValue.getValue());
     }
 
     public synchronized void stop(StopContext stopContext) {

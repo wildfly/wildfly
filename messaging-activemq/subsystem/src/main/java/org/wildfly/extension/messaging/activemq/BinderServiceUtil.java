@@ -145,7 +145,7 @@ public class BinderServiceUtil {
         public ManagedReference getReference() {
             try {
                 final Object value = new InitialContext().lookup(name);
-                return new ValueManagedReference(new ImmediateValue<Object>(value));
+                return new ValueManagedReference(() -> value);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

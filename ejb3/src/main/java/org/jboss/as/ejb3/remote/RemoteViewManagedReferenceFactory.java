@@ -34,7 +34,6 @@ import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EJBIdentifier;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -104,6 +103,6 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
         }
         final Object proxy = EJBClient.createProxy(ejbLocator);
 
-        return new ValueManagedReference(new ImmediateValue<>(proxy));
+        return new ValueManagedReference(() -> proxy);
     }
 }

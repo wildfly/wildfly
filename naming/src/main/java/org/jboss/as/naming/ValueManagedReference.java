@@ -21,17 +21,17 @@
  */
 package org.jboss.as.naming;
 
-import org.jboss.msc.value.Value;
+import java.util.function.Supplier;
 
 /**
- * A ManagedReference that simply holds a value'
+ * A ManagedReference that simply holds a value
  *
  * @author Stuart Douglas
  */
 public class ValueManagedReference implements ManagedReference {
-    private final Value<Object> value;
+    private final Supplier<Object> value;
 
-    public ValueManagedReference(Value<Object> value) {
+    public ValueManagedReference(final Supplier<Object> value) {
         this.value = value;
     }
 
@@ -42,6 +42,6 @@ public class ValueManagedReference implements ManagedReference {
 
     @Override
     public Object getInstance() {
-        return value.getValue();
+        return value.get();
     }
 }

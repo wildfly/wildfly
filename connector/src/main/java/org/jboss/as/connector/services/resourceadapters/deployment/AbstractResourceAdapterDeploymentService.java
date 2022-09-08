@@ -99,7 +99,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -758,7 +757,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
         public ManagedReference getReference() {
             try {
                 final Object value = new InitialContext().lookup(name);
-                return new ValueManagedReference(new ImmediateValue<Object>(value));
+                return new ValueManagedReference(() -> value);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

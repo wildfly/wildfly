@@ -31,7 +31,6 @@ import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
 * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -57,6 +56,6 @@ class MessagingJMSDestinationManagedReferenceFactory<D extends Destination> impl
 
     @Override
     public ManagedReference getReference() {
-        return new ValueManagedReference(new ImmediateValue<Object>(service.getValue()));
+        return new ValueManagedReference(() -> service.getValue());
     }
 }

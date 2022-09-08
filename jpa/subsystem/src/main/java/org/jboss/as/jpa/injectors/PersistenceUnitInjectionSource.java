@@ -40,7 +40,6 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.value.ImmediateValue;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
@@ -123,7 +122,7 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
                     throw JpaLogger.ROOT_LOGGER.hibernateOnlyEntityManagerFactory();
                 }
 
-                Object targetValueToInject = null;
+                final Object targetValueToInject;
                 try {
                     targetValueToInject = getSessionFactory.invoke(emf, new Object[0]);
                 } catch (IllegalAccessException e) {
@@ -131,10 +130,10 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
                 } catch (InvocationTargetException e) {
                     throw JpaLogger.ROOT_LOGGER.cannotGetSessionFactory(e);
                 }
-                return new ValueManagedReference(new ImmediateValue<Object>(targetValueToInject));
+                return new ValueManagedReference(() -> targetValueToInject);
             }
 
-            return new ValueManagedReference(new ImmediateValue<Object>(emf));
+            return new ValueManagedReference(() -> emf);
         }
     }
 
