@@ -77,7 +77,7 @@ being added
 
 |Core Server |javax.api sun.jdk org.jboss.vfs |  | 
 
-|Batch Subsystem |javax.batch.api |  | implicit
+|Batch Subsystem |jakarta.batch.api |  | implicit
 
 |EE Subsystem |javaee.api |  | 
 

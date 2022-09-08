@@ -149,7 +149,7 @@
         <!-- This is not ideal, however the BatchPermission is used which does indicate this might be an issue -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-batch-jberet-jakarta</artifactId>
+            <artifactId>wildfly-batch-jberet</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

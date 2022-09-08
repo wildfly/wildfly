@@ -25,10 +25,13 @@ package org.wildfly.extension.batch.jberet.deployment;
 import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SERVICES;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
-import javax.batch.operations.JobOperator;
-import javax.enterprise.inject.spi.BeanManager;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.sql.DataSource;
 
+import jakarta.batch.operations.JobOperator;
+import jakarta.enterprise.inject.spi.BeanManager;
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.ContextClassLoaderJobOperatorContextSelector;
@@ -59,12 +62,8 @@ import org.wildfly.extension.batch.jberet._private.Capabilities;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryService;
 import org.wildfly.extension.requestcontroller.RequestController;
 
-import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 /**
- * Deployment unit processor for javax.batch integration.
+ * Deployment unit processor for jakarta.batch integration.
  * <p>
  * Installs the {@link BatchEnvironmentService} and {@link JobOperatorService}.
  * </p>

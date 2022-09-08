@@ -600,7 +600,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-batch-jberet-jakarta</artifactId>
+            <artifactId>wildfly-batch-jberet</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

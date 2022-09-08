@@ -43,7 +43,7 @@ public class BatchDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "javax.batch.api", false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "jakarta.batch.api", false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.jberet.jberet-core", false, false, true, false));
     }
 }

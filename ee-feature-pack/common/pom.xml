@@ -1047,7 +1047,7 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-batch-jberet-jakarta</artifactId>
+            <artifactId>wildfly-batch-jberet</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
