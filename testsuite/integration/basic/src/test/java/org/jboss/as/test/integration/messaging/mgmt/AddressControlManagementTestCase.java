@@ -149,7 +149,7 @@ public class AddressControlManagementTestCase {
 
         Assert.assertEquals(ModelType.OBJECT, result.get("role").getType());
 
-        Assert.assertEquals(ModelType.INT, result.get("number-of-pages").getType());
+        Assert.assertEquals(ModelType.LONG, result.get("number-of-pages").getType());
 
         Assert.assertEquals(ModelType.LONG, result.get("number-of-bytes-per-page").getType());
         Assert.assertEquals(ModelType.LIST, result.get("binding-names").getType());

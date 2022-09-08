@@ -103,8 +103,7 @@ class AddressControlHandler extends AbstractRuntimeOnlyHandler {
                 long l = addressControl.getNumberOfBytesPerPage();
                 context.getResult().set(l);
             } else if (NUMBER_OF_PAGES.equals(name)) {
-                int i = addressControl.getNumberOfPages();
-                context.getResult().set(i);
+                context.getResult().set(addressControl.getNumberOfPages());
             } else if (BINDING_NAMES.equals(name)) {
                 String[] bindings = addressControl.getBindingNames();
                 reportListOfStrings(context, bindings);
