@@ -559,7 +559,7 @@
         <legacy.version.org.jboss.ws.common>3.3.3.Final</legacy.version.org.jboss.ws.common>
         <version.org.jboss.ws.common>4.0.0.Final</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.4.0.Final</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>6.0.0.Final</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.cxf>6.1.0.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>2.0.0.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <legacy.version.org.jboss.ws.spi>3.4.0.Final</legacy.version.org.jboss.ws.spi>
         <version.org.jboss.ws.spi>4.1.0.Final</version.org.jboss.ws.spi>
