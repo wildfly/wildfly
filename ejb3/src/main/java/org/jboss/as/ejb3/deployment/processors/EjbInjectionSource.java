@@ -26,6 +26,7 @@ import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.EEApplicationDescription;
@@ -48,7 +49,6 @@ import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.Value;
 
 /**
  * Implementation of {@link InjectionSource} responsible for finding a specific bean instance with a bean name and interface.
@@ -145,9 +145,9 @@ public class EjbInjectionSource extends InjectionSource {
                             final EJBComponentDescription componentDescription = (EJBComponentDescription) description.getComponentDescription();
                             final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
                             final String earApplicationName = moduleDescription.getEarApplicationName();
-                            final Value<ClassLoader> viewClassLoader = new Value<ClassLoader>() {
+                            final Supplier<ClassLoader> viewClassLoader = new Supplier<>() {
                                 @Override
-                                public ClassLoader getValue() throws IllegalStateException, IllegalArgumentException {
+                                public ClassLoader get() throws IllegalStateException, IllegalArgumentException {
                                     final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
                                     return module != null ? module.getClassLoader() : null;
                                 }

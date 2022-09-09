@@ -21,13 +21,14 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import java.util.function.Supplier;
+
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.Value;
 
 /**
  * Injection source for Jakarta Enterprise Beans remote views.
@@ -43,10 +44,10 @@ public class RemoteViewInjectionSource extends InjectionSource {
     private final String beanName;
     private final String viewClass;
     private final boolean stateful;
-    private final Value<ClassLoader> viewClassLoader;
+    private final Supplier<ClassLoader> viewClassLoader;
     private final boolean appclient;
 
-    public RemoteViewInjectionSource(final ServiceName serviceName, final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader, boolean appclient) {
+    public RemoteViewInjectionSource(final ServiceName serviceName, final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Supplier<ClassLoader> viewClassLoader, boolean appclient) {
         this.serviceName = serviceName;
         this.appName = appName;
         this.moduleName = moduleName;
