@@ -49,6 +49,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class BatchEnvironmentService implements Service {
 

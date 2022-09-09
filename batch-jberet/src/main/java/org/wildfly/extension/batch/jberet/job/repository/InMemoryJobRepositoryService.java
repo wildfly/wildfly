@@ -29,17 +29,20 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import java.util.function.Consumer;
+
 /**
  * A service which provides an in-memory job repository.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class InMemoryJobRepositoryService extends JobRepositoryService implements Service<JobRepository> {
 
     private volatile InMemoryRepository repository;
 
-    public InMemoryJobRepositoryService(Integer executionRecordsLimit) {
-        super(executionRecordsLimit);
+    public InMemoryJobRepositoryService(final Consumer<JobRepository> jobRepositoryConsumer, final Integer executionRecordsLimit) {
+        super(jobRepositoryConsumer, executionRecordsLimit);
     }
 
     @Override

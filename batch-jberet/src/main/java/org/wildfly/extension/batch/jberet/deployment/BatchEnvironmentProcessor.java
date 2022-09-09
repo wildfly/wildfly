@@ -57,6 +57,7 @@ import org.wildfly.extension.batch.jberet._private.Capabilities;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryService;
 import org.wildfly.extension.requestcontroller.RequestController;
 
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -65,6 +66,7 @@ import java.util.function.Supplier;
  * <p>
  * Installs the {@link BatchEnvironmentService} and {@link JobOperatorService}.
  * </p>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
@@ -150,12 +152,13 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 jobRepositorySupplier = serviceBuilder.requires(support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), jobRepositoryName));
             } else if (dataSourceName != null) {
                 // Register a jdbc job repository with data-source
-                final JdbcJobRepositoryService jdbcJobRepositoryService = new JdbcJobRepositoryService(executionRecordsLimit);
                 final ServiceName jobRepositoryServiceName = support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), deploymentName);
-                final ServiceBuilder<JobRepository> jobRepositoryServiceBuilder =
-                        Services.addServerExecutorDependency(serviceTarget.addService(jobRepositoryServiceName, jdbcJobRepositoryService),
-                            jdbcJobRepositoryService.getExecutorServiceInjector())
-                        .addDependency(support.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY, dataSourceName), DataSource.class, jdbcJobRepositoryService.getDataSourceInjector());
+                final ServiceBuilder<?> jobRepositoryServiceBuilder = serviceTarget.addService(jobRepositoryServiceName);
+                final Consumer<JobRepository> jobRepositoryConsumer = jobRepositoryServiceBuilder.provides(jobRepositoryServiceName);
+                final Supplier<ExecutorService> executorSupplier = Services.requireServerExecutor(jobRepositoryServiceBuilder);
+                final Supplier<DataSource> dataSourceSupplier = jobRepositoryServiceBuilder.requires(support.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY, dataSourceName));
+                final JdbcJobRepositoryService jdbcJobRepositoryService = new JdbcJobRepositoryService(jobRepositoryConsumer, dataSourceSupplier, executorSupplier, executionRecordsLimit);
+                jobRepositoryServiceBuilder.setInstance(jdbcJobRepositoryService);
                 jobRepositoryServiceBuilder.install();
                 jobRepositorySupplier = serviceBuilder.requires(jobRepositoryServiceName);
             } else if (jobRepository != null) {
