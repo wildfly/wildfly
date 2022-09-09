@@ -30,6 +30,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.OperationContext;
@@ -61,6 +63,7 @@ import org.wildfly.extension.batch.jberet._private.Capabilities;
  * A resource definition for the batch thread pool.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition {
 
@@ -100,10 +103,12 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
             super.performRuntime(context, operation, model);
             final String name = context.getCurrentAddressValue();
             final ServiceTarget target = context.getServiceTarget();
-            final JobExecutorService service = new JobExecutorService();
-            final ServiceBuilder<?> serviceBuilder = target.addService(context.getCapabilityServiceName(Capabilities.THREAD_POOL_CAPABILITY.getName(), name, JobExecutor.class),
-                    service);
-            serviceBuilder.addDependency(serviceNameBase.append(name), ManagedJBossThreadPoolExecutorService.class, service.getThreadPoolInjector());
+            final ServiceName serviceName = context.getCapabilityServiceName(Capabilities.THREAD_POOL_CAPABILITY.getName(), name, JobExecutor.class);
+            final ServiceBuilder<?> serviceBuilder = target.addService(serviceName);
+            final Consumer<JobExecutor> jobExecutorConsumer = serviceBuilder.provides(serviceName);
+            final Supplier<ManagedJBossThreadPoolExecutorService> threadPoolSupplier = serviceBuilder.requires(serviceNameBase.append(name));
+            final JobExecutorService service = new JobExecutorService(jobExecutorConsumer, threadPoolSupplier);
+            serviceBuilder.setInstance(service);
             serviceBuilder.install();
         }
     }
