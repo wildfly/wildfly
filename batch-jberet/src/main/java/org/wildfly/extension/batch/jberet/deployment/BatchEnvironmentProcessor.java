@@ -26,6 +26,7 @@ import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SER
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
 import javax.batch.operations.JobOperator;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.sql.DataSource;
 
 import org.jberet.repository.JobRepository;
@@ -131,18 +132,21 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             serviceBuilder.requires(support.getCapabilityServiceName(Capabilities.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
 
             final ServiceName artifactFactoryServiceName = BatchServiceNames.batchArtifactFactoryServiceName(deploymentUnit);
-            final ArtifactFactoryService artifactFactoryService = new ArtifactFactoryService();
-            final ServiceBuilder<ArtifactFactory> artifactFactoryServiceBuilder = serviceTarget.addService(artifactFactoryServiceName, artifactFactoryService);
-
+            final ServiceBuilder<?> artifactFactoryServiceBuilder = serviceTarget.addService(artifactFactoryServiceName);
+            final Consumer<ArtifactFactory> artifactFactoryConsumer = artifactFactoryServiceBuilder.provides(artifactFactoryServiceName);
+            Supplier<BeanManager> beanManagerSupplier = null;
             // Register the bean manager if this is a Jakarta Contexts and Dependency Injection deployment
             if (support.hasCapability(WELD_CAPABILITY_NAME)) {
                 final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
                 if (api.isPartOfWeldDeployment(deploymentUnit)) {
                     BatchLogger.LOGGER.tracef("Adding BeanManager service dependency for deployment %s", deploymentUnit.getName());
-                    api.addBeanManagerService(deploymentUnit, artifactFactoryServiceBuilder, artifactFactoryService.getBeanManagerInjector());
+                    beanManagerSupplier = api.addBeanManagerService(deploymentUnit, artifactFactoryServiceBuilder);
                 }
             }
+            final ArtifactFactoryService artifactFactoryService = new ArtifactFactoryService(artifactFactoryConsumer, beanManagerSupplier);
+            artifactFactoryServiceBuilder.setInstance(artifactFactoryService);
             artifactFactoryServiceBuilder.install();
+
             final Supplier<WildFlyArtifactFactory> artifactFactorySupplier = serviceBuilder.requires(artifactFactoryServiceName);
             Supplier<JobRepository> jobRepositorySupplier = null;
             if (jobRepositoryName != null) {
