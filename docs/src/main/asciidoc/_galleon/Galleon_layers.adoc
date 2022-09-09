@@ -289,7 +289,7 @@ link:#gal.datasources[datasources] +
 |Support for Jakarta Server Faces.
 |
 link:#gal.bean-validation[bean-validation] (optional) +
-link:#gal.cdi[cdi] (optional) +
+link:#gal.cdi[cdi] +
 link:#gal.web-server[web-server] +
 
 |[[gal.jsonb]]jsonb
