@@ -162,7 +162,7 @@ link:#gal.naming[naming] +
 |
 link:#gal.cdi[cdi] +
 
-|[[gal.ejb]]ejb-http-invoker
+|[[gal.ejb-http-invoker]]ejb-http-invoker
 |Support for invoking Jakarta Enterprise Beans over HTTP.
 |
 link:#gal.ejb-lite[ejb-lite] +
