@@ -50,13 +50,15 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.extension.batch.jberet.BatchConfiguration;
 import org.wildfly.extension.batch.jberet.BatchServiceNames;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
 import org.wildfly.extension.batch.jberet._private.Capabilities;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryService;
 import org.wildfly.extension.requestcontroller.RequestController;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Deployment unit processor for javax.batch integration.
@@ -92,13 +94,6 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-            JobRepository jobRepository = null;
-            String jobRepositoryName = null;
-            String dataSourceName = null;
-            String jobExecutorName = null;
-            Boolean restartJobsOnResume = null;
-            Integer executionRecordsLimit = null;
-
             // Check for a deployment descriptor
             BatchEnvironmentMetaData metaData = deploymentUnit.getAttachment(BatchAttachments.BATCH_ENVIRONMENT_META_DATA);
             if (metaData == null) {
@@ -108,14 +103,12 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                     metaData = parent.getAttachment(BatchAttachments.BATCH_ENVIRONMENT_META_DATA);
                 }
             }
-            if (metaData != null) {
-                jobRepository = metaData.getJobRepository();
-                jobRepositoryName = metaData.getJobRepositoryName();
-                dataSourceName = metaData.getDataSourceName();
-                jobExecutorName = metaData.getExecutorName();
-                restartJobsOnResume = metaData.getRestartJobsOnResume();
-                executionRecordsLimit = metaData.getExecutionRecordsLimit();
-            }
+            final JobRepository jobRepository = metaData != null ? metaData.getJobRepository() : null;
+            final String jobRepositoryName = metaData != null ? metaData.getJobRepositoryName() : null;
+            final String dataSourceName = metaData != null ? metaData.getDataSourceName() : null;
+            final String jobExecutorName = metaData != null ? metaData.getExecutorName() : null;
+            final Boolean restartJobsOnResume = metaData != null ? metaData.getRestartJobsOnResume() : null;
+            final Integer executionRecordsLimit = metaData != null ? metaData.getExecutionRecordsLimit() : null;
 
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
 
@@ -127,17 +120,13 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             // Create the batch environment
             final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             final NamespaceContextSelector namespaceContextSelector = eeModuleDescription == null ? null : eeModuleDescription.getNamespaceContextSelector();
-            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobXmlResolver, deploymentName, namespaceContextSelector);
-            final ServiceBuilder<SecurityAwareBatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
-
+            final ServiceName batchEnvSN = BatchServiceNames.batchEnvironmentServiceName(deploymentUnit);
+            final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(batchEnvSN);
+            final Consumer<SecurityAwareBatchEnvironment> batchEnvironmentConsumer = serviceBuilder.provides(batchEnvSN);
             // Add a dependency to the thread-pool
-            if (jobExecutorName != null) {
-                // Register the named thread-pool capability
-                serviceBuilder.addDependency(Capabilities.THREAD_POOL_CAPABILITY.getCapabilityServiceName(jobExecutorName), JobExecutor.class, service.getJobExecutorInjector());
-            }
-
+            final Supplier<JobExecutor> jobExecutorSupplier = jobExecutorName != null ? serviceBuilder.requires(Capabilities.THREAD_POOL_CAPABILITY.getCapabilityServiceName(jobExecutorName)) : null;
             // Register the required services
-            serviceBuilder.addDependency(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getCapabilityServiceName(), BatchConfiguration.class, service.getBatchConfigurationInjector());
+            final Supplier<BatchConfiguration> batchConfigurationSupplier = serviceBuilder.requires(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getCapabilityServiceName());
             // Ensure local transaction support is started
             serviceBuilder.requires(support.getCapabilityServiceName(Capabilities.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
 
@@ -154,11 +143,11 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 }
             }
             artifactFactoryServiceBuilder.install();
-            serviceBuilder.addDependency(artifactFactoryServiceName, WildFlyArtifactFactory.class, service.getArtifactFactoryInjector());
-
+            final Supplier<WildFlyArtifactFactory> artifactFactorySupplier = serviceBuilder.requires(artifactFactoryServiceName);
+            Supplier<JobRepository> jobRepositorySupplier = null;
             if (jobRepositoryName != null) {
                 // Register a named job repository
-                serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), jobRepositoryName), JobRepository.class, service.getJobRepositoryInjector());
+                jobRepositorySupplier = serviceBuilder.requires(support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), jobRepositoryName));
             } else if (dataSourceName != null) {
                 // Register a jdbc job repository with data-source
                 final JdbcJobRepositoryService jdbcJobRepositoryService = new JdbcJobRepositoryService(executionRecordsLimit);
@@ -168,17 +157,17 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                             jdbcJobRepositoryService.getExecutorServiceInjector())
                         .addDependency(support.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY, dataSourceName), DataSource.class, jdbcJobRepositoryService.getDataSourceInjector());
                 jobRepositoryServiceBuilder.install();
-                serviceBuilder.addDependency(jobRepositoryServiceName, JobRepository.class, service.getJobRepositoryInjector());
+                jobRepositorySupplier = serviceBuilder.requires(jobRepositoryServiceName);
             } else if (jobRepository != null) {
                 // Use the job repository as defined in the deployment descriptor
-                service.getJobRepositoryInjector().setValue(new ImmediateValue<>(jobRepository));
+                jobRepositorySupplier = () -> jobRepository;
             }
 
-            if (rcPresent) {
-                serviceBuilder.addDependency(RequestController.SERVICE_NAME, RequestController.class, service.getRequestControllerInjector());
-            }
+            final Supplier<RequestController> requestControllerSupplier = rcPresent ? serviceBuilder.requires(RequestController.SERVICE_NAME) : null;
 
             // Install the batch environment service
+            final BatchEnvironmentService service = new BatchEnvironmentService(batchEnvironmentConsumer, artifactFactorySupplier, jobExecutorSupplier, requestControllerSupplier, jobRepositorySupplier, batchConfigurationSupplier, moduleClassLoader, jobXmlResolver, deploymentName, namespaceContextSelector);
+            serviceBuilder.setInstance(service);
             serviceBuilder.install();
 
             // Install the JobOperatorService
