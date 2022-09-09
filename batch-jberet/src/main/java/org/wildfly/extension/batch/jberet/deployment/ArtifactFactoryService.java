@@ -22,14 +22,12 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
-import java.lang.reflect.Method;
-import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.context.spi.CreationalContext;
@@ -47,7 +45,6 @@ import org.jboss.weld.context.RequestContext;
 import org.jboss.weld.context.unbound.UnboundLiteral;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * ArtifactFactory for Jakarta EE runtime environment.
@@ -147,33 +144,9 @@ public class ArtifactFactoryService extends AbstractArtifactFactory implements S
     }
 
     private static Bean<?> getBean(final String ref, final BeanManager beanManager, final ClassLoader classLoader) {
-        if (beanManager == null) {
-            return null;
-        }
-        //TODO call findBean method directly after fully switching to EE10
-        try {
-            final Method findBeanMethod = WildFlySecurityManager.doUnchecked(new PrivilegedExceptionAction<Method>() {
-                @Override
-                public Method run() throws Exception {
-                    final Method m = AbstractArtifactFactory.class.getDeclaredMethod("findBean", String.class, BeanManager.class, ClassLoader.class);
-                    m.setAccessible(true);
-                    return m;
-                }
-            });
-            final Object result = findBeanMethod.invoke(null, ref, beanManager, classLoader);
-            BatchLogger.LOGGER.tracef("Found bean: %s", result);
-            return (Bean<?>) result;
-        } catch (Exception e) {
-            BatchLogger.LOGGER.tracef("Looking up bean reference for '%s'", ref);
-            final Set<Bean<?>> beans = beanManager.getBeans(ref);
-            final Bean<?> bean = beanManager.resolve(beans);
-            if (bean != null) {
-                BatchLogger.LOGGER.tracef("Found bean '%s' for reference '%s'", bean, ref);
-            } else {
-                BatchLogger.LOGGER.tracef("No bean found for reference '%s;'", ref);
-            }
-            return bean;
-        }
+        final Bean<?> result = beanManager == null ? null : AbstractArtifactFactory.findBean(ref, beanManager, classLoader);
+        BatchLogger.LOGGER.tracef("Found bean: %s for ref: %s", result, ref);
+        return result;
     }
 
     private static class Holder {
