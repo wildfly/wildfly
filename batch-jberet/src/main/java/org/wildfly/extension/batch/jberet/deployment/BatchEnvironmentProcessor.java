@@ -25,6 +25,7 @@ package org.wildfly.extension.batch.jberet.deployment;
 import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SERVICES;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
+import javax.batch.operations.JobOperator;
 import javax.sql.DataSource;
 
 import org.jberet.repository.JobRepository;
@@ -116,9 +117,6 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
             final String deploymentName = deploymentUnit.getName();
 
-            // Create the job operator service used interact with a deployments batch job
-            final JobOperatorService jobOperatorService = new JobOperatorService(restartJobsOnResume, deploymentName, jobXmlResolver);
-
             // Create the batch environment
             final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             final NamespaceContextSelector namespaceContextSelector = eeModuleDescription == null ? null : eeModuleDescription.getNamespaceContextSelector();
@@ -174,14 +172,17 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             serviceBuilder.install();
 
             // Install the JobOperatorService
-            ServiceName jobOperatorServiceName = BatchServiceNames.jobOperatorServiceName(deploymentUnit);
-            Services.addServerExecutorDependency(serviceTarget.addService(jobOperatorServiceName, jobOperatorService)
-                            .addDependency(support.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName()), BatchConfiguration.class, jobOperatorService.getBatchConfigurationInjector())
-                            .addDependency(support.getCapabilityServiceName(Capabilities.SUSPEND_CONTROLLER_CAPABILITY), SuspendController.class, jobOperatorService.getSuspendControllerInjector())
-                            .addDependency(support.getCapabilityServiceName(Capabilities.PROCESS_STATE_NOTIFIER_CAPABILITY), ProcessStateNotifier.class, jobOperatorService.getProcessStateInjector())
-                            .addDependency(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), SecurityAwareBatchEnvironment.class, jobOperatorService.getBatchEnvironmentInjector()),
-                    jobOperatorService.getExecutorServiceInjector())
-                    .install();
+            final ServiceName jobOperatorServiceName = BatchServiceNames.jobOperatorServiceName(deploymentUnit);
+            final ServiceBuilder<?> jobOperatorServiceSB = serviceTarget.addService(jobOperatorServiceName);
+            final Consumer<JobOperator> jobOperatorConsumer = jobOperatorServiceSB.provides(jobOperatorServiceName);
+            final Supplier<ExecutorService> executorSupplier = Services.requireServerExecutor(jobOperatorServiceSB);
+            final Supplier<BatchConfiguration> batchConfigSupplier = jobOperatorServiceSB.requires(support.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName()));
+            final Supplier<SuspendController> suspendControllerSupplier = jobOperatorServiceSB.requires(support.getCapabilityServiceName(Capabilities.SUSPEND_CONTROLLER_CAPABILITY));
+            final Supplier<ProcessStateNotifier> processStateSupplier = jobOperatorServiceSB.requires(support.getCapabilityServiceName(Capabilities.PROCESS_STATE_NOTIFIER_CAPABILITY));
+            final Supplier<SecurityAwareBatchEnvironment> batchEnvironmentSupplier = jobOperatorServiceSB.requires(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit));
+            final JobOperatorService jobOperatorService = new JobOperatorService(jobOperatorConsumer, batchConfigSupplier, batchEnvironmentSupplier, executorSupplier, suspendControllerSupplier, processStateSupplier, restartJobsOnResume, deploymentName, jobXmlResolver);
+            jobOperatorServiceSB.setInstance(jobOperatorService);
+            jobOperatorServiceSB.install();
 
             // Add the JobOperatorService to the deployment unit
             deploymentUnit.putAttachment(BatchAttachments.JOB_OPERATOR, jobOperatorService);
