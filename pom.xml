@@ -243,6 +243,9 @@
         <!-- Base wildfly version used by testsuite/galleon/update test to install a server that gets updated to the SNAPSHOT version -->
         <wildfly.test.galleon.update.base.version>26.1.1.Final</wildfly.test.galleon.update.base.version>
 
+        <!-- Plugin execution phases. Used to disable/enable various executions via profiles or command line -->
+        <galleon.content.assembly.phase>none</galleon.content.assembly.phase>
+
         <!--
             *Plugin* Dependency versions. Please keep alphabetical.
 
