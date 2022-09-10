@@ -59,7 +59,7 @@
                 <executions>
                     <execution>
                         <id>assemble</id>
-                        <phase>package</phase>
+                        <phase>${galleon.content.assembly.phase}</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
