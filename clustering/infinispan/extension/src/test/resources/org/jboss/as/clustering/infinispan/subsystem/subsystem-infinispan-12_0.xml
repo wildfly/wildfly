@@ -44,7 +44,7 @@
             <transaction mode="BATCH" stop-timeout="60000" locking="OPTIMISTIC"/>
             <heap-memory size="20000"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true">
+            <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="false">
                 <write-behind modification-queue-size="2048"/>
             </file-store>
         </local-cache>
@@ -53,7 +53,7 @@
             <transaction mode="NON_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <off-heap-memory size="20000" size-unit="BYTES"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <remote-store cache="default" remote-servers="hotrod-server-1 hotrod-server-2" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false">
+            <remote-store cache="default" remote-servers="hotrod-server-1 hotrod-server-2" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="true">
                 <write-behind modification-queue-size="2048"/>
                 <property name="valueSizeEstimate">100</property>
             </remote-store>
@@ -66,21 +66,21 @@
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <off-heap-memory size="20000" size-unit="BYTES"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false">
+            <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
                 <write-behind modification-queue-size="2048"/>
                 <property name="location">${java.io.tmpdir}</property>
             </store>
             <partition-handling enabled="false"/>
             <state-transfer timeout="0" chunk-size="10000"/>
         </replicated-cache>
-        <distributed-cache name="dist" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" statistics-enabled="true">
+        <distributed-cache name="dist" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" consistent-hash-strategy="INTRA_CACHE" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <heap-memory size="100"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <jdbc-store data-source="ExampleDS" dialect="MARIA_DB" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" max-batch-size="100">
+            <jdbc-store data-source="ExampleDS" dialect="MARIA_DB" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="false" max-batch-size="100">
                 <write-behind modification-queue-size="2048"/>
-                <table fetch-size="100" create-on-start="false" drop-on-stop="true">
+                <table prefix="ispn_bucket" fetch-size="100" create-on-start="false" drop-on-stop="true">
                     <id-column name="id" type="VARCHAR"/>
                     <data-column name="datum" type="BINARY"/>
                     <segment-column name="segment" type="INTEGER"/>
@@ -97,7 +97,7 @@
                 </backup>
             </backups>
         </distributed-cache>
-        <scattered-cache name="scattered" remote-timeout="35000" segments="2" invalidation-batch-size="100" statistics-enabled="true">
+        <scattered-cache name="scattered" remote-timeout="35000" segments="2" consistent-hash-strategy="INTRA_CACHE" invalidation-batch-size="100" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <heap-memory size="20000"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
@@ -126,6 +126,7 @@
                          min-evictable-idle-time="4"
                          min-idle="5"
         />
+        <invalidation-near-cache max-entries="20"/>
         <property name="infinispan.client.hotrod.auth_username">username</property>
         <property name="infinispan.client.hotrod.auth_password">password</property>
         <remote-clusters>
@@ -133,5 +134,6 @@
             <remote-cluster name="failover-site" socket-bindings="jdg4 jdg5 jdg6"/>
         </remote-clusters>
         <security ssl-context="hotrod-elytron"/>
+        <transaction mode="BATCH" timeout="1000"/>
     </remote-cache-container>
 </subsystem>
