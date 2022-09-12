@@ -91,7 +91,7 @@ com.fasterxml.jackson.core.jackson-core +
 com.fasterxml.jackson.core.jackson-databind +
 com.fasterxml.jackson.datatype.jackson-datatype-jdk8 +
 com.fasterxml.jackson.datatype.jackson-datatype-jsr310 +
-com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider +
+com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider +
 javax.json.api +
 javax.ws.rs.api +
 javax.xml.bind.api +
