@@ -57,8 +57,10 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Test the ability for applications to use native Lucene classes,
- * provided they add a dependency to the Lucene module,
- * because that module is considered private and its APIs unsupported (they could change anytime).
+ * provided they add a dependency to the Lucene module.
+ * <p>
+ * That's necessary because that module, while public, may be unsupported by product vendors
+ * (because its APIs could change without prior notice).
  */
 @RunWith(Arquillian.class)
 public class HibernateSearchLuceneDependencyTestCase {
