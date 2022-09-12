@@ -77,7 +77,7 @@ public abstract class BAParticipantCompletionSuperService implements BAParticipa
             throw new RuntimeException("Error on getting TX id from BusinessActivityManager", se);
         }
 
-        if (participantRegistry.keySet().contains(txid) && ServiceCommand.isPresent(REUSE_BA_PARTICIPANT, serviceCommands)) {
+        if (participantRegistry.containsKey(txid) && ServiceCommand.isPresent(REUSE_BA_PARTICIPANT, serviceCommands)) {
             log.trace("[BA PARTICIPANT COMPL SERVICE] Reusing BA participant manager - command: " + REUSE_BA_PARTICIPANT);
             participantManager = participantRegistry.get(txid);
         } else {

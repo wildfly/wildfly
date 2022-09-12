@@ -30,6 +30,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.domain.controller.logging.DomainControllerLogger;
@@ -152,9 +153,9 @@ public class DomainDeployWithRuntimeNameTestCase extends AbstractCliTestBase {
             groupServers.add(server);
         }
 
-        for (String host : CLITestSuite.hostAddresses.keySet()) {
-            String address = CLITestSuite.hostAddresses.get(host);
-            for (String server : CLITestSuite.hostServers.get(host)) {
+        for (Map.Entry<String, String> entry : CLITestSuite.hostAddresses.entrySet()) {
+            String address = entry.getValue();
+            for (String server : CLITestSuite.hostServers.get(entry.getKey())) {
                 if (!groupServers.contains(server)) {
                     continue;  // server not in the group
                 }

@@ -169,12 +169,12 @@ public class ServerHelper {
             }
             final Map<ServerIdentity, ServerStatus> servers = new HashMap<>();
             final Map<ServerIdentity, ServerStatus> statuses = domainClient.getServerStatuses();
-            for (ServerIdentity id : statuses.keySet()) {
-                final ServerStatus status = statuses.get(id);
+            for (Map.Entry<ServerIdentity, ServerStatus> entry : statuses.entrySet()) {
+                final ServerStatus status = entry.getValue();
                 switch (status) {
                     case DISABLED:
                     case STARTED: {
-                        servers.put(id, status);
+                        servers.put(entry.getKey(), status);
                         break;
                     }
                 }
