@@ -43,7 +43,7 @@ public class HostSingleSignOnDefinition extends SingleSignOnDefinition {
 
     public HostSingleSignOnDefinition() {
         super();
-        setDeprecated(ModelVersion.create(13));
+        setDeprecated(ModelVersion.create(12));
     }
 
     @Override
