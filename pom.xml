@@ -64,6 +64,7 @@
         <module>boms/standard-expansion</module>
         <module>build</module>
         <module>client/properties</module>
+        <module>client/cli</module>
         <module>client/shade</module>
         <module>clustering</module>
         <module>dist</module>
