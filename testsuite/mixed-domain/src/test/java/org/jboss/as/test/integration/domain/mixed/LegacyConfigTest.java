@@ -46,7 +46,7 @@ import org.junit.Test;
  */
 public abstract class LegacyConfigTest {
 
-    private static final PathElement SLAVE = PathElement.pathElement("host", "slave");
+    private static final PathElement SLAVE = PathElement.pathElement("host", "secondary");
     private static final PathAddress TEST_SERVER_CONFIG = PathAddress.pathAddress(SLAVE,
             PathElement.pathElement("server-config", "legacy-server"));
     private static final PathAddress TEST_SERVER = PathAddress.pathAddress(SLAVE,

@@ -23,7 +23,7 @@
 <host xmlns="urn:jboss:domain:20.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:domain:10.0 wildfly-config_10_0.xsd"
-      name="slave">
+      name="primary">
 
     <paths>
         <path name="domainTestPath" path="/tmp" />
@@ -32,17 +32,14 @@
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">
-                <server-identities>
-                    <secret value="c2xhdmVfdXMzcl9wYXNzd29yZA==" />
-                </server-identities>
                 <authentication>
-                    <local default-user="$local" skip-group-loading="true" />
+                    <local default-user="$local" skip-group-loading="true"/>
                     <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir" />
                 </authentication>
             </security-realm>
             <security-realm name="ApplicationRealm">
                 <authentication>
-                    <local default-user="$local" allowed-users="*" skip-group-loading="true" />
+                    <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
                     <properties path="domain/configuration/application-users.properties" relative-to="jboss.home.dir" />
                 </authentication>
             </security-realm>
@@ -68,39 +65,25 @@
         </audit-log>
         <management-interfaces>
             <native-interface security-realm="ManagementRealm">
-                <socket interface="management" port="19999"/>
+                <socket interface="management" port="9999"/>
             </native-interface>
-            <http-interface security-realm="ManagementRealm" console-enabled="false">
+            <http-interface security-realm="ManagementRealm">
                 <http-upgrade enabled="true"/>
-                <socket interface="management" port="19990"/>
+                <socket interface="management" port="9990"/>
             </http-interface>
         </management-interfaces>
     </management>
 
     <domain-controller>
-        <!-- Remote domain controller configuration with a host and port -->
-        <remote host="${jboss.test.host.master.address}" protocol="${jboss.domain.primary.protocol:remote+http}" port="${jboss.domain.primary.port:9990}" security-realm="ManagementRealm">
-            <ignored-resources type="extension">
-                <instance name="org.jboss.as.jsr77"/>
-            </ignored-resources>
-            <ignored-resources type="profile">
-                <instance name="ignored"/>
-            </ignored-resources>
-            <ignored-resources type="socket-binding-group">
-                <instance name="ignored"/>
-            </ignored-resources>
-            <ignored-resources type="foo" wildcard="true">
-                <instance name="ignored"/>
-            </ignored-resources>
-        </remote>
+        <local/>
     </domain-controller>
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.primary.address}"/>
         </interface>
         <interface name="public">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.primary.address}"/>
         </interface>
     </interfaces>
 
@@ -110,21 +93,22 @@
             <jvm-options>
                 <option value="-ea"/>
             </jvm-options>
+            <environment-variables>
+                <variable name="DOMAIN_TEST_JVM" value="jvm"/>
+            </environment-variables>
+            <!--
+            <jvm-options>
+                <option value="-Xdebug"/>
+                <option value="-Xnoagent"/>
+                <option value="-Djava.compiler=NONE"/>
+                <option value="-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y"/>
+
+            </jvm-options>
+            -->
         </jvm>
     </jvms>
 
-    <servers directory-grouping="by-type">
-        <server name="slave-a" group="server-group-a" auto-start="false">
-            <socket-bindings socket-binding-group="sockets-a" port-offset="400"/>
-        </server>
-        <server name="slave-b" group="server-group-b">
-            <socket-bindings socket-binding-group="sockets-b" port-offset="500"/>
-        </server>
-        <server name="slave-c" group="server-group-c" auto-start="false">
-            <socket-bindings socket-binding-group="sockets-shared" port-offset="600"/>
-        </server>
-        <server name="slave-d" group="server-group-d" auto-start="false">
-            <socket-bindings socket-binding-group="sockets-shared" port-offset="700"/>
-        </server>
+    <servers>
+        <server name="primary-a" group="server-group-a"/>
     </servers>
 </host>

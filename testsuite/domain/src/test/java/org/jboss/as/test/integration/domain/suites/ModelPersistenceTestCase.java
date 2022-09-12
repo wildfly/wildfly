@@ -82,11 +82,11 @@ public class ModelPersistenceTestCase {
     private static final String HOST_HISTORY_DIR = "host_xml_history";
     private static final String CONFIG_DIR = "configuration";
     private static final String CURRENT_DIR = "current";
-    private static final String MASTER_DIR = "master";
-    private static final String SLAVE_DIR = "slave";
+    private static final String MASTER_DIR = "primary";
+    private static final String SLAVE_DIR = "secondary";
     private static final String DOMAIN_NAME = "testing-domain-standard";
-    private static final String MASTER_NAME = "testing-host-master";
-    private static final String SLAVE_NAME = "testing-host-slave";
+    private static final String MASTER_NAME = "testing-host-primary";
+    private static final String SLAVE_NAME = "testing-host-secondary";
     private static File domainCurrentCfgDir;
     private static File masterCurrentCfgDir;
     private static File slaveCurrentCfgDir;
@@ -206,23 +206,23 @@ public class ModelPersistenceTestCase {
     public void testSimpleHostOperation() throws Exception {
 
         // using master DC
-        ModelNode op = ModelUtil.createOpNode("host=master/system-property=model-persistence-test", ADD);
+        ModelNode op = ModelUtil.createOpNode("host=primary/system-property=model-persistence-test", ADD);
         op.get(VALUE).set("test");
         testHostOperation(op, Host.MASTER, Host.MASTER);
-        op = ModelUtil.createOpNode("host=master/system-property=model-persistence-test", REMOVE);
+        op = ModelUtil.createOpNode("host=primary/system-property=model-persistence-test", REMOVE);
         testHostOperation(op, Host.MASTER, Host.MASTER);
 
-        op = ModelUtil.createOpNode("host=slave/system-property=model-persistence-test", ADD);
+        op = ModelUtil.createOpNode("host=secondary/system-property=model-persistence-test", ADD);
         op.get(VALUE).set("test");
         testHostOperation(op, Host.MASTER, Host.SLAVE);
-        op = ModelUtil.createOpNode("host=slave/system-property=model-persistence-test", REMOVE);
+        op = ModelUtil.createOpNode("host=secondary/system-property=model-persistence-test", REMOVE);
         testHostOperation(op, Host.MASTER, Host.SLAVE);
 
         // using slave HC
-        op = ModelUtil.createOpNode("host=slave/system-property=model-persistence-test", ADD);
+        op = ModelUtil.createOpNode("host=secondary/system-property=model-persistence-test", ADD);
         op.get(VALUE).set("test");
         testHostOperation(op, Host.SLAVE, Host.SLAVE);
-        op = ModelUtil.createOpNode("host=slave/system-property=model-persistence-test", REMOVE);
+        op = ModelUtil.createOpNode("host=secondary/system-property=model-persistence-test", REMOVE);
         testHostOperation(op, Host.SLAVE, Host.SLAVE);
     }
 
@@ -231,36 +231,36 @@ public class ModelPersistenceTestCase {
 
         // test op on master using master controller
         ModelNode[] steps = new ModelNode[2];
-        steps[0] = ModelUtil.createOpNode("host=master/system-property=model-persistence-test", ADD);
+        steps[0] = ModelUtil.createOpNode("host=primary/system-property=model-persistence-test", ADD);
         steps[0].get(VALUE).set("test");
-        steps[1] = ModelUtil.createOpNode("host=master/system-property=model-persistence-test", "write-attribute");
+        steps[1] = ModelUtil.createOpNode("host=primary/system-property=model-persistence-test", "write-attribute");
         steps[1].get(NAME).set("value");
         steps[1].get(VALUE).set("test2");
         testHostOperation(ModelUtil.createCompositeNode(steps),Host.MASTER, Host.MASTER);
 
-        ModelNode op = ModelUtil.createOpNode("host=master/system-property=model-persistence-test", REMOVE);
+        ModelNode op = ModelUtil.createOpNode("host=primary/system-property=model-persistence-test", REMOVE);
         testHostOperation(op,Host.MASTER,  Host.MASTER);
 
         // test op on slave using master controller
-        steps[0] = ModelUtil.createOpNode("host=slave/system-property=model-persistence-test", ADD);
+        steps[0] = ModelUtil.createOpNode("host=secondary/system-property=model-persistence-test", ADD);
         steps[0].get(VALUE).set("test");
-        steps[1] = ModelUtil.createOpNode("host=slave/system-property=model-persistence-test", "write-attribute");
+        steps[1] = ModelUtil.createOpNode("host=secondary/system-property=model-persistence-test", "write-attribute");
         steps[1].get(NAME).set("value");
         steps[1].get(VALUE).set("test2");
         testHostOperation(ModelUtil.createCompositeNode(steps),Host.MASTER,  Host.SLAVE);
 
-        op = ModelUtil.createOpNode("host=slave/system-property=model-persistence-test", REMOVE);
+        op = ModelUtil.createOpNode("host=secondary/system-property=model-persistence-test", REMOVE);
         testHostOperation(op,Host.MASTER,  Host.SLAVE);
 
         // test op on slave using slave controller
-        steps[0] = ModelUtil.createOpNode("host=slave/system-property=model-persistence-test", ADD);
+        steps[0] = ModelUtil.createOpNode("host=secondary/system-property=model-persistence-test", ADD);
         steps[0].get(VALUE).set("test");
-        steps[1] = ModelUtil.createOpNode("host=slave/system-property=model-persistence-test", "write-attribute");
+        steps[1] = ModelUtil.createOpNode("host=secondary/system-property=model-persistence-test", "write-attribute");
         steps[1].get(NAME).set("value");
         steps[1].get(VALUE).set("test2");
         testHostOperation(ModelUtil.createCompositeNode(steps), Host.SLAVE,  Host.SLAVE);
 
-        op = ModelUtil.createOpNode("host=slave/system-property=model-persistence-test", REMOVE);
+        op = ModelUtil.createOpNode("host=secondary/system-property=model-persistence-test", REMOVE);
         testHostOperation(op, Host.SLAVE,  Host.SLAVE);
 
     }
@@ -278,8 +278,8 @@ public class ModelPersistenceTestCase {
 
             // execute operation so the model gets updated
             ModelNode op = host.equals(Host.MASTER) ?
-                    ModelUtil.createOpNode("host=master/system-property=model-persistence-test", "add") :
-                    ModelUtil.createOpNode("host=slave/system-property=model-persistence-test", "add") ;
+                    ModelUtil.createOpNode("host=primary/system-property=model-persistence-test", "add") :
+                    ModelUtil.createOpNode("host=secondary/system-property=model-persistence-test", "add") ;
             op.get(VALUE).set("test");
             executeAndRollbackOperation(client, op);
 

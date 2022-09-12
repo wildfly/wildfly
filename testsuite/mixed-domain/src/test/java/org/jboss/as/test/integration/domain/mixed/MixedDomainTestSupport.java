@@ -87,19 +87,19 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {
         return create(testClass, version, STANDARD_DOMAIN_CONFIG, "master-config/host.xml",
-                "slave-config/host-slave.xml", "full-ha", true, false, false);
+                "slave-config/host-secondary.xml", "full-ha", true, false, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
                                                 boolean adjustDomain, boolean legacyConfig) throws Exception {
         return create(testClass, version, domainConfig, "master-config/host.xml",
-                "slave-config/host-slave.xml", "full-ha", adjustDomain, legacyConfig, false);
+                "slave-config/host-secondary.xml", "full-ha", adjustDomain, legacyConfig, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String profile,
                                                 boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) throws Exception {
         return create(testClass, version, domainConfig, "master-config/host.xml",
-                "slave-config/host-slave.xml", profile, adjustDomain, legacyConfig, withMasterServers);
+                "slave-config/host-secondary.xml", profile, adjustDomain, legacyConfig, withMasterServers);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String masterConfig, String slaveConfig,
@@ -132,7 +132,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     private void startSlaveServer() {
         DomainClient client = getDomainMasterLifecycleUtil().getDomainClient();
-        PathElement hostElement = PathElement.pathElement("host", "slave");
+        PathElement hostElement = PathElement.pathElement("host", "secondary");
 
         try {
             PathAddress pa = PathAddress.pathAddress(hostElement, PathElement.pathElement("server-config", "server-one"));
@@ -209,7 +209,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             }
 
             //Now reload the master in normal mode
-            masterUtil.executeAwaitConnectionClosed(Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, "master")));
+            masterUtil.executeAwaitConnectionClosed(Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, "primary")));
             masterUtil.connect();
             masterUtil.awaitHostController(System.currentTimeMillis());
 

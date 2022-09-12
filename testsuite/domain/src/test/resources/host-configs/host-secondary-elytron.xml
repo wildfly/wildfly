@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<host xmlns="urn:jboss:domain:20.0" name="slave">
+<host xmlns="urn:jboss:domain:20.0" name="secondary">
     <extensions>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.wildfly.extension.core-management"/>
@@ -63,14 +63,14 @@
     </management>
     <domain-controller>
         <!-- Remote domain controller configuration with a host and port -->
-        <remote host="${jboss.test.host.master.address}" port="9999" authentication-context="slaveHostAContext"/>
+        <remote host="${jboss.test.host.primary.address}" port="9999" authentication-context="slaveHostAContext"/>
     </domain-controller>
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
         <interface name="public">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.secondary.address}"/>
         </interface>
     </interfaces>
     <jvms>
@@ -96,7 +96,7 @@
                     <credential-reference clear-text="slave_us3r_password"/>
                 </authentication-configuration>
                 <authentication-context name="slaveHostAContext">
-                    <match-rule match-host="${jboss.test.host.master.address}" authentication-configuration="slaveHostAConfiguration"/>
+                    <match-rule match-host="${jboss.test.host.primary.address}" authentication-configuration="slaveHostAConfiguration"/>
                 </authentication-context>
             </authentication-client>
             <providers>
