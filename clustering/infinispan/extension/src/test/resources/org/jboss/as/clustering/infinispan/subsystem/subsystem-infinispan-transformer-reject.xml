@@ -69,14 +69,6 @@
             <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <off-heap-memory size="20000" size-unit="BYTES"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <jdbc-store data-source="ExampleDS" fetch-state="false" passivation="false" preload="true" purge="false" shared="false">
-                <write-behind modification-queue-size="2048"/>
-                <table fetch-size="100" drop-on-stop="true">
-                    <id-column name="id" type="VARCHAR"/>
-                    <data-column name="datum" type="BINARY"/>
-                    <timestamp-column name="version" type="BIGINT"/>
-                </table>
-            </jdbc-store>
             <state-transfer timeout="60000" chunk-size="10000"/>
             <backups>
                 <backup site="NYC" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="false"/>
