@@ -274,13 +274,8 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
 
                         case CONNECTION_DEFINITION: {
                             switch (org.jboss.as.connector.subsystems.resourceadapters.Namespace.forUri(reader.getNamespaceURI())) {
-                                case RESOURCEADAPTERS_1_0:
                                 case RESOURCEADAPTERS_1_1:
-                                case RESOURCEADAPTERS_2_0:
                                     parseConnectionDefinitions_1_0(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations, isXa);
-                                    break;
-                                case RESOURCEADAPTERS_3_0:
-                                    parseConnectionDefinitions_3_0(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations, isXa);
                                     break;
                                 case RESOURCEADAPTERS_4_0:
                                     parseConnectionDefinitions_4_0(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations, isXa);
@@ -378,10 +373,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         case SECURITY: {
                             WM_SECURITY.parseAndSetParameter("true", operation, reader);
                             switch (org.jboss.as.connector.subsystems.resourceadapters.Namespace.forUri(reader.getNamespaceURI())) {
-                                case RESOURCEADAPTERS_1_0:
                                 case RESOURCEADAPTERS_1_1:
-                                case RESOURCEADAPTERS_2_0:
-                                case RESOURCEADAPTERS_3_0:
                                 case RESOURCEADAPTERS_4_0:
                                     security = parseWorkManagerSecurity(operation, reader);
                                     break;

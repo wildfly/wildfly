@@ -478,10 +478,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         try {
             String localName;
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case RESOURCEADAPTERS_1_0:
                 case RESOURCEADAPTERS_1_1:
-                case RESOURCEADAPTERS_2_0:
-                case RESOURCEADAPTERS_3_0:
                 case RESOURCEADAPTERS_4_0:
                 case RESOURCEADAPTERS_5_0:
                 case RESOURCEADAPTERS_6_0:
