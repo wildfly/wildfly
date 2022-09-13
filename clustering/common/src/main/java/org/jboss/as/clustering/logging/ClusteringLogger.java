@@ -62,4 +62,12 @@ public interface ClusteringLogger extends BasicLogger {
 
     @Message(id = 5, value = "Legacy host does not support multiple values for attributes: %s")
     String rejectedMultipleValues(Set<String> attributes);
+
+    @LogMessage(level = WARN)
+    @Message(id = 6, value = "The '%s' attribute of the '%s' element is no longer supported and will be ignored")
+    void attributeIgnored(String attribute, String element);
+
+    @LogMessage(level = WARN)
+    @Message(id = 7, value = "The '%s' element is no longer supported and will be ignored")
+    void elementIgnored(String element);
 }

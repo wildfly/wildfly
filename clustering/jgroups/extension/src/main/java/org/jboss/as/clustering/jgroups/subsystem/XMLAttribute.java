@@ -37,6 +37,7 @@ public enum XMLAttribute {
     CLUSTER(ChannelResourceDefinition.Attribute.CLUSTER),
     DATA_SOURCE(JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE),
     @Deprecated DEFAULT_EXECUTOR("default-executor"),
+    @Deprecated DEFAULT_STACK("default-stack"),
     DEFAULT("default"),
     DIAGNOSTICS_SOCKET_BINDING(TransportResourceDefinition.Attribute.DIAGNOSTICS_SOCKET_BINDING),
     KEEPALIVE_TIME(ThreadPoolResourceDefinition.DEFAULT.getKeepAliveTime()),

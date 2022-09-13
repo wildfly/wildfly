@@ -1,0 +1,51 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2015, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<subsystem xmlns="urn:jboss:domain:jgroups:1.1" default-stack="maximal">
+    <stack name="minimal">
+        <transport type="UDP" socket-binding="jgroups-udp"/>
+    </stack>
+    <stack name="maximal">
+        <transport type="TCP" socket-binding="jgroups-tcp" diagnostics-socket-binding="jgroups-diagnostics" default-executor="jgroups"
+            oob-executor="jgroups-oob" timer-executor="jgroups-timer" shared="${test.expr:false}"
+            thread-factory="jgroups-thread-factory" machine="${test.expr:machine1}" rack="${test.expr:rack1}" site="${test.expr:site1}" >
+            <property name="enable_bundling">${test.expr:true}</property>
+        </transport>
+        <protocol type="MPING" socket-binding="jgroups-mping">
+            <property name="name">${test.expr:value}</property>
+        </protocol>
+        <protocol type="MERGE3"/>
+        <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+        <protocol type="FD"/>
+        <protocol type="VERIFY_SUSPECT"/>
+        <protocol type="BARRIER"/>
+        <protocol type="pbcast.NAKACK2"/>
+        <protocol type="UNICAST3"/>
+        <protocol type="pbcast.STABLE"/>
+        <protocol type="pbcast.GMS"/>
+        <protocol type="UFC"/>
+        <protocol type="MFC"/>
+        <protocol type="FRAG2"/>
+        <protocol type="pbcast.STATE_TRANSFER"/>
+        <protocol type="pbcast.FLUSH"/>
+    </stack>
+</subsystem>

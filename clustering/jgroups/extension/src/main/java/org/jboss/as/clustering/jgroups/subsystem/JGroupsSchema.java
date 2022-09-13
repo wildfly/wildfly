@@ -30,7 +30,7 @@ import org.jboss.as.clustering.controller.Schema;
  * @author Paul Ferraro
  */
 public enum JGroupsSchema implements Schema<JGroupsSchema> {
-/*  Unsupported schema versions - for reference only
+
     VERSION_1_0(1, 0), // AS 7.0
     VERSION_1_1(1, 1), // AS 7.1
     VERSION_2_0(2, 0), // WildFly 8
@@ -38,7 +38,6 @@ public enum JGroupsSchema implements Schema<JGroupsSchema> {
     VERSION_4_0(4, 0), // WildFly 10, EAP 7.0
     VERSION_5_0(5, 0), // WildFly 11, EAP 7.1
     VERSION_6_0(6, 0), // WildFly 12-16, EAP 7.2
-*/
     VERSION_7_0(7, 0), // WildFly 17-19, EAP 7.3
     VERSION_8_0(8, 0), // WildFly 20-26, EAP 7.4
     VERSION_9_0(9, 0), // WildFly 27-present
