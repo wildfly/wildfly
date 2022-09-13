@@ -93,21 +93,16 @@ public class LayersTestCase {
         "org.jboss.resteasy.resteasy-rxjava2",
         // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
         "org.wildfly.reactive.dep.jts",
-        // Used by Hibernate Search 6 TODO remove these entries as part of the big-bang, as they are used, just not in javax Hibernate Search
-        "com.carrotsearch.hppc",
-        "org.elasticsearch.client.rest-client",
-        // Used by Hibernate Search 5 but not part of the jpa layer (aiui they are optional aspects of Hibernate Search)
-        // These modules are dropped with Hibernate Search 6 so no point evaluating whether they should be provisioned
-        // by the jpa layer
-        "org.hibernate.search.backend-jms",
-        "org.hibernate.search.serialization-avro",
-        "org.apache.avro",
-        // Optionally used by Hibernate Search 6 but not provided by the jpa layer
-        // TODO determine if they should be
+        // Optionally used by Hibernate Search but not provided by the jpa layer
+        // TODO they probably should be, see https://github.com/wildfly/wildfly/pull/15965
+        "org.hibernate.search.orm",
         "org.hibernate.search.backend.elasticsearch",
+        "org.elasticsearch.client.rest-client",
         "org.hibernate.search.backend.lucene",
+        "com.carrotsearch.hppc",
         "org.apache.lucene",
-        "org.apache.lucene.internal",
+        // Used by Hibernate Search but only in preview
+        "org.apache.avro", // Will be used by outboxpolling, present only in preview (see https://github.com/wildfly/wildfly/pull/15974)
         // TODO these implement SPIs from RESTEasy or JBoss WS but I don't know how they integrate
         // as there is no ref to them in any module.xml nor any in WF java code.
         // Perhaps via deployment descriptor? In any case, no layer provides them
@@ -196,14 +191,13 @@ public class LayersTestCase {
         "org.jboss.resteasy.resteasy-json-binding-provider",
         // injected by jpa
         "org.hibernate.search.orm",
-        "org.hibernate.search.backend.lucene",
         "org.hibernate.search.backend.elasticsearch",
+        "org.hibernate.search.backend.lucene",
         // Used by the hibernate search that's injected by jpa
-        "org.hibernate.search.serialization-avro",
-        "org.hibernate.search.backend-jms",
-        "org.apache.avro",
+        "org.elasticsearch.client.rest-client",
+        "com.google.code.gson",
+        "com.carrotsearch.hppc",
         "org.apache.lucene",
-        "org.apache.lucene.internal",
         // injected by jsf
         "org.jboss.as.jsf-injection",
         // injected by sar
