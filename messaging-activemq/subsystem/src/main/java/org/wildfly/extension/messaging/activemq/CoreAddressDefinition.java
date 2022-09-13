@@ -24,7 +24,6 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
-import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
@@ -52,7 +51,7 @@ public class CoreAddressDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-    private static final AttributeDefinition NUMBER_OF_PAGES = create(CommonAttributes.NUMBER_OF_PAGES, INT)
+    private static final AttributeDefinition NUMBER_OF_PAGES = create(CommonAttributes.NUMBER_OF_PAGES, LONG)
             .setStorageRuntime()
             .build();
 
