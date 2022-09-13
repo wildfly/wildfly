@@ -109,8 +109,6 @@ public class JcaExtension implements Extension {
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_1.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_2_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_3_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_4_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_5_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_6_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
@@ -329,8 +327,6 @@ public class JcaExtension implements Extension {
                     case JCA_6_0:
                     case JCA_5_0:
                     case JCA_4_0:
-                    case JCA_3_0:
-                    case JCA_2_0:
                     case JCA_1_1: {
                         final Element element = Element.forName(reader.getLocalName());
                         if (!visited.add(element)) {
@@ -385,8 +381,7 @@ public class JcaExtension implements Extension {
                                 break;
                             }
                             case TRACER: {
-                                if (Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_3_0) ||
-                                    Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_4_0) ||
+                                if (Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_4_0) ||
                                     Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_5_0) ||
                                     Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_6_0))
                                 {
@@ -607,8 +602,6 @@ public class JcaExtension implements Extension {
                     }
                     case POLICY: {
                         switch (readerNS) {
-                            case JCA_2_0:
-                            case JCA_3_0:
                             case JCA_4_0:
                             case JCA_5_0:
                             case JCA_6_0:{
@@ -623,8 +616,6 @@ public class JcaExtension implements Extension {
                     }
                     case SELECTOR: {
                         switch (readerNS) {
-                            case JCA_2_0:
-                            case JCA_3_0:
                             case JCA_4_0:
                             case JCA_5_0:
                             case JCA_6_0:{
@@ -937,8 +928,6 @@ public class JcaExtension implements Extension {
             if (!addOp.hasDefined(ad.getName())) {
                 switch (ns) {
                     case JCA_1_1:
-                    case JCA_2_0:
-                    case JCA_3_0:
                     case JCA_4_0:
                     case JCA_5_0:
                         // set the old default value from these xsd versions

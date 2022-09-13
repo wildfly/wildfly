@@ -31,21 +31,18 @@ import java.util.Map;
  *         Maestri</a>
  */
 public enum Namespace {
-    // must be first
-    UNKNOWN(null),
 
-    JCA_1_1("urn:jboss:domain:jca:1.1"),
-
-    JCA_2_0("urn:jboss:domain:jca:2.0"),
-
-    JCA_3_0("urn:jboss:domain:jca:3.0"),
-
-    JCA_4_0("urn:jboss:domain:jca:4.0"),
-
-    JCA_5_0("urn:jboss:domain:jca:5.0"),
-
-    JCA_6_0("urn:jboss:domain:jca:6.0");
-
+/*  Unsupported
+    JCA_1_0("urn:jboss:domain:jca:1.0"), // AS 7.0
+*/
+    JCA_1_1("urn:jboss:domain:jca:1.1"), // AS 7.1-7.2
+/*  Unsupported
+    JCA_2_0("urn:jboss:domain:jca:2.0"), // WF 8
+    JCA_3_0("urn:jboss:domain:jca:3.0"), // WF 9
+*/
+    JCA_4_0("urn:jboss:domain:jca:4.0"), // WF 10
+    JCA_5_0("urn:jboss:domain:jca:5.0"), // WF 11-26
+    JCA_6_0("urn:jboss:domain:jca:6.0"); // WF 27
 
     /**
      * The current namespace version.
@@ -79,7 +76,6 @@ public enum Namespace {
     }
 
     public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
+        return MAP.getOrDefault(uri, CURRENT);
     }
 }
