@@ -374,8 +374,6 @@
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
         <version.jakarta.annotation.jakarta-annotation-api>2.1.1</version.jakarta.annotation.jakarta-annotation-api>
-        <version.jakarta.authentication.jakarta-authentication-api>3.0.0</version.jakarta.authentication.jakarta-authentication-api>
-        <version.jakarta.authorization.jakarta-authorization-api>2.1.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.batch.jakarta.batch-api>2.1.1</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.1</version.jakarta.ejb.jakarta-ejb-api>
         <version.jakarta.el.jakarta-el-api>5.0.0</version.jakarta.el.jakarta-el-api>
@@ -385,10 +383,8 @@
         <version.jakarta.faces.jakarta-faces-api>4.0.1</version.jakarta.faces.jakarta-faces-api>
         <legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</legacy.version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
-        <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.1.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.json.bind.api>3.0.0</version.jakarta.json.bind.api>
-        <version.jakarta.json.jakarta-json-api>2.1.0</version.jakarta.json.jakarta-json-api>
         <legacy.version.jakarta.json.jakarta-json-api>1.1.6</legacy.version.jakarta.json.jakarta-json-api>
         <legacy.version.jakarta.jws.jakarta.jws-api>2.1.0</legacy.version.jakarta.jws.jakarta.jws-api>
         <legacy.version.jakarta.mail>1.6.7</legacy.version.jakarta.mail>
@@ -467,7 +463,6 @@
         <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0-RC1</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <legacy.version.org.eclipse.microprofile.rest.client.api>2.0</legacy.version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
-        <version.org.eclipse.parsson>1.1.0</version.org.eclipse.parsson>
         <version.org.eclipse.yasson>3.0.1</version.org.eclipse.yasson>
         <legacy.version.org.eclipselink.version>2.7.10</legacy.version.org.eclipselink.version>
         <version.org.eclipselink.version>3.0.2</version.org.eclipselink.version>
@@ -587,12 +582,9 @@
         <version.org.wildfly.http-client>1.1.13.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.15.Final</version.org.wildfly.naming-client>
         <legacy.version.org.wildfly.security.elytron>1.20.1.Final</legacy.version.org.wildfly.security.elytron>
-        <version.org.wildfly.security.elytron>2.0.0.Beta3</version.org.wildfly.security.elytron>
         <legacy.version.org.wildfly.security.elytron-mp>1.20.1.Final</legacy.version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.security.elytron-mp>2.0.0.Beta4</version.org.wildfly.security.elytron-mp>
         <legacy.version.org.wildfly.security.elytron-web>1.10.1.Final</legacy.version.org.wildfly.security.elytron-web>
-        <version.org.wildfly.security.elytron-web>3.0.0.Beta1</version.org.wildfly.security.elytron-web>
-        <version.org.wildfly.security.jakarta.elytron-ee>3.0.0.Beta4</version.org.wildfly.security.jakarta.elytron-ee>
         <version.org.wildfly.transaction.client>2.0.1.Final</version.org.wildfly.transaction.client>
         <version.sun.jaxb>${version.org.glassfish.jaxb}</version.sun.jaxb>
         <version.wsdl4j>1.6.3</version.wsdl4j>
