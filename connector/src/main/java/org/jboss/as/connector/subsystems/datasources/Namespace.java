@@ -30,24 +30,20 @@ import java.util.Map;
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  */
 public enum Namespace {
-    // must be first
-    UNKNOWN(null),
 
-    DATASOURCES_1_1("urn:jboss:domain:datasources:1.1"),
-
-    DATASOURCES_1_2("urn:jboss:domain:datasources:1.2"),
-
-    DATASOURCES_2_0("urn:jboss:domain:datasources:2.0"),
-
-    DATASOURCES_3_0("urn:jboss:domain:datasources:3.0"),
-
-    DATASOURCES_4_0("urn:jboss:domain:datasources:4.0"),
-
-    DATASOURCES_5_0("urn:jboss:domain:datasources:5.0"),
-
-    DATASOURCES_6_0("urn:jboss:domain:datasources:6.0"),
-
-    DATASOURCES_7_0("urn:jboss:domain:datasources:7.0");
+/*  No longer supported
+    DATASOURCES_1_0("urn:jboss:domain:datasources:1.0"), // AS 7.0-7.1
+    DATASOURCES_1_1("urn:jboss:domain:datasources:1.1"), // AS 7.2
+*/
+    DATASOURCES_1_2("urn:jboss:domain:datasources:1.2"), // EAP 6.3-6.4
+/*  No longer supported
+    DATASOURCES_2_0("urn:jboss:domain:datasources:2.0"), // WF 8
+    DATASOURCES_3_0("urn:jboss:domain:datasources:3.0"), // WF 9
+*/
+    DATASOURCES_4_0("urn:jboss:domain:datasources:4.0"), // WF 10
+    DATASOURCES_5_0("urn:jboss:domain:datasources:5.0"), // WF 11-19
+    DATASOURCES_6_0("urn:jboss:domain:datasources:6.0"), // WF 20-26
+    DATASOURCES_7_0("urn:jboss:domain:datasources:7.0"); // WF 27
 
     /**
      * The current namespace version.
@@ -81,7 +77,6 @@ public enum Namespace {
     }
 
     public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
+        return MAP.getOrDefault(uri, CURRENT);
     }
 }
