@@ -36,6 +36,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 enum XMLElement {
     UNKNOWN((String) null),
 
+    MOD_CLUSTER_CONFIG("mod-cluster-config"),
     PROXY(ProxyConfigurationResourceDefinition.WILDCARD_PATH),
 
     SIMPLE_LOAD_PROVIDER("simple-load-provider"),
