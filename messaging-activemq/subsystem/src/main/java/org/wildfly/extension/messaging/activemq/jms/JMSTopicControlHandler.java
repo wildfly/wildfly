@@ -142,12 +142,15 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
 
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
-        final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
-        final String topicName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        final String operationName = context.getCurrentOperationName();
+        String topicName = context.getCurrentAddressValue();
         boolean readOnly = context.getResourceRegistration().getOperationFlags(PathAddress.EMPTY_ADDRESS, operationName).contains(OperationEntry.Flag.READ_ONLY);
         ServiceController<?> service = context.getServiceRegistry(!readOnly).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
         ManagementService managementService = server.getManagementService();
+        if (topicName.startsWith(JMS_TOPIC_PREFIX)) {
+            topicName = topicName.substring(JMS_TOPIC_PREFIX.length());
+        }
         AddressControl control = AddressControl.class.cast(managementService.getResource(ResourceNames.ADDRESS + JMS_TOPIC_PREFIX + topicName));
 
         if (control == null) {
