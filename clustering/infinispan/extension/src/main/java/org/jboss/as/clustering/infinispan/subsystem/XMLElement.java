@@ -44,7 +44,6 @@ public enum XMLElement {
     // must be first
     UNKNOWN((String) null),
 
-    ALIAS("alias"),
     @Deprecated ASYNC_OPERATIONS_THREAD_POOL("async-operations-thread-pool"),
     BACKUP(BackupResourceDefinition.WILDCARD_PATH),
     @Deprecated BACKUP_FOR("backup-for"),
@@ -80,7 +79,6 @@ public enum XMLElement {
     @Deprecated PERSISTENCE_THREAD_POOL("persistence-thread-pool"),
     @Deprecated REMOTE_COMMAND_THREAD_POOL("remote-command-thread-pool"),
     PROPERTY(ModelDescriptionConstants.PROPERTY),
-    @Deprecated REHASHING("rehashing"),
     REMOTE_SERVER("remote-server"),
     REMOTE_STORE("remote-store"),
     REPLICATED_CACHE(ReplicatedCacheResourceDefinition.WILDCARD_PATH),
