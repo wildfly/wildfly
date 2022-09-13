@@ -322,7 +322,7 @@
         <version.com.sun.faces>4.0.0.SP01</version.com.sun.faces>
         <version.com.sun.istack>4.1.1</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>2.1.0</version.com.sun.xml.fastinfoset>
-        <version.com.sun.xml.messaging.saaj>3.0.0</version.com.sun.xml.messaging.saaj>
+        <version.com.sun.xml.messaging.saaj>3.0.0-M3</version.com.sun.xml.messaging.saaj>
         <version.commons-beanutils>1.9.4</version.commons-beanutils>
         <version.commons-codec>1.15</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
