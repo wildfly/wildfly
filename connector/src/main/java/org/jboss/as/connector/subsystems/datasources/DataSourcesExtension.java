@@ -123,6 +123,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -174,6 +175,8 @@ public class DataSourcesExtension implements Extension {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, DataSourcesExtension.class.getClassLoader(), true, false);
     }
 
+    private final DataSourceSubsystemParser parser = new DataSourceSubsystemParser();
+
     @Override
     public void initialize(final ExtensionContext context) {
         SUBSYSTEM_DATASOURCES_LOGGER.debugf("Initializing Datasources Extension");
@@ -186,7 +189,7 @@ public class DataSourcesExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(DataSourcesSubsystemRootDefinition.createInstance(registerRuntimeOnly));
 
 
-        subsystem.registerXMLElementWriter(new DataSourceSubsystemParser());
+        subsystem.registerXMLElementWriter(this.parser);
 
 
         if (registerRuntimeOnly) {
@@ -196,11 +199,9 @@ public class DataSourcesExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_2.getUriString(), DataSourceSubsystemParser::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_4_0.getUriString(), DataSourceSubsystemParser::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_5_0.getUriString(), DataSourceSubsystemParser::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_6_0.getUriString(), DataSourceSubsystemParser::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_7_0.getUriString(), DataSourceSubsystemParser::new);
+        for (Namespace namespace : EnumSet.allOf(Namespace.class)) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUriString(), this.parser);
+        }
     }
 
     public static final class DataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,

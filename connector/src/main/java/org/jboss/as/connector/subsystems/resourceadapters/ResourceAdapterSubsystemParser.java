@@ -132,8 +132,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public final class ResourceAdapterSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext> {
 
-    static final ResourceAdapterSubsystemParser INSTANCE = new ResourceAdapterSubsystemParser();
-
     /** {@inheritDoc} */
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {

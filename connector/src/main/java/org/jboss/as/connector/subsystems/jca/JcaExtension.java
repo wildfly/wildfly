@@ -84,7 +84,6 @@ public class JcaExtension implements Extension {
 
     private static final String RESOURCE_NAME = JcaExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
@@ -92,6 +91,8 @@ public class JcaExtension implements Extension {
         }
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JcaExtension.class.getClassLoader(), true, false);
     }
+
+    private final ConnectorSubsystemParser parser = new ConnectorSubsystemParser();
 
     @Override
     public void initialize(final ExtensionContext context) {
@@ -103,21 +104,18 @@ public class JcaExtension implements Extension {
 
         subsystem.registerSubsystemModel(JcaSubsystemRootDefinition.createInstance(registerRuntimeOnly));
 
-        subsystem.registerXMLElementWriter(ConnectorSubsystemParser.INSTANCE);
+        subsystem.registerXMLElementWriter(this.parser);
     }
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_1.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_4_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_5_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_6_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
+        for (Namespace namespace : EnumSet.allOf(Namespace.class)) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUriString(), this.parser);
+        }
     }
 
     static final class ConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
             XMLElementWriter<SubsystemMarshallingContext> {
-
-        static final ConnectorSubsystemParser INSTANCE = new ConnectorSubsystemParser();
 
         /**
          * {@inheritDoc}

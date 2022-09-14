@@ -25,6 +25,8 @@ import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -61,6 +63,8 @@ public class ResourceAdaptersExtension implements Extension {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ResourceAdaptersExtension.class.getClassLoader(), true, false);
     }
 
+    private final ResourceAdapterSubsystemParser parser = new ResourceAdapterSubsystemParser();
+
     @Override
     public void initialize(final ExtensionContext context) {
         SUBSYSTEM_RA_LOGGER.debugf("Initializing ResourceAdapters Extension");
@@ -68,7 +72,7 @@ public class ResourceAdaptersExtension implements Extension {
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
 
-        registration.registerXMLElementWriter(ResourceAdapterSubsystemParser.INSTANCE);
+        registration.registerXMLElementWriter(this.parser);
 
         // Remoting subsystem description and operation handlers
         registration.registerSubsystemModel(new ResourceAdaptersRootResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
@@ -86,11 +90,9 @@ public class ResourceAdaptersExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_1.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_4_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_5_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_6_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_6_1.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
+        for (Namespace namespace : EnumSet.allOf(Namespace.class)) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUriString(), this.parser);
+        }
     }
 
 }
