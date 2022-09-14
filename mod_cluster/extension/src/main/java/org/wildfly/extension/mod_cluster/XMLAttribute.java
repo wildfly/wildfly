@@ -43,6 +43,8 @@ enum XMLAttribute {
     ADVERTISE_SOCKET(ProxyConfigurationResourceDefinition.Attribute.ADVERTISE_SOCKET),
     AUTO_ENABLE_CONTEXTS(ProxyConfigurationResourceDefinition.Attribute.AUTO_ENABLE_CONTEXTS),
     BALANCER(ProxyConfigurationResourceDefinition.Attribute.BALANCER),
+    CONNECTOR("connector"),
+    DOMAIN("domain"),
     EXCLUDED_CONTEXTS(ProxyConfigurationResourceDefinition.Attribute.EXCLUDED_CONTEXTS),
     FLUSH_PACKETS(ProxyConfigurationResourceDefinition.Attribute.FLUSH_PACKETS),
     FLUSH_WAIT(ProxyConfigurationResourceDefinition.Attribute.FLUSH_WAIT),
