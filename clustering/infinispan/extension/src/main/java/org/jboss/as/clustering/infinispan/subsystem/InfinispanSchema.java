@@ -30,12 +30,13 @@ import org.jboss.as.clustering.controller.Schema;
  * @author Paul Ferraro
  */
 public enum InfinispanSchema implements Schema<InfinispanSchema> {
-
+/*  Unsupported, for documentation purposes only.
     VERSION_1_0(1, 0), // AS 7.0
     VERSION_1_1(1, 1), // AS 7.1.0
     VERSION_1_2(1, 2), // AS 7.1.1
     VERSION_1_3(1, 3), // AS 7.1.2
     VERSION_1_4(1, 4), // AS 7.2.0
+*/
     VERSION_1_5(1, 5), // EAP 6.3
     VERSION_2_0(2, 0), // WildFly 8
     VERSION_3_0(3, 0), // WildFly 9
