@@ -48,7 +48,7 @@ public class EarManifestDependencyPropagatedTestCase {
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class,"ejbmodule.jar");
         ejbJar.addClasses(EarManifestDependencyPropagatedTestCase.class);
         ejbJar.addAsManifestResource(emptyEjbJar(), "ejb-jar.xml");
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.jandex\n"),"MANIFEST.MF");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: io.smallrye.jandex\n"),"MANIFEST.MF");
         ear.addAsModule(ejbJar);
 
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "libjar.jar");
