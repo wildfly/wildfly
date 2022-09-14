@@ -12,6 +12,7 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.jboss.modules.Module;
 
@@ -232,10 +233,11 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                 }
             }
 
+            Index tmpIndex = indexer.complete();
             List<ClassInfo> paramConverterList =
-                    indexer.complete().getKnownDirectImplementors(PARAM_CONVERTER_DOTNAME);
+                    tmpIndex.getKnownDirectImplementors(PARAM_CONVERTER_DOTNAME);
             List<ClassInfo> paramConverterProviderList =
-                    indexer.complete().getKnownDirectImplementors(PARAM_CONVERTER_PROVIDER_DOTNAME);
+                    tmpIndex.getKnownDirectImplementors(PARAM_CONVERTER_PROVIDER_DOTNAME);
             paramConverterSet.addAll(paramConverterList);
             paramConverterSet.addAll(paramConverterProviderList);
 
@@ -341,12 +343,11 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
         ArrayList<String> classNameArr = new ArrayList<>();
 
         if (isFromUnitTest) {
-            Indexer indexer = new Indexer();
             for (String className : knownResourceClasses) {
                 try {
                     String pathName = className.replace(".", File.separator);
                     InputStream stream = classLoader.getResourceAsStream(pathName + ".class");
-                    ClassInfo classInfo = indexer.index(stream);
+                    ClassInfo classInfo = Index.singleClass(stream);
 
                     List<AnnotationInstance> defaultValuesList =
                             classInfo.annotationsMap().get(DEFAULT_VALUE_DOTNAME);
