@@ -584,7 +584,7 @@
         <legacy.version.org.wildfly.security.elytron>1.20.2.Final</legacy.version.org.wildfly.security.elytron>
         <legacy.version.org.wildfly.security.elytron-mp>1.20.2.Final</legacy.version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
-        <legacy.version.org.wildfly.security.elytron-web>1.10.1.Final</legacy.version.org.wildfly.security.elytron-web>
+        <legacy.version.org.wildfly.security.elytron-web>1.10.2.Final</legacy.version.org.wildfly.security.elytron-web>
         <version.org.wildfly.transaction.client>2.0.1.Final</version.org.wildfly.transaction.client>
         <version.sun.jaxb>${version.org.glassfish.jaxb}</version.sun.jaxb>
         <version.wsdl4j>1.6.3</version.wsdl4j>
