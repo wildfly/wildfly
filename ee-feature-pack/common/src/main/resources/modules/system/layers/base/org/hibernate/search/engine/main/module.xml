@@ -33,5 +33,11 @@
 
     <dependencies>
         <module name="org.jboss.logging"/>
+
+        <!-- Optional dependencies to import services (used for resolution of bean references in particular). -->
+        <module name="org.hibernate.search.backend.lucene" optional="true" services="import"/>
+        <module name="org.hibernate.search.backend.elasticsearch" optional="true" services="import"/>
+        <module name="org.hibernate.search.mapper.pojo" optional="true" services="import"/>
+        <module name="org.hibernate.search.mapper.orm" optional="true" services="import"/>
     </dependencies>
 </module>
