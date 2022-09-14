@@ -1291,6 +1291,7 @@
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
                 <version>${version.jsoup}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
