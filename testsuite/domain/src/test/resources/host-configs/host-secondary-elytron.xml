@@ -63,7 +63,7 @@
     </management>
     <domain-controller>
         <!-- Remote domain controller configuration with a host and port -->
-        <remote host="${jboss.test.host.primary.address}" port="9999" authentication-context="slaveHostAContext"/>
+        <remote host="${jboss.test.host.primary.address}" port="9999" authentication-context="secondaryHostAContext"/>
     </domain-controller>
     <interfaces>
         <interface name="management">
@@ -92,11 +92,11 @@
         </subsystem>
         <subsystem xmlns="urn:wildfly:elytron:1.0" initial-providers="combined-providers">
             <authentication-client>
-                <authentication-configuration allow-sasl-mechanisms="DIGEST-MD5" name="slaveHostAConfiguration" authentication-name="slave" realm="ManagementRealm">
-                    <credential-reference clear-text="slave_us3r_password"/>
+                <authentication-configuration allow-sasl-mechanisms="DIGEST-MD5" name="secondaryHostAConfiguration" authentication-name="secondary" realm="ManagementRealm">
+                    <credential-reference clear-text="secondary_us3r_password"/>
                 </authentication-configuration>
-                <authentication-context name="slaveHostAContext">
-                    <match-rule match-host="${jboss.test.host.primary.address}" authentication-configuration="slaveHostAConfiguration"/>
+                <authentication-context name="secondaryHostAContext">
+                    <match-rule match-host="${jboss.test.host.primary.address}" authentication-configuration="secondaryHostAConfiguration"/>
                 </authentication-context>
             </authentication-client>
             <providers>
