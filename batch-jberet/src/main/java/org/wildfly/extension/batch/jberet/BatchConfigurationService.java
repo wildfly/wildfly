@@ -22,20 +22,34 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.auth.server.SecurityDomain;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * A default batch configuration service.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class BatchConfigurationService implements BatchConfiguration, Service<BatchConfiguration> {
 
-    private final InjectedValue<JobRepository> jobRepositoryInjector = new InjectedValue<>();
-    private final InjectedValue<JobExecutor> jobExecutorInjector = new InjectedValue<>();
-    private final InjectedValue<SecurityDomain> securityDomainInjector = new InjectedValue<>();
+    private final Consumer<BatchConfiguration> batchConfigurationConsumer;
+    private final Supplier<JobRepository> jobRepositorySupplier;
+    private final Supplier<JobExecutor> jobExecutorSupplier;
+    private final Supplier<SecurityDomain> securityDomainSupplier;
     private volatile boolean restartOnResume;
+
+    BatchConfigurationService(final Consumer<BatchConfiguration> batchConfigurationConsumer,
+                              final Supplier<JobRepository> jobRepositorySupplier,
+                              final Supplier<JobExecutor> jobExecutorSupplier,
+                              final Supplier<SecurityDomain> securityDomainSupplier) {
+        this.batchConfigurationConsumer = batchConfigurationConsumer;
+        this.jobRepositorySupplier = jobRepositorySupplier;
+        this.jobExecutorSupplier = jobExecutorSupplier;
+        this.securityDomainSupplier = securityDomainSupplier;
+    }
 
     @Override
     public boolean isRestartOnResume() {
@@ -48,41 +62,31 @@ class BatchConfigurationService implements BatchConfiguration, Service<BatchConf
 
     @Override
     public JobRepository getDefaultJobRepository() {
-        return jobRepositoryInjector.getValue();
+        return jobRepositorySupplier.get();
     }
 
     @Override
     public JobExecutor getDefaultJobExecutor() {
-        return jobExecutorInjector.getValue();
+        return jobExecutorSupplier.get();
     }
 
     @Override
     public SecurityDomain getSecurityDomain() {
-        return securityDomainInjector.getOptionalValue();
+        return securityDomainSupplier != null ? securityDomainSupplier.get() : null;
     }
 
     @Override
     public void start(final StartContext context) throws StartException {
+        batchConfigurationConsumer.accept(this);
     }
 
     @Override
     public void stop(final StopContext context) {
+        batchConfigurationConsumer.accept(null);
     }
 
     @Override
     public BatchConfiguration getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
-    }
-
-    protected InjectedValue<JobRepository> getJobRepositoryInjector() {
-        return jobRepositoryInjector;
-    }
-
-    protected InjectedValue<JobExecutor> getJobExecutorInjector() {
-        return jobExecutorInjector;
-    }
-
-    InjectedValue<SecurityDomain> getSecurityDomainInjector() {
-        return securityDomainInjector;
     }
 }

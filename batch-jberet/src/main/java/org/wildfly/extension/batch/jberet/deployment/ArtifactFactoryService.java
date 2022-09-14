@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.spi.CreationalContext;
@@ -36,11 +38,10 @@ import javax.enterprise.inject.spi.BeanManager;
 
 import org.jberet.creation.AbstractArtifactFactory;
 import org.jberet.spi.ArtifactFactory;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bean.builtin.BeanManagerProxy;
 import org.jboss.weld.context.RequestContext;
 import org.jboss.weld.context.unbound.UnboundLiteral;
@@ -52,12 +53,20 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * ArtifactFactory for Jakarta EE runtime environment.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class ArtifactFactoryService extends AbstractArtifactFactory implements Service<ArtifactFactory>, WildFlyArtifactFactory {
-    private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
+public class ArtifactFactoryService extends AbstractArtifactFactory implements Service, WildFlyArtifactFactory {
+    private final Consumer<ArtifactFactory> artifactFactoryConsumer;
+    private final Supplier<BeanManager> beanManagerSupplier;
 
     private final Map<Object, Holder> contexts = Collections.synchronizedMap(new HashMap<>());
     private volatile BeanManager beanManager;
+
+    public ArtifactFactoryService(final Consumer<ArtifactFactory> artifactFactoryConsumer,
+                                  final Supplier<BeanManager> beanManagerSupplier) {
+        this.artifactFactoryConsumer = artifactFactoryConsumer;
+        this.beanManagerSupplier = beanManagerSupplier;
+    }
 
     @Override
     public void destroy(final Object instance) {
@@ -96,11 +105,13 @@ public class ArtifactFactoryService extends AbstractArtifactFactory implements S
 
     @Override
     public void start(final StartContext context) throws StartException {
-        beanManager = beanManagerInjector.getOptionalValue();
+        beanManager = beanManagerSupplier != null ? beanManagerSupplier.get() : null;
+        artifactFactoryConsumer.accept(this);
     }
 
     @Override
     public void stop(final StopContext context) {
+        artifactFactoryConsumer.accept(null);
         beanManager = null;
         synchronized (contexts) {
             for (Holder holder : contexts.values()) {
@@ -111,11 +122,6 @@ public class ArtifactFactoryService extends AbstractArtifactFactory implements S
             }
             contexts.clear();
         }
-    }
-
-    @Override
-    public ArtifactFactory getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
     }
 
     @Override
@@ -133,10 +139,6 @@ public class ArtifactFactoryService extends AbstractArtifactFactory implements S
                 requestContext.deactivate();
             };
         };
-    }
-
-    public InjectedValue<BeanManager> getBeanManagerInjector() {
-        return beanManagerInjector;
     }
 
     private BeanManagerImpl getBeanManager() {
