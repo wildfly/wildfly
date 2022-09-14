@@ -30,7 +30,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.hibernate.envers.Player;
 import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBAuditInheritance;
 import org.jboss.as.test.integration.jpa.hibernate.envers.SoccerPlayer;
-import org.jboss.as.test.shared.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -54,9 +53,6 @@ public class ValidityAuditStrategyonInheritanceTestCase {
 
     @BeforeClass
     public static void beforeClass() throws NamingException {
-
-        // TODO WFLY-16552
-        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
 
         iniCtx = new InitialContext();
     }

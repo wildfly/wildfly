@@ -34,7 +34,6 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.hibernate.envers.Organization;
 import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBValidityStrategyOrg;
-import org.jboss.as.test.shared.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -57,9 +56,6 @@ public class ImplementValidityAuditStrategyTestCase {
 
     @BeforeClass
     public static void beforeClass() throws NamingException {
-
-        // TODO WFLY-16552
-        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
 
         iniCtx = new InitialContext();
     }
