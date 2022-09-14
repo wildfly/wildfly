@@ -66,7 +66,7 @@
 
     <domain-controller>
         <!-- Remote domain controller configuration with a host and port -->
-        <remote host="${jboss.test.host.primary.address}" protocol="${jboss.domain.primary.protocol:remote+http}" port="${jboss.domain.primary.port:9990}" authentication-context="slaveHostAContext">
+        <remote host="${jboss.test.host.primary.address}" protocol="${jboss.domain.primary.protocol:remote+http}" port="${jboss.domain.primary.port:9990}" authentication-context="secondaryHostAContext">
             <ignored-resources type="extension">
                 <instance name="org.jboss.as.jsr77"/>
             </ignored-resources>
@@ -136,11 +136,11 @@
         <subsystem xmlns="urn:wildfly:elytron:15.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
             <authentication-client>
                 <!-- corresponding secret: <secret value="c2xhdmVfdXMzcl9wYXNzd29yZA==" /> -->
-                <authentication-configuration sasl-mechanism-selector="DIGEST-MD5" name="slaveHostAConfiguration" authentication-name="slave" realm="ManagementRealm">
-                    <credential-reference clear-text="slave_us3r_password"/>
+                <authentication-configuration sasl-mechanism-selector="DIGEST-MD5" name="secondaryHostAConfiguration" authentication-name="secondary" realm="ManagementRealm">
+                    <credential-reference clear-text="secondary_us3r_password"/>
                 </authentication-configuration>
-                <authentication-context name="slaveHostAContext">
-                    <match-rule match-host="${jboss.test.host.primary.address}" authentication-configuration="slaveHostAConfiguration"/>
+                <authentication-context name="secondaryHostAContext">
+                    <match-rule match-host="${jboss.test.host.primary.address}" authentication-configuration="secondaryHostAConfiguration"/>
                 </authentication-context>
             </authentication-client>
             <providers>
