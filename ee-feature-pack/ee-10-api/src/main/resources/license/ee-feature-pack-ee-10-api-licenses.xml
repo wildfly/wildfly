@@ -29,38 +29,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>jakarta.authentication</groupId>
-      <artifactId>jakarta.authentication-api</artifactId>
-      <licenses>
-        <license>
-          <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-v20.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.authentication</groupId>
-      <artifactId>jakarta.authorization-api</artifactId>
-      <licenses>
-        <license>
-          <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-v20.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>jakarta.batch</groupId>
       <artifactId>jakarta.batch-api</artifactId>
       <licenses>
@@ -153,40 +121,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>jakarta.interceptor</groupId>
-      <artifactId>jakarta.interceptor-api</artifactId>
-      <licenses>
-        <license>
-          <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-v20.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>jakarta.jms</groupId>
       <artifactId>jakarta.jms-api</artifactId>
-      <licenses>
-        <license>
-          <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-v20.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.json</groupId>
-      <artifactId>jakarta.json-api</artifactId>
       <licenses>
         <license>
           <name>Eclipse Public License 2.0</name>

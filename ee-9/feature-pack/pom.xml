@@ -103,6 +103,11 @@
                                     <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
                                     <type>zip</type>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-feature-pack-ee-10-api</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
                             </artifactItems>
                             <outputDirectory>${basedir}/target/unpacked-wildfly-core-galleon-resources</outputDirectory>
                         </configuration>
