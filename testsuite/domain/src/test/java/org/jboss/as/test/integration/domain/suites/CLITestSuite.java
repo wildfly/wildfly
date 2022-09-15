@@ -105,8 +105,8 @@ public class CLITestSuite {
         hostServers.put("primary", new String[]{"main-one", "main-two", "other-one"});
         hostServers.put("secondary", new String[]{"main-three", "main-four", "other-two"});
 
-        hostAddresses.put("primary", DomainTestSupport.masterAddress);
-        hostAddresses.put("secondary", DomainTestSupport.slaveAddress);
+        hostAddresses.put("primary", DomainTestSupport.primaryAddress);
+        hostAddresses.put("secondary", DomainTestSupport.secondaryAddress);
 
         serverGroups.put("main-server-group", new String[]{"main-one", "main-two", "main-three", "main-four"});
         serverGroups.put("other-server-group", new String[]{"other-one", "other-two"});

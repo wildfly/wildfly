@@ -58,7 +58,7 @@ public class JcaCCMRuntimeOnlyProfileOpsTestCase {
     @BeforeClass
     public static void setupDomain() throws Exception {
         testSupport = DomainTestSuite.createSupport(JcaCCMRuntimeOnlyProfileOpsTestCase.class.getSimpleName());
-        client = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
+        client = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
     }
 
     @AfterClass

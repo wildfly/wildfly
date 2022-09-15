@@ -57,7 +57,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     public static void before() throws Exception {
 
         CLITestSuite.createSupport(DataSourceTestCase.class.getSimpleName());
-        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
+        AbstractCliTestBase.initCLI(DomainTestSupport.primaryAddress);
     }
 
     @AfterClass

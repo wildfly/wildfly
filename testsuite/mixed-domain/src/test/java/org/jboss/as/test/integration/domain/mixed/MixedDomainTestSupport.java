@@ -131,7 +131,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     }
 
     private void startSlaveServer() {
-        DomainClient client = getDomainMasterLifecycleUtil().getDomainClient();
+        DomainClient client = getDomainPrimaryLifecycleUtil().getDomainClient();
         PathElement hostElement = PathElement.pathElement("host", "secondary");
 
         try {
@@ -178,7 +178,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         }
 
         if (javaHome != null) {
-            WildFlyManagedConfiguration  cfg = getDomainSlaveConfiguration();
+            WildFlyManagedConfiguration  cfg = getDomainSecondaryConfiguration();
             cfg.setJavaHome(javaHome);
             cfg.setControllerJavaHome(javaHome);
             System.out.println("Set legacy host controller to use " + javaHome + " as JAVA_HOME");
@@ -198,7 +198,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             //strip down the domain model to something more workable. The domain
             //adjusters will also make adjustments for the legacy version being
             //tested.
-            DomainLifecycleUtil masterUtil = getDomainMasterLifecycleUtil();
+            DomainLifecycleUtil masterUtil = getDomainPrimaryLifecycleUtil();
             masterUtil.getConfiguration().setAdminOnly(true);
             //masterUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
             masterUtil.start();
@@ -214,7 +214,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             masterUtil.awaitHostController(System.currentTimeMillis());
 
             //Start the secondary hosts
-            DomainLifecycleUtil slaveUtil = getDomainSlaveLifecycleUtil();
+            DomainLifecycleUtil slaveUtil = getDomainSecondaryLifecycleUtil();
             if (slaveUtil != null) {
                 //slaveUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
                 slaveUtil.start();

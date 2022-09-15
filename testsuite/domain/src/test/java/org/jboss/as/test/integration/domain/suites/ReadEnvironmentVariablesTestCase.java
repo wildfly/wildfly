@@ -74,8 +74,8 @@ public class ReadEnvironmentVariablesTestCase {
     public static void setupDomain() throws Exception {
         testSupport = DomainTestSuite.createSupport(ReadEnvironmentVariablesTestCase.class.getSimpleName());
 
-        domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
-        domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
+        domainMasterLifecycleUtil = testSupport.getDomainPrimaryLifecycleUtil();
+        domainSlaveLifecycleUtil = testSupport.getDomainSecondaryLifecycleUtil();
     }
 
     @AfterClass

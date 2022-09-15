@@ -74,7 +74,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         warFile = new File(tempDir + File.separator + "RolloutPlanTestCase.war");
         new ZipExporterImpl(war).exportTo(warFile, true);
 
-        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
+        AbstractCliTestBase.initCLI(DomainTestSupport.primaryAddress);
 
         // add another server group to default profile
         cli.sendLine("/server-group=test-server-group:add(profile=default,socket-binding-group=standard-sockets)");

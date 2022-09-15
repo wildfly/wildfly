@@ -63,9 +63,9 @@ public class CloneProfileTestCase extends AbstractCliTestBase {
     @BeforeClass
     public static void before() throws Exception {
         DomainTestSupport domainSupport = CLITestSuite.createSupport(CloneProfileTestCase.class.getSimpleName());
-        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
+        AbstractCliTestBase.initCLI(DomainTestSupport.primaryAddress);
 
-        File masterDir = new File(domainSupport.getDomainMasterConfiguration().getDomainDirectory());
+        File masterDir = new File(domainSupport.getDomainPrimaryConfiguration().getDomainDirectory());
         domainCfg = new File(masterDir, "configuration"
                 + File.separator + "testing-domain-standard.xml");
     }

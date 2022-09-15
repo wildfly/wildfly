@@ -64,7 +64,7 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
 
         new ZipExporterImpl(war).exportTo(warFile, true);
 
-        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
+        AbstractCliTestBase.initCLI(DomainTestSupport.primaryAddress);
     }
 
     @AfterClass

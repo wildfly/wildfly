@@ -97,8 +97,8 @@ public class MixedDeploymentOverlayTestCase {
 
     public static void setupDomain() {
         testSupport = MixedDomainTestSuite.getSupport(MixedDeploymentOverlayTestCase.class, false);
-        masterClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-        slaveClient = testSupport.getDomainSlaveLifecycleUtil().getDomainClient();
+        masterClient = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
+        slaveClient = testSupport.getDomainSecondaryLifecycleUtil().getDomainClient();
     }
 
     @AfterClass
@@ -141,26 +141,26 @@ public class MixedDeploymentOverlayTestCase {
     public void testInstallAndOverlayDeploymentOnDC() throws IOException, MgmtOperationException {
         //Let's deploy it on main-server-group
         executeAsyncForResult(masterClient, deployOnServerGroup(MAIN_SERVER_GROUP, MAIN_RUNTIME_NAME));
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Hello World");
         if(isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Hello World");
         }
         try {
-            performHttpCall(DomainTestSupport.slaveAddress, 8380, "main-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.secondaryAddress, 8380, "main-deployment/index.html", "Hello World");
             fail("'test' is available on slave server-two");
         } catch (IOException good) {
             // good
         }
         executeAsyncForResult(masterClient, deployOnServerGroup(OTHER_SERVER_GROUP, OTHER_RUNTIME_NAME));
         try {
-            performHttpCall(DomainTestSupport.slaveAddress, 8280, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.secondaryAddress, 8280, "other-deployment/index.html", "Hello World");
             fail("'test' is available on master server-one");
         } catch (IOException good) {
             // good
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
         executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(DEPLOYMENT_OVERLAY_PATH).toModelNode()));
         //Add some content
@@ -173,11 +173,11 @@ public class MixedDeploymentOverlayTestCase {
         executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode()));
         //No deployment have been redeployed so overlay isn't really active
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Hello World");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Hello World");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
         ModelNode redeployNothingOperation = Operations.createOperation("redeploy-links", PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode());
         redeployNothingOperation.get("deployments").setEmptyList();
         redeployNothingOperation.get("deployments").add(OTHER_RUNTIME_NAME);//Doesn't exist
@@ -186,29 +186,29 @@ public class MixedDeploymentOverlayTestCase {
         //Check that nothing happened
         //Only main-server-group deployments have been redeployed so overlay isn't active for other-server-group deployments
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Hello World");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Hello World");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
         executeAsyncForResult(masterClient, Operations.createOperation("redeploy-links", PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode()));
         //Only main-server-group deployments have been redeployed so overlay isn't active for other-server-group deployments
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
         executeAsyncForResult(masterClient, Operations.createOperation(REMOVE, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, MAIN_RUNTIME_NAME)).toModelNode()));
         executeAsyncForResult(masterClient, Operations.createOperation(REMOVE, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode()));
         executeAsyncForResult(masterClient, Operations.createOperation("redeploy-links", PathAddress.pathAddress(DEPLOYMENT_OVERLAY_PATH).toModelNode()));
         //Only other-server-group deployments have been redeployed because we have removed the overlay from main-server-group
         if(isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Bonjour le monde");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Bonjour le monde");
         //Falling call to redeploy-links
         redeployNothingOperation = Operations.createOperation("redeploy-links", PathAddress.pathAddress(DEPLOYMENT_OVERLAY_PATH).toModelNode());
         redeployNothingOperation.get("deployments").setEmptyList();
@@ -225,11 +225,11 @@ public class MixedDeploymentOverlayTestCase {
         removeLinkOp.get("redeploy-affected").set(true);
         executeAsyncForResult(masterClient, removeLinkOp);
         if(isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
         //Redeploying main-server-group deployment called main-deployment.war
         executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode()));
         executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, MAIN_RUNTIME_NAME)).toModelNode()));
@@ -238,22 +238,22 @@ public class MixedDeploymentOverlayTestCase {
         redeployOp.get("deployments").add(MAIN_RUNTIME_NAME);
         executeAsyncForResult(masterClient, redeployOp);
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
         //Redeploying main-server-group deployment called other-deployment.war
         redeployOp = Operations.createOperation("redeploy-links", PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode());
         redeployOp.get("deployments").setEmptyList();
         redeployOp.get("deployments").add(OTHER_RUNTIME_NAME);
         executeAsyncForResult(masterClient, redeployOp);
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Bonjour le monde");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Bonjour le monde");
 
         //Remove all CLI style "deployment-overlay remove --name=overlay-test "
         ModelNode cliRemoveOverlay = Operations.createCompositeOperation();

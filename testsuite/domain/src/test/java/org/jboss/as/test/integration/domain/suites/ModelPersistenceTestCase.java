@@ -97,11 +97,11 @@ public class ModelPersistenceTestCase {
     @BeforeClass
     public static void initDomain() throws Exception {
         domainSupport = DomainTestSuite.createSupport(ModelPersistenceTestCase.class.getSimpleName());
-        domainMasterLifecycleUtil = domainSupport.getDomainMasterLifecycleUtil();
-        domainSlaveLifecycleUtil = domainSupport.getDomainSlaveLifecycleUtil();
+        domainMasterLifecycleUtil = domainSupport.getDomainPrimaryLifecycleUtil();
+        domainSlaveLifecycleUtil = domainSupport.getDomainSecondaryLifecycleUtil();
 
-        File masterDir = new File(domainSupport.getDomainMasterConfiguration().getDomainDirectory());
-        File slaveDir = new File(domainSupport.getDomainSlaveConfiguration().getDomainDirectory());
+        File masterDir = new File(domainSupport.getDomainPrimaryConfiguration().getDomainDirectory());
+        File slaveDir = new File(domainSupport.getDomainSecondaryConfiguration().getDomainDirectory());
         domainCurrentCfgDir = new File(masterDir, CONFIG_DIR
                 + File.separator + DOMAIN_HISTORY_DIR + File.separator + CURRENT_DIR);
         masterCurrentCfgDir = new File(masterDir,  CONFIG_DIR
