@@ -87,7 +87,7 @@ public class EEConcurrencyExecutorShutdownTestCase {
     @BeforeClass
     public static void setupDomain() {
         testSupport = createAndStartDefaultEESupport(EEConcurrencyExecutorShutdownTestCase.class.getSimpleName());
-        domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
+        domainMasterLifecycleUtil = testSupport.getDomainPrimaryLifecycleUtil();
         masterClient = domainMasterLifecycleUtil.getDomainClient();
     }
 
@@ -95,10 +95,10 @@ public class EEConcurrencyExecutorShutdownTestCase {
         try {
             final DomainTestSupport.Configuration configuration;
             if (Boolean.getBoolean("wildfly.master.debug")) {
-                configuration = DomainTestSupport.Configuration.createDebugMaster(testName,
+                configuration = DomainTestSupport.Configuration.createDebugPrimary(testName,
                         "domain-configs/domain-standard-ee.xml", "host-configs/host-primary.xml", null);
             } else if (Boolean.getBoolean("wildfly.slave.debug")) {
-                configuration = DomainTestSupport.Configuration.createDebugSlave(testName,
+                configuration = DomainTestSupport.Configuration.createDebugSecondary(testName,
                         "domain-configs/domain-standard-ee.xml", "host-configs/host-primary.xml", null);
             } else {
                 configuration = DomainTestSupport.Configuration.create(testName,

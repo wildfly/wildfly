@@ -112,7 +112,7 @@ public class JVMServerPropertiesTestCase {
 
         testSupport = DomainTestSupport.create(configuration);
 
-        masterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
+        masterLifecycleUtil = testSupport.getDomainPrimaryLifecycleUtil();
 
         // Prepares the application deployment file
         WebArchive deployment = createDeployment();
@@ -169,7 +169,7 @@ public class JVMServerPropertiesTestCase {
         final Path serverDataDir = BY_SERVER.equals(directoryGrouping) ? serverBaseDir.resolve("data") : serverHome.resolve("data").resolve("servers").resolve(server);
         final Path serverTmpDir = BY_SERVER.equals(directoryGrouping) ? serverBaseDir.resolve("tmp") : serverHome.resolve("tmp").resolve("servers").resolve(server);
 
-        String response = performHttpCall(DomainTestSupport.masterAddress, port, PROP_SERVLET_APP_URL);
+        String response = performHttpCall(DomainTestSupport.primaryAddress, port, PROP_SERVLET_APP_URL);
         Properties p = new Properties();
         try (StringReader isr = new StringReader(response.replace("\\", "\\\\"))) {
             p.load(isr);

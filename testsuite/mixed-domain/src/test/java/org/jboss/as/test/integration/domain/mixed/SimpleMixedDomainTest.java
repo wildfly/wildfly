@@ -102,20 +102,20 @@ public abstract class SimpleMixedDomainTest  {
 
     @Test
     public void test00001_ServerRunning() throws Exception {
-        URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(DomainTestSupport.slaveAddress) + ":8080").openConnection();
+        URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(DomainTestSupport.secondaryAddress) + ":8080").openConnection();
         connection.connect();
     }
 
     @Test
     public void test00002_Versioning() throws Exception {
-        DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
+        DomainClient masterClient = support.getDomainPrimaryLifecycleUtil().createDomainClient();
         ModelNode masterModel;
         try {
             masterModel = readDomainModelForVersions(masterClient);
         } finally {
             IoUtils.safeClose(masterClient);
         }
-        DomainClient slaveClient = support.getDomainSlaveLifecycleUtil().createDomainClient();
+        DomainClient slaveClient = support.getDomainSecondaryLifecycleUtil().createDomainClient();
         ModelNode slaveModel;
         try {
             slaveModel = readDomainModelForVersions(slaveClient);
@@ -131,7 +131,7 @@ public abstract class SimpleMixedDomainTest  {
 
     @Test
     public void test00010_JgroupsTransformers() throws Exception {
-        final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
+        final DomainClient masterClient = support.getDomainPrimaryLifecycleUtil().createDomainClient();
         try {
             // Check composite operation
             final ModelNode compositeOp = new ModelNode();
@@ -157,7 +157,7 @@ public abstract class SimpleMixedDomainTest  {
         PathAddress exampleDSAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, "secondary"),
                 PathElement.pathElement(RUNNING_SERVER, "server-one"), PathElement.pathElement(SUBSYSTEM, "datasources"),
                 PathElement.pathElement("data-source", "ExampleDS"));
-        DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
+        DomainClient masterClient = support.getDomainPrimaryLifecycleUtil().createDomainClient();
         try {
             ModelNode op = Util.createOperation("test-connection-in-pool", PathAddress.pathAddress(exampleDSAddress));
             ModelNode response = masterClient.execute(op);
@@ -184,8 +184,8 @@ public abstract class SimpleMixedDomainTest  {
         //For an EAP 7 slave we will need another test since EAP 7 allows the clone operation.
         // However EAP 7 will need to take into account the ignore-unused-configuration
         // setting which does not exist in 6.x
-        final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
-        final DomainClient slaveClient = support.getDomainSlaveLifecycleUtil().createDomainClient();
+        final DomainClient masterClient = support.getDomainPrimaryLifecycleUtil().createDomainClient();
+        final DomainClient slaveClient = support.getDomainSecondaryLifecycleUtil().createDomainClient();
         try {
             final PathAddress newProfileAddress = PathAddress.pathAddress(PROFILE, "new-profile");
 
@@ -205,7 +205,7 @@ public abstract class SimpleMixedDomainTest  {
             DomainTestUtils.executeForResult(ignoreNewProfile, slaveClient);
 
             //Reload slave so ignore takes effect
-            reloadHost(support.getDomainSlaveLifecycleUtil(), "secondary");
+            reloadHost(support.getDomainSecondaryLifecycleUtil(), "secondary");
 
             //Clone should work now that the new profile is ignored
             DomainTestUtils.executeForResult(clone, masterClient);
@@ -214,7 +214,7 @@ public abstract class SimpleMixedDomainTest  {
             DomainTestUtils.executeForFailure(Util.createAddOperation(PathAddress.pathAddress(PROFILE, "cloned").append(SUBSYSTEM, "jmx")), masterClient);
 
             //Reload slave
-            reloadHost(support.getDomainSlaveLifecycleUtil(), "secondary");
+            reloadHost(support.getDomainSecondaryLifecycleUtil(), "secondary");
 
             //Reloading should have brought over the cloned profile, so adding a subsystem should now work
             DomainTestUtils.executeForResult(Util.createAddOperation(PathAddress.pathAddress(PROFILE, "cloned").append(SUBSYSTEM, "jmx")), masterClient);
@@ -229,8 +229,8 @@ public abstract class SimpleMixedDomainTest  {
         // EAP 7 allows the clone operation.
         // However EAP 7 will need to take into account the ignore-unused-configuration
         // setting which does not exist in 6.x
-        final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
-        final DomainClient slaveClient = support.getDomainSlaveLifecycleUtil().createDomainClient();
+        final DomainClient masterClient = support.getDomainPrimaryLifecycleUtil().createDomainClient();
+        final DomainClient slaveClient = support.getDomainSecondaryLifecycleUtil().createDomainClient();
         try {
             final PathAddress newProfileAddress = PathAddress.pathAddress(PROFILE, "new-profile");
 

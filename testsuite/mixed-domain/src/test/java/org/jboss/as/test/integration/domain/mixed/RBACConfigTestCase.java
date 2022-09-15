@@ -76,8 +76,8 @@ public class RBACConfigTestCase {
     @Before
     public void init() throws Exception {
         DomainTestSupport support = KernelBehaviorTestSuite.getSupport(this.getClass());
-        masterClient = support.getDomainMasterLifecycleUtil().getDomainClient();
-        slaveClient = support.getDomainSlaveLifecycleUtil().getDomainClient();
+        masterClient = support.getDomainPrimaryLifecycleUtil().getDomainClient();
+        slaveClient = support.getDomainSecondaryLifecycleUtil().getDomainClient();
     }
 
     @AfterClass

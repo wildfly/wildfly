@@ -138,7 +138,7 @@ public class DomainDeploymentOverlayTestCase {
 
     @Before
     public void setUp() throws Exception {
-        client = testSupport.getDomainMasterLifecycleUtil().createDomainClient();
+        client = testSupport.getDomainPrimaryLifecycleUtil().createDomainClient();
         ctx = CLITestUtil.getCommandContext(testSupport);
         ctx.connectController();
     }
