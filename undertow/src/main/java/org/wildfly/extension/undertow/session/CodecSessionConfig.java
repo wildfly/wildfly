@@ -25,7 +25,6 @@ import org.jboss.as.web.session.SessionIdentifierCodec;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
-import io.undertow.util.AttachmentKey;
 
 /**
  * {@link SessionConfig} decorator that performs encoding/decoding of the session identifier.
@@ -33,7 +32,6 @@ import io.undertow.util.AttachmentKey;
  * @author Paul Ferraro
  */
 public class CodecSessionConfig implements SessionConfig {
-    private static final AttachmentKey<Boolean> SESSION_ID_SET = AttachmentKey.create(Boolean.class);
 
     private final SessionConfig config;
     private final SessionIdentifierCodec codec;
@@ -45,26 +43,24 @@ public class CodecSessionConfig implements SessionConfig {
 
     @Override
     public void setSessionId(HttpServerExchange exchange, String sessionId) {
-        exchange.putAttachment(SESSION_ID_SET, Boolean.TRUE);
-        this.config.setSessionId(exchange, this.codec.encode(sessionId).toString());
+        CharSequence encodedSessionId = this.codec.encode(sessionId);
+        String requestedSessionId = this.config.findSessionId(exchange);
+        // Apply only if identifier changed
+        if (!encodedSessionId.equals(requestedSessionId)) {
+            this.config.setSessionId(exchange, encodedSessionId.toString());
+        }
     }
 
     @Override
     public void clearSession(HttpServerExchange exchange, String sessionId) {
-        this.config.clearSession(exchange, this.codec.encode(sessionId).toString());
+        CharSequence encodedSessionId = this.codec.encode(sessionId);
+        this.config.clearSession(exchange, encodedSessionId.toString());
     }
 
     @Override
     public String findSessionId(HttpServerExchange exchange) {
-        String encodedSessionId = this.config.findSessionId(exchange);
-        if (encodedSessionId == null) return null;
-        CharSequence sessionId = this.codec.decode(encodedSessionId);
-        // Check if the encoding for this session has changed
-        CharSequence reencodedSessionId = this.codec.encode(sessionId);
-        if ((exchange.getAttachment(SESSION_ID_SET) == null) && !encodedSessionId.contentEquals(reencodedSessionId)) {
-            this.config.setSessionId(exchange, reencodedSessionId.toString());
-        }
-        return sessionId.toString();
+        String requestedSessionId = this.config.findSessionId(exchange);
+        return (requestedSessionId != null) ? this.codec.decode(requestedSessionId).toString() : null;
     }
 
     @Override
@@ -74,6 +70,7 @@ public class CodecSessionConfig implements SessionConfig {
 
     @Override
     public String rewriteUrl(String originalUrl, String sessionId) {
-        return this.config.rewriteUrl(originalUrl, this.codec.encode(sessionId).toString());
+        CharSequence encodedSessionId = this.codec.encode(sessionId);
+        return this.config.rewriteUrl(originalUrl, encodedSessionId.toString());
     }
 }
