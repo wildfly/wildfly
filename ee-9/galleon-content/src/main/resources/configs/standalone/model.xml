@@ -23,7 +23,6 @@
         <package name="org.wildfly.bootable-jar" optional="true"/>
         <package name="org.wildfly.embedded"/>
         <!-- Is optional in server,standalone,host-controller module.xml because can be removed if not wanted but wanted by default -->
-        <package name="org.apache.xalan" optional="true"/>
         <!-- Is optional in server module.xml because located in servlet  -->
         <!-- Servlet works properly without it (in nominal) making it optional in case
             it needs to be excluded -->

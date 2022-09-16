@@ -31,7 +31,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 public class AbstactUnmarshallingFilterTestCase {
@@ -41,9 +40,9 @@ public class AbstactUnmarshallingFilterTestCase {
 
         return ShrinkWrap.create(JavaArchive.class, clazz.getSimpleName() + ".jar")
                 .addPackage(AbstactUnmarshallingFilterTestCase.class.getPackage())
-                .addAsManifestResource(new StringAsset("Dependencies: org.apache.xalan\n"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        new SocketPermission(SERVER_HOST_PORT, "connect,resolve")
+                        new SocketPermission(SERVER_HOST_PORT, "connect,resolve"),
+                        new RuntimePermission("accessClassInPackage.com.sun.org.apache.xalan.internal.xsltc.trax")
                 ), "permissions.xml");
     }
 
@@ -81,7 +80,7 @@ public class AbstactUnmarshallingFilterTestCase {
         // This call executes in the server in a deployment that has this class's module
         // configured as a dependency
         try {
-            return (Serializable) Class.forName("org.apache.xalan.xsltc.trax.TemplatesImpl").newInstance();
+            return (Serializable) Class.forName("com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl").newInstance();
         } catch (InstantiationException | IllegalAccessException  | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

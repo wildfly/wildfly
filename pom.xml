@@ -165,6 +165,7 @@
             --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
             --add-opens=java.management/javax.management=ALL-UNNAMED
             --add-opens=java.naming/javax.naming=ALL-UNNAMED
+            --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED
         </modular.jdk.args>
         <modular.jdk.props></modular.jdk.props>
 
@@ -431,7 +432,6 @@
         <version.org.apache.velocity>2.3</version.org.apache.velocity>
         <version.org.apache.wss4j>2.4.1-jbossorg-1</version.org.apache.wss4j>
         <version.org.apache.ws.xmlschema>2.3.0</version.org.apache.ws.xmlschema>
-        <version.org.apache.xalan>2.7.1.jbossorg-6</version.org.apache.xalan>
         <version.org.apache.xerces>2.12.0.SP04</version.org.apache.xerces>
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
         <version.org.bitbucket.jose4j>0.8.0</version.org.bitbucket.jose4j>
@@ -1544,6 +1544,10 @@
                             <property>
                                 <name>java.util.logging.manager</name>
                                 <value>org.jboss.logmanager.LogManager</value>
+                            </property>
+                            <property>
+                                <name>jdk.xml.enableTemplatesImplDeserialization</name>
+                                <value>true</value>
                             </property>
                         </systemProperties>
                         <argLine>${surefire.system.args}</argLine>
