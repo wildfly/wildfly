@@ -52,9 +52,9 @@ final class WebServerService implements CommonWebServer, Service<WebServerServic
     public int getPort(final String protocol, final boolean secure) {
         Map<String, UndertowListener> listeners = getListenerMap();
         UndertowListener listener = null;
-        for (String p : listeners.keySet()) {
-            if (protocol.toLowerCase().contains(p)) {
-                listener = listeners.get(p);
+        for (Map.Entry<String, UndertowListener> entry : listeners.entrySet()) {
+            if (protocol.toLowerCase().contains(entry.getKey())) {
+                listener = entry.getValue();
             }
         }
         if (listener != null && listener.getProtocol() == HttpListenerService.PROTOCOL && secure) {
