@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.hibernate.search.coordination;
+package org.wildfly.test.preview.hibernate.search.coordination;
 
+import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -33,22 +34,20 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
-import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import jakarta.inject.Inject;
-
-import java.io.File;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * Test the ability for applications to use outbox-polling coordination,
- * provided they bundle the appropriate Hibernate Search JAR with their application
- * and add a few module dependencies,
- * because that feature is still considered incubating and thus not included in WildFly.
+ * provided they add the appropriate module dependency,
+ * because that feature is still considered incubating and thus not included in WildFly "standard" (only in "preview").
+ *
+ * This test relies on a Lucene backend because it simpler to set up (no need for an Elasticsearch container),
+ * but users would generally rely on an Elasticsearch backend (because they have multiple instances of their application,
+ * and thus can't just rely on the filesystem for index storage).
  */
 @RunWith(Arquillian.class)
 public class HibernateSearchOutboxPollingTestCase {
@@ -69,18 +68,8 @@ public class HibernateSearchOutboxPollingTestCase {
         return ShrinkWrap.create(WebArchive.class, HibernateSearchOutboxPollingTestCase.class.getSimpleName() + ".war")
                 .addClass(HibernateSearchOutboxPollingTestCase.class)
                 .addClasses(SearchBean.class, IndexedEntity.class, TimeoutUtil.class)
-                .addAsResource(manifest(), "META-INF/MANIFEST.MF")
                 .addAsResource(persistenceXml(), "META-INF/persistence.xml")
-                // This JAR is copied to target/ using the maven-dependency-plugin; see pom.xml.
-                .addAsLibraries(new File("target/testlib/hibernate-search-mapper-orm-coordination-outbox-polling.jar"))
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-    }
-
-    private static Asset manifest() {
-        String manifest = Descriptors.create(ManifestDescriptor.class)
-                .attribute("Dependencies", "org.apache.avro")
-                .exportAsString();
-        return new StringAsset(manifest);
     }
 
     private static Asset persistenceXml() {

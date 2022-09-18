@@ -50,6 +50,15 @@
     <dependencyManagement>
         <dependencies>
 
+            <!-- Inherit the preview ee deps -->
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-ee-bom</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!--
                 Re-expose the standard-expansion deps.
              -->

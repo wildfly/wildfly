@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2022, Red Hat, Inc., and individual contributors
@@ -22,23 +21,23 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<!-- Hibernate Search Engine: the main glue between backend (e.g. Lucene backend)
-     and mapper (e.g. Hibernate ORM mapper) -->
-<module xmlns="urn:jboss:module:1.9" name="org.hibernate.search.engine">
+<!-- Hibernate Search ORM Mapper - Coordination through outbox-polling:
+     Hibernate ORM integration using outbox polling as coordination strategy
+     for automatic indexing -->
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.search.mapper.orm.coordination.outboxpolling">
 
     <resources>
-        <artifact name="${org.hibernate.search:hibernate-search-util-common}"/>
-        <artifact name="${org.hibernate.search:hibernate-search-engine}"/>
+        <artifact name="${org.hibernate.search:hibernate-search-mapper-orm-coordination-outbox-polling-orm6}"/>
     </resources>
 
     <dependencies>
-        <module name="org.jboss.logging"/>
-
-        <!-- Optional dependencies to import services (used for resolution of bean references in particular). -->
-        <module name="org.hibernate.search.backend.lucene" optional="true" services="import"/>
-        <module name="org.hibernate.search.backend.elasticsearch" optional="true" services="import"/>
-        <module name="org.hibernate.search.mapper.pojo" optional="true" services="import"/>
-        <module name="org.hibernate.search.mapper.orm" optional="true" services="import"/>
-        <module name="org.hibernate.search.mapper.orm.coordination.outboxpolling" optional="true" services="import"/>
+        <module name="javax.persistence.api"/>
+        <module name="javax.transaction.api"/>
+        <module name="org.jboss.logging" />
+        <module name="org.hibernate" />
+        <module name="org.hibernate.search.engine" export="true" />
+        <module name="org.hibernate.search.mapper.pojo" export="true" />
+        <module name="org.hibernate.search.mapper.orm" export="true" />
+        <module name="org.apache.avro" />
     </dependencies>
 </module>
