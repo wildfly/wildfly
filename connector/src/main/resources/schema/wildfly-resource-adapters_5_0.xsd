@@ -1007,6 +1007,15 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="enabled" type="xs:token" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+          <![CDATA[[
+                  Indicates whether the security for WorkManager is enabled
+                 ]]>
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="workmanagerSecurityGroupsType">

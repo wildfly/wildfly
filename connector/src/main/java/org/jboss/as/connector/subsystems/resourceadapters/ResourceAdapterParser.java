@@ -376,7 +376,24 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                 case START_ELEMENT: {
                     switch (WorkManager.Tag.forName(reader.getLocalName())) {
                         case SECURITY: {
-                            WM_SECURITY.parseAndSetParameter("true", operation, reader);
+                            int attributeSize = reader.getAttributeCount();
+                            if (attributeSize > 0) {
+                                for (int i = 0; i < attributeSize; i++) {
+                                    Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                                    switch (attribute) {
+                                        case ENABLED: {
+                                            String value = reader.getAttributeValue(i);
+                                            WM_SECURITY.parseAndSetParameter(value, operation, reader);
+                                            break;
+                                        }
+                                        default:
+                                            throw new ParserException(bundle.unexpectedAttribute(reader.getAttributeLocalName(i), reader.getLocalName()));
+                                    }
+                                }
+                            }
+                            else{
+                                WM_SECURITY.parseAndSetParameter("true", operation, reader);
+                            }
                             switch (org.jboss.as.connector.subsystems.resourceadapters.Namespace.forUri(reader.getNamespaceURI())) {
                                 case RESOURCEADAPTERS_1_0:
                                 case RESOURCEADAPTERS_1_1:
@@ -709,7 +726,11 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         /**
          * path
          */
-        PATH("path");
+        PATH("path"),
+        /**
+         * enabled attribute
+         */
+        ENABLED("enabled");
 
         private String name;
 

@@ -192,49 +192,81 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         if (transactionSupport == TransactionSupportEnum.XATransaction) {
             isXa = true;
         }
-        if (ra.hasDefined(WM_SECURITY.getName()) && ra.get(WM_SECURITY.getName()).asBoolean()) {
-            streamWriter.writeStartElement(Activation.Tag.WORKMANAGER.getLocalName());
-            streamWriter.writeStartElement(WorkManager.Tag.SECURITY.getLocalName());
-            WM_SECURITY_MAPPING_REQUIRED.marshallAsElement(ra, streamWriter);
-            WM_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
-            WM_ELYTRON_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
-            WM_SECURITY_DEFAULT_PRINCIPAL.marshallAsElement(ra, streamWriter);
-            if (ra.hasDefined(WM_SECURITY_DEFAULT_GROUPS.getName())) {
-                streamWriter.writeStartElement(WM_SECURITY_DEFAULT_GROUPS.getXmlName());
-                for (ModelNode group : ra.get(WM_SECURITY_DEFAULT_GROUPS.getName()).asList()) {
-                    streamWriter.writeStartElement(WM_SECURITY_DEFAULT_GROUP.getXmlName());
-                    streamWriter.writeCharacters(group.asString());
-                    streamWriter.writeEndElement();
-                }
-                streamWriter.writeEndElement();
-            }
-            if (ra.hasDefined(WM_SECURITY_MAPPING_USERS.getName()) || ra.hasDefined(WM_SECURITY_MAPPING_GROUPS.getName())) {
-                streamWriter.writeStartElement(WorkManagerSecurity.Tag.MAPPINGS.getLocalName());
-                if (ra.hasDefined(WM_SECURITY_MAPPING_USERS.getName())) {
-                    streamWriter.writeStartElement(WorkManagerSecurity.Tag.USERS.getLocalName());
-                    for (ModelNode node : ra.get(WM_SECURITY_MAPPING_USERS.getName()).asList()) {
-                        streamWriter.writeStartElement(WorkManagerSecurity.Tag.MAP.getLocalName());
-                        WM_SECURITY_MAPPING_FROM.marshallAsAttribute(node, streamWriter);
-                        WM_SECURITY_MAPPING_TO.marshallAsAttribute(node, streamWriter);
-                        streamWriter.writeEndElement();
+        if (ra.hasDefined(WM_SECURITY.getName())) {
+            boolean securityEnabled;
+            boolean isExpression = false;
 
+            if (ra.get(WM_SECURITY.getName()).getType().equals(ModelType.EXPRESSION)) {
+                try {
+                    securityEnabled = ra.get(WM_SECURITY.getName()).resolve().asBoolean();
+                    isExpression = true;
+                } catch (Exception e) {
+                    securityEnabled = WM_SECURITY.getDefaultValue().asBoolean();
+                }
+            } else if (ra.get(WM_SECURITY.getName()).getType().equals(ModelType.BOOLEAN)) {
+                securityEnabled = ra.get(WM_SECURITY.getName()).asBoolean();
+            } else {
+                securityEnabled = WM_SECURITY.getDefaultValue().asBoolean();
+            }
+
+            // Preserves the expression in the XML if an expression was used to turn the WorkManager Security off
+            if (!securityEnabled && isExpression) {
+                streamWriter.writeStartElement(Activation.Tag.WORKMANAGER.getLocalName());
+                streamWriter.writeStartElement(WorkManager.Tag.SECURITY.getLocalName());
+                WM_SECURITY.marshallAsAttribute(ra, streamWriter);
+                streamWriter.writeEndElement();
+                streamWriter.writeEndElement();
+            }
+
+            // If the WorkManager Security is turned on, sets all the other resources
+            // If not, the WorkManager is not marshalled in the XML at all
+            if (securityEnabled) {
+                streamWriter.writeStartElement(Activation.Tag.WORKMANAGER.getLocalName());
+                streamWriter.writeStartElement(WorkManager.Tag.SECURITY.getLocalName());
+                // Preserves the expression in the XML if an expression was used to turn the WorkManager Security on
+                if (isExpression) {
+                    WM_SECURITY.marshallAsAttribute(ra, streamWriter);
+                }
+                WM_SECURITY_MAPPING_REQUIRED.marshallAsElement(ra, streamWriter);
+                WM_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
+                WM_ELYTRON_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
+                WM_SECURITY_DEFAULT_PRINCIPAL.marshallAsElement(ra, streamWriter);
+                if (ra.hasDefined(WM_SECURITY_DEFAULT_GROUPS.getName())) {
+                    streamWriter.writeStartElement(WM_SECURITY_DEFAULT_GROUPS.getXmlName());
+                    for (ModelNode group : ra.get(WM_SECURITY_DEFAULT_GROUPS.getName()).asList()) {
+                        streamWriter.writeStartElement(WM_SECURITY_DEFAULT_GROUP.getXmlName());
+                        streamWriter.writeCharacters(group.asString());
+                        streamWriter.writeEndElement();
                     }
                     streamWriter.writeEndElement();
                 }
-                if (ra.hasDefined(WM_SECURITY_MAPPING_GROUPS.getName())) {
-                    streamWriter.writeStartElement(WorkManagerSecurity.Tag.GROUPS.getLocalName());
-                    for (ModelNode node : ra.get(WM_SECURITY_MAPPING_GROUPS.getName()).asList()) {
-                        streamWriter.writeStartElement(WorkManagerSecurity.Tag.MAP.getLocalName());
-                        WM_SECURITY_MAPPING_FROM.marshallAsAttribute(node, streamWriter);
-                        WM_SECURITY_MAPPING_TO.marshallAsAttribute(node, streamWriter);
+                if (ra.hasDefined(WM_SECURITY_MAPPING_USERS.getName()) || ra.hasDefined(WM_SECURITY_MAPPING_GROUPS.getName())) {
+                    streamWriter.writeStartElement(WorkManagerSecurity.Tag.MAPPINGS.getLocalName());
+                    if (ra.hasDefined(WM_SECURITY_MAPPING_USERS.getName())) {
+                        streamWriter.writeStartElement(WorkManagerSecurity.Tag.USERS.getLocalName());
+                        for (ModelNode node : ra.get(WM_SECURITY_MAPPING_USERS.getName()).asList()) {
+                            streamWriter.writeStartElement(WorkManagerSecurity.Tag.MAP.getLocalName());
+                            WM_SECURITY_MAPPING_FROM.marshallAsAttribute(node, streamWriter);
+                            WM_SECURITY_MAPPING_TO.marshallAsAttribute(node, streamWriter);
+                            streamWriter.writeEndElement();
+                        }
+                        streamWriter.writeEndElement();
+                    }
+                    if (ra.hasDefined(WM_SECURITY_MAPPING_GROUPS.getName())) {
+                        streamWriter.writeStartElement(WorkManagerSecurity.Tag.GROUPS.getLocalName());
+                        for (ModelNode node : ra.get(WM_SECURITY_MAPPING_GROUPS.getName()).asList()) {
+                            streamWriter.writeStartElement(WorkManagerSecurity.Tag.MAP.getLocalName());
+                            WM_SECURITY_MAPPING_FROM.marshallAsAttribute(node, streamWriter);
+                            WM_SECURITY_MAPPING_TO.marshallAsAttribute(node, streamWriter);
+                            streamWriter.writeEndElement();
+                        }
                         streamWriter.writeEndElement();
                     }
                     streamWriter.writeEndElement();
                 }
                 streamWriter.writeEndElement();
+                streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
-            streamWriter.writeEndElement();
         }
         if (ra.hasDefined(CONNECTIONDEFINITIONS_NAME)) {
             streamWriter.writeStartElement(Activation.Tag.CONNECTION_DEFINITIONS.getLocalName());

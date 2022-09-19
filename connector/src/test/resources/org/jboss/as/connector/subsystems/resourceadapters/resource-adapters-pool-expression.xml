@@ -16,7 +16,7 @@
       <!--Zero or more repetitions:-->
       <config-property name="config1">value</config-property>
       <workmanager>
-        <security>
+        <security enabled="${test.expr:true}">
           <domain>${test.expr:domain}</domain>
           <default-groups>
             <group>${test.expr:group}</group>

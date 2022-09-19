@@ -16,7 +16,7 @@
             <!--Zero or more repetitions:-->
             <config-property name="config1">${test.expr:value}</config-property>
             <workmanager>
-                <security>
+                <security enabled="${test.expr:true}">
                     <mapping-required>${test.expr:true}</mapping-required>
                     <elytron-security-domain>${test.expr:ApplicationDomain}</elytron-security-domain>
                 </security>
