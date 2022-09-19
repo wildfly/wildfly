@@ -25,7 +25,7 @@ package org.wildfly.extension.batch.jberet.deployment;
 import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;

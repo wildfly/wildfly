@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
-import javax.batch.operations.JobOperator;
+import jakarta.batch.operations.JobOperator;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -48,7 +48,7 @@ abstract class JobOperationReadOnlyStepHandler extends JobOperationStepHandler {
     }
 
     /**
-     * Updates the model with information from the {@link javax.batch.operations.JobOperator JobOperator}.
+     * Updates the model with information from the {@link jakarta.batch.operations.JobOperator JobOperator}.
      *
      * @param context     the operation context used
      * @param model       the model to update

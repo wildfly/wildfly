@@ -30,11 +30,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import org.jberet.creation.AbstractArtifactFactory;
 import org.jberet.spi.ArtifactFactory;

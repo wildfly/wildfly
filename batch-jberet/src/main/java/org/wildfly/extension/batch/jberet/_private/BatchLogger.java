@@ -23,10 +23,10 @@
 package org.wildfly.extension.batch.jberet._private;
 
 import java.security.Permission;
-import javax.batch.operations.BatchRuntimeException;
-import javax.batch.operations.JobSecurityException;
-import javax.batch.operations.JobStartException;
-import javax.batch.operations.NoSuchJobException;
+import jakarta.batch.operations.BatchRuntimeException;
+import jakarta.batch.operations.JobSecurityException;
+import jakarta.batch.operations.JobStartException;
+import jakarta.batch.operations.NoSuchJobException;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -89,7 +89,7 @@ public interface BatchLogger extends BasicLogger {
      *
      * @param jobName the invalid job name
      *
-     * @return a {@link javax.batch.operations.NoSuchJobException} for the error
+     * @return a {@link jakarta.batch.operations.NoSuchJobException} for the error
      */
     @Message(id = 5, value = "The job name '%s' was not found for the deployment.")
     NoSuchJobException noSuchJobException(String jobName);
@@ -99,7 +99,7 @@ public interface BatchLogger extends BasicLogger {
      *
      * @param xmlFile the invalid XML file
      *
-     * @return a {@link javax.batch.operations.JobStartException} for the error
+     * @return a {@link jakarta.batch.operations.JobStartException} for the error
      */
     @Message(id = 6, value = "Could not find the job XML file in the deployment: %s")
     JobStartException couldNotFindJobXml(String xmlFile);

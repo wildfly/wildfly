@@ -457,7 +457,7 @@ access any services on the server. For example, the default-permission-mapper
 mapper uses org.wildfly.extension.batch.jberet.deployment.BatchPermission
 specified by the default-permissions permission set to assign permission for
 batch jobs. The batch permissions are start, stop, restart, abandon, and read
-which aligns with javax.batch.operations.JobOperator. The default-permission-mapper
+which aligns with jakarta.batch.operations.JobOperator. The default-permission-mapper
 mapper also uses org.wildfly.security.auth.permission.LoginPermission specified
 by the the login-permission permission set to assign the login permission.
 

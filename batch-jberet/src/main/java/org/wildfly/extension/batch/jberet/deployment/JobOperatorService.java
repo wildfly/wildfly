@@ -38,20 +38,20 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.batch.operations.JobExecutionAlreadyCompleteException;
-import javax.batch.operations.JobExecutionIsRunningException;
-import javax.batch.operations.JobExecutionNotMostRecentException;
-import javax.batch.operations.JobExecutionNotRunningException;
-import javax.batch.operations.JobOperator;
-import javax.batch.operations.JobRestartException;
-import javax.batch.operations.JobSecurityException;
-import javax.batch.operations.JobStartException;
-import javax.batch.operations.NoSuchJobException;
-import javax.batch.operations.NoSuchJobExecutionException;
-import javax.batch.operations.NoSuchJobInstanceException;
-import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.JobInstance;
-import javax.batch.runtime.StepExecution;
+import jakarta.batch.operations.JobExecutionAlreadyCompleteException;
+import jakarta.batch.operations.JobExecutionIsRunningException;
+import jakarta.batch.operations.JobExecutionNotMostRecentException;
+import jakarta.batch.operations.JobExecutionNotRunningException;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.operations.JobRestartException;
+import jakarta.batch.operations.JobSecurityException;
+import jakarta.batch.operations.JobStartException;
+import jakarta.batch.operations.NoSuchJobException;
+import jakarta.batch.operations.NoSuchJobExecutionException;
+import jakarta.batch.operations.NoSuchJobInstanceException;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.batch.runtime.JobInstance;
+import jakarta.batch.runtime.StepExecution;
 
 import org.jberet.operations.AbstractJobOperator;
 import org.jberet.runtime.JobExecutionImpl;
@@ -72,7 +72,7 @@ import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * A delegating {@linkplain javax.batch.operations.JobOperator job operator} to interact with the batch environment on
+ * A delegating {@linkplain jakarta.batch.operations.JobOperator job operator} to interact with the batch environment on
  * deployments.
  * <p>
  * Note that for each method the job name, or derived job name, must exist for the deployment. The allowed job names and

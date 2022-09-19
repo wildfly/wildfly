@@ -454,17 +454,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.spec.javax.batch</groupId>
-      <artifactId>jboss-batch-api_1.0_spec</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.spec.javax.ejb</groupId>
       <artifactId>jboss-ejb-api_3.2_spec</artifactId>
       <licenses>
@@ -622,7 +611,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-batch-jberet-jakarta</artifactId>
+      <artifactId>wildfly-batch-jberet</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>

@@ -23,7 +23,7 @@
 package org.wildfly.extension.batch.jberet.deployment;
 
 import java.util.Properties;
-import javax.batch.operations.JobOperator;
+import jakarta.batch.operations.JobOperator;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
