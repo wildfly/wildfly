@@ -93,14 +93,6 @@ public class LayersTestCase {
         "org.jboss.resteasy.resteasy-rxjava2",
         // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
         "org.wildfly.reactive.dep.jts",
-        // Optionally used by Hibernate Search but not provided by the jpa layer
-        // TODO they probably should be, see https://github.com/wildfly/wildfly/pull/15965
-        "org.hibernate.search.orm",
-        "org.hibernate.search.backend.elasticsearch",
-        "org.elasticsearch.client.rest-client",
-        "org.hibernate.search.backend.lucene",
-        "com.carrotsearch.hppc",
-        "org.apache.lucene",
         // Used by Hibernate Search but only in preview
         "org.hibernate.search.mapper.orm.coordination.outboxpolling", // Present only in preview
         "org.apache.avro", // Used by outboxpolling

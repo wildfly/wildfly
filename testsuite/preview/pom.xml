@@ -113,7 +113,7 @@
 
 
         <profile>
-        <id>basic.integration.tests.profile</id>
+        <id>basic.preview.tests.profile</id>
             <activation>
                 <property>
                     <name>!no.preview.integration.tests</name>
@@ -164,7 +164,7 @@
 
         <!-- Run all tests on -DallTests. -->
         <profile>
-            <id>ts.integ.allGroups</id>
+            <id>ts.preview.allGroups</id>
             <activation><property><name>allTests</name></property></activation>
             <modules>
                 <module>basic</module>
@@ -191,7 +191,7 @@
         </profile>
         <!-- Define ts.integration uber-group. -->
         <profile>
-            <id>ts.integ.allGroupsIntegration</id>
+            <id>ts.preview.allGroupsIntegration</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
                 <module>basic</module>
@@ -230,7 +230,7 @@
 
         <!-- -Dts.basic -->
         <profile>
-            <id>ts.integ.group.basic</id>
+            <id>ts.preview.group.basic</id>
             <activation><property><name>ts.basic</name></property></activation>
             <modules>
                 <!--<module>ws</module>-->
@@ -318,21 +318,14 @@
         </profile>
         -->
 
-        <!-- -Dts.layers
+        <!-- -Dts.layers -->
         <profile>
-            <id>ts.integ.group.layers</id>
+            <id>ts.preview.group.layers</id>
             <activation><property><name>ts.layers</name></property></activation>
             <modules>
                 <module>basic</module>
-                <module>elytron</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
-                <module>clustering</module>
-                <module>ws</module>
-                <module>elytron-oidc-client</module>
             </modules>
         </profile>
-        -->
 
         <!-- -Dts.standalone.microprofile
         <profile>

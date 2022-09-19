@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="hibernate-search">
+    <dependencies>
+        <!-- 'jpa-distributed' can be used instead.
+             If neither is used this layer just installs modules. -->
+        <layer name="jpa" optional="true"/>
+    </dependencies>
+
+    <packages>
+        <!-- No configuration resource requires the default Hibernate Search module;
+             the JPA subsystem adds a dependency on it to deployments if deployment
+             content indicates it's wanted. So ensure it is provisioned. -->
+        <package name="org.hibernate.search.mapper.orm"/>
+        <!-- Backend modules are optionally depended upon, so we need to ensure they are provisioned.
+             Users can exclude one or the other in their provisioning config if they wish. -->
+        <package name="org.hibernate.search.backend.lucene" optional="true"/>
+        <package name="org.hibernate.search.backend.elasticsearch" optional="true"/>
+
+        <!-- This package is the difference between this WildFly Preview version of the layer
+             and the one in standard WildFly. Standard WildFly does not provide this module. -->
+        <package name="org.hibernate.search.mapper.orm.coordination.outboxpolling" optional="true"/>
+    </packages>
+</layer-spec>
