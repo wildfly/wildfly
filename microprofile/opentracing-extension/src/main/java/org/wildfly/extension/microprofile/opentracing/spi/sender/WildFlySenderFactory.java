@@ -16,9 +16,11 @@
 package org.wildfly.extension.microprofile.opentracing.spi.sender;
 
 import io.jaegertracing.Configuration;
+import io.jaegertracing.internal.senders.NoopSender;
 import io.jaegertracing.spi.Sender;
 import io.jaegertracing.spi.SenderFactory;
 import io.jaegertracing.thrift.internal.senders.ThriftSenderFactory;
+import org.wildfly.extension.microprofile.opentracing.TracingExtensionLogger;
 
 /**
  * Jaeger client SenderFactory implementation to be able to 'swallow' exceptions when sending the spans to a Jaeger server.
@@ -30,7 +32,18 @@ public class WildFlySenderFactory implements SenderFactory {
 
     @Override
     public Sender getSender(Configuration.SenderConfiguration configuration) {
-        return new WildFlySender(delegate.getSender(configuration));
+        if (!isSenderConfigured(configuration)) {
+            TracingExtensionLogger.ROOT_LOGGER.senderNotConfigured();
+            return new NoopSender();
+        } else {
+            return new WildFlySender(delegate.getSender(configuration));
+        }
+    }
+
+    private boolean isSenderConfigured(Configuration.SenderConfiguration configuration) {
+        return (configuration.getEndpoint() != null) ||
+                (configuration.getAgentHost() != null) ||
+                (configuration.getAgentPort() != null);
     }
 
     @Override
