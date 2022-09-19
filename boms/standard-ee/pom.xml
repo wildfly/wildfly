@@ -2961,6 +2961,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-naming-client-jakarta</artifactId>
+                <version>${version.org.wildfly.naming-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.remoting3</groupId>
+                        <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-client-common-jakarta</artifactId>
                 <version>${version.org.wildfly.http-client}</version>

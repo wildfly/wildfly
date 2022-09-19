@@ -205,7 +205,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client</artifactId>
+            <artifactId>wildfly-naming-client-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>

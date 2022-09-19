@@ -4566,7 +4566,7 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-naming-client</artifactId>
+      <artifactId>wildfly-http-naming-client-jakarta</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
