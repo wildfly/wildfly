@@ -118,7 +118,7 @@ public class UndertowSubsystemParser_8_0 extends PersistentResourceXMLParser {
                                                         HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11,
                                                         HttpListenerResourceDefinition.PROXY_PROTOCOL)
                                 ).addChild(
-                                        builder(HostDefinition.INSTANCE.getPathElement())
+                                        builder(UndertowExtension.HOST_PATH)
                                                 .addAttributes(HostDefinition.ALIAS,
                                                         HostDefinition.DEFAULT_WEB_MODULE,
                                                         HostDefinition.DEFAULT_RESPONSE_CODE,

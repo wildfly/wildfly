@@ -27,12 +27,12 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.operations.common.Util;
-import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.BasicAuthHandler;
-import org.wildfly.extension.undertow.filters.RequestLimitHandler;
+import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 import org.wildfly.extension.undertow.filters.GzipFilter;
+import org.wildfly.extension.undertow.filters.RequestLimitHandler;
 import org.wildfly.extension.undertow.filters.ResponseHeaderFilter;
 import org.wildfly.extension.undertow.handlers.FileHandler;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
@@ -83,7 +83,7 @@ public class UndertowSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE)
                                                 .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE)
                                 ).addChild(
-                                        builder(HostDefinition.INSTANCE.getPathElement())
+                                        builder(UndertowExtension.HOST_PATH)
                                                 .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE)
                                                 .addChild(
                                                         builder(LocationDefinition.INSTANCE.getPathElement())

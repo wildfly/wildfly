@@ -124,12 +124,13 @@ public class UndertowSubsystemParser_12_0 extends PersistentResourceXMLParser {
                                                         HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11,
                                                         HttpListenerResourceDefinition.PROXY_PROTOCOL)
                                 ).addChild(
-                                        builder(HostDefinition.INSTANCE.getPathElement())
+                                        builder(UndertowExtension.HOST_PATH)
                                                 .addAttributes(HostDefinition.ALIAS,
                                                         HostDefinition.DEFAULT_WEB_MODULE,
                                                         HostDefinition.DEFAULT_RESPONSE_CODE,
                                                         HostDefinition.DISABLE_CONSOLE_REDIRECT,
-                                                        HostDefinition.QUEUE_REQUESTS_ON_START)
+                                                        HostDefinition.QUEUE_REQUESTS_ON_START,
+                                                        HostDefinition.ACTIVE_REQUEST_TRACKING_ENABLED)
                                                 .addChild(
                                                         builder(LocationDefinition.INSTANCE.getPathElement())
                                                                 .addAttributes(LocationDefinition.HANDLER)
