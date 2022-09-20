@@ -262,9 +262,9 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-preview-feature-pack</artifactId>
+                                            <version>${project.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -282,15 +282,15 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Provision a server with jpa -->
+                            <!-- Provision a server with hibernate-search -->
                             <execution>
-                                <id>jpa-provisioning</id>
+                                <id>hibernate-search-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jpa</install-dir>
+                                    <install-dir>${project.build.directory}/wildfly-hibernate-search</install-dir>
                                     <record-state>false</record-state>
                                     <log-time>${galleon.log.time}</log-time>
                                     <offline>${galleon.offline}</offline>
@@ -302,9 +302,9 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-preview-feature-pack</artifactId>
+                                            <version>${project.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -314,9 +314,12 @@
                                             <model>standalone</model>
                                             <name>standalone.xml</name>
                                             <layers>
-                                                <layer>jpa</layer>
-                                                <layer>jaxrs-server</layer>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>hibernate-search</layer>
                                                 <layer>h2-default-datasource</layer>
+                                                <!-- In container tests use injected CDI beans and EJBs -->
+                                                <layer>cdi</layer>
+                                                <layer>ejb-lite</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -349,9 +352,12 @@
                                 <configuration>
                                     <systemPropertyVariables>
                                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
                                         <!-- Override the standard module path that points at the shared module set from dist -->
                                         <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
                                     </systemPropertyVariables>
                                     <includes>
                                         <!-- Dummy test used to validate this pom -->
@@ -360,23 +366,28 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Tests against the jpa-server install -->
+                            <!-- Tests against the hibernate-search install -->
                             <execution>
-                                <id>jpa.layer.surefire</id>
+                                <id>hibernate-search.layer.surefire</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <jboss.install.dir>${basedir}/target/wildfly-jpa</jboss.install.dir>
+                                        <jboss.install.dir>${basedir}/target/wildfly-hibernate-search</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-hibernate-search</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-hibernate-search</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-hibernate-search</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-hibernate-search</jboss.dist>
                                         <!-- Override the standard module path that points at the shared module set from dist -->
-                                        <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
+                                        <module.path>${project.build.directory}/wildfly-hibernate-search/modules${path.separator}${basedir}/target/modules</module.path>
                                     </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-hibernate-search</JBOSS_HOME>
+                                    </environmentVariables>
                                     <includes>
-                                        <!-- Dummy test used to validate this pom -->
-                                        <include>org/wildfly/test/preview/util/TestsuiteModuleTestCase.java</include>
+                                        <include>org/wildfly/test/preview/hibernate/search/**/*TestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>

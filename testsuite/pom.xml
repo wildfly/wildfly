@@ -422,6 +422,7 @@
             <activation><property><name>ts.layers</name></property></activation>
             <modules>
                 <module>integration</module>
+                <module>preview</module>
                 <module>layers</module>
             </modules>
         </profile>
