@@ -352,7 +352,7 @@
         <version.io.smallrye.open-api>3.0.0-RC4</version.io.smallrye.open-api>
         <legacy.version.io.smallrye.opentracing>2.0.0</legacy.version.io.smallrye.opentracing>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
-        <legacy.version.io.smallrye.smallrye-common>1.12.0</legacy.version.io.smallrye.smallrye-common>
+        <legacy.version.io.smallrye.smallrye-common>1.13.0</legacy.version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-common>2.0.0</version.io.smallrye.smallrye-common>
         <legacy.version.io.smallrye.smallrye-config>2.10.1</legacy.version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-config>3.0.0</version.io.smallrye.smallrye-config>
@@ -363,7 +363,7 @@
         <version.io.smallrye.smallrye-jwt>4.0.0</version.io.smallrye.smallrye-jwt>
         <legacy.version.io.smallrye.smallrye-metrics>3.0.4</legacy.version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.smallrye-metrics>4.0.0</version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.smallrye-mutiny>1.6.0</version.io.smallrye.smallrye-mutiny>
+        <version.io.smallrye.smallrye-mutiny>1.7.0</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>2.23.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-opentracing>3.0.0</version.io.smallrye.smallrye-opentracing>
         <version.io.smallrye.smallrye-reactive-messaging>4.0.0.RC1</version.io.smallrye.smallrye-reactive-messaging>
@@ -461,7 +461,7 @@
         <legacy.version.org.eclipse.microprofile.reactive-messaging.api>2.0.1</legacy.version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-messaging.api>3.0-RC2</version.org.eclipse.microprofile.reactive-messaging.api>
         <legacy.version.org.eclipse.microprofile.reactive-streams-operators.api>2.0</legacy.version.org.eclipse.microprofile.reactive-streams-operators.api>
-        <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0-RC1</version.org.eclipse.microprofile.reactive-streams-operators.api>
+        <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <legacy.version.org.eclipse.microprofile.rest.client.api>2.0</legacy.version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.yasson>3.0.1</version.org.eclipse.yasson>
