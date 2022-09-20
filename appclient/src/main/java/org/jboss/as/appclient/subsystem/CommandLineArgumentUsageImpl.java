@@ -25,6 +25,7 @@ package org.jboss.as.appclient.subsystem;
 import java.io.PrintStream;
 
 import org.jboss.as.appclient.logging.AppClientLogger;
+import org.jboss.as.controller.persistence.ConfigurationExtensionFactory;
 import org.jboss.as.process.CommandLineArgumentUsage;
 import org.jboss.as.process.CommandLineConstants;
 
@@ -54,6 +55,11 @@ public class CommandLineArgumentUsageImpl extends CommandLineArgumentUsage {
 
         addArguments(CommandLineConstants.SECMGR);
         instructions.add(AppClientLogger.ROOT_LOGGER.argSecMgr());
+
+        if(ConfigurationExtensionFactory.isConfigurationExtensionSupported()) {
+            addArguments(ConfigurationExtensionFactory.getCommandLineUsageArguments());
+            instructions.add(ConfigurationExtensionFactory.getCommandLineInstructions());
+        }
     }
 
     public static void printUsage(final PrintStream out) {

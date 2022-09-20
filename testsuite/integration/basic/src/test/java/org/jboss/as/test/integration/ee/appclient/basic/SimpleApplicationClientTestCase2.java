@@ -63,10 +63,12 @@ public class SimpleApplicationClientTestCase2 extends AbstractSimpleApplicationC
 
         final JavaArchive appClient = ShrinkWrap.create(JavaArchive.class, "client-annotation.jar");
         appClient.addClasses(AppClientMain.class);
+        appClient.addClasses(org.junit.Assert.class, org.junit.ComparisonFailure.class);
         appClient.addAsManifestResource(new StringAsset("Main-Class: " + AppClientMain.class.getName() + "\n"), "MANIFEST.MF");
         ear.addAsModule(appClient);
 
         final JavaArchive clientOverride = ShrinkWrap.create(JavaArchive.class, "client-override.jar");
+        clientOverride.addClasses(org.junit.Assert.class, org.junit.ComparisonFailure.class);
         clientOverride.addClasses(DescriptorClientMain.class);
         clientOverride.addAsManifestResource(new StringAsset("Main-Class: " + DescriptorClientMain.class.getName() + "\n"),
                 "MANIFEST.MF");
