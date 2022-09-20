@@ -12,4 +12,10 @@
             <outputDirectory/>
         </fileSet>
     </fileSets>
+    <files>
+        <file>
+            <source>pom.xml</source>
+            <outputDirectory/>
+        </file>
+    </files>
 </assembly>
