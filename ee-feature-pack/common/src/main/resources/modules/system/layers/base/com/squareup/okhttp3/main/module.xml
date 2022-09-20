@@ -34,6 +34,8 @@
     </resources>
 
     <dependencies>
+        <module name="org.jetbrains.kotlin.kotlin-stdlib"/>
+
         <module name="java.logging"/>
     </dependencies>
 </module>
