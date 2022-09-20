@@ -364,14 +364,14 @@
         <legacy.version.io.smallrye.smallrye-metrics>3.0.4</legacy.version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.smallrye-metrics>4.0.0</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.smallrye-mutiny>1.7.0</version.io.smallrye.smallrye-mutiny>
-        <version.io.smallrye.smallrye-mutiny-vertx>2.23.0</version.io.smallrye.smallrye-mutiny-vertx>
+        <version.io.smallrye.smallrye-mutiny-vertx>2.26.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-opentracing>3.0.0</version.io.smallrye.smallrye-opentracing>
-        <version.io.smallrye.smallrye-reactive-messaging>4.0.0.RC1</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.smallrye.smallrye-reactive-messaging>4.0.0.RC3</version.io.smallrye.smallrye-reactive-messaging>
         <legacy.version.io.undertow>2.2.19.Final</legacy.version.io.undertow>
         <version.io.undertow>2.3.0.Beta1</version.io.undertow>
         <legacy.version.io.undertow.jastow>2.0.11.Final</legacy.version.io.undertow.jastow>
         <version.io.undertow.jastow>2.2.3.Final</version.io.undertow.jastow>
-        <version.io.vertx.vertx>4.3.1</version.io.vertx.vertx>
+        <version.io.vertx.vertx>4.3.3</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
         <version.jakarta.annotation.jakarta-annotation-api>2.1.1</version.jakarta.annotation.jakarta-annotation-api>
@@ -420,7 +420,7 @@
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.7</version.org.apache.james.apache-mime4j>
         <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
-        <version.org.apache.kafka>3.1.0</version.org.apache.kafka>
+        <version.org.apache.kafka>3.2.2</version.org.apache.kafka>
         <version.org.apache.lucene>8.11.1</version.org.apache.lucene>
         <legacy.version.org.apache.myfaces.core>2.3.10</legacy.version.org.apache.myfaces.core>
         <version.org.apache.myfaces.core>3.0.2</version.org.apache.myfaces.core>
@@ -459,7 +459,7 @@
         <legacy.version.org.eclipse.microprofile.opentracing>2.0</legacy.version.org.eclipse.microprofile.opentracing>
         <version.org.eclipse.microprofile.opentracing>3.0</version.org.eclipse.microprofile.opentracing>
         <legacy.version.org.eclipse.microprofile.reactive-messaging.api>2.0.1</legacy.version.org.eclipse.microprofile.reactive-messaging.api>
-        <version.org.eclipse.microprofile.reactive-messaging.api>3.0-RC2</version.org.eclipse.microprofile.reactive-messaging.api>
+        <version.org.eclipse.microprofile.reactive-messaging.api>3.0</version.org.eclipse.microprofile.reactive-messaging.api>
         <legacy.version.org.eclipse.microprofile.reactive-streams-operators.api>2.0</legacy.version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <legacy.version.org.eclipse.microprofile.rest.client.api>2.0</legacy.version.org.eclipse.microprofile.rest.client.api>
@@ -572,7 +572,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <!-- Test dependency -->
         <version.org.keycloak.keycloak-saml-wildfly-subsystem>18.0.2</version.org.keycloak.keycloak-saml-wildfly-subsystem>
-        <version.org.springframework.kafka>2.8.2</version.org.springframework.kafka>
+        <version.org.springframework.kafka>2.9.1</version.org.springframework.kafka>
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>
         <version.org.wildfly.arquillian>5.0.0.Alpha5</version.org.wildfly.arquillian>
