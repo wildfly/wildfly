@@ -66,7 +66,6 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexReader;
-import org.jboss.jandex.Indexer;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleDependencySpec;
@@ -308,10 +307,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                 };
             } else {
                 // Build ClassInfo on the fly
-                Indexer indexer = new Indexer();
                 consumer = (name, classFile) -> {
                     try (InputStream in = classFile.openStream()) {
-                        ClassInfo classInfo = indexer.index(in);
+                        ClassInfo classInfo = Index.singleClass(in);
                         allKnownClasses.add(name);
                         if (classInfo != null && hasBeanDefiningAnnotation(classInfo, beanDefiningAnnotations)) {
                             discoveredBeanClasses.add(name);

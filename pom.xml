@@ -349,7 +349,7 @@
         <version.io.reactivex.rxjava2>2.2.21</version.io.reactivex.rxjava2>
         <version.io.reactivex.rxjava3>3.1.5</version.io.reactivex.rxjava3>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
-        <version.io.smallrye.open-api>3.0.0-RC4</version.io.smallrye.open-api>
+        <version.io.smallrye.open-api>3.0.0</version.io.smallrye.open-api>
         <legacy.version.io.smallrye.opentracing>2.0.0</legacy.version.io.smallrye.opentracing>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
         <legacy.version.io.smallrye.smallrye-common>1.13.0</legacy.version.io.smallrye.smallrye-common>
@@ -576,7 +576,7 @@
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>
         <version.org.wildfly.arquillian>5.0.0.Alpha5</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>19.0.0.Beta17</version.org.wildfly.core>
+        <version.org.wildfly.core>19.0.0.Beta18</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.13.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.15.Final</version.org.wildfly.naming-client>
@@ -1712,6 +1712,8 @@
                                             <exclude>trove:trove</exclude>
                                             <exclude>woodstox:wstx-lgpl</exclude>
                                             <exclude>xml-apis:xml-apis</exclude>
+                                            <!-- Jandex moved to SmallRye -->
+                                            <exclude>org.jboss:jandex</exclude>
                                         </excludes>
                                     </bannedDependencies>
                                     <dependencyConvergence></dependencyConvergence>

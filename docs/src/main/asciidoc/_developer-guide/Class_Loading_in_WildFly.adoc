@@ -171,12 +171,11 @@ available). In general this will not cause any deployment descriptors in
 META-INF to be processed, with the exception of `beans.xml`. If a
 `beans.xml` file is present this module will be scanned by Weld and any
 resulting beans will be available to the application.
-* `annotations` If a jandex index has be created for the module these
+* `annotations` If a Jandex index has be created for the module these
 annotations will be merged into the deployments annotation index. The
-https://github.com/jbossas/jandex[Jandex] index can be generated using
-the
-https://github.com/jbossas/jandex/blob/master/src/main/java/org/jboss/jandex/JandexAntTask.java[Jandex
-ant task], and must be named `META-INF/jandex.idx`. Note that it is not
+https://smallrye.io/jandex[Jandex] index can be generated using
+the Jandex Ant task or the Jandex Maven plugin, and must be named
+`META-INF/jandex.idx`. Note that it is not
 necessary to break open the jar being indexed to add this to the modules
 class path, a better approach is to create a jar containing just this
 index, and adding it as an additional resource root in the `module.xml`
