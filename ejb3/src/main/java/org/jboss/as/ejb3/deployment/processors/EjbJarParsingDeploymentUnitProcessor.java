@@ -158,7 +158,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         if (ejbJarMetaData.isMetadataComplete()) {
             MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
         }
-        if (!ejbJarMetaData.isEJB3x()) {
+        if (!ejbJarMetaData.isEJB3x() && !ejbJarMetaData.isEJB40()) {
             //EJB spec 20.5.1, we do not process annotations for older deployments
             MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
         }
