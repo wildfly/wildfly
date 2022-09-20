@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
@@ -78,8 +77,8 @@ public class DomainAdjuster740 extends DomainAdjuster {
 
     private static void adjustEjb3(List<ModelNode> operations, PathAddress subsystemAddress) {
         PathAddress timerServiceAddress = subsystemAddress.append("service", "timer-service");
-        operations.add(createCompositeOperation(Arrays.asList(Util.getUndefineAttributeOperation(timerServiceAddress, "default-persistent-timer-management"), Util.getWriteAttributeOperation(timerServiceAddress, "default-data-store", "default-file-store"))));
-        operations.add(createCompositeOperation(Arrays.asList(Util.getUndefineAttributeOperation(timerServiceAddress, "default-transient-timer-management"), Util.getWriteAttributeOperation(timerServiceAddress, "thread-pool-name", "default"))));
+        operations.add(Util.createCompositeOperation(Arrays.asList(Util.getUndefineAttributeOperation(timerServiceAddress, "default-persistent-timer-management"), Util.getWriteAttributeOperation(timerServiceAddress, "default-data-store", "default-file-store"))));
+        operations.add(Util.createCompositeOperation(Arrays.asList(Util.getUndefineAttributeOperation(timerServiceAddress, "default-transient-timer-management"), Util.getWriteAttributeOperation(timerServiceAddress, "thread-pool-name", "default"))));
     }
 
     /**
@@ -94,14 +93,5 @@ public class DomainAdjuster740 extends DomainAdjuster {
         ops.add(Util.createRemoveOperation(subsystem));
         // remove its extension from the list of extensions
         ops.add(Util.createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.clustering.ejb")));
-    }
-
-    private static ModelNode createCompositeOperation(Iterable<ModelNode> operations) {
-        ModelNode operation = Util.createOperation(ModelDescriptionConstants.COMPOSITE, PathAddress.EMPTY_ADDRESS);
-        ModelNode steps = operation.get(ModelDescriptionConstants.STEPS);
-        for (ModelNode step: operations) {
-            steps.add(step);
-        }
-        return operation;
     }
 }
