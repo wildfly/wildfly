@@ -36,6 +36,8 @@ public class LayersTestCase {
     // but not used in the test-all-layers installation.
     // This is the expected set of not provisioned modules when all layers are provisioned.
     private static final String[] NOT_USED = {
+        // test-all-layers does not contain any ha layers
+        "org.jboss.as.clustering.jgroups",
         // TODO we need to add an rts layer
         "org.wildfly.extension.rts",
         "org.jboss.narayana.rts",

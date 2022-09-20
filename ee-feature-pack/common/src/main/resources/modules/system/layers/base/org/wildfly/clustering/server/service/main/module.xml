@@ -41,6 +41,6 @@
         <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <!-- Enable dynamic installation of singleton services -->
-        <module name="org.wildfly.clustering.singleton.server" services="import" optional="true"/>
+        <module name="org.wildfly.clustering.singleton.server" services="import"/>
     </dependencies>
 </module>
