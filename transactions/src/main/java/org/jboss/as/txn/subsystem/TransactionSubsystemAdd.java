@@ -90,7 +90,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.tm.ExtendedJBossXATerminator;
 import org.jboss.tm.JBossXATerminator;
@@ -276,7 +275,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         tmBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
             @Override
             public void inject(final javax.transaction.TransactionManager value) throws InjectionException {
-                tmBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
+                tmBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
             }
 
             @Override
@@ -292,7 +291,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         tmLegacyBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
             @Override
             public void inject(final javax.transaction.TransactionManager value) throws InjectionException {
-                tmLegacyBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
+                tmLegacyBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
             }
 
             @Override
@@ -308,7 +307,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         tsrBuilder.addDependency(TransactionSynchronizationRegistryService.INTERNAL_SERVICE_NAME, TransactionSynchronizationRegistry.class, new Injector<TransactionSynchronizationRegistry>() {
             @Override
             public void inject(final TransactionSynchronizationRegistry value) throws InjectionException {
-                tsrBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
+                tsrBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
             }
 
             @Override

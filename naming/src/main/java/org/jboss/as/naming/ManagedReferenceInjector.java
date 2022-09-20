@@ -23,7 +23,6 @@ package org.jboss.as.naming;
 
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * A n adaptor between value injectors and ManagedReferenceFactory
@@ -40,7 +39,7 @@ public class ManagedReferenceInjector<T> implements Injector<T> {
 
     @Override
     public void inject(T value) throws InjectionException {
-        injectable.inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
+        injectable.inject(new ValueManagedReferenceFactory(value));
     }
 
     @Override

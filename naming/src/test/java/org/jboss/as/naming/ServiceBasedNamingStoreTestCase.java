@@ -41,7 +41,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -410,7 +409,7 @@ public class ServiceBasedNamingStoreTestCase {
             }
 
             public ManagedReferenceFactory getValue() throws IllegalStateException, IllegalArgumentException {
-                return new ValueManagedReferenceFactory(new ImmediateValue(value));
+                return new ValueManagedReferenceFactory(value);
             }
         }).install();
         latch.await();

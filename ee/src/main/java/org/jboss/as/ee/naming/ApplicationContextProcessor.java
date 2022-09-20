@@ -34,7 +34,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * Deployment processor that deploys a naming context for the current application.
@@ -62,7 +61,7 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
         serviceTarget.addService(applicationContextServiceName, contextService).install();
         final ServiceName appNameServiceName = applicationContextServiceName.append("AppName");
         final BinderService applicationNameBinder = new BinderService("AppName");
-        applicationNameBinder.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue(moduleDescription.getApplicationName())));
+        applicationNameBinder.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(moduleDescription.getApplicationName()));
         serviceTarget.addService(appNameServiceName, applicationNameBinder)
                 .addDependency(applicationContextServiceName, ServiceBasedNamingStore.class, applicationNameBinder.getNamingStoreInjector())
                 .install();

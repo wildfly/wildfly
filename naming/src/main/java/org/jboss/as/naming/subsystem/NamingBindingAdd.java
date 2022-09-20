@@ -60,7 +60,6 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -115,7 +114,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
         Object bindValue = createSimpleBinding(context, model);
 
-        ValueManagedReferenceFactory referenceFactory = new ValueManagedReferenceFactory(new ImmediateValue<Object>(bindValue));
+        ValueManagedReferenceFactory referenceFactory = new ValueManagedReferenceFactory(bindValue);
 
 
         final BinderService binderService = new BinderService(name, bindValue);
@@ -321,7 +320,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             final BindingType type = BindingType.forName(NamingBindingResourceDefinition.BINDING_TYPE.resolveModelAttribute(context, model).asString());
             if (type == BindingType.SIMPLE) {
                 Object bindValue = createSimpleBinding(context, model);
-                factory.setFactory(new ValueManagedReferenceFactory(new ImmediateValue<Object>(bindValue)));
+                factory.setFactory(new ValueManagedReferenceFactory(bindValue));
                 service.setSource(bindValue);
             } else if (type == BindingType.OBJECT_FACTORY) {
                 final ObjectFactory objectFactoryClassInstance = createObjectFactory(context, model);
