@@ -28,6 +28,9 @@ The MicroProfile Fault Tolerance implementation is provided by the https://githu
 This extension is automatically included in the `standalone-microprofile` server profiles,
 however, it is not included by default in the default configuration of WildFly.
 
+NOTE: The MicroProfile Metrics extension and subsystem are required by this extension,
+please follow the instructions in the <<required-extension-microprofile-metrics-smallrye,MicroProfile Metrics Subsystem Configuration section>>.
+
 You can add the extension to a configuration without it either by using the following CLI operations:
 
 [source,options="nowrap"]
