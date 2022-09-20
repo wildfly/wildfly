@@ -19,13 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.ee.appclient.basic;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author Stuart Douglas
  */
 public class DescriptorClientMain {
+
+    private static final Logger logger = Logger.getLogger("org.jboss.as.test.appclient");
 
     private static AppClientSingletonRemote appClientSingletonRemote;
 
