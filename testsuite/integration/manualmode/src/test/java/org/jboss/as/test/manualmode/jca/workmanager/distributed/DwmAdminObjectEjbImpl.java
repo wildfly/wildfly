@@ -21,12 +21,12 @@
  */
 package org.jboss.as.test.manualmode.jca.workmanager.distributed;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkException;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
+import jakarta.resource.spi.work.Work;
+import jakarta.resource.spi.work.WorkException;
 
 import org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedAdminObject1;
 import org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedAdminObject1Impl;

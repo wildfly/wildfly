@@ -27,7 +27,7 @@ import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DE
 import java.net.URI;
 import java.net.URL;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.ejb.interceptor.ordering.lifecycle;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 public class Superclass {
 

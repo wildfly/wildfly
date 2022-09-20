@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.jsf.jsf23;
 
-import javax.faces.component.behavior.ClientBehaviorBase;
-import javax.faces.component.behavior.ClientBehaviorContext;
-import javax.faces.component.behavior.FacesBehavior;
-import javax.inject.Inject;
+import jakarta.faces.component.behavior.ClientBehaviorBase;
+import jakarta.faces.component.behavior.ClientBehaviorContext;
+import jakarta.faces.component.behavior.FacesBehavior;
+import jakarta.inject.Inject;
 
 /**
  *

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2018 Red Hat, Inc. and/or its affiliates
+  ~ Copyright 2022 Red Hat, Inc. and/or its affiliates
   ~ and other contributors as indicated by the @author tags.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,12 +22,12 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-microprofile-opentracing-smallrye}"/>
+        <artifact name="${org.wildfly:wildfly-microprofile-opentracing-smallrye-jakarta}"/>
     </resources>
 
     <dependencies>
         <module name="java.naming"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> --> <!-- for javax.naming -->
+        <!-- for javax.naming -->
 
         <module name="javax.annotation.api"/>
         <module name="javax.enterprise.api"/>
@@ -40,12 +40,10 @@
         <module name="io.opentracing.opentracing-api"/>
         <module name="io.opentracing.opentracing-noop"/>
         <module name="io.opentracing.contrib.opentracing-concurrent"/>
-        <module name="io.opentracing.contrib.opentracing-jaxrs2"/>
-        <module name="io.opentracing.contrib.opentracing-web-servlet-filter"/>
-        <module name="io.opentracing.contrib.opentracing-interceptors" services="import"/>
 
         <module name="io.smallrye.config"/>
         <module name="io.smallrye.opentracing"/>
+        <module name="io.smallrye.opentracing-contrib"/>
 
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.logging"/>

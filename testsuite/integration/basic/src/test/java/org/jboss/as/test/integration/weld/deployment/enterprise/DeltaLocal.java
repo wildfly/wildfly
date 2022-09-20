@@ -16,7 +16,7 @@
  */
 package org.jboss.as.test.integration.weld.deployment.enterprise;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 @Local
 public interface DeltaLocal extends Ping {

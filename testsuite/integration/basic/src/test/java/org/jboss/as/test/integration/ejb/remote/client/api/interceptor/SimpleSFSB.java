@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.interceptor;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 import java.util.HashMap;
 import java.util.Map;
 

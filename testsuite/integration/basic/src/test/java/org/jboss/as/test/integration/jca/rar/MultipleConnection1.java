@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.rar;
 
-import javax.resource.cci.Connection;
+import jakarta.resource.cci.Connection;
 
 /**
  * MultipleConnection1

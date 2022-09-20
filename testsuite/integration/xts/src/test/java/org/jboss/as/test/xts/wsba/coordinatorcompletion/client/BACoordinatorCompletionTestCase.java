@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.xts.wsba.coordinatorcompletion.client;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.as.test.xts.util.EventLogEvent.CANCEL;
 import static org.jboss.as.test.xts.util.EventLogEvent.CLOSE;
 import static org.jboss.as.test.xts.util.EventLogEvent.COMPENSATE;
@@ -32,14 +31,8 @@ import static org.jboss.as.test.xts.util.ServiceCommand.APPLICATION_EXCEPTION;
 import static org.jboss.as.test.xts.util.ServiceCommand.CANNOT_COMPLETE;
 import static org.jboss.as.test.xts.util.ServiceCommand.SYSTEM_EXCEPTION_ON_COMPLETE;
 
-import java.io.File;
-import java.io.FilePermission;
-import java.lang.reflect.ReflectPermission;
-import java.util.PropertyPermission;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.xts.base.BaseFunctionalTest;
@@ -77,38 +70,13 @@ public class BACoordinatorCompletionTestCase extends BaseFunctionalTest {
 
     @Deployment
     public static WebArchive createTestArchive() {
-        final WebArchive war = DeploymentHelper.getInstance().getWebArchiveWithPermissions(ARCHIVE_NAME)
+        return DeploymentHelper.getInstance().getWebArchiveWithPermissions(ARCHIVE_NAME)
                 .addPackage(BACoordinatorCompletion.class.getPackage())
                 .addPackage(BACoordinatorCompletionClient.class.getPackage())
                 .addPackage(EventLog.class.getPackage())
                 .addPackage(BaseFunctionalTest.class.getPackage())
                 .addAsResource("context-handlers.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"), "MANIFEST.MF");
-        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
-                war.addAsManifestResource(
-                        createPermissionsXmlAsset(
-                                //This is not catastrophic if absent
-                                ///.../testsuite/integration/xts/xcatalog
-                                //$JAVA_HOME/jre/conf/jaxm.properties
-                                //$JAVA_HOME/jre/lib/jaxws.properties
-                                //$JAVA_HOME/jre/conf/jaxws.properties
-                                new FilePermission(System.getProperties().getProperty("jbossas.ts.integ.dir") + File.separator + "xts" + File.separator
-                                        + "xcatalog", "read"),
-                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                        + "conf" + File.separator + "jaxm.properties", "read"),
-                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                        + "conf" + File.separator + "jaxws.properties", "read"),
-                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
-                                        + "lib" + File.separator + "jaxws.properties", "read"),
-                                new ReflectPermission("suppressAccessChecks"),
-                                new RuntimePermission("accessDeclaredMembers"),
-                                new RuntimePermission("getClassLoader"),
-                                new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp"),
-                                new PropertyPermission("arquillian.debug", "read"),
-                                new PropertyPermission("node0", "read")),
-                        "permissions.xml");
-        }
-        return war;
     }
 
     @Before
@@ -160,7 +128,7 @@ public class BACoordinatorCompletionTestCase extends BaseFunctionalTest {
             client3.saveData();
 
             Assert.fail("Exception should have been thrown by now");
-        } catch (javax.xml.ws.soap.SOAPFaultException sfe) {
+        } catch (jakarta.xml.ws.soap.SOAPFaultException sfe) {
             // This is OK - exception expected
             // P2 set transaction status to ABORT_ONLY
             // P3 enlist is failed with WrongStateException and can't be done

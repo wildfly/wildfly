@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.ejb2.reference.global;
 
 import java.util.Hashtable;
 
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

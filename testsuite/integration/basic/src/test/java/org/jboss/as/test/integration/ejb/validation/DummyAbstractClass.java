@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.validation;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 public abstract class DummyAbstractClass {
     @Min(1)

@@ -24,12 +24,12 @@ package org.jboss.as.test.integration.ejb.timerservice.view;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-import javax.ejb.Local;
-import javax.ejb.Stateless;
-import javax.ejb.TimedObject;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Local;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TimedObject;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
 
 /**
  * @author Stuart Douglas

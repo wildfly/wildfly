@@ -32,10 +32,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

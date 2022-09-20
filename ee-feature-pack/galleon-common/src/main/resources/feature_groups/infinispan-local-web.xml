@@ -14,8 +14,6 @@
                 </feature>
                 <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
                     <param name="passivation" value="true"/>
-                    <param name="purge" value="false"/>
-                    <unset param="relative-to"/>
                 </feature>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">

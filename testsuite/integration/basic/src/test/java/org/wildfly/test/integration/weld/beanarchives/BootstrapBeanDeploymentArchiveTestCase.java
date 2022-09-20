@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.Extension;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;

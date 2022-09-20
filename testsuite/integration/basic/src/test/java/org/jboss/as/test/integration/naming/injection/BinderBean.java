@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.naming.injection;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.naming.InitialContext;
 import javax.naming.LinkRef;
 import javax.naming.NamingException;

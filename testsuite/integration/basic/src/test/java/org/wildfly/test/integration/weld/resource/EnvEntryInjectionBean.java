@@ -22,11 +22,11 @@
 
 package org.wildfly.test.integration.weld.resource;
 
-import javax.annotation.Resource;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Initialized;
-import javax.enterprise.event.Observes;
-import javax.inject.Named;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Initialized;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Named;
 
 @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
 @Named("envEntry")

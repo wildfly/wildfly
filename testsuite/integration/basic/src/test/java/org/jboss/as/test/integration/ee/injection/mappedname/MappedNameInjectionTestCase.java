@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that the mappedName attribute of {@link javax.ejb.EJB @EJB} and {@link javax.annotation.Resource @Resource} is
+ * Tests that the mappedName attribute of {@link jakarta.ejb.EJB @EJB} and {@link jakarta.annotation.Resource @Resource} is
  * processed correctly.
  * <p/>
  *

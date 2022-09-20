@@ -37,7 +37,7 @@ import java.net.URL;
 import java.security.Principal;
 import java.util.concurrent.Callable;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import javax.security.auth.AuthPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -240,8 +240,8 @@ public class AuthenticationTestCase {
         } catch (IOException e) {
             final String message = e.getMessage();
             assertTrue("Response should contain 'ELY01151: Evidence Verification Failed'", message.contains("ELY01151:"));
-            assertTrue("Response should contain 'javax.ejb.EJBException' or 'jakarta.ejb.EJBException'",
-                    message.contains("javax.ejb.EJBException") || message.contains("jakarta.ejb.EJBException"));
+            assertTrue("Response should contain 'jakarta.ejb.EJBException' or 'jakarta.ejb.EJBException'",
+                    message.contains("jakarta.ejb.EJBException") || message.contains("jakarta.ejb.EJBException"));
         }
     }
 

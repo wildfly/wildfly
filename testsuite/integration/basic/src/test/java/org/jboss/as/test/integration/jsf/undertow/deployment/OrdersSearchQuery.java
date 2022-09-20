@@ -1,9 +1,9 @@
 package org.jboss.as.test.integration.jsf.undertow.deployment;
 
-import javax.enterprise.context.SessionScoped;
-import javax.faces.model.ArrayDataModel;
-import javax.faces.model.DataModel;
-import javax.inject.Named;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.model.ArrayDataModel;
+import jakarta.faces.model.DataModel;
+import jakarta.inject.Named;
 import java.io.Serializable;
 
 

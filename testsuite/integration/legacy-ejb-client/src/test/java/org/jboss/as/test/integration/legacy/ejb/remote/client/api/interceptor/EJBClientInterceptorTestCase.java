@@ -114,6 +114,15 @@ public class EJBClientInterceptorTestCase {
     /**
      * Tests that when the client to a remote view of a bean resides on the same server as the Jakarta Enterprise Beans and invokes on it, then the
      * context data populated by the client interceptors gets passed on to the server side interceptors and the bean.
+     * <p>
+     * <strong>Note:</strong> This test isn't actually testing jboss-ejb-client-legacy. RemoteViewInvokingBean and SimpleEJBClientInterceptor
+     * run inside the server, and jboss-ejb-client-legacy is not available there. So even though these classes are
+     * compiled against jboss-ejb-client-legacy, they run against jboss-ejb-client. It works because relevant class names
+     * and method signatures are the same. So the test is essentially validating that that kind of workflow works, where
+     * an app compiled against the legacy client can run against the current client.  For example an old app that the
+     * user does not want to rebuild. With the server's move to jakarta.* namespace APIs this becomes even more of an
+     * edge case than it was though, as the app would need to be updated to run against jakarta.*.
+     * </p>
      *
      * @throws Exception
      * @see https://issues.jboss.org/browse/AS7-6356

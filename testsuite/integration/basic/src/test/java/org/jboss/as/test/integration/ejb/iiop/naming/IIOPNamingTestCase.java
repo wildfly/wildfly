@@ -4,7 +4,7 @@ import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.util.Properties;
 
-import javax.ejb.RemoveException;
+import jakarta.ejb.RemoveException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

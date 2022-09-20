@@ -40,13 +40,10 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  */
 public class ClusteredCacheServiceConfigurator extends CacheConfigurationServiceConfigurator {
 
-    private final CacheMode mode;
-
     private volatile long remoteTimeout;
 
     ClusteredCacheServiceConfigurator(PathAddress address, CacheMode mode) {
-        super(address);
-        this.mode = mode.toSync();
+        super(address, mode.toSync());
     }
 
     @Override
@@ -57,10 +54,7 @@ public class ClusteredCacheServiceConfigurator extends CacheConfigurationService
 
     @Override
     public void accept(ConfigurationBuilder builder) {
-        builder.clustering()
-                .cacheMode(this.mode)
-                .remoteTimeout(this.remoteTimeout, TimeUnit.MILLISECONDS)
-                ;
+        builder.clustering().remoteTimeout(this.remoteTimeout, TimeUnit.MILLISECONDS);
         super.accept(builder);
     }
 }

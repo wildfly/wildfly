@@ -24,7 +24,7 @@ package org.wildfly.clustering.faces.mojarra.facelets.el;
 import java.io.IOException;
 import java.util.ServiceLoader;
 
-import javax.faces.view.Location;
+import jakarta.faces.view.Location;
 
 import org.junit.Assert;
 import org.junit.Test;

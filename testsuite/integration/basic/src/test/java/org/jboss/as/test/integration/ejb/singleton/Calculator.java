@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.singleton;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 
 /**
  * Calculator

@@ -3,9 +3,6 @@ package org.jboss.as.test.integration.ejb.security;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.security.Constants;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.authorization.DenyAllOverrideBean;
 import org.jboss.as.test.integration.ejb.security.authorization.PermitAllOverrideBean;
@@ -13,7 +10,6 @@ import org.jboss.as.test.integration.ejb.security.authorization.RolesAllowedOver
 import org.jboss.as.test.integration.ejb.security.authorization.RolesAllowedOverrideBeanBase;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -28,24 +24,11 @@ import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
 import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
 import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBAccessException;
 import java.io.File;
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.operations.common.Util.createAddOperation;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -58,7 +41,7 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:mjurc@redhat.com">Michal Jurc</a> (c) 2017 Red Hat, Inc.
  */
 @RunWith(Arquillian.class)
-@ServerSetup({MixedSecurityAnnotationAuthorizationTestCase.OverridenEjbSecurityDomainSetup.class,
+@ServerSetup({
         MixedSecurityAnnotationAuthorizationTestCase.OverridingElytronDomainSetup.class,
         MixedSecurityAnnotationAuthorizationTestCase.OverridingEjbElytronDomainSetup.class,
         MixedSecurityAnnotationAuthorizationTestCase.OverridingServletElytronDomainSetup.class})
@@ -341,42 +324,6 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
             return "ejb3-tests";
         }
 
-    }
-
-    public static class OverridenEjbSecurityDomainSetup extends EjbSecurityDomainSetup {
-
-        @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            final ModelNode compositeOp = new ModelNode();
-            compositeOp.get(OP).set(COMPOSITE);
-            compositeOp.get(OP_ADDR).setEmptyList();
-
-            ModelNode steps = compositeOp.get(STEPS);
-            PathAddress securityDomainAddress = PathAddress.pathAddress()
-                    .append(SUBSYSTEM, "security")
-                    .append(SECURITY_DOMAIN, getSecurityDomainName());
-            steps.add(createAddOperation(securityDomainAddress));
-
-            PathAddress authAddress = securityDomainAddress.append(AUTHENTICATION, Constants.CLASSIC);
-            steps.add(createAddOperation(authAddress));
-
-            ModelNode op = createAddOperation(authAddress.append(Constants.LOGIN_MODULE, "Remoting"));
-            op.get(CODE).set("Remoting");
-            op.get(FLAG).set("optional");
-            op.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
-            steps.add(op);
-
-            ModelNode loginModule = createAddOperation(authAddress.append(Constants.LOGIN_MODULE, "UsersRoles"));
-            loginModule.get(CODE).set("UsersRoles");
-            loginModule.get(FLAG).set("required");
-            loginModule.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass")
-                    .add("rolesProperties", getGroupsFile())
-                    .add("usersProperties", getUsersFile());
-            loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            steps.add(loginModule);
-
-            applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
-        }
     }
 
 }

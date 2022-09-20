@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.stateful;
 
-import javax.ejb.NoSuchEJBException;
+import jakarta.ejb.NoSuchEJBException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

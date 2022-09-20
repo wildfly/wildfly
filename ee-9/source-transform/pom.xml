@@ -24,18 +24,20 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-ee-9-parent</artifactId>
+        <artifactId>wildfly-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-ee-9-source-transform-parent</artifactId>
     <description>Parent for EE 9 Source Transformation related modules</description>
     <packaging>pom</packaging>
+
+    <name>WildFly: EE 9 Source Transform parent</name>
 
     <properties>
         <!-- Directory from which source is obtained. Child modules will override this -->
@@ -45,15 +47,11 @@
     </properties>
 
     <modules>
-        <module>batch-jberet</module>
         <module>bean-validation</module>
-        <module>clustering</module>
         <module>connector</module>
         <module>datasources-agroal</module>
         <module>ee</module>
-        <module>ee-security</module>
         <module>ejb3</module>
-        <module>jaxrs</module>
         <module>iiop-openjdk</module>
         <module>transactions</module>
         <module>xts</module>
@@ -64,7 +62,6 @@
         <module>jsf</module>
         <module>mail</module>
         <module>microprofile</module>
-        <module>mod_cluster/undertow</module>
         <module>shared</module>
         <module>web-common</module>
         <module>webservices</module>
@@ -83,8 +80,42 @@
         <module>messaging-activemq/subsystem</module>
     </modules>
 
+    <dependencyManagement>
+        <!--
+        This module actually builds artifacts for standard WildFly, not Preview,
+        so use the standard WildFly dependencies.
+
+        Child modules that provide expansion capabilities can override
+
+        TODO move this module out of the preview part of the source tree.
+        -->
+        <dependencies>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <build>
         <plugins>
+            <plugin>
+                <!-- Source transformation is vulnerable to leftover files in the target
+                     folder from previous builds, so always clean even if the clean lifecycle is not invoked -->
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.wildfly.extras.batavia</groupId>
                 <artifactId>transformer-tools-mvn</artifactId>

@@ -25,11 +25,11 @@ import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.security.SecurityPermission;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.management.MBeanPermission;
 import javax.management.MBeanServerPermission;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
@@ -62,7 +62,7 @@ public class BasicOpenTelemetryTestCase {
             + "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n"
             + "         metadata-complete=\"false\" version=\"3.0\">\n"
             + "    <servlet-mapping>\n"
-            + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
+            + "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n"
             + "        <url-pattern>/*</url-pattern>\n"
             + "    </servlet-mapping>"
             + "</web-app>";

@@ -49,6 +49,7 @@ public class AuditJoinTableoverBidirectionalTest {
 
     @BeforeClass
     public static void beforeClass() throws NamingException {
+
         iniCtx = new InitialContext();
     }
 

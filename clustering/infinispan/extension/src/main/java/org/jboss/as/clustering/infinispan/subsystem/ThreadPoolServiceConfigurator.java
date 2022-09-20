@@ -29,7 +29,7 @@ import org.infinispan.commons.util.ProcessorInfo;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
 import org.infinispan.factories.threads.EnhancedQueueExecutorFactory;
-import org.jboss.as.clustering.infinispan.DefaultNonBlockingThreadFactory;
+import org.jboss.as.clustering.infinispan.executors.DefaultNonBlockingThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;

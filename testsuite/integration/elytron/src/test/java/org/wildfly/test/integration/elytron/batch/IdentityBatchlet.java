@@ -22,8 +22,8 @@
 
 package org.wildfly.test.integration.elytron.batch;
 
-import javax.batch.api.Batchlet;
-import javax.inject.Named;
+import jakarta.batch.api.Batchlet;
+import jakarta.inject.Named;
 
 import org.jboss.logging.Logger;
 import org.wildfly.security.auth.server.SecurityDomain;

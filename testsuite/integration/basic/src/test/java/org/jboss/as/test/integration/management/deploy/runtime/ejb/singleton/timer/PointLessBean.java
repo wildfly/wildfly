@@ -21,12 +21,12 @@
  */
 package org.jboss.as.test.integration.management.deploy.runtime.ejb.singleton.timer;
 
-import javax.annotation.Resource;
-import javax.ejb.Singleton;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.TimerService;
 
 /**
  * @author baranowb

@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import javax.annotation.security.RunAs;
-import javax.ejb.Stateful;
+import jakarta.annotation.security.RunAs;
+import jakarta.ejb.Stateful;
 
 /**
  * User: jpai

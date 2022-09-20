@@ -25,10 +25,10 @@ package org.jboss.as.test.integration.jpa.mockprovider.txtimeout;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.spi.PersistenceProvider;
-import javax.persistence.spi.PersistenceUnitInfo;
-import javax.persistence.spi.ProviderUtil;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.spi.PersistenceProvider;
+import jakarta.persistence.spi.PersistenceUnitInfo;
+import jakarta.persistence.spi.ProviderUtil;
 
 /**
  * TestPersistenceProvider

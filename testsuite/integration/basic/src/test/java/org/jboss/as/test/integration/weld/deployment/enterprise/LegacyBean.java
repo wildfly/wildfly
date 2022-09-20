@@ -16,7 +16,7 @@
  */
 package org.jboss.as.test.integration.weld.deployment.enterprise;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class LegacyBean implements Ping {

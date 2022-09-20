@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.home.localhome.annotation;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;

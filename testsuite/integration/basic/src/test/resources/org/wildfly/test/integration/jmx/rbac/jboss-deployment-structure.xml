@@ -1,0 +1,11 @@
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+  <deployment>
+    <dependencies>
+      <module name="org.jboss.remoting-jmx"  services="import"/>
+      <module name="org.jboss.xnio"/>
+      <module name="org.jboss.remoting"/>
+      <!-- Required for the ControllerPermission -->
+      <module name="org.jboss.as.controller"/>
+    </dependencies>
+  </deployment>
+</jboss-deployment-structure>

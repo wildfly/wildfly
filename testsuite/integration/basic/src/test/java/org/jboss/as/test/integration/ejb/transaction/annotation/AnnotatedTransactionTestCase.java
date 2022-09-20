@@ -1,12 +1,12 @@
 package org.jboss.as.test.integration.ejb.transaction.annotation;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

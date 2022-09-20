@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.manualmode.jca.workmanager.distributed;
 
-import javax.resource.spi.work.DistributableWork;
+import jakarta.resource.spi.work.DistributableWork;
 import java.io.Serializable;
 
 public class LongWork implements DistributableWork, Serializable {

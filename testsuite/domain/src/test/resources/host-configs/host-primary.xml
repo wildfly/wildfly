@@ -1,0 +1,231 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<host xmlns="urn:jboss:domain:20.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="urn:jboss:domain:10.0 wildfly-config_10_0.xsd"
+      name="primary">
+
+    <extensions>
+        <extension module="org.wildfly.extension.elytron"/>
+    </extensions>
+
+    <paths>
+        <path name="domainTestPath" path="/tmp" />
+    </paths>
+
+    <management>
+        <audit-log>
+            <formatters>
+                <json-formatter name="json-formatter"/>
+            </formatters>
+            <handlers>
+                <file-handler name="host-file" formatter="json-formatter" relative-to="jboss.domain.data.dir" path="audit-log.log"/>
+                <file-handler name="server-file" formatter="json-formatter" relative-to="jboss.server.data.dir" path="audit-log.log"/>
+            </handlers>
+            <logger log-boot="true" log-read-only="true" enabled="false">
+                <handlers>
+                    <handler name="host-file"/>
+                </handlers>
+            </logger>
+            <server-logger log-boot="true" log-read-only="true" enabled="false">
+                <handlers>
+                    <handler name="server-file"/>
+                </handlers>
+            </server-logger>
+        </audit-log>
+        <management-interfaces>
+            <native-interface sasl-authentication-factory="management-sasl-authentication">
+                <socket interface="management" port="9999"/>
+            </native-interface>
+            <http-interface http-authentication-factory="management-http-authentication">
+                <http-upgrade enabled="true" sasl-authentication-factory="management-sasl-authentication"/>
+                <socket interface="management" port="${jboss.management.http.port:9990}"/>
+            </http-interface>
+        </management-interfaces>
+    </management>
+
+    <domain-controller>
+       <local/>
+    </domain-controller>
+
+    <interfaces>
+        <interface name="management">
+            <inet-address value="${jboss.test.host.primary.address}"/>
+        </interface>
+        <!-- AS7-4177 specify the "public" interface in each server to test that handling -->
+    </interfaces>
+
+ 	<jvms>
+ 	   <jvm name="default">
+          <heap size="64m" max-size="128m"/>
+           <jvm-options>
+               <option value="-ea"/>
+           </jvm-options>
+          <environment-variables>
+              <variable name="DOMAIN_TEST_JVM" value="jvm"/>
+          </environment-variables>
+            <!--
+            <jvm-options>
+                <option value="-Xdebug"/>
+                <option value="-Xnoagent"/>
+                <option value="-Djava.compiler=NONE"/>
+                <option value="-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y"/>
+
+            </jvm-options>
+            -->
+       </jvm>
+ 	</jvms>
+
+    <servers>
+        <server name="main-one" group="main-server-group">
+            <paths>
+                <path name="domainTestPath" path="main-one" relative-to="jboss.server.temp.dir" />
+            </paths>
+            <interfaces>
+                <interface name="public">
+                    <inet-address value="${jboss.test.host.primary.address}"/>
+                </interface>
+            </interfaces>
+            <!-- server-one inherits the default socket-group declared in the server-group -->
+            <jvm name="default">
+	             <environment-variables>
+	                 <variable name="DOMAIN_TEST_SERVER" value="server"/>
+	             </environment-variables>
+            </jvm>
+        </server>
+        <server name="main-two" group="main-server-group" auto-start="false">
+            <interfaces>
+                <interface name="public">
+                    <inet-address value="${jboss.test.host.primary.address}"/>
+                </interface>
+            </interfaces>
+            <!-- server-two avoids port conflicts by incrementing the ports in
+                 the default socket-group declared in the server-group -->
+            <socket-bindings socket-binding-group="standard-sockets" port-offset="150"/>
+            <jvm name="default">
+                <heap size="64m" max-size="256m"/>
+            </jvm>
+        </server>
+        <server name="other-one" group="other-server-group" auto-start="false">
+            <interfaces>
+                <interface name="public">
+                    <inet-address value="${jboss.test.host.primary.address}"/>
+                </interface>
+            </interfaces>
+            <!-- server-three avoids port conflicts by incrementing the ports in
+                 the default socket-group declared in the server-group -->
+            <socket-bindings port-offset="250"/>
+            <jvm name="default" />
+        </server>
+        <server name="reload-one" group="reload-test-group" auto-start="false">
+            <interfaces>
+                <interface name="public">
+                    <inet-address value="${jboss.test.host.primary.address}"/>
+                </interface>
+            </interfaces>
+            <jvm name="default" />
+        </server>
+    </servers>
+
+    <profile>
+        <subsystem xmlns="urn:wildfly:elytron:15.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+            <providers>
+                <aggregate-providers name="combined-providers">
+                    <providers name="elytron"/>
+                    <providers name="openssl"/>
+                </aggregate-providers>
+                <provider-loader name="elytron" module="org.wildfly.security.elytron"/>
+                <provider-loader name="openssl" module="org.wildfly.openssl"/>
+            </providers>
+            <audit-logging>
+                <file-audit-log name="local-audit" path="audit.log" relative-to="jboss.domain.log.dir" format="JSON"/>
+            </audit-logging>
+            <security-domains>
+                <security-domain name="ManagementDomain" default-realm="ManagementRealm" permission-mapper="default-permission-mapper">
+                    <realm name="ManagementRealm" role-decoder="groups-to-roles"/>
+                    <realm name="local" role-mapper="super-user-mapper"/>
+                </security-domain>
+            </security-domains>
+            <security-realms>
+                <identity-realm name="local" identity="$local"/>
+                <properties-realm name="ManagementRealm">
+                    <users-properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir" digest-realm-name="ManagementRealm"/>
+                </properties-realm>
+            </security-realms>
+            <mappers>
+                <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
+                    <permission-mapping>
+                        <principal name="anonymous"/>
+                        <permission-set name="default-permissions"/>
+                    </permission-mapping>
+                    <permission-mapping match-all="true">
+                        <permission-set name="login-permission"/>
+                        <permission-set name="default-permissions"/>
+                    </permission-mapping>
+                </simple-permission-mapper>
+                <constant-realm-mapper name="local" realm-name="local"/>
+                <simple-role-decoder name="groups-to-roles" attribute="groups"/>
+                <constant-role-mapper name="super-user-mapper">
+                    <role name="SuperUser"/>
+                </constant-role-mapper>
+            </mappers>
+            <permission-sets>
+                <permission-set name="login-permission">
+                    <permission class-name="org.wildfly.security.auth.permission.LoginPermission"/>
+                </permission-set>
+                <permission-set name="default-permissions"/>
+            </permission-sets>
+            <http>
+                <http-authentication-factory name="management-http-authentication" security-domain="ManagementDomain" http-server-mechanism-factory="global">
+                    <mechanism-configuration>
+                        <mechanism mechanism-name="DIGEST">
+                            <mechanism-realm realm-name="ManagementRealm"/>
+                        </mechanism>
+                    </mechanism-configuration>
+                </http-authentication-factory>
+                <provider-http-server-mechanism-factory name="global"/>
+            </http>
+            <sasl>
+                <sasl-authentication-factory name="management-sasl-authentication" sasl-server-factory="configured" security-domain="ManagementDomain">
+                    <mechanism-configuration>
+                        <mechanism mechanism-name="JBOSS-LOCAL-USER" realm-mapper="local"/>
+                        <mechanism mechanism-name="DIGEST-MD5">
+                            <mechanism-realm realm-name="ManagementRealm"/>
+                        </mechanism>
+                    </mechanism-configuration>
+                </sasl-authentication-factory>
+                <configurable-sasl-server-factory name="configured" sasl-server-factory="elytron">
+                    <properties>
+                        <property name="wildfly.sasl.local-user.default-user" value="$local"/>
+                    </properties>
+                </configurable-sasl-server-factory>
+                <mechanism-provider-filtering-sasl-server-factory name="elytron" sasl-server-factory="global">
+                    <filters>
+                        <filter provider-name="WildFlyElytron"/>
+                    </filters>
+                </mechanism-provider-filtering-sasl-server-factory>
+                <provider-sasl-server-factory name="global"/>
+            </sasl>
+        </subsystem>
+    </profile>
+</host>

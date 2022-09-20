@@ -33,16 +33,14 @@
     </exports>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-batch-jberet@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-batch-jberet}"/>
     </resources>
 
     <dependencies>
         <module name="java.sql"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
-        <module name="javax.batch.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="org.hibernate"/>
+        <module name="jakarta.batch.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="org.jberet.jberet-core" services="import"/>
         <module name="org.jberet.jberet-jpa-repository"/>
         <module name="org.jboss.as.controller"/>

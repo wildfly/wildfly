@@ -237,7 +237,9 @@ you type 'y' if you've been ask
 
 [source,java,options="nowrap"]
 ----
-Is this new user going to be used for one AS process to connect to another AS process e.g. slave domain controller?
+Is this new user going to be used for one AS process to connect to another AS process?
+e.g. for a secondary host controller connecting to the primary or for a Remoting connection for server to server Jakarta Enterprise Beans calls.
+yes/no?
 ----
 
 Now that we have generated that base64 encoded password, let's use in

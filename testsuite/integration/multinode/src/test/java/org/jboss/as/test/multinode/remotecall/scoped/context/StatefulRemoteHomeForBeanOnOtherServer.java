@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.multinode.remotecall.scoped.context;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBHome;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJBHome;
 
 /**
  * @author Jaikiran Pai

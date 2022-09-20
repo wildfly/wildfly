@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -48,6 +48,9 @@
         <ts.skipTests>${skipTests}</ts.skipTests>
 
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
+
+        <!-- Artifact id of the wildfly-testsuite-shared variant to use. Override to use the javax variant -->
+        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared-jakarta</wildfly-testsuite-shared.artifactId>
     </properties>
 
     <profiles>
@@ -302,11 +305,13 @@
             <properties>
                 <!-- Re-enable the default surefire execution -->
                 <surefire.default-test.phase>test</surefire.default-test.phase>
+                <!-- Use the WFP dependencyManagement set. -->
+                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
             </properties>
             <modules>
-                <module>basic</module>
-                <module>clustering</module>
-                <module>microprofile</module>
+                <!--<module>basic</module>-->
+                <!--<module>clustering</module>-->
+                <!--<module>microprofile</module>-->
                 <module>microprofile-tck</module>
                 <module>elytron-oidc-client</module>
             </modules>
@@ -321,14 +326,17 @@
                 </property>
             </activation>
             <modules>
-                <module>basic</module>
+                <!--<module>basic</module>-->
+                <module>legacy</module>
                 <module>ws</module>
-                <module>clustering</module>
-                <module>microprofile</module>
+                <!--<module>clustering</module>-->
+                <!--<module>microprofile</module>-->
                 <module>microprofile-tck</module>
+                <module>secman</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
                 <module>vdx</module>
+                <module>rbac</module>
             </modules>
         </profile>
 
@@ -438,11 +446,6 @@
             <artifactId>wildfly-naming-client</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -467,7 +470,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
+            <artifactId>${wildfly-testsuite-shared.artifactId}</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
@@ -476,11 +479,6 @@
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.ws.rs</groupId>
-            <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -534,10 +532,6 @@
         <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-credential-store</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-jaspi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>

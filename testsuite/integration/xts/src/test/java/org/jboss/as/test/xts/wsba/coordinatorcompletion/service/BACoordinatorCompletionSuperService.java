@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.xts.wsba.coordinatorcompletion.service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.as.test.xts.base.TestApplicationException;
 import org.jboss.as.test.xts.util.EventLog;

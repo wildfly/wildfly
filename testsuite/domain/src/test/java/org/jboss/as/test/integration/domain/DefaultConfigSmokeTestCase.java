@@ -55,7 +55,7 @@ import org.junit.Test;
 public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
     private static final Logger LOGGER = Logger.getLogger(DefaultConfigSmokeTestCase.class);
 
-    public static final String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
+    public static final String slaveAddress = System.getProperty("jboss.test.host.secondary.address", "127.0.0.1");
 
     @Test
     public void testStandardHost() throws Exception {
@@ -64,7 +64,7 @@ public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
         try {
             utils.start();
             // Double-check server status by confirming server-one can accept a web request to the root
-            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(masterAddress) + ":8080").openConnection();
+            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(PRIMARY_ADDRESS) + ":8080").openConnection();
             connection.connect();
 
             if (Boolean.getBoolean("expression.audit")) {

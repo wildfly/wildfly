@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.view.basic;
 import java.io.Externalizable;
 import java.io.Serializable;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -122,7 +122,7 @@ public class BusinessViewAnnotationProcessorTestCase {
 
 
     /**
-     * Tests that if a bean has a {@link javax.ejb.Remote} annotation without any specific value and if the bean implements n (valid) interfaces, then all those n (valid) interfaces are considered
+     * Tests that if a bean has a {@link jakarta.ejb.Remote} annotation without any specific value and if the bean implements n (valid) interfaces, then all those n (valid) interfaces are considered
      * as remote business interfaces
      *
      * @throws Exception
@@ -157,7 +157,7 @@ public class BusinessViewAnnotationProcessorTestCase {
     }
 
     /**
-     * Tests that if a bean has a {@link javax.ejb.Local} annotation without any specific value and if the bean implements n (valid) interfaces, then all those n (valid) interfaces are considered
+     * Tests that if a bean has a {@link jakarta.ejb.Local} annotation without any specific value and if the bean implements n (valid) interfaces, then all those n (valid) interfaces are considered
      * as local business interfaces
      *
      * @throws Exception

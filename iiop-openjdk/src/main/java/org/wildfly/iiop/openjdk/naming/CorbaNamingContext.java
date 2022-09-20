@@ -537,16 +537,16 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
         if (!this.doPurge)
             return;
 
-        for (Name key : this.names.keySet()) {
-            if (isDead(((org.omg.CORBA.Object) this.names.get(key)))) {
-                this.names.remove(key);
+        for (Map.Entry<Name, Object> entry : this.names.entrySet()) {
+            if (isDead(((org.omg.CORBA.Object) entry.getValue()))) {
+                this.names.remove(entry.getKey());
             }
         }
 
-        for (Name key : this.contexts.keySet()) {
-            org.omg.CORBA.Object object = (org.omg.CORBA.Object) this.contexts.get(key);
+        for (Map.Entry<Name, Object> entry : this.contexts.entrySet()) {
+            org.omg.CORBA.Object object = (org.omg.CORBA.Object) entry.getValue();
             if (isDead(object)) {
-                this.contexts.remove(key);
+                this.contexts.remove(entry.getKey());
                 String oid = this.getObjectOID(object);
                 if (oid != null)
                     contextImpls.remove(oid);

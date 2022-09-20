@@ -23,9 +23,9 @@ package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 
 import java.io.Serializable;
 
-import javax.decorator.Decorator;
-import javax.decorator.Delegate;
-import javax.inject.Inject;
+import jakarta.decorator.Decorator;
+import jakarta.decorator.Delegate;
+import jakarta.inject.Inject;
 
 /**
  * @author Stuart Douglas

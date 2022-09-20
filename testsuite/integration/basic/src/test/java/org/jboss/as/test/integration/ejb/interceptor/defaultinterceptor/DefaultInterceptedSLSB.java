@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Stuart Douglas

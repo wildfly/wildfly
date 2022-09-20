@@ -24,14 +24,14 @@ package org.jboss.as.test.integration.ee.concurrent;
 
 import java.security.Principal;
 import java.util.concurrent.Future;
-import javax.annotation.Resource;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.EJBContext;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-import javax.enterprise.concurrent.ManagedExecutorService;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
 import javax.naming.NamingException;
 
 import org.jboss.logging.Logger;

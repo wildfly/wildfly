@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.iiop.transaction.timeout;
 
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 import java.rmi.RemoteException;
 
 public interface TestBeanHome extends EJBHome {

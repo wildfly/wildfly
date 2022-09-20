@@ -2,23 +2,23 @@
 <licenseSummary>
   <dependencies>
     <dependency>
-      <groupId>antlr</groupId>
-      <artifactId>antlr4</artifactId>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
       <licenses>
         <license>
-          <name>The Antlr4 4.9.1 License</name>
-          <url>https://github.com/antlr/antlr4/blob/4.9.1/LICENSE.txt</url>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
     <dependency>
-      <groupId>antlr</groupId>
-      <artifactId>antlr4-runtime</artifactId>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>nimbus-jose-jwt</artifactId>
       <licenses>
         <license>
-          <name>The antlr4-runtime 4.9.1 License</name>
-          <url>https://github.com/antlr/antlr4/blob/4.9.1/LICENSE.txt</url>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -132,49 +132,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.angus</groupId>
-      <artifactId>angus-activation</artifactId>
-      <licenses>
-        <license>
-          <name>Eclipse Distribution License, Version 1.0</name>
-          <url>https://repository.jboss.org/licenses/edl-1.0.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.angus</groupId>
-      <artifactId>angus-mail</artifactId>
-      <licenses>
-        <license>
-          <name>Eclipse Public License 2.0</name>
-          <url>https://www.eclipse.org/legal/epl-v20.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>https://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.parsson</groupId>
-      <artifactId>parsson</artifactId>
-      <licenses>
-        <license>
-          <name>Eclipse Distribution License, Version 1.0</name>
-          <url>https://repository.jboss.org/licenses/edl-1.0.txt</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>https://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.glassfish.expressly</groupId>
       <artifactId>expressly</artifactId>
       <licenses>
@@ -208,17 +165,6 @@
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss</groupId>
-      <artifactId>jboss-transaction-spi-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -327,17 +273,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.metadata</groupId>
-      <artifactId>jboss-metadata-ejb-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.narayana.jts</groupId>
       <artifactId>narayana-jts-idlj-jakarta</artifactId>
       <licenses>
@@ -394,7 +329,6 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
-      <artifactId>restat-api-jakarta</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -520,17 +454,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.spec.javax.batch</groupId>
-      <artifactId>jboss-batch-api_1.0_spec</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.spec.javax.ejb</groupId>
       <artifactId>jboss-ejb-api_3.2_spec</artifactId>
       <licenses>
@@ -643,22 +566,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.spec.javax.xml.rpc</groupId>
-      <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
-      <licenses>
-        <license>
-          <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-v20.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.weld</groupId>
       <artifactId>weld-lite-extension-translator</artifactId>
       <licenses>
@@ -704,7 +611,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-batch-jberet-jakarta</artifactId>
+      <artifactId>wildfly-batch-jberet</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -726,83 +633,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-el-expressly</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-faces-api-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-faces-mojarra-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-weld-core-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-weld-ejb-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-weld-web-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-clustering-web-undertow-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-datasources-agroal-jakarta</artifactId>
       <licenses>
         <license>
@@ -814,18 +644,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-ee-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-ee-security-jakarta</artifactId>
+      <artifactId>wildfly-ee-security</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -858,7 +677,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-jaxrs-jakarta</artifactId>
+      <artifactId>wildfly-jaxrs</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -892,17 +711,6 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-mail-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-mod_cluster-undertow-jakarta</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -947,28 +755,6 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-webservices-server-integration-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-opentelemetry-api-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-opentelemetry-jakarta</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -1112,17 +898,6 @@
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
       <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>

@@ -21,14 +21,12 @@
  */
 package org.jboss.as.ee.subsystem;
 
-import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.concurrent.DefaultContextSetupProviderImpl;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ContextServiceService;
 import org.jboss.dmr.ModelNode;
 
@@ -52,12 +50,12 @@ public class ContextServiceAdd extends AbstractAddStepHandler {
         final boolean useTransactionSetupProvider = ContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER_AD.resolveModelAttribute(context, model).asBoolean();
 
         // install the service which manages the default context service
-        final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl());
-        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ContextServiceResourceDefinition.CAPABILITY, contextServiceService);
+        final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl(), useTransactionSetupProvider);
+        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ContextServiceResourceDefinition.CAPABILITY);
         if (useTransactionSetupProvider) {
-            // add it to deps of context service's service, for injection of its value
-            serviceBuilder.addDependency(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME,TransactionSetupProvider.class,contextServiceService.getTransactionSetupProvider());
+            serviceBuilder.requires(context.getCapabilityServiceSupport().getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider"));
         }
+        serviceBuilder.setInstance(contextServiceService);
         serviceBuilder.install();
     }
 }

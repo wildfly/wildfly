@@ -30,7 +30,7 @@ import java.net.URL;
 import java.security.AllPermission;
 import java.util.PropertyPermission;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

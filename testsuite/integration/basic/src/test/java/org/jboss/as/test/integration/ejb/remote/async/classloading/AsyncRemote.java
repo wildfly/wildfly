@@ -24,8 +24,8 @@ package org.jboss.as.test.integration.ejb.remote.async.classloading;
 
 import java.util.concurrent.Future;
 
-import javax.ejb.Asynchronous;
-import javax.ejb.Remote;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.Remote;
 
 /**
  * @author baranowb

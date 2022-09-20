@@ -22,6 +22,6 @@
 
 package org.jboss.as.test.multinode.ejb.http;
 
-public interface StatelessLocal extends javax.ejb.EJBLocalObject {
+public interface StatelessLocal extends jakarta.ejb.EJBLocalObject {
     int method() throws Exception;
 }

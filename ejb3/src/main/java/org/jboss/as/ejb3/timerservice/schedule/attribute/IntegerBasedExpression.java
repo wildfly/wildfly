@@ -217,4 +217,7 @@ public abstract class IntegerBasedExpression {
      */
     public abstract boolean isRelativeValue(String value);
 
+    public ScheduleExpressionType getType() {
+        return this.scheduleExpressionType;
+    }
 }

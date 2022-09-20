@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.statistics.xa;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author dsimko@redhat.com

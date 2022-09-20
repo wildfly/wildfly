@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ee.lifecycle;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
 
 /**
  * User: jpai

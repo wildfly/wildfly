@@ -24,8 +24,8 @@ package org.jboss.as.test.clustering.cluster.cdi.webapp;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Named;
 
 import org.infinispan.protostream.annotations.ProtoFactory;
 import org.infinispan.protostream.annotations.ProtoField;

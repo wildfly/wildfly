@@ -32,18 +32,17 @@ import static org.mockito.Mockito.mock;
 import java.util.Collections;
 import java.util.Iterator;
 
+import io.undertow.util.StatusCodes;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
-import org.wildfly.extension.undertow.Constants;
 import org.junit.Test;
+import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.HttpsListenerService;
 import org.wildfly.extension.undertow.Server;
 import org.wildfly.extension.undertow.UndertowService;
 import org.xnio.OptionMap;
-
-import io.undertow.util.StatusCodes;
 
 /**
  * @author Paul Ferraro

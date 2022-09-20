@@ -1,9 +1,10 @@
 package org.jboss.as.test.integration.ejb.timerservice.count;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.ejb.Timer;
+import jakarta.ejb.Timer;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -17,7 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Testcase for the {@link javax.ejb.TimerService#getAllTimers()} API introduced in EJB 3.2 spec
+ * Testcase for the {@link jakarta.ejb.TimerService#getAllTimers()} API introduced in EJB 3.2 spec
  *
  * @author: Jaikiran Pai
  */
@@ -43,7 +44,7 @@ public class ActiveTimerServiceCountTestCase {
     }
 
     /**
-     * Tests that the {@link javax.ejb.TimerService#getAllTimers()} API introduced in EJB 3.2 works as expected
+     * Tests that the {@link jakarta.ejb.TimerService#getAllTimers()} API introduced in EJB 3.2 works as expected
      *
      * @throws Exception
      */
@@ -63,14 +64,14 @@ public class ActiveTimerServiceCountTestCase {
         final String infoForTimerBeanInOtherModule = "irrelevant";
         timerBeanInOtherModule.createTimerForNextDay(false, infoForTimerBeanInOtherModule);
 
-        final Collection<Timer> activeTimers = timerBean.getAllActiveTimersInEJBModule();
+        final Collection<Timer> activeTimers = new ArrayList<>(timerBean.getAllActiveTimersInEJBModule());
 
         // now start testing
         Assert.assertFalse("No active timers found in EJB module " + MODULE_ONE_NAME, activeTimers.isEmpty());
 
         // now make sure that the active timers are indeed the one we expected
-        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers", this.removeSheduleOneTimerOfSimpleTimerBean(activeTimers));
-        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers", this.removeSheduleTwoTimerOfSimpleTimerBean(activeTimers));
+        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers", this.removeScheduleOneTimerOfSimpleTimerBean(activeTimers));
+        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers", this.removeScheduleTwoTimerOfSimpleTimerBean(activeTimers));
         Assert.assertTrue("@Schedule timer on " + OtherTimerBeanInSameModule.class.getSimpleName() + " not found in active timers", this.removeSheduleOneTimerOfOtherTimerBean(activeTimers));
         Assert.assertTrue("Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers", this.removeProgramaticTimer(activeTimers, infoOne, false));
         Assert.assertTrue("Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers", this.removeProgramaticTimer(activeTimers, infoTwo, true));
@@ -84,13 +85,13 @@ public class ActiveTimerServiceCountTestCase {
 
         // Now fetch the same info, this time from the SFSB. We expect the same number of active timers in the module.
         final StatefulBean statefulBean = InitialContext.doLookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulBean.class.getName());
-        final Collection<Timer> activeTimersReturnedFromSFSB = statefulBean.getAllActiveTimersInEJBModule();
+        final Collection<Timer> activeTimersReturnedFromSFSB = new ArrayList<>(statefulBean.getAllActiveTimersInEJBModule());
 
         Assert.assertFalse("No active timers found in EJB module " + MODULE_ONE_NAME + " when queried from a stateful bean", activeTimersReturnedFromSFSB.isEmpty());
 
         // now make sure that the active timers are indeed the one we expected
-        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeSheduleOneTimerOfSimpleTimerBean(activeTimersReturnedFromSFSB));
-        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeSheduleTwoTimerOfSimpleTimerBean(activeTimersReturnedFromSFSB));
+        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeScheduleOneTimerOfSimpleTimerBean(activeTimersReturnedFromSFSB));
+        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeScheduleTwoTimerOfSimpleTimerBean(activeTimersReturnedFromSFSB));
         Assert.assertTrue("@Schedule timer on " + OtherTimerBeanInSameModule.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeSheduleOneTimerOfOtherTimerBean(activeTimersReturnedFromSFSB));
         Assert.assertTrue("Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeProgramaticTimer(activeTimersReturnedFromSFSB, infoOne, false));
         Assert.assertTrue("Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeProgramaticTimer(activeTimersReturnedFromSFSB, infoTwo, true));
@@ -106,7 +107,7 @@ public class ActiveTimerServiceCountTestCase {
 
 
 
-    private boolean removeSheduleOneTimerOfSimpleTimerBean(final Collection<Timer> timers) {
+    private boolean removeScheduleOneTimerOfSimpleTimerBean(final Collection<Timer> timers) {
         for (final Timer activeTimer : timers) {
             // see if it's @Schedule one in SimpleTimerBean
             final Serializable info = activeTimer.getInfo();
@@ -120,7 +121,7 @@ public class ActiveTimerServiceCountTestCase {
         return false;
     }
 
-    private boolean removeSheduleTwoTimerOfSimpleTimerBean(final Collection<Timer> timers) {
+    private boolean removeScheduleTwoTimerOfSimpleTimerBean(final Collection<Timer> timers) {
         for (final Timer activeTimer : timers) {
             // see if it's @Schedule two in SimpleTimerBean
             final Serializable info = activeTimer.getInfo();

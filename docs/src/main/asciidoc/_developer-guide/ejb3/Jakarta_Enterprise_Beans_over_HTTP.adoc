@@ -16,7 +16,7 @@ enabled by default in standard configs, but if it has been removed it
 can be added via:
 
 ....
-/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:add(http-authentication-factory=myfactory, path='/wildfly-services')
+/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:add(http-authentication-factory=myfactory, path="/wildfly-services")
 ....
 
 The Hhttp-invoker takes two parameters, a path (which defaults to

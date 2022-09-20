@@ -29,7 +29,6 @@
     <dependencies>
         <module name="org.jaxen"/>
         <module name="org.apache.xerces"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="java.xml"/>
     </dependencies>
 

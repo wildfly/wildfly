@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ejb.stateless.pooling.ejb2;
 
 import java.rmi.RemoteException;
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 
 /**
  * @author <a href="mailto:dimitris@jboss.org">Dimitris Andreadis</a>

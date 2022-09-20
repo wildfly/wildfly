@@ -18,6 +18,6 @@
         </module>
 
         <module name="javax.enterprise.api"/>
-        <module name="javax.inject.api"/>
+        <module name="jakarta.inject.api"/>
     </dependencies>
 </module>

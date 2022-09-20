@@ -182,7 +182,6 @@ public abstract class AbstractClusteringTestCase {
     private final Set<String> deployments;
 
     // Framework contract methods
-    @Deprecated
     public AbstractClusteringTestCase() {
         this(NODE_1_2);
     }

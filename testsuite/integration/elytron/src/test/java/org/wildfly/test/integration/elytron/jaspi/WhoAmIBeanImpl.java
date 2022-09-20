@@ -21,7 +21,7 @@
  */
 package org.wildfly.test.integration.elytron.jaspi;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 

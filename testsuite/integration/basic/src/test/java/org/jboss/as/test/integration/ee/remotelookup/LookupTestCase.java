@@ -27,8 +27,8 @@ import static org.junit.Assert.assertNotNull;
 
 import java.net.SocketPermission;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 

@@ -25,6 +25,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.wildfly.extension.batch.jberet.job.repository.CommonAttributes;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
+import org.wildfly.extension.batch.jberet.job.repository.JpaJobRepositoryDefinition;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -65,6 +66,15 @@ class BatchSubsystemParser_3_0 extends BatchSubsystemParser_2_0 implements XMLSt
                 final Map<Attribute, String> attributes = AttributeParsers.readRequiredAttributes(reader, EnumSet.of(Attribute.DATA_SOURCE));
                 final ModelNode op = Util.createAddOperation(subsystemAddress.append(JdbcJobRepositoryDefinition.NAME, name));
                 JdbcJobRepositoryDefinition.DATA_SOURCE.parseAndSetParameter(attributes.get(Attribute.DATA_SOURCE), op, reader);
+                if (executionRecordsLimit != null) {
+                    CommonAttributes.EXECUTION_RECORDS_LIMIT.parseAndSetParameter(executionRecordsLimit, op, reader);
+                }
+                ops.add(op);
+                ParseUtils.requireNoContent(reader);
+            } else if (element == Element.JPA) {
+                final Map<Attribute, String> attributes = AttributeParsers.readRequiredAttributes(reader, EnumSet.of(Attribute.DATA_SOURCE));
+                final ModelNode op = Util.createAddOperation(subsystemAddress.append(JpaJobRepositoryDefinition.NAME, name));
+                JpaJobRepositoryDefinition.DATA_SOURCE.parseAndSetParameter(attributes.get(Attribute.DATA_SOURCE), op, reader);
                 if (executionRecordsLimit != null) {
                     CommonAttributes.EXECUTION_RECORDS_LIMIT.parseAndSetParameter(executionRecordsLimit, op, reader);
                 }

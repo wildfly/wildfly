@@ -23,9 +23,9 @@
 package org.wildfly.extension.clustering.web;
 
 import org.jboss.as.controller.PathAddress;
+import org.wildfly.clustering.ee.infinispan.InfinispanCacheConfiguration;
 import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.infinispan.InfinispanCacheConfiguration;
 
 /**
  * @author Paul Ferraro

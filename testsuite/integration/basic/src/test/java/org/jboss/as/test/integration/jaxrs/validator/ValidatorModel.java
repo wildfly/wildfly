@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jaxrs.validator;
 
-import javax.validation.constraints.Max;
+import jakarta.validation.constraints.Max;
 
 /**
  * @author Stuart Douglas

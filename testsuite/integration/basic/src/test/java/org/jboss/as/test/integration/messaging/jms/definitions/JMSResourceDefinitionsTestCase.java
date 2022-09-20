@@ -36,8 +36,8 @@ import static org.wildfly.test.security.common.SecureExpressionUtil.teardownCred
 import java.io.IOException;
 import java.net.SocketPermission;
 
-import javax.ejb.EJB;
-import javax.jms.JMSException;
+import jakarta.ejb.EJB;
+import jakarta.jms.JMSException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

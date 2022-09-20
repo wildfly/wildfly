@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.passivation;
 
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 
 /**
  * @author Ondrej Chaloupka

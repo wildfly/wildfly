@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.core.Application;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -85,8 +85,8 @@ import org.jboss.as.jaxrs.JaxrsServerConfigService;
  * @author <a href="mailto:rsigal@redhat.com">Ron Sigal</a>
  */
 public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
-    private static final String JAX_RS_SERVLET_NAME = "javax.ws.rs.core.Application";
-    private static final String SERVLET_INIT_PARAM = "javax.ws.rs.Application";
+    private static final String JAX_RS_SERVLET_NAME = "jakarta.ws.rs.core.Application";
+    private static final String SERVLET_INIT_PARAM = "jakarta.ws.rs.Application";
     public static final String RESTEASY_SCAN = "resteasy.scan";
     public static final String RESTEASY_SCAN_RESOURCES = "resteasy.scan.resources";
     public static final String RESTEASY_SCAN_PROVIDERS = "resteasy.scan.providers";
@@ -193,7 +193,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         }
 
         if (!resteasy.isUnwrappedExceptionsParameterSet()) {
-            setContextParameter(webdata, ResteasyContextParameters.RESTEASY_UNWRAPPED_EXCEPTIONS, "javax.ejb.EJBException");
+            setContextParameter(webdata, ResteasyContextParameters.RESTEASY_UNWRAPPED_EXCEPTIONS, "jakarta.ejb.EJBException");
         }
 
         if (findContextParam(webdata, ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB) == null) {

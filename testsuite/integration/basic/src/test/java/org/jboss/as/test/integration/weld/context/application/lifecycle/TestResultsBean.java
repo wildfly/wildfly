@@ -24,8 +24,8 @@ package org.jboss.as.test.integration.weld.context.application.lifecycle;
 
 import org.jboss.as.test.shared.TimeoutUtil;
 
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 

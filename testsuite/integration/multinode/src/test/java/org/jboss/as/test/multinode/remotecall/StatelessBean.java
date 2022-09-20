@@ -24,11 +24,11 @@ package org.jboss.as.test.multinode.remotecall;
 
 import java.util.Properties;
 
-import javax.ejb.Local;
-import javax.ejb.LocalHome;
-import javax.ejb.Remote;
-import javax.ejb.RemoteHome;
-import javax.ejb.Stateless;
+import jakarta.ejb.Local;
+import jakarta.ejb.LocalHome;
+import jakarta.ejb.Remote;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.Stateless;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -104,7 +104,7 @@ public class StatelessBean {
         return homeMethodCount;
     }
 
-    public void ejbCreate() throws java.rmi.RemoteException, javax.ejb.CreateException {
+    public void ejbCreate() throws java.rmi.RemoteException, jakarta.ejb.CreateException {
         log.debug("Creating method for home interface...");
     }
 }

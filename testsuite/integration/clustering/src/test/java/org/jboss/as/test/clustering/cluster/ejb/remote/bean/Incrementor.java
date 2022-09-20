@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
-import javax.ejb.Remove;
+import jakarta.ejb.Remove;
 
 public interface Incrementor {
     Result<Integer> increment();

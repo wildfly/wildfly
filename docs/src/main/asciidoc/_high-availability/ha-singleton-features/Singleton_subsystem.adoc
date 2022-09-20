@@ -1,0 +1,121 @@
+[[Singleton_subsystem]]
+= Singleton subsystem
+
+WildFly 10 introduced a "singleton" subsystem, which defines a set of
+policies that define how an HA singleton should behave. A singleton
+policy can be used to instrument singleton deployments or to create
+singleton MSC services.
+
+[[singleton-configuration]]
+== Configuration
+
+The
+https://github.com/wildfly/wildfly/blob/10.0.0.Final/clustering/singleton/extension/src/main/resources/schema/wildfly-singleton_1_0.xsd[default
+subsystem configuration] from WildFly's ha and full-ha profile looks
+like:
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:singleton:1.0">
+    <singleton-policies default="default">
+        <singleton-policy name="default" cache-container="server">
+            <simple-election-policy/>
+        </singleton-policy>
+    </singleton-policies>
+</subsystem>
+----
+
+A singleton policy defines:
+
+1. A unique name
+2. A cache container and cache with which to register singleton provider candidates
+3. An election policy
+4. A quorum (optional)
+
+One can add a new singleton policy via the following management
+operation:
+
+[source,options="nowrap"]
+----
+/subsystem=singleton/singleton-policy=foo:add(cache-container=server)
+----
+
+[[cache-configuration]]
+=== Cache configuration
+
+The cache-container and cache attributes of a singleton policy must
+reference a valid cache from the Infinispan subsystem. If no specific
+cache is defined, the default cache of the cache container is assumed.
+This cache is used as a registry of which nodes can provide a given
+service and will typically use a replicated-cache configuration.
+
+[[election-policies]]
+=== Election policies
+
+WildFly includes two singleton election policy implementations:
+
+* *simple* +
+Elects the provider (a.k.a. primary provider) of a singleton service based on a
+specified position in a circular linked list of eligible nodes sorted by
+descending age. Position=0, the default value, refers to the oldest
+node, 1 is second oldest, etc. ; while position=-1 refers to the
+youngest node, -2 to the second youngest, etc. +
+e.g.
++
+[source,options="nowrap"]
+----
+/subsystem=singleton/singleton-policy=foo/election-policy=simple:add(position=-1)
+----
+
+* *random* +
+Elects a random member to be the provider of a singleton service +
+e.g.
++
+[source,options="nowrap"]
+----
+/subsystem=singleton/singleton-policy=foo/election-policy=random:add()
+----
+
+[[preferences]]
+==== Preferences
+
+Additionally, any singleton election policy may indicate a preference
+for one or more members of a cluster. Preferences may be defined either
+via node name or via outbound socket binding name. Node preferences
+always take precedent over the results of an election policy. +
+e.g.
+
+[source,options="nowrap"]
+----
+/subsystem=singleton/singleton-policy=foo/election-policy=simple:list-add(name=name-preferences, value=nodeA)
+/subsystem=singleton/singleton-policy=bar/election-policy=random:list-add(name=socket-binding-preferences, value=nodeA)
+----
+
+[[quorum]]
+=== Quorum
+
+Network partitions are particularly problematic for singleton services,
+since they can trigger multiple singleton providers for the same service
+to run at the same time. To defend against this scenario, a singleton
+policy may define a quorum that requires a minimum number of nodes to be
+present before a singleton provider election can take place. A typical
+deployment scenario uses a quorum of N/2 + 1, where N is the anticipated
+cluster size. This value can be updated at runtime, and will immediately
+affect any active singleton services. +
+e.g.
+
+[source,options="nowrap"]
+----
+/subsystem=singleton/singleton-policy=foo:write-attribute(name=quorum, value=3)
+----
+
+[[non-ha-environments]]
+== Non-HA environments
+
+The singleton subsystem can be used in a non-HA profile, so long as the
+cache that it references uses a local-cache configuration. In this
+manner, an application leveraging singleton functionality (via the
+singleton API or using a singleton deployment descriptor) will continue
+function as if the server was a sole member of a cluster. For obvious
+reasons, the use of a quorum does not make sense in such a
+configuration.

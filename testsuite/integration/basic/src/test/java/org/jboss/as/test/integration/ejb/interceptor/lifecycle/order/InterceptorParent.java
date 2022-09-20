@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.lifecycle.order;
 
-import javax.annotation.PostConstruct;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.interceptor.InvocationContext;
 
 import org.junit.Assert;
 

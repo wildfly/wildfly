@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.persistence;
 
-import javax.annotation.PreDestroy;
-import javax.ejb.Singleton;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContext;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.Singleton;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceContext;
 
 import org.jboss.logging.Logger;
 

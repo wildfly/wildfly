@@ -41,7 +41,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.cleanFile;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
-import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -108,10 +107,10 @@ public class DeploymentOverlayTestCase {
         MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS.add(SERVER_GROUP, "main-server-group");
         MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS.add(DEPLOYMENT, TEST);
         MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS.protect();
-        MAIN_RUNNING_SERVER_ADDRESS.add(HOST, "master");
+        MAIN_RUNNING_SERVER_ADDRESS.add(HOST, "primary");
         MAIN_RUNNING_SERVER_ADDRESS.add(SERVER, "main-one");
         MAIN_RUNNING_SERVER_ADDRESS.protect();
-        MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.add(HOST, "master");
+        MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.add(HOST, "primary");
         MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.add(SERVER, "main-one");
         MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.add(DEPLOYMENT, TEST);
         MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.protect();
@@ -136,12 +135,7 @@ public class DeploymentOverlayTestCase {
         new File(tmpDir, "archives").mkdirs();
         new File(tmpDir, "exploded").mkdirs();
         File archiveTarget = new File(tmpDir, "archives/" + TEST);
-        jakartaTransform(webArchive.as(ZipExporter.class), archiveTarget);
-        //webArchive.as(ZipExporter.class).exportTo(new File(tmpDir, "archives/" + TEST), true);
-
-        // If the archive was transformed above by creating from the zipFile our reference is transformed as
-        // well so no further changes needed.
-        webArchive = ShrinkWrap.createFromZipFile(WebArchive.class, archiveTarget);
+        webArchive.as(ZipExporter.class).exportTo(archiveTarget, true);
         webArchive.as(ExplodedExporter.class).exportExploded(new File(tmpDir, "exploded"));
 
         // Launch the domain
@@ -302,10 +296,10 @@ public class DeploymentOverlayTestCase {
         executeOnMaster(builder.build());
 
         DomainClient client = testSupport.getDomainMasterLifecycleUtil().createDomainClient();
-        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/servlet"));
-        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/servlet"));
-        Assert.assertEquals("new file", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
-        Assert.assertEquals("new file", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
+        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/servlet"));
+        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/servlet"));
+        Assert.assertEquals("new file", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
+        Assert.assertEquals("new file", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
 
         //Remove the wildcard overlay
         ModelNode op = Operations.createRemoveOperation(PathAddress.pathAddress(ModelDescriptionConstants.SERVER_GROUP, "main-server-group")
@@ -314,20 +308,20 @@ public class DeploymentOverlayTestCase {
                 .toModelNode());
         op.get("redeploy-affected").set(true);
         executeOnMaster(op);
-        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/servlet"));
-        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/servlet"));
-        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
-        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
+        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/servlet"));
+        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/servlet"));
+        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
+        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
         op = Operations.createRemoveOperation(PathAddress.pathAddress(ModelDescriptionConstants.SERVER_GROUP, "main-server-group")
                 .append(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY)
                 .append(ModelDescriptionConstants.DEPLOYMENT, "test.war")
                 .toModelNode());
         op.get("redeploy-affected").set(true);
         executeOnMaster(op);
-        Assert.assertEquals("NON OVERRIDDEN", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/servlet"));
-        Assert.assertEquals("NON OVERRIDDEN", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/servlet"));
-        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
-        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
+        Assert.assertEquals("NON OVERRIDDEN", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/servlet"));
+        Assert.assertEquals("NON OVERRIDDEN", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/servlet"));
+        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
+        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
     }
 
     private String performHttpCall(DomainClient client, String host, String server, String socketBindingGroup, String path) throws Exception {

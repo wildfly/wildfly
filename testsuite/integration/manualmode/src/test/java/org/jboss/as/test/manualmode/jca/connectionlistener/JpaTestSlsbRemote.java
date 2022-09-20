@@ -23,7 +23,7 @@ package org.jboss.as.test.manualmode.jca.connectionlistener;
 
 import java.sql.SQLException;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author <a href="mailto:hsvabek@redhat.com">Hynek Svabek</a>

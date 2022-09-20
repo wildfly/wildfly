@@ -33,7 +33,6 @@
     </resources>
 
     <dependencies>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="java.xml"/>
 
         <module name="org.infinispan"/>
@@ -60,7 +59,7 @@
         <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.infinispan"/>
         <module name="org.wildfly.clustering.ee.spi"/>
-        <module name="org.wildfly.clustering.el.glassfish"/>
+        <module name="org.wildfly.clustering.el.expressly"/>
         <module name="org.wildfly.clustering.faces.mojarra"/>
         <module name="org.wildfly.clustering.infinispan.client.api"/>
         <module name="org.wildfly.clustering.infinispan.client.service"/>

@@ -41,6 +41,7 @@
                        socket-binding="some-binding"
                        client-socket-binding="some-other-binding"
                        diagnostics-socket-binding="jgroups-diagnostics"
+                       shared="${jgroups.maximal.shared:false}"
                        machine="${jgroups.maximal.machine:machine1}"
                        rack="${jgroups.maximal.rack:rack1}"
                        site="${jgroups.maximal.site:site1}">

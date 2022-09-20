@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.jpa.epcpropagation.contextduel;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

@@ -29,7 +29,6 @@
     <dependencies>
         <module name="nu.xom"/>
         <module name="org.dom4j"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="java.xml"/>
     </dependencies>
 

@@ -68,7 +68,7 @@ Here is an example of an `oidc.json` configuration file:
    "min-time-between-jwks-requests" : 10,
    "public-key-cache-ttl": 86400,
    "redirect-rewrite-rules" : {
-   "^/wsmaster/api/(.*)$" : "/api/$1"
+   "^/wsmain/api/(.*)$" : "/api/$1"
    }
 }
 ----
@@ -88,7 +88,7 @@ The following example shows how to add configuration to the _elytron-oidc-client
         <provider-url>http://localhost:8180/auth/realms/demo</provider-url>
         <ssl-required>external</ssl-required>
         <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
-    </secure-deployment
+    </secure-deployment>
 </subsystem>
 ----
 

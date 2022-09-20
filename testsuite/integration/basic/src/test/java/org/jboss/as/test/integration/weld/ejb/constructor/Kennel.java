@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.ejb.constructor;
 
-import javax.ejb.Stateful;
-import javax.inject.Inject;
+import jakarta.ejb.Stateful;
+import jakarta.inject.Inject;
 
 /**
  * @author Stuart Douglas

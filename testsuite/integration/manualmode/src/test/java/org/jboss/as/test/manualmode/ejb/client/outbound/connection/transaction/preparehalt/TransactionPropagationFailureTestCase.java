@@ -49,9 +49,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.NamingException;
-import javax.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicMixedException;
 
 import java.io.File;
 import java.io.FilePermission;

@@ -31,14 +31,14 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerHandle;
-import javax.ejb.TimerService;
-import javax.interceptor.Interceptors;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.TimerHandle;
+import jakarta.ejb.TimerService;
+import jakarta.interceptor.Interceptors;
 
 public abstract class RefreshBeanBase implements RefreshIF {
     @Resource

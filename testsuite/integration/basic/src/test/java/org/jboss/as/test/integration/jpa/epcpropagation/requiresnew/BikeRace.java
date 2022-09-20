@@ -22,10 +22,10 @@
 package org.jboss.as.test.integration.jpa.epcpropagation.requiresnew;
 
 import java.util.List;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * @author Stuart Douglas

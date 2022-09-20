@@ -32,14 +32,12 @@ import org.jboss.as.clustering.controller.Schema;
  */
 public enum ModClusterSchema implements Schema<ModClusterSchema> {
 
-/*  Unsupported schema versions - for reference only
     MODCLUSTER_1_0(1, 0), // AS 7.0
     MODCLUSTER_1_1(1, 1), // EAP 6.0-6.2
     MODCLUSTER_1_2(1, 2), // EAP 6.3-6.4
     MODCLUSTER_2_0(2, 0), // WildFly 10, EAP 7.0
     MODCLUSTER_3_0(3, 0), // WildFly 11-13, EAP 7.1
     MODCLUSTER_4_0(4, 0), // WildFly 14-15, EAP 7.2
- */
     MODCLUSTER_5_0(5, 0), // WildFly 16-26, EAP 7.3-7.4
     MODCLUSTER_6_0(6, 0), // WildFly 27-present
     ;

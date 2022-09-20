@@ -31,18 +31,12 @@ public class Result<T> implements Serializable {
     private static final long serialVersionUID = -1079933234795356933L;
 
     private final T value;
-    private final String node;
 
     public Result(T value) {
         this.value = value;
-        this.node = System.getProperty("jboss.node.name");
     }
 
     public T getValue() {
         return this.value;
-    }
-
-    public String getNode() {
-        return this.node;
     }
 }

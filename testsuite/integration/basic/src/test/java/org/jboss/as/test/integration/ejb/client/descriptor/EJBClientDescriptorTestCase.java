@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.Deployer;

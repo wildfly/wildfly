@@ -27,8 +27,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
-import javax.enterprise.inject.spi.AnnotatedCallable;
-import javax.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.AnnotatedCallable;
+import jakarta.enterprise.inject.spi.AnnotatedType;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.weld.annotated.slim.SlimAnnotatedType;

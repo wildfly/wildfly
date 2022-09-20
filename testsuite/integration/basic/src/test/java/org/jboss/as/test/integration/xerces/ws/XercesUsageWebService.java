@@ -25,8 +25,8 @@ package org.jboss.as.test.integration.xerces.ws;
 import org.apache.xerces.parsers.DOMParser;
 import org.xml.sax.InputSource;
 
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
+import jakarta.jws.WebService;
+import jakarta.jws.soap.SOAPBinding;
 import java.io.InputStream;
 
 /**

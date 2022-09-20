@@ -92,7 +92,8 @@ public class ConfigurationServiceConfigurator extends SimpleServiceNameProvider 
         // Auto-enable simple cache optimization if cache is local, on-heap, non-transactional, and non-persistent, and statistics are disabled
         builder.simpleCache((builder.clustering().cacheMode() == CacheMode.LOCAL) && (builder.memory().storage() == StorageType.HEAP) && !builder.transaction().transactionMode().isTransactional() && builder.persistence().stores().isEmpty() && !builder.statistics().create().enabled());
 
-        builder.encoding().mediaType(builder.memory().storage() == StorageType.OFF_HEAP ? this.container.get().getCacheManagerConfiguration().serialization().marshaller().mediaType().toString() : MediaType.APPLICATION_OBJECT_TYPE);
+        // Set media-type appropriate for the configured memory store
+        builder.encoding().mediaType(builder.memory().storage().canStoreReferences() ? MediaType.APPLICATION_OBJECT_TYPE : this.container.get().getCacheManagerConfiguration().serialization().marshaller().mediaType().toString());
 
         Configuration configuration = builder.build();
         EmbeddedCacheManager container = this.container.get();

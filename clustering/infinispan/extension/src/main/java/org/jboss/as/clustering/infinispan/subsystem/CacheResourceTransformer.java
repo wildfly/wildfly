@@ -28,6 +28,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
+ * Transformers for cache resources.
  * @author Paul Ferraro
  */
 public class CacheResourceTransformer implements Consumer<ModelVersion> {
@@ -38,8 +39,14 @@ public class CacheResourceTransformer implements Consumer<ModelVersion> {
         this.builder = builder;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void accept(ModelVersion version) {
         new TransactionResourceTransformer(this.builder).accept(version);
+        new CustomStoreResourceTransformer(this.builder).accept(version);
+        new FileStoreResourceTransformer(this.builder).accept(version);
+        new HotRodStoreResourceTransformer(this.builder).accept(version);
+        new JDBCStoreResourceTransformer(this.builder).accept(version);
+        new RemoteStoreResourceTransformer(this.builder).accept(version);
     }
 }

@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.timerservice.aroundtimeout;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import javax.interceptor.InterceptorBinding;
+import jakarta.interceptor.InterceptorBinding;
 
 /**
  * @author Stuart Douglas

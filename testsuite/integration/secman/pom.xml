@@ -12,7 +12,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
 
@@ -34,12 +34,22 @@
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client</artifactId>
+            <artifactId>jboss-ejb-client-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.transaction</groupId>
+            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-transaction-spi-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -60,6 +70,32 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-security-manager</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Jakarta Dependencies -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -109,7 +145,7 @@
                                 <phase>test</phase>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
+                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
                                     </systemPropertyVariables>
                                     <environmentVariables>
                                         <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>

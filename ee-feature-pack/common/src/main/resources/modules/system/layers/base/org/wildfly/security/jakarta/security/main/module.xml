@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~
+  ~ Copyright 2022 Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.security.jakarta.security">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly.security.jakarta:jakarta-security}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.glassfish.soteria" export="true"/>
+
+        <module name="java.logging" />
+        <module name="java.naming" />
+        <module name="java.sql" />
+        <module name="javax.security.enterprise.api" />
+        <module name="javax.servlet.api" />
+        <module name="javax.enterprise.api" />
+        <module name="javax.security.auth.message.api" />
+        <module name="javax.api" />
+        <module name="org.jboss.weld.core" />
+        <module name="org.jboss.weld.spi" />
+        <module name="org.wildfly.security.elytron" />
+        <module name="javax.xml.bind.api" />
+        <module name="javax.interceptor.api" />
+        <module name="javax.annotation.api" />
+        <module name="javax.inject.api" />
+        <module name="javax.security.jacc.api" />
+        <module name="javax.ejb.api" />
+        <module name="jakarta.json.api" />
+        <module name="jakarta.ws.rs.api" />
+        <module name="com.nimbusds.nimbus-jose-jwt" />
+    </dependencies>
+</module>

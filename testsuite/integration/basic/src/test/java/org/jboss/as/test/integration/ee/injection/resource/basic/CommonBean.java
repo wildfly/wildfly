@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.basic;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
 
 /**
  * User: jpai

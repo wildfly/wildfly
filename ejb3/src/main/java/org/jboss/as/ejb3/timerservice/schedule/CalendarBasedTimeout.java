@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Objects;
 import java.util.TimeZone;
+
 import javax.ejb.ScheduleExpression;
 
 import org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfMonth;
@@ -37,6 +38,7 @@ import org.jboss.as.ejb3.timerservice.schedule.attribute.Minute;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Month;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Second;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Year;
+import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
 /**
  * CalendarBasedTimeout
@@ -53,7 +55,7 @@ public class CalendarBasedTimeout {
      * The {@link javax.ejb.ScheduleExpression} from which this {@link CalendarBasedTimeout}
      * was created
      */
-    private final ScheduleExpression scheduleExpression;
+    private ScheduleExpression scheduleExpression;
 
     /**
      * The {@link Second} created out of the {@link javax.ejb.ScheduleExpression#getSecond()} value
@@ -94,12 +96,15 @@ public class CalendarBasedTimeout {
      * The first timeout relative to the time when this {@link CalendarBasedTimeout} was created
      * from a {@link javax.ejb.ScheduleExpression}
      */
-    private Calendar firstTimeout;
+    private final Calendar firstTimeout;
 
     /**
      * The timezone being used for this {@link CalendarBasedTimeout}
      */
-    private TimeZone timezone;
+    private final TimeZone timezone;
+
+    private final Date start;
+    private final Date end;
 
     /**
      * Creates a {@link CalendarBasedTimeout} from the passed <code>schedule</code>.
@@ -111,6 +116,16 @@ public class CalendarBasedTimeout {
      * @param schedule The schedule
      */
     public CalendarBasedTimeout(ScheduleExpression schedule) {
+        this(new Second(schedule.getSecond()),
+                    new Minute(schedule.getMinute()),
+                    new Hour(schedule.getHour()),
+                    new DayOfMonth(schedule.getDayOfMonth()),
+                    new Month(schedule.getMonth()),
+                    new DayOfWeek(schedule.getDayOfWeek()),
+                    new Year(schedule.getYear()),
+                    getTimeZone(schedule.getTimezone()),
+                    schedule.getStart(),
+                    schedule.getEnd());
         // store the original expression from which this
         // CalendarBasedTimeout was created. Since the ScheduleExpression
         // is mutable, we will have to store a clone copy of the schedule,
@@ -119,34 +134,39 @@ public class CalendarBasedTimeout {
         // The caller of this constructor already passes a new instance of ScheduleExpression
         // exclusively for this purpose, so no need to clone here.
         this.scheduleExpression = schedule;
+    }
 
-        // Start parsing the values in the ScheduleExpression
-        this.second = new Second(schedule.getSecond());
-        this.minute = new Minute(schedule.getMinute());
-        this.hour = new Hour(schedule.getHour());
-        this.dayOfWeek = new DayOfWeek(schedule.getDayOfWeek());
-        this.dayOfMonth = new DayOfMonth(schedule.getDayOfMonth());
-        this.month = new Month(schedule.getMonth());
-        this.year = new Year(schedule.getYear());
-        String timezoneId = schedule.getTimezone();
-
-        if (timezoneId != null) {
-            // If the timezone ID wasn't valid, then Timezone.getTimeZone returns
-            // GMT, which may not always be desirable.
-            this.timezone = TimeZone.getTimeZone(timezoneId);
-            if (this.timezone.getID().equals("GMT") && !timezoneId.equalsIgnoreCase("GMT")) {
-                // use server's timezone
-                this.timezone = DEFAULT_TIMEZONE;
-                EJB3_TIMER_LOGGER.unknownTimezoneId(timezoneId, DEFAULT_TIMEZONE.getID());
-            }
-        } else {
-            this.timezone = DEFAULT_TIMEZONE;
-        }
+    public CalendarBasedTimeout(Second second, Minute minute, Hour hour, DayOfMonth dayOfMonth, Month month, DayOfWeek dayOfWeek, Year year, TimeZone timezone, Date start, Date end) {
+        this.second = second;
+        this.minute = minute;
+        this.hour = hour;
+        this.dayOfMonth = dayOfMonth;
+        this.month = month;
+        this.dayOfWeek = dayOfWeek;
+        this.year = year;
+        this.timezone = timezone;
+        this.start = start;
+        this.end = end;
 
         // Now that we have parsed the values from the ScheduleExpression,
         // determine and set the first timeout (relative to the current time)
         // of this CalendarBasedTimeout
-        setFirstTimeout();
+        this.firstTimeout = this.calculateFirstTimeout();
+    }
+
+    private static TimeZone getTimeZone(String id) {
+        if (id != null) {
+            TimeZone zone = TimeZone.getTimeZone(id);
+            // If the timezone ID wasn't valid, then Timezone.getTimeZone returns
+            // GMT, which may not always be desirable.
+            if (zone.getID().equals("GMT") && !id.equalsIgnoreCase("GMT")) {
+                EJB3_TIMER_LOGGER.unknownTimezoneId(id, DEFAULT_TIMEZONE.getID());
+            } else {
+                return zone;
+            }
+        }
+        // use server's timezone
+        return DEFAULT_TIMEZONE;
     }
 
     public static boolean doesScheduleMatch(final ScheduleExpression expression1, final ScheduleExpression expression2) {
@@ -173,15 +193,14 @@ public class CalendarBasedTimeout {
         return this.firstTimeout;
     }
 
-    private void setFirstTimeout() {
+    private Calendar calculateFirstTimeout() {
         Calendar currentCal = new GregorianCalendar(this.timezone);
-        Date start = this.scheduleExpression.getStart();
-        if (start != null) {
-            currentCal.setTime(start);
+        if (this.start != null) {
+            currentCal.setTime(this.start);
         } else {
             resetTimeToFirstValues(currentCal);
         }
-        this.firstTimeout = getNextTimeout(currentCal, false);
+        return getNextTimeout(currentCal, false);
     }
 
     /**
@@ -204,12 +223,11 @@ public class CalendarBasedTimeout {
         }
         Calendar nextCal = (Calendar) currentCal.clone();
         nextCal.setTimeZone(this.timezone);
-        Date start = this.scheduleExpression.getStart();
-        if (start != null && currentCal.getTime().before(start)) {
+        if (this.start != null && currentCal.getTime().before(this.start)) {
             //this may result in a millisecond component, however that is ok
             //otherwise WFLY-6561 will rear its only head
             //also as the start time may include milliseconds this is technically correct
-            nextCal.setTime(start);
+            nextCal.setTime(this.start);
         } else {
             if (increment) {
                 // increment the current second by 1
@@ -507,12 +525,8 @@ public class CalendarBasedTimeout {
     }
 
     private boolean isAfterEnd(Calendar cal) {
-        Date end = this.scheduleExpression.getEnd();
-        if (end == null) {
-            return false;
-        }
         // check that the next timeout isn't past the end date
-        return cal.getTime().after(end);
+        return (this.end != null) ? cal.getTime().after(this.end) : false;
     }
 
     private boolean noMoreTimeouts(Calendar cal) {
@@ -523,11 +537,11 @@ public class CalendarBasedTimeout {
     }
 
     private boolean isDayOfWeekWildcard() {
-        return this.scheduleExpression.getDayOfWeek().equals("*");
+        return this.dayOfWeek.getType() == ScheduleExpressionType.WILDCARD;
     }
 
     private boolean isDayOfMonthWildcard() {
-        return this.scheduleExpression.getDayOfMonth().equals("*");
+        return this.dayOfMonth.getType() == ScheduleExpressionType.WILDCARD;
     }
 
     /**
@@ -560,5 +574,4 @@ public class CalendarBasedTimeout {
         // see comment for computeTime() -> http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/8-b132/java/util/GregorianCalendar.java#2776
         calendar.set(Calendar.DST_OFFSET, dst);
     }
-
 }

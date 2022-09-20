@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.domain;
 
-import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -86,7 +85,7 @@ public class JVMServerPropertiesTestCase {
     protected static final PathElement SERVER_GROUP_TWO = PathElement.pathElement(SERVER_GROUP, "server-group-two");
     protected static final PathElement SERVER_GROUP_THREE = PathElement.pathElement(SERVER_GROUP, "server-group-three");
 
-    protected static final PathElement HOST_MASTER = PathElement.pathElement(HOST, "master");
+    protected static final PathElement HOST_MASTER = PathElement.pathElement(HOST, "primary");
 
     protected static final PathElement SERVER_CONFIG_ONE = PathElement.pathElement(SERVER_CONFIG, "server-one");
     protected static final PathElement SERVER_CONFIG_TWO = PathElement.pathElement(SERVER_CONFIG, "server-two");
@@ -107,7 +106,7 @@ public class JVMServerPropertiesTestCase {
     public static void setupDomain() throws Exception {
         final DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(JVMServerPropertiesTestCase.class.getSimpleName(),
                 "domain-configs/domain-jvm-properties.xml",
-                "host-configs/host-master-jvm-properties.xml",
+                "host-configs/host-primary-jvm-properties.xml",
                 null
         );
 
@@ -119,8 +118,7 @@ public class JVMServerPropertiesTestCase {
         WebArchive deployment = createDeployment();
         deploymentPath = DomainTestSupport.getBaseDir(JVMServerPropertiesTestCase.class.getSimpleName()).toPath().resolve("deployments");
         deploymentPath.toFile().mkdirs();
-        jakartaTransform(deployment.as(ZipExporter.class), deploymentPath.resolve(PROP_SERVLET_APP_WAR).toFile());
-        //deployment.as(ZipExporter.class).exportTo(deploymentPath.resolve(PROP_SERVLET_APP_WAR).toFile(), true);
+        deployment.as(ZipExporter.class).exportTo(deploymentPath.resolve(PROP_SERVLET_APP_WAR).toFile(), true);
 
         testSupport.start();
 
@@ -164,7 +162,7 @@ public class JVMServerPropertiesTestCase {
     }
 
     private void validateProperties(String server, int port, String directoryGrouping) throws IOException {
-        final Path serverHome = DomainTestSupport.getHostDir(JVMServerPropertiesTestCase.class.getSimpleName(), "master").toPath();
+        final Path serverHome = DomainTestSupport.getHostDir(JVMServerPropertiesTestCase.class.getSimpleName(), "primary").toPath();
 
         final Path serverBaseDir = serverHome.resolve("servers").resolve(server);
         final Path serverLogDir = BY_SERVER.equals(directoryGrouping) ? serverBaseDir.resolve("log") : serverHome.resolve("log").resolve("servers").resolve(server);

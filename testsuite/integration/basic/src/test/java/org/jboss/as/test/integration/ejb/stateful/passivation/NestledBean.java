@@ -1,10 +1,10 @@
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
+import jakarta.ejb.Remove;
+import jakarta.ejb.Stateful;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContextType;
 
 import org.jboss.ejb3.annotation.Cache;
 

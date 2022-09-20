@@ -252,7 +252,7 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
 
     private static void addInfo(Timer timer, ModelNode timerNode, final String componentName) {
         try {
-            final Serializable info = ((TimerImpl) timer).getCachedTimerInfo();
+            final Serializable info = (timer instanceof TimerImpl) ? ((TimerImpl) timer).getCachedTimerInfo() : timer.getInfo();
             if (info != null) {
                 final ModelNode detailNode = timerNode.get(INFO);
                 detailNode.set(info.toString());

@@ -24,8 +24,8 @@ package org.jboss.as.test.smoke.deployment.rar;
 import org.jboss.logging.Logger;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionManager;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionManager;
 
 /**
  * MultipleConnectionFactory1Impl

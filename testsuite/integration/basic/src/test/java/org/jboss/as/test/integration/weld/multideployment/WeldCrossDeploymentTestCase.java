@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.weld.multideployment;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;

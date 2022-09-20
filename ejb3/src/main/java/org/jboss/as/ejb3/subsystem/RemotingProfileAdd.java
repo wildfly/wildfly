@@ -114,8 +114,8 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
             final RemotingProfileService profileService = new RemotingProfileService(urls, map, httpConnectionSpecs);
             // populating the map after the fact is cheating, but it works thanks to the MSC start service "fence"
 
-            final CapabilityServiceBuilder capabilityServiceBuilder = context.getCapabilityServiceTarget().addCapability(RemotingProfileResourceDefinition.REMOTING_PROFILE_CAPABILITY, profileService);
-
+            final CapabilityServiceBuilder capabilityServiceBuilder = context.getCapabilityServiceTarget().addCapability(RemotingProfileResourceDefinition.REMOTING_PROFILE_CAPABILITY);
+            capabilityServiceBuilder.setInstance(profileService);
             if (profileNode.hasDefined(EJB3SubsystemModel.REMOTING_EJB_RECEIVER)) {
                 for (final Property receiverProperty : profileNode.get(EJB3SubsystemModel.REMOTING_EJB_RECEIVER).asPropertyList()) {
 

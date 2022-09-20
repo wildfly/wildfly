@@ -20,8 +20,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
-import javax.batch.operations.JobOperator;
-import javax.batch.operations.NoSuchJobException;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.operations.NoSuchJobException;
 
 /**
  * An extended version of a {@link JobOperator} for WildFly. Allows access to the job XML descriptors.

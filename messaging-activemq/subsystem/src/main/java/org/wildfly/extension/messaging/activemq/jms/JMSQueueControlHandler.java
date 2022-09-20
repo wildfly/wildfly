@@ -59,11 +59,21 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<QueueCon
         return JMSManagementHelper.JMS_MESSAGE_PARAMETERS;
     }
 
+    @Override
     protected AbstractQueueControlHandler.DelegatingQueueControl<QueueControl> getQueueControl(ActiveMQServer server, String queueName){
-        final QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + queueName));
-        if (control == null) {
-            return null;
+        String name = queueName;
+        if (queueName.startsWith(JMS_QUEUE_PREFIX)) {
+            name = queueName.substring(JMS_QUEUE_PREFIX.length());
         }
+        QueueControl queueControl = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + name));
+        if (queueControl == null) {
+            //For backward compatibility
+            queueControl = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + queueName));
+            if (queueControl == null) {
+                return null;
+            }
+        }
+        final QueueControl control = queueControl;
         return new AbstractQueueControlHandler.DelegatingQueueControl<QueueControl>() {
 
             @Override

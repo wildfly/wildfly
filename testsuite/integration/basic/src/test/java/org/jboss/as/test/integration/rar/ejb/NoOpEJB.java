@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.rar.ejb;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * User: jpai

@@ -24,8 +24,8 @@ package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas

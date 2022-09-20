@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.aroundtimeout;
 
-import javax.ejb.Stateless;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.Interceptors;
-import javax.interceptor.InvocationContext;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.AroundTimeout;
+import jakarta.interceptor.Interceptors;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas

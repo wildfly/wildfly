@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.classloading;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  *

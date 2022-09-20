@@ -23,16 +23,16 @@ package org.jboss.as.test.integration.ejb.interceptor.invocationcontext;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.ExcludeClassInterceptors;
-import javax.interceptor.ExcludeDefaultInterceptors;
-import javax.interceptor.Interceptors;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
+import jakarta.interceptor.AroundTimeout;
+import jakarta.interceptor.ExcludeClassInterceptors;
+import jakarta.interceptor.ExcludeDefaultInterceptors;
+import jakarta.interceptor.Interceptors;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author Ondrej Chaloupka

@@ -47,7 +47,7 @@ import org.wildfly.extension.clustering.web.SessionMarshallerFactory;
 public class DistributableWebDeploymentProcessor implements DeploymentUnitProcessor {
 
     private static final String PROTOSTREAM = "org.infinispan.protostream";
-    private static final String EL_GLASSFISH = "org.wildfly.clustering.el.glassfish";
+    private static final String EL_EXPRESSLY = "org.wildfly.clustering.el.expressly";
     private static final String WELD_CORE = "org.wildfly.clustering.weld.core";
     private static final String WELD_EJB = "org.wildfly.clustering.weld.ejb";
     private static final String WELD_WEB = "org.wildfly.clustering.weld.web";
@@ -60,9 +60,10 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
         if (provider != null) {
             unit.putAttachment(DistributableSessionManagementProvider.ATTACHMENT_KEY, provider);
 
+            ModuleSpecification specification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
+            ModuleLoader loader = Module.getBootModuleLoader();
+
             if (provider.getSessionManagementConfiguration().getMarshallerFactory() == SessionMarshallerFactory.PROTOSTREAM) {
-                ModuleSpecification specification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-                ModuleLoader loader = Module.getBootModuleLoader();
                 specification.addSystemDependency(new ModuleDependency(loader, PROTOSTREAM, false, false, false, false));
 
                 CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
@@ -70,7 +71,7 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
                     try {
                         WeldCapability weldCapability = support.getCapabilityRuntimeAPI(Capabilities.WELD_CAPABILITY_NAME, WeldCapability.class);
                         if (weldCapability.isPartOfWeldDeployment(unit)) {
-                            specification.addSystemDependency(new ModuleDependency(loader, EL_GLASSFISH, false, false, true, false));
+                            specification.addSystemDependency(new ModuleDependency(loader, EL_EXPRESSLY, false, false, true, false));
                             specification.addSystemDependency(new ModuleDependency(loader, WELD_CORE, false, false, true, false));
                             specification.addSystemDependency(new ModuleDependency(loader, WELD_EJB, false, false, true, false));
                             specification.addSystemDependency(new ModuleDependency(loader, WELD_WEB, false, false, true, false));
@@ -79,11 +80,11 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
                         throw new IllegalStateException(e);
                     }
                 }
+            }
 
-                if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_2_0)) {
-                    specification.addSystemDependency(new ModuleDependency(loader, EL_GLASSFISH, false, false, true, false));
-                    specification.addSystemDependency(new ModuleDependency(loader, FACES_MOJARRA, false, false, true, false));
-                }
+            if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_2_0)) {
+                specification.addSystemDependency(new ModuleDependency(loader, EL_EXPRESSLY, false, false, true, false));
+                specification.addSystemDependency(new ModuleDependency(loader, FACES_MOJARRA, false, false, true, false));
             }
         }
     }

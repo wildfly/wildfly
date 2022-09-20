@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-preview-dist</artifactId>
@@ -65,12 +65,12 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
+            <artifactId>wildfly-testsuite-shared-jakarta</artifactId>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -101,7 +101,6 @@
                             <offline>true</offline>
                             <plugin-options>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <jboss-maven-provisioning-repo>${project.basedir}/../feature-pack/target/jakarta-transform-maven-repo</jboss-maven-provisioning-repo>
                                 <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>                               
                             </plugin-options>
                             <feature-packs>

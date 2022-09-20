@@ -1,0 +1,570 @@
+[[Infinispan_Subsystem]]
+= Infinispan Subsystem
+
+The Infinispan subsystem configures a set of Infinispan cache containers and cache configurations for use by WildFly clustering services.
+
+== Cache container
+
+A cache container manages a set of cache configurations that share the same transport and marshalling configuration.
+Cache containers returned by the Infinispan subsystem are auto-configured with the following customizations:
+
+* A custom xref:transport[transport] capable of sharing a JGroups channel defined by the JGroups subsystem.
+* Uses WildFly's mbean server, if the org.jboss.as.jmx extension is present.
+* Marshaller configured to resolve classes using JBoss Modules.
+* Marshaller configured with a set of marshalling optimizations for common JDK classes
+* Marshaller configured with additional Externalizers loadable from the configured module attribute.
+
+e.g. To create a new cache container that loads marshallers from the "org.bar" module:
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo:add(module=org.foo)
+----
+
+A cache container may designate a specific cache as its default cache, i.e. the cache returned via https://docs.jboss.org/infinispan/11.0/apidocs/org/infinispan/manager/CacheContainer.html#getCache()[CacheContainer.getCache()]:
+
+e.g. To set "bar" as the default cache of the "foo" container:
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo:write-attribute(name=default-cache, value=bar)
+----
+
+A cache container can be injected directly into Jakarta EE applications using the `@Resource` annotation, e.g.
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:jboss/infinispan/container/foo")
+private org.infinispan.manager.EmbeddedCacheManager container;
+----
+
+Note that the server will not manage the lifecycle of any caches created from the injected cache manager.
+The application is responsible for managing the lifecycle of manually created caches.
+
+[[transport]]
+=== Transport
+
+Configures the mechanism used by clustered caches to communicate with each other.
+It is only necessary to define a transport if the cache container contains clustered caches.
+
+To create a JGroups transport using the default channel of the server:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/transport=jgroups:add()
+----
+
+To create a JGroups transport using a distinct "alpha" channel, that uses the "tcp" stack:
+
+[source,options="nowrap"]
+----
+/subsystem=jgroups/channel=alpha:add(stack=tcp)
+/subsystem=infinispan/cache-container=foo/transport=jgroups:add(channel=alpha)
+----
+
+For a complete list of transport attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+To remove an existing JGroups transport, you can either use the standard remove resource operation:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/transport=jgroups:remove()
+----
+
+{empty}... or by adding the "none" transport (which will auto-remove any existing transport):
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/transport=none:add(){allow-resource-service-restart=true}
+----
+
+=== Cache types
+
+Infinispan supports a number of cache types for use in both HA and non-HA server profiles.
+
+==== Local
+
+A local cache stores a given cache entry only on the local node.
+A local cache does not require a transport, as cache reads and writes are always local.
+
+For more information about this cache type, refer to the https://infinispan.org/documentation/[the Infinispan documentation].
+
+To create a local cache:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar:add()
+----
+
+For a complete list of local-cache attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+==== Replicated
+
+A replicated cache stores a given cache entry on every node in the cluster.
+A replicated cache requires a transport, as cache writes are replicated to all nodes in the cluster on which the associated cache is running.
+
+For more information about this cache type, refer to the https://infinispan.org/documentation/[the Infinispan documentation].
+
+To create a replicated cache:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/replicated-cache=bar:add()
+----
+
+For a complete list of replicated-cache attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+==== Distributed
+
+A distributed cache stores a given cache entry on a configurable number of nodes in the cluster, assigned via an algorithm based on consistent hashing.
+A distributed cache requires a transport, as cache writes need to forward to each owner, and cache reads from a non-owner require a remote request.
+
+For more information about this cache type, refer to the https://infinispan.org/documentation/[the Infinispan documentation].
+
+To create a distributed cache where a given entry is stored on 3 nodes:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/distributed-cache=bar:add(owners=3)
+----
+
+For a complete list of distributed-cache attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+==== Scattered
+
+A scattered cache is a variation of a distributed cache that maintains 2 copies of a particular cache entry.
+Consequently, it can only tolerate failure of a single node at a time.
+Primary ownership of a cache entry is determined by the same mechanism used by a distributed cache,
+while the backup copy is the node that last updated the entry.
+
+This design means that a scattered cache only requires 1 remote invocation to write a given cache entry, regardless of which node initiated the cache operation.
+By comparison, a distributed cache (with 2 owners) uses 1 remote invocation to write a cache entry if and only if the primary owner initiated the cache operation, and otherwise requires 2 remote invocations.
+
+For more information about this cache type, refer to the https://infinispan.org/documentation/[the Infinispan documentation].
+
+To create a scattered cache:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/scattered-cache=bar:add()
+----
+
+For a complete list of scattered-cache attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+==== Invalidation
+
+An invalidation cache is a special type of clustered cache that does not share state, but instead ensures that remote state is invalidated any time a given entry is updated locally.
+An invalidation cache requires a transport, as cache writes trigger invalidation on remote nodes on which the associated cache is running.
+
+For more information about this cache type, refer to the https://infinispan.org/documentation/[the Infinispan documentation].
+
+To create an invalidation cache:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/invalidation-cache=bar:add()
+----
+
+For a complete list of invalidation-cache attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+=== Cache features
+
+The configuration of a cache is divided into several components, each defining a specific cache feature.
+Because a given cache configuration requires each component relevant to its cache type, cache add operations and cache component add operations are typically batched.
+Any undefined components are auto-created using their defaults.
+
+e.g. The following cache add operation:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar:add()
+----
+
+{empty}... is actually equivalent to the following sequence of operations:
+
+[source,options="nowrap"]
+----
+batch
+/subsystem=infinispan/cache-container=foo/local-cache=bar:add()
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=expiration:add()
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=locking:add()
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=transaction:add()
+/subsystem=infinispan/cache-container=foo/local-cache=bar/memory=object:add()
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=none:add()
+run-batch
+----
+
+Similarly, you can reset all the attributes of a component by simply removing the component.
+e.g.
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar:component=expiration:remove(){allow-resource-service-restart=true}
+----
+
+{empty}... is equivalent to:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar:component=expiration:remove(){allow-resource-service-restart=true}
+/subsystem=infinispan/cache-container=foo/local-cache=bar:component=expiration:add(){allow-resource-service-restart=true}
+----
+
+==== Memory
+
+An Infinispan cache can be configured to store cache entries as Java objects or as binary data (i.e. byte[]), either on or off the JVM heap.
+The type of storage used has semantic implications for the user of the cache.
+When using object storage, the cache has store-as-reference semantics, whereas when using binary storage the cache has call-by-value semantics.
+Consider the following logic:
+
+[source,java,options="nowrap"]
+----
+List<String> list = new ArrayList<>();
+cache.startBatch();
+cache.put("a", list);
+list.add("test");
+cache.endBatch(true);
+
+List<String> result = cache.get("a");
+System.out.println(result.size());
+----
+
+How many elements are in the "result" list? The answer depends on how the cache is configured.
+
+When the cache is configured to use object memory, our result list has 1 element.
+When the cache is configured to use binary (or off-heap) memory, our result list is empty.
+When using binary memory, the cache value must be marshalled to a byte[] on write and unmarshalled on read, thus any mutations of the cache value in the interim are not reflected in the cache.
+
+===== Object storage
+
+When using object storage, cache keys and values are stored as Java object references.
+Object storage may be configured with a maximum size.
+When the number of entries in the cache exceeds this threshold, the least recently used entries are evicted from memory.
+
+e.g. To store a maximum of 100 objects in the Java heap:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/memory=object:add(size=100)
+----
+
+For a complete list of memory=object attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+===== Binary storage (on-heap)
+
+When using binary storage, each cache entry is stored as a byte[] within the JVM heap.
+Binary storage may also be configured with a maximum size.
+This size can be specified either as a maximum number of entries (i.e. COUNT), or as a maximum number of bytes (i.e. MEMORY).
+When the number of entries in the cache exceeds this threshold, the least recently used entries are evicted from memory.
+
+e.g. To store a maximum of 1 MB of binary data in the Java heap:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/memory=binary:add(size=1048576, eviction-type=MEMORY)
+----
+
+For a complete list of memory=binary attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+===== Off-heap binary storage
+
+When using off-heap storage, each cache entry is stored as a byte[] in native memory allocated via sun.misc.Unsafe.
+Off-heap memory storage may also be configured with a maximum size, specified either as a maximum number of entries (i.e. COUNT), or as a maximum number of bytes (i.e. MEMORY).
+When the number of entries in the cache exceeds this threshold, the least recently used entries are evicted from memory.
+
+e.g. To store a maximum of 1 GB of binary data in native memory outside of the Java heap:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/memory=off-heap:add(size=1073741824)
+----
+
+For a complete list of memory=off-heap attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+==== Transactions
+
+An Infinispan cache can be configured as transactional or non-transactional.
+This behavior is determined by the mode attribute, which supports the following values:
+
+NONE::
+    Non-transactional cache (the default behavior).
+BATCH::
+    Transactional cache using a local Infinispan transaction manager.
+    Infinispan transactions are started/committed/rolled-back using http://docs.jboss.org/infinispan/9.2/apidocs/org/infinispan/commons/api/BatchingCache.html[Infinispan's batching API].
+NON_XA::
+    Transactional cache configured to use the server's transaction manager, registering as a Synchronization to the current transaction.
+    Cache commit/rollback happens after the associated transaction completes.
+NON_DURABLE_XA::
+    Transactional cache configured to use the server's transaction manager, enlisting as an XAResource to the current transaction, but without transaction recovery support.
+FULL_XA::
+    Transactional cache configured to use the server's transaction manager, with full transaction recovery support.
+
+Within the context of a transaction, cache write operations must obtain a lock on the affected keys.
+Locks may be acquired either pessimistically (the default), i.e. before invoking the operation, or optimistically, i.e. before transaction commit.
+
+e.g. To configure a transactional cache using local Infinispan transactions with OPTIMISTIC locking:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=transaction(mode=BATCH, locking=OPTIMISTIC)
+----
+
+For a complete list of transaction attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+==== Locking
+
+Within the context of a transaction, entries read from the cache are isolated from other concurrent transactions according to the configured isolation level.
+Infinispan supports the following transaction isolation levels:
+
+READ_COMMITTED::
+    A cache read may return a different value than a previous read within the same transaction, even if a concurrent transaction updated the entry.
+    This is the default isolation level.
+REPEATABLE_READ::
+    A cache read will return the same value as a previous read within the same transaction, even if a concurrent transaction updated the entry.
+
+IMPORTANT: Cache reads are always lock-free unless invoked using Flag.FORCE_WRITE_LOCK.
+
+e.g. To configure a cache using REPEATABLE_READ isolation:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=locking(isolation=REPEATABLE_READ)
+----
+
+For a complete list of locking attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+==== Expiration
+
+The expiration component configures expiration defaults for cache entries.
+Cache entries may be configured to expire after some duration since creation (i.e. lifespan) or since last accessed (i.e. max-idle).
+
+e.g. To configure expiration of entries older than 1 day, or that have not been accessed within the past hour:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=expiration(lifespan=86400000, max-idle=3600000)
+----
+
+CAUTION: max-idle based expiration is not generally safe for use with clustered caches, as the meta data of a cache entry is not replicated by cache read operations
+
+For a complete list of expiration attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+==== Persistence
+
+An Infinispan cache can optionally load/store cache entries from an external storage.
+All cache stores support the following attributes:
+
+fetch-state::
+    Indicates whether to refresh persistent state from cluster members on cache start.
+    Does not apply to a local or invalidation cache, nor a shared store.
+    Default is true.
+passivation::
+    Indicates whether cache entries should only be persisted upon eviction from memory.
+    Default is true.
+preload::
+    Indicates whether cache entries should be loaded into memory on cache start.
+    Default is false.
+purge::
+    Indicates whether the cache store should be purged on cache start.
+    Purge should never be enabled on a shared store.
+    Default is true.
+shared::
+    Indicates that the same cache store endpoint (e.g. database, data grid, etc.) is used by all members of the cluster.
+    When using a shared cache store, cache entries are only persisted by the primary owner of a given cache entry.
+    Default is false.
+
+To remove an existing cache store, you can either use the standard resource remove operation:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=file:remove()
+----
+
+{empty}... or by adding the "none" store (which auto-removes any existing store):
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=none:add(){allow-resource-service-restart=true}
+----
+
+===== File store
+
+A file store persists cache entries to the local filesystem.
+By default, files are stored in a file named "_cache-name_.dat" within a subdirectory named "infinispan/_container-name_" relative to the server's data directory.
+
+e.g. To persist cache entries to $HOME/foo/bar.dat:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=file:add(path=foo, relative-to=user.home)
+----
+
+===== JDBC store
+
+A JDBC store persists cache entries to a database.
+
+e.g. To persist cache entries to an H2 database via the ExampleDS data-source:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=jdbc:add(data-source=ExampleDS, dialect=H2)
+----
+
+[[hotrod_store]]
+===== HotRod store
+
+The HotRod store uses one dedicated remote cache for each cache created by the server.
+For Infinispan Server versions supporting protocol version 2.7 and above (Infinispan Server version 9.2)
+a persistent remote cache will be automatically created based on default configuration.
+The recommended configuration for the remote cache where session data will be offloaded is transactional distribution mode cache with pessimistic locking.
+When using Infinispan Server version prior to 9.2, the caches need to be configured manually on the server where cache names correspond to the deployment file names (e.g. `test.war`).
+
+Once a <<remote_cache_container>> is configured a `hotrod` store can be configured replacing any existing store.
+The following CLI script demonstrates a typical use case for offloading sessions using an `invalidation-cache` with a shared, persistent infinispan-server store referencing an existing `remote-cache-container`:
+
+[source,options="nowrap"]
+----
+batch
+/subsystem=infinispan/cache-container=web/invalidation-cache=foo:add()
+/subsystem=infinispan/cache-container=web/invalidation-cache=foo/store=hotrod:add(remote-cache-container=web, cache-configuration=transactional, fetch-state=false, shared=true)
+/subsystem=infinispan/cache-container=web/invalidation-cache=foo/component=transaction:add(mode=BATCH)
+/subsystem=infinispan/cache-container=web/invalidation-cache=foo/component=locking:add(isolation=REPEATABLE_READ)
+run-batch
+----
+
+==== State transfer
+
+The state transfer component defines the behavior for the initial transfer of state from remote caches on cache start.
+State transfer is only applicable to distributed and replicated caches.
+When configured with a timeout, a cache is only available after its initial state transfer completes.
+If state transfer does not complete within the configured timeout, the cache will fail to start.
+
+e.g. To configure a state-transfer timeout of 1 minute:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=state-transfer:add(timeout=60000)
+----
+
+Alternatively, state transfer can be configured to be non-blocking, by configuring a timeout of 0.
+While this prevents timeouts due to large state transfers, cache operations on the new node will require remote invocations to retrieve the requisite state until state transfer is complete.
+
+e.g. To configure a non-blocking state transfer:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=state-transfer:add(timeout=0)
+----
+
+For a complete list of state-transfer attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+
+==== Injecting a cache into Jakarta EE applications
+
+A cache can be injected directly into Jakarta EE applications using the `@Resource` annotation, e.g.
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:jboss/infinispan/cache/foo/bar") // <1>
+private org.infinispan.Cache<Integer, Object> cache;
+----
+<1> where `foo` is the name of the cache container and `bar` is the name of the cache to inject
+
+or in order to inject the default cache of the cache container use the following resource lookup:
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:jboss/infinispan/cache/foo/default")
+----
+
+[[remote_cache_container]]
+== Remote Cache Container
+
+While Infinispan project is used as a library internally by WildFly to provide data distribution, Infinispan project is also distributed in a standalone server mode.
+The Infinispan Server cluster operates as a language-independent service accessed remotely over a number of protocols (HotRod, REST, etc).
+
+HotRod is Infinispan's custom optimized binary protocol which was designed to:
+
+* enable faster client/server interactions compared to other existing text-based protocols,
+* allow clients to make more intelligent decisions with regards to load-balancing, failover,
+* and provide advanced cache operations.
+
+To learn more about the HotRod protocol itself and how to setup and run Infinispan Server,
+refer to http://infinispan.org/documentation/[Infinispan documentation] for the appropriate version.
+
+=== Configuration
+
+To configure a `remote-cache-container` ensure you have a list of available Infinispan Server nodes.
+The following example CLI script first adds socket bindings to two known Infinispan Server nodes,
+followed by configuration of the cluster.
+
+[source,options="nowrap"]
+----
+batch
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-1:add(host=server1.example.com, port=11622)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-2:add(host=server2.example.com, port=11722)
+/subsystem=infinispan/remote-cache-container=foo:add(default-remote-cluster=bar)
+/subsystem=infinispan/remote-cache-container=foo/remote-cluster=bar:add(socket-bindings=[infinispan-server-1, infinispan-server-2])
+run-batch
+----
+
+Upon reload, this will register necessary services for the client.
+A HotRod client can be injected directly into Jakarta EE applications using the `@Resource` annotation.
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:jboss/infinispan/remote-container/foo")
+private org.infinispan.client.hotrod.RemoteCacheContainer client;
+----
+
+==== Security
+
+Securing the store is just a matter of configuring the `remote-cache-container` with an SSL context.
+Please follow the Elytron security guide on how to configure new SSL context
+and http://infinispan.org/documentation/[Infinispan documentation] on how to secure Infinispan Server instances.
+
+Once the SSL Context is configured, use the following CLI script to configure `remote-cache-container`:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/remote-cache-container=foo/component=security:write-attribute(name=ssl-context, value=hotrod-ssl-context)
+----
+
+==== Statistics
+
+To enable the gathering of statistics for a given `remote-cache-container`, use the `statistics-enabled` attribute:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/remote-cache-container=foo:write-attribute(name=statistics-enabled, value=true)
+----
+
+Using the exposed runtime metrics, users can tune the HotRod thread pool configuration by looking at active vs idle connections.
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan:remote-cache-container=foo:read-resource(include-runtime=true)
+----
+
+The Infinispan subsystem additionally exposes a runtime resource for each started remote cache instance.
+The runtime remote cache resource exposes usage metrics (e.g. reads, writes, removes, etc) as well as metrics for tuning near-cache sizes (e.g. hits vs misses).
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan:remote-cache-container=foo/remote-cache=bar:read-resource(include-runtime=true)
+----
+
+==== Switching remote clusters
+
+If a remote-cache-container configures multiple remote-clusters (e.g. when the infinispan servers are configured with cross site replication),
+the hotrod client can toggle the remote-cluster with which it interacts via a runtime management operation.
+
+For example, when the client is configured with multiple remote clusters, typically representing multiple data centers (this presumes that the infinispan servers are configured with cross-site replication),
+if connectivity to the default remote cluster fails, the client will automatically fail over to a backup remote cluster.
+Once the underlying connectivity issue is resolved, a user can manually fail back to the local site via the `switch-cluster` operation:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/remote-cache-container=foo/remote-cluster=bar:switch-cluster()
+----
+
+This operation returns `true` if the switch was successful, or `false` otherwise.
+See the server log for specifics in the event that the switch was unsuccessful.

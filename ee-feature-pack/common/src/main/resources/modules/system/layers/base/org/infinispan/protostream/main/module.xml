@@ -24,16 +24,11 @@
 
 <module xmlns="urn:jboss:module:1.9" name="org.infinispan.protostream">
 
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
     <resources>
         <artifact name="${org.infinispan.protostream:protostream}"/>
     </resources>
 
     <dependencies>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.sql.api"/>
         <module name="java.compiler"/>
         <module name="java.logging"/>

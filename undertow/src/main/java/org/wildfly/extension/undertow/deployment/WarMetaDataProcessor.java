@@ -119,9 +119,10 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         if (!isComplete) {
             HashSet<String> jarsWithoutFragmentsSet = new HashSet<String>();
             jarsWithoutFragmentsSet.addAll(jarsSet);
-            for (String jarName : webFragments.keySet()) {
+            for (Map.Entry<String, WebFragmentMetaData> entry : webFragments.entrySet()) {
                 fragmentFound = true;
-                WebFragmentMetaData fragmentMetaData = webFragments.get(jarName);
+                String jarName = entry.getKey();
+                WebFragmentMetaData fragmentMetaData = entry.getValue();
                 webFragments.put(jarName, fragmentMetaData);
                 WebOrdering webOrdering = new WebOrdering();
                 webOrdering.setName(fragmentMetaData.getName());

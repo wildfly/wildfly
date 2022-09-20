@@ -31,7 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.ejb.TimerConfig;
+import jakarta.ejb.TimerConfig;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.Date;

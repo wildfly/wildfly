@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.cdi.requestscope;
 
-import javax.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.RequestScoped;
 
 /**
  * @author Stuart Douglas

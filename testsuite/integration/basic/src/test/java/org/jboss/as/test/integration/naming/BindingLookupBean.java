@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.naming;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

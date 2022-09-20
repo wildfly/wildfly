@@ -30,7 +30,7 @@ import static org.junit.Assert.fail;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.persistence.TransactionRequiredException;
+import jakarta.persistence.TransactionRequiredException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -135,7 +135,7 @@ public class TransactionTestCase {
         } catch (Exception failed) {
             error = failed;
         }
-        // javax.ejb.EJBException: javax.persistence.TransactionRequiredException: no transaction is in progress
+        // jakarta.ejb.EJBException: jakarta.persistence.TransactionRequiredException: no transaction is in progress
         while (error != null && !(error instanceof TransactionRequiredException) && error.getCause() != null) {
             error = error.getCause();
         }

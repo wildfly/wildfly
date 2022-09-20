@@ -110,7 +110,7 @@ public class LegacyFileStore {
                         builder = CalendarTimer.builder()
                                 .setScheduleExpression(scheduleExpression)
                                 .setAutoTimer(c.isAutoTimer())
-                                .setTimeoutMethod(CalendarTimer.getTimeoutMethod(c.getTimeoutMethod(), timerService.getTimedObjectInvoker().getValue().getClassLoader()));
+                                .setTimeoutMethod(CalendarTimer.getTimeoutMethod(c.getTimeoutMethod(), timerService.getInvoker().getClassLoader()));
                     } else {
                         builder = TimerImpl.builder();
                     }

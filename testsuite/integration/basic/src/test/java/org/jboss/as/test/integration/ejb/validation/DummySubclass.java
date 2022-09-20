@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.validation;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class DummySubclass extends DummyAbstractClass {
     @NotNull

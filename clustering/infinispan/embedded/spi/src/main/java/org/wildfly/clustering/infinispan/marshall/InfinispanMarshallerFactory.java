@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.infinispan.marshall;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -43,16 +41,13 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilde
 public enum InfinispanMarshallerFactory implements BiFunction<ModuleLoader, List<Module>, Marshaller> {
 
     LEGACY() {
-        private final Set<String> protoStreamModules = new HashSet<>(Arrays.asList("org.wildfly.clustering.server", "org.wildfly.clustering.ejb.infinispan", "org.wildfly.clustering.web.infinispan"));
+        private final Set<String> protoStreamModules = Set.of("org.wildfly.clustering.server", "org.wildfly.clustering.ejb.infinispan", "org.wildfly.clustering.web.infinispan");
         private final Predicate<String> protoStreamPredicate = this.protoStreamModules::contains;
 
         @Override
         public Marshaller apply(ModuleLoader moduleLoader, List<Module> modules) {
             // Choose marshaller based on the associated modules
-            if (modules.stream().map(Module::getName).anyMatch(this.protoStreamPredicate)) {
-                return PROTOSTREAM.apply(moduleLoader, modules);
-            }
-            return JBOSS.apply(moduleLoader, modules);
+            return (modules.stream().map(Module::getName).anyMatch(this.protoStreamPredicate) ? PROTOSTREAM : JBOSS).apply(moduleLoader, modules);
         }
     },
     JBOSS() {

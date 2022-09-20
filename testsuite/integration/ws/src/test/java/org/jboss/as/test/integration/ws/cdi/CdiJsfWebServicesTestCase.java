@@ -83,7 +83,7 @@ public class CdiJsfWebServicesTestCase {
             "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd\">\n" +
             "  <servlet>\n" +
             "        <servlet-name>Faces Servlet</servlet-name>\n" +
-            "      <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>\n" +
+            "      <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>\n" +
             "      <load-on-startup>1</load-on-startup>\n" +
             "  </servlet>\n" +
             "  <servlet-mapping>\n" +

@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.weld.services;
 
-import javax.inject.Inject;
-import javax.jws.WebService;
+import jakarta.inject.Inject;
+import jakarta.jws.WebService;
 
 @WebService(
     serviceName = TestWSImpl.SERVICE_NAME,

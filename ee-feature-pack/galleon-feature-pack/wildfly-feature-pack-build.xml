@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<build xmlns="urn:wildfly:feature-pack-build:3.1" producer="wildfly-ee@maven(org.jboss.universe:community-universe):current">
+<build xmlns="urn:wildfly:feature-pack-build:3.3" producer="wildfly-ee@maven(org.jboss.universe:community-universe):current">
 
     <default-packages>
         <package name="modules.all"/>
@@ -53,6 +53,10 @@
     <resources>
         <copy artifact="org.wildfly.galleon-plugins:wildfly-config-gen" to="wildfly/wildfly-config-gen.jar"/>
     </resources>
+
+    <system-paths>
+        <system-path path="modules/system/layers/base/"/>
+    </system-paths>
 
     <generate-feature-specs>
         <extensions>
@@ -94,6 +98,7 @@
                 <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
                 <extension>org.wildfly.extension.metrics</extension>
+                <extension>org.wildfly.extension.elytron-oidc-client</extension>
                 <extension>org.wildfly.extension.opentelemetry</extension>
                 <extension>org.wildfly.extension.request-controller</extension>
                 <extension>org.wildfly.extension.rts</extension>

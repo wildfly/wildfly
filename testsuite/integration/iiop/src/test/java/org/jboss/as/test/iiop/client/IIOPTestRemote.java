@@ -24,7 +24,7 @@ package org.jboss.as.test.iiop.client;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 
 public interface IIOPTestRemote extends EJBObject {
     String callMandatory() throws RemoteException;

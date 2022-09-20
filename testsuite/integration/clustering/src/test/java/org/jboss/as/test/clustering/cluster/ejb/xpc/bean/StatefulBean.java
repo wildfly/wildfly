@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.xpc.bean;
 
-import javax.ejb.Remove;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
+import jakarta.ejb.Remove;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContextType;
 
 import org.hibernate.Session;
 import org.hibernate.stat.CacheRegionStatistics;
@@ -41,7 +41,7 @@ import java.util.Map;
  * @author Paul Ferraro
  * @author Scott Marlow
  */
-@javax.ejb.Stateful(name = "StatefulBean")
+@jakarta.ejb.Stateful(name = "StatefulBean")
 public class StatefulBean implements Stateful {
 
     private static final Logger log = Logger.getLogger(StatefulBean.class);

@@ -35,8 +35,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-api</artifactId>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-dns</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -46,8 +46,19 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-context</artifactId>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-http2</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-resolver-dns</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -92,50 +103,6 @@
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-concurrent</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-interceptors</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-jaxrs2</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-tracerresolver</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-web-servlet-filter</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -568,17 +535,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.bitbucket.b_c</groupId>
-      <artifactId>jose4j</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.eclipse.microprofile.config</groupId>
       <artifactId>microprofile-config-api</artifactId>
       <licenses>
@@ -734,7 +690,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-health-smallrye</artifactId>
+      <artifactId>wildfly-microprofile-health-smallrye-jakarta</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -745,7 +701,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
+      <artifactId>wildfly-microprofile-jwt-smallrye-jakarta</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -778,7 +734,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-opentracing-extension</artifactId>
+      <artifactId>wildfly-microprofile-opentracing-extension-jakarta</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -789,7 +745,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
+      <artifactId>wildfly-microprofile-opentracing-smallrye-jakarta</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -855,7 +811,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
+      <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-jakarta</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -865,8 +821,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-client-microprofile</artifactId>
+      <groupId>org.jboss.resteasy.microprofile</groupId>
+      <artifactId>microprofile-config</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -876,8 +832,19 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-client-microprofile-base</artifactId>
+      <groupId>org.jboss.resteasy.microprofile</groupId>
+      <artifactId>microprofile-rest-client</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy.microprofile</groupId>
+      <artifactId>microprofile-rest-client-base</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -898,7 +865,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly.security</groupId>
+      <groupId>org.wildfly.security.mp</groupId>
       <artifactId>wildfly-elytron-jwt</artifactId>
       <licenses>
         <license>

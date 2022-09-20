@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.transaction.exception.bean.ejb2;
 
-import javax.ejb.EJBLocalObject;
+import jakarta.ejb.EJBLocalObject;
 
 public interface TestBean2Local extends EJBLocalObject {
 

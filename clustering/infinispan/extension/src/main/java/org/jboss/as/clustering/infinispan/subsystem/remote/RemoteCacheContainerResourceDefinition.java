@@ -42,7 +42,7 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;

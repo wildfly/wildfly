@@ -16,7 +16,7 @@
  */
 package org.jboss.as.test.integration.weld.deployment;
 
-import javax.enterprise.context.Dependent;
+import jakarta.enterprise.context.Dependent;
 
 @Dependent
 public class Charlie implements Ping {

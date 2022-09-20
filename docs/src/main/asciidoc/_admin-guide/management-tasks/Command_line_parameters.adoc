@@ -185,7 +185,7 @@ available in standalone and domain mode.
 
 |--admin-only |- |Set the server's running type to ADMIN_ONLY causing it
 to open administrative interfaces and accept management requests but not
-start other runtime services oraccept end user requests.
+start other runtime services or accept end user requests.
 
 |--server-config -c |standalone.xml |A relative path which is interpreted
 to be relative to jboss.server.config.dir. The name of the configuration
@@ -193,8 +193,8 @@ file to use.
 
 |--read-only-server-config |- |A relative path which is interpreted to
 be relative to jboss.server.config.dir. This is similar to
---server-config but if this alternative is specified the server willnot
-overwrite the file when the management model is changed. However a full
+--server-config but if this alternative is specified the server will not
+overwrite the file when the management model is changed. However, a full
 versioned history is maintained of the file.
 
 |--graceful-startup | true | Start the servers in gracefully, queuing or cleanly rejecting incoming requests until the server is fully started.
@@ -213,10 +213,10 @@ versioned history is maintained of the file.
 |=======================================================================
 |Name |Default if absent |Value
 
-|--admin-only |- |Set the server's running type to ADMIN_ONLY causing it
-to open administrative interfaces and accept management requests but not
-start servers or, if this host controlleris the master for the domain,
-accept incoming connections from slave host controllers.
+|--admin-only |- |Set the host controller's running type to ADMIN_ONLY causing it to open
+administrative interfaces and accept management requests but not start servers or, if this
+host controller is the primary for the domain, accept incoming connections from secondary
+host controllers.
 
 |--domain-config -c |domain.xml |A relative path which is interpreted to
 be relative to jboss.domain.config.dir. The name of the domain wide
@@ -225,8 +225,8 @@ configuration file to use.
 |--read-only-domain-config |- |A relative path which is interpreted to
 be relative to jboss.domain.config.dir. This is similar to
 --domain-config but if this alternative is specified the host
-controllerwill not overwrite the file when the management model is
-changed. However a full versioned history is maintained of the file.
+controller will not overwrite the file when the management model is
+changed. However, a full versioned history is maintained of the file.
 
 |--host-config |host.xml |A relative path which is interpreted to be
 relative to jboss.domain.config.dir. The name of the host-specific
@@ -234,12 +234,12 @@ configuration file to use.
 
 |--read-only-host-config |- |A relative path which is interpreted to be
 relative to jboss.domain.config.dir. This is similar to --host-config
-but if this alternative is specified the host controller willnot
-overwrite the file when the management model is changed. However a full
+but if this alternative is specified the host controller will not
+overwrite the file when the management model is changed. However, a full
 versioned history is maintained of the file.
 |=======================================================================
 
-The following parameters take no value and are only usable on slave host
+The following parameters take no value and are only usable on secondary host
 controllers (i.e. hosts configured to connect to a `remote` domain
 controller.)
 
@@ -247,29 +247,29 @@ controller.)
 |=======================================================================
 |Name |Function
 
-|--backup |Causes the slave host controller to create and maintain a
+|--backup |Causes the secondary host controller to create and maintain a
 local copy (domain.cached-remote.xml) of the domain configuration. If
 ignore-unused-configuration is unset in host.xml,a complete copy of the
 domain configuration will be stored locally, otherwise the configured
 value of ignore-unused-configuration in host.xml will be used. (See
 ignore-unused-configuration for more details.)
 
-|--cached-dc |If the slave host controller is unable to contact the
-master domain controller to get its configuration at boot, this option
-will allow the slave host controller to boot and becomeoperational using
+|--cached-dc |If the secondary host controller is unable to contact the
+domain controller to get its configuration at boot, this option
+will allow the secondary host controller to boot and become operational using
 a previously cached copy of the domain configuration
 (domain.cached-remote.xml.) If the cached configuration is not present,
-this boot will fail. This file is created using using one ofthe
-following methods:- A previously successful connection to the master
+this boot will fail. This file is created using one of the
+following methods:- A previously successful connection to the
 domain controller using --backup or --cached-dc.- Copying the domain
 configuration from an alternative host to
-domain/configuration/domain.cached-remote.xml.The unavailable master
+domain/configuration/domain.cached-remote.xml.The unavailable
 domain controller will be polled periodically for availability, and once
-becoming available, the slave host controller will reconnect to the
-master host controller and synchronize the domainconfiguration. During
-the interval the master domain controller is unavailable, the slave host
-controller will not be able make any modifications to the domain
-configuration, but it may launch servers and handlerequests to deployed
+becoming available, the secondary host controller will reconnect to the
+domain controller and synchronize the domain configuration. During
+the interval the domain controller is unavailable, the secondary host
+controller will not be able to make any modifications to the domain
+configuration, but it may launch servers and handle requests to deployed
 applications etc.
 |=======================================================================
 

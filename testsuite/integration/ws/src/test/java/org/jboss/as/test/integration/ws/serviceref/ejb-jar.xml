@@ -26,7 +26,7 @@
             </service-ref>
             <service-ref>
                 <service-ref-name>service/Endpoint4</service-ref-name>
-                <service-interface>javax.xml.ws.Service</service-interface>
+                <service-interface>jakarta.xml.ws.Service</service-interface>
                 <injection-target>
                     <injection-target-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</injection-target-class>
                     <injection-target-name>endpoint4</injection-target-name>
@@ -52,7 +52,7 @@
             </service-ref>
             <service-ref>
                 <service-ref-name>service/Endpoint4</service-ref-name>
-                <service-interface>javax.xml.ws.Service</service-interface>
+                <service-interface>jakarta.xml.ws.Service</service-interface>
                 <injection-target>
                     <injection-target-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</injection-target-class>
                     <injection-target-name>endpoint4</injection-target-name>

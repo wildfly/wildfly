@@ -15,9 +15,9 @@
  */
 package org.jboss.as.test.integration.ws.wsse;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
-import javax.jws.WebService;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Stateless;
+import jakarta.jws.WebService;
 import org.apache.cxf.annotations.EndpointProperties;
 import org.apache.cxf.annotations.EndpointProperty;
 import org.apache.cxf.interceptor.InInterceptors;

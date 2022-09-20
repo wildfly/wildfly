@@ -27,9 +27,9 @@ import org.jboss.logging.Logger;
 import org.jboss.narayana.compensations.api.Compensatable;
 import org.jboss.narayana.compensations.api.CompensationTransactionType;
 
-import javax.ejb.Stateless;
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
+import jakarta.ejb.Stateless;
+import jakarta.jws.WebService;
+import jakarta.jws.soap.SOAPBinding;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>

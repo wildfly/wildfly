@@ -21,7 +21,7 @@
  */
 package org.wildfly.test.manual.elytron.seccontext;
 
-import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -39,7 +39,7 @@ import static org.wildfly.test.manual.elytron.seccontext.SeccontextUtil.WAR_WHOA
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJBAccessException;
 
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;

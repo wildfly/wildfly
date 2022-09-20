@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.regex;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Ondra Chaloupka <ochaloup@redhat.com>

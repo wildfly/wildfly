@@ -24,9 +24,9 @@ package org.jboss.as.test.integration.ee.injection.resource.producer;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import javax.annotation.ManagedBean;
-import javax.annotation.Resource;
-import javax.enterprise.inject.Produces;
+import jakarta.annotation.ManagedBean;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.inject.Produces;
 import javax.sql.DataSource;
 
 /**

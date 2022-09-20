@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ee.appclient.basic;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
 
 import org.jboss.logging.Logger;
 

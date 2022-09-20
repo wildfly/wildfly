@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.weld.modules.access;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class BuiltInBeanWithPackagePrivateConstructor {

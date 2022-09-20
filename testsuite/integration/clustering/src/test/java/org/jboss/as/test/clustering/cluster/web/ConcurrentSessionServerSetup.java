@@ -32,7 +32,7 @@ public class ConcurrentSessionServerSetup extends CLIServerSetupTask {
     public ConcurrentSessionServerSetup() {
         this.builder.node(AbstractClusteringTestCase.THREE_NODES)
                 .setup("/subsystem=infinispan/cache-container=web/distributed-cache=concurrent:add()")
-                .setup("/subsystem=infinispan/cache-container=web/distributed-cache=concurrent/store=file:add()")
+                .setup("/subsystem=infinispan/cache-container=web/distributed-cache=concurrent/store=file:add(passivation=true, purge=true)")
                 .teardown("/subsystem=infinispan/cache-container=web/distributed-cache=concurrent:remove()")
         ;
     }

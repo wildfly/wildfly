@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ws.ejb;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceContext;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.WebServiceContext;
 
 /**
  * Webservice endpoint implementation.

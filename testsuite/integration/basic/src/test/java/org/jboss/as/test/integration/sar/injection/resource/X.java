@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.sar.injection.resource;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.naming.Context;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 /**
  *

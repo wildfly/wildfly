@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.multinode.ejb.timer.database;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * An interceptor to enable programmatic timer refresh across multiple nodes.

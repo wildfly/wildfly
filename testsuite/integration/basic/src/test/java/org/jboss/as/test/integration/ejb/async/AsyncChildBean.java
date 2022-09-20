@@ -2,7 +2,7 @@ package org.jboss.as.test.integration.ejb.async;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class AsyncChildBean extends AsyncParentClass {

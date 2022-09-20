@@ -31,7 +31,7 @@ import org.apache.cxf.sts.token.provider.SAMLTokenProvider;
 import org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider;
 import org.jboss.as.test.integration.ws.wsse.trust.shared.WSTrustAppUtils;
 
-import javax.xml.ws.WebServiceProvider;
+import jakarta.xml.ws.WebServiceProvider;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;

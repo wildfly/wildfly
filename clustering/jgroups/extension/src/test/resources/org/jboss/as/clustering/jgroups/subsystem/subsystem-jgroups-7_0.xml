@@ -40,6 +40,7 @@
                        module="org.jgroups"
                        socket-binding="some-binding"
                        diagnostics-socket-binding="jgroups-diagnostics"
+                       shared="${test.expr:false}"
                        machine="${test.expr:machine1}"
                        rack="${test.expr:rack1}"
                        site="${test.expr:site1}">

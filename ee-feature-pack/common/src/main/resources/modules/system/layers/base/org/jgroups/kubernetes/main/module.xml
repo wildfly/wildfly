@@ -30,7 +30,6 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.jgroups"/>
     </dependencies>
 </module>

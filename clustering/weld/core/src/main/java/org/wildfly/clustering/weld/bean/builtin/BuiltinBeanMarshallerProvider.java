@@ -22,8 +22,8 @@
 
 package org.wildfly.clustering.weld.bean.builtin;
 
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.InjectionPoint;
 
 import org.jboss.weld.bean.builtin.InstanceImpl;
 import org.jboss.weld.manager.BeanManagerImpl;

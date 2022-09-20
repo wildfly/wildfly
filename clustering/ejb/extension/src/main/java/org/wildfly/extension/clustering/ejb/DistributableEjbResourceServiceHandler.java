@@ -21,6 +21,9 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
+import static org.wildfly.extension.clustering.ejb.DistributableEjbResourceDefinition.Attribute.DEFAULT_BEAN_MANAGEMENT;
+import static org.wildfly.extension.clustering.ejb.DistributableEjbResourceDefinition.Capability.DEFAULT_BEAN_MANAGEMENT_PROVIDER;
+
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.IdentityCapabilityServiceConfigurator;
@@ -29,9 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ejb.EjbProviderRequirement;
-import org.wildfly.extension.clustering.ejb.DistributableEjbResourceDefinition.Attribute;
 import org.wildfly.extension.clustering.ejb.DistributableEjbResourceDefinition.Capability;
 
 /**
@@ -43,15 +44,10 @@ public class DistributableEjbResourceServiceHandler implements ResourceServiceHa
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
-        PathAddress address = context.getCurrentAddress();
-        ServiceTarget target = context.getServiceTarget();
-
-        String defaultBeanManagement = Attribute.DEFAULT_BEAN_MANAGEMENT.resolveModelAttribute(context, model).asString();
-
-        // set up the default bean management service
-        new IdentityCapabilityServiceConfigurator<>(Capability.DEFAULT_BEAN_MANAGEMENT_PROVIDER.getServiceName(address), EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER, defaultBeanManagement)
+        String name = DEFAULT_BEAN_MANAGEMENT.resolveModelAttribute(context, model).asString();
+        new IdentityCapabilityServiceConfigurator<>(DEFAULT_BEAN_MANAGEMENT_PROVIDER.getServiceName(context.getCurrentAddress()), EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER, name)
                 .configure(context)
-                .build(target)
+                .build(context.getServiceTarget())
                 .install();
     }
 

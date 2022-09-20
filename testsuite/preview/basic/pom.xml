@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!--
-  Set these VM properties in your IDE debugger
-
-  -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-8.0.0.Alpha4-SNAPSHOT
-  -DallowConnectingToRunningServer=true
--->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -19,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -40,28 +32,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-core-test-runner</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.ejb</groupId>
-            <artifactId>jakarta.ejb-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
+            <groupId>org.jboss.shrinkwrap.descriptors</groupId>
+            <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -70,33 +47,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.jms</groupId>
-            <artifactId>jakarta.jms-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-analyzers-common</artifactId>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.search</groupId>
-            <artifactId>hibernate-search-backend-lucene</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -124,38 +81,6 @@
             <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate.search</groupId>
-            <artifactId>hibernate-search-v5migrationhelper-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.search</groupId>
-            <artifactId>hibernate-search-v5migrationhelper-orm-orm6</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.shrinkwrap.descriptors</groupId>
-            <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>elasticsearch</artifactId>
-            <version>${version.org.testcontainers}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -169,51 +94,6 @@
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                     </systemPropertyVariables>
                 </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <!-- See HibernateSearchOutboxPollingTestCase, HibernateSearchV5MigrationHelperJPATestCase,
-                             HibernateSearchV5MigrationHelperEarMassIndexerTestCase -->
-                        <id>copy-hibernate-search-extra-jars</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.hibernate.search</groupId>
-                                    <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
-                                    <version>${preview.version.org.hibernate.search}</version>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.directory}/testlib</outputDirectory>
-                                    <destFileName>hibernate-search-mapper-orm-coordination-outbox-polling.jar</destFileName>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.hibernate.search</groupId>
-                                    <artifactId>hibernate-search-v5migrationhelper-engine</artifactId>
-                                    <version>${preview.version.org.hibernate.search}</version>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.directory}/testlib</outputDirectory>
-                                    <destFileName>hibernate-search-v5migrationhelper-engine.jar</destFileName>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.hibernate.search</groupId>
-                                    <artifactId>hibernate-search-v5migrationhelper-orm-orm6</artifactId>
-                                    <version>${preview.version.org.hibernate.search}</version>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.directory}/testlib</outputDirectory>
-                                    <destFileName>hibernate-search-v5migrationhelper-orm.jar</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -306,7 +186,6 @@
                                     <excludes>
                                         <!-- Tests which need FULL config. -->
                                         <exclude>**/*TestCase*.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
                                     </excludes>
 
                                     <environmentVariables>
@@ -380,7 +259,6 @@
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -421,7 +299,6 @@
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -474,7 +351,7 @@
                                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                                         <!-- Override the standard module path that points at the shared module set from dist -->
                                         <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
+                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
                                     </systemPropertyVariables>
                                     <includes>
                                         <!-- Dummy test used to validate this pom -->
@@ -495,7 +372,7 @@
                                         <jboss.install.dir>${basedir}/target/wildfly-jpa</jboss.install.dir>
                                         <!-- Override the standard module path that points at the shared module set from dist -->
                                         <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
+                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
                                     </systemPropertyVariables>
                                     <includes>
                                         <!-- Dummy test used to validate this pom -->
@@ -525,7 +402,7 @@
                 </dependency>
             </dependencies>
             <properties>
-                <extra.server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</extra.server.jvm.args>
+                <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
             <build>
                 <plugins>
@@ -588,7 +465,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -626,7 +502,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>

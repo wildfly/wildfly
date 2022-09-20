@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.ejb.interceptor.exceptions;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 /**
  * @author Stuart Douglas

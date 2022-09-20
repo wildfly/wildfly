@@ -39,7 +39,7 @@ import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
 import org.infinispan.commons.executors.ExecutorFactory;
 import org.infinispan.commons.util.concurrent.BlockingRejectedExecutionHandler;
 import org.infinispan.commons.util.concurrent.NonBlockingRejectedExecutionHandler;
-import org.jboss.as.clustering.infinispan.DefaultNonBlockingThreadFactory;
+import org.jboss.as.clustering.infinispan.executors.DefaultNonBlockingThreadFactory;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentServiceConfigurator;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolDefinition;
 import org.jboss.as.controller.OperationContext;

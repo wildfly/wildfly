@@ -25,10 +25,10 @@ package org.jboss.as.test.integration.ejb.timerservice.expired;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.ejb.EJB;
-import javax.ejb.NoMoreTimeoutsException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.TimerConfig;
+import jakarta.ejb.EJB;
+import jakarta.ejb.NoMoreTimeoutsException;
+import jakarta.ejb.NoSuchObjectLocalException;
+import jakarta.ejb.TimerConfig;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

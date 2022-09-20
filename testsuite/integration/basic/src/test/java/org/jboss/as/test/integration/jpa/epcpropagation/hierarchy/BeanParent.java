@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.jpa.epcpropagation.hierarchy;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContextType;
 
 /**
  * @author Stuart Douglas

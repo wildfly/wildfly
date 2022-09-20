@@ -23,20 +23,19 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.cache.scheduler.LinkedScheduledEntries;
 import org.wildfly.clustering.ee.cache.scheduler.LocalScheduler;
 import org.wildfly.clustering.ee.cache.scheduler.ScheduledEntries;
-import org.wildfly.clustering.ee.cache.scheduler.LinkedScheduledEntries;
 import org.wildfly.clustering.ee.cache.scheduler.SortedScheduledEntries;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
-import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
+import org.wildfly.clustering.ee.infinispan.scheduler.AbstractCacheEntryScheduler;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.infinispan.distribution.Locality;
 
 /**
  * Schedules a bean for expiration.
@@ -46,21 +45,17 @@ import org.wildfly.clustering.infinispan.distribution.Locality;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class BeanExpirationScheduler<I, T> implements Scheduler<I, ImmutableBeanEntry<I>>, Predicate<I> {
+public class BeanExpirationScheduler<I, T> extends AbstractCacheEntryScheduler<I, ImmutableBeanEntry<I>> {
 
-    private final LocalScheduler<I> scheduler;
-    private final Batcher<TransactionBatch> batcher;
     private final BeanFactory<I, T> factory;
-    private final ExpirationConfiguration<T> expiration;
-    private final BeanRemover<I, T> remover;
 
     public BeanExpirationScheduler(Group group, Batcher<TransactionBatch> batcher, BeanFactory<I, T> factory, ExpirationConfiguration<T> expiration, BeanRemover<I, T> remover, Duration closeTimeout) {
-        ScheduledEntries<I, Instant> entries = group.isSingleton() ? new LinkedScheduledEntries<>() : new SortedScheduledEntries<>();
-        this.scheduler = new LocalScheduler<>(entries, this, closeTimeout);
-        this.batcher = batcher;
+        this(group.isSingleton() ? new LinkedScheduledEntries<>() : new SortedScheduledEntries<>(), new BeanRemoveTask<>(batcher, expiration, remover), factory, closeTimeout);
+    }
+
+    private <RT extends Predicate<I> & Function<ImmutableBeanEntry<I>, Duration>> BeanExpirationScheduler(ScheduledEntries<I, Instant> entries, RT removeTask, BeanFactory<I, T> factory, Duration closeTimeout) {
+        super(new LocalScheduler<>(entries, removeTask, closeTimeout), removeTask, Duration::isNegative, ImmutableBeanEntry::getLastAccessedTime);
         this.factory = factory;
-        this.expiration = expiration;
-        this.remover = remover;
     }
 
     @Override
@@ -71,49 +66,37 @@ public class BeanExpirationScheduler<I, T> implements Scheduler<I, ImmutableBean
         }
     }
 
-    @Override
-    public void schedule(I id, ImmutableBeanEntry<I> entry) {
-        Duration timeout = this.expiration.getTimeout();
-        if (!timeout.isNegative()) {
-            InfinispanEjbLogger.ROOT_LOGGER.tracef("Scheduling stateful session bean %s to expire in %s", id, timeout);
-            this.scheduler.schedule(id, entry.getLastAccessedTime().plus(timeout));
+    private static class BeanRemoveTask<I, T> implements Predicate<I>, Function<ImmutableBeanEntry<I>, Duration> {
+        private final Batcher<TransactionBatch> batcher;
+        private final ExpirationConfiguration<T> expiration;
+        private final BeanRemover<I, T> remover;
+
+        BeanRemoveTask(Batcher<TransactionBatch> batcher, ExpirationConfiguration<T> expiration, BeanRemover<I, T> remover) {
+            this.batcher = batcher;
+            this.expiration = expiration;
+            this.remover = remover;
         }
-    }
 
-    @Override
-    public void cancel(I id) {
-        this.scheduler.cancel(id);
-    }
-
-    @Override
-    public void cancel(Locality locality) {
-        for (I id: this.scheduler) {
-            if (Thread.currentThread().isInterrupted()) break;
-            if (!locality.isLocal(new InfinispanBeanKey<>(id))) {
-                this.scheduler.cancel(id);
-            }
-        }
-    }
-
-    @Override
-    public void close() {
-        this.scheduler.close();
-    }
-
-    @Override
-    public boolean test(I id) {
-        InfinispanEjbLogger.ROOT_LOGGER.tracef("Expiring stateful session bean %s", id);
-        try (Batch batch = this.batcher.createBatch()) {
-            try {
-                this.remover.remove(id, this.expiration.getRemoveListener());
-                return true;
+        @Override
+        public boolean test(I id) {
+            InfinispanEjbLogger.ROOT_LOGGER.tracef("Expiring stateful session bean %s", id);
+            try (Batch batch = this.batcher.createBatch()) {
+                try {
+                    this.remover.remove(id, this.expiration.getRemoveListener());
+                    return true;
+                } catch (RuntimeException e) {
+                    batch.discard();
+                    throw e;
+                }
             } catch (RuntimeException e) {
-                batch.discard();
-                throw e;
+                InfinispanEjbLogger.ROOT_LOGGER.failedToExpireBean(e, id);
+                return false;
             }
-        } catch (RuntimeException e) {
-            InfinispanEjbLogger.ROOT_LOGGER.failedToExpireBean(e, id);
-            return false;
+        }
+
+        @Override
+        public Duration apply(ImmutableBeanEntry<I> entry) {
+            return this.expiration.getTimeout();
         }
     }
 }

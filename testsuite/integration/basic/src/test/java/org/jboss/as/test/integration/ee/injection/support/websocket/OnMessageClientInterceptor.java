@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.injection.support.websocket;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 public class OnMessageClientInterceptor {
 

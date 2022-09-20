@@ -24,13 +24,45 @@
                     <param name="interval" value="0"/>
                 </feature>
                 <feature spec="subsystem.infinispan.cache-container.distributed-cache.store.file">
-                    <unset param="relative-to"/>
+                    <param name="passivation" value="true"/>
+                    <param name="purge" value="true"/>
                 </feature>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.replicated-cache">
                 <param name="replicated-cache" value="client-mappings"/>
                 <feature spec="subsystem.infinispan.cache-container.replicated-cache.component.expiration">
                     <param name="interval" value="0"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.infinispan.cache-container.distributed-cache">
+                <param name="distributed-cache" value="persistent"/>
+                <feature spec="subsystem.infinispan.cache-container.distributed-cache.component.locking">
+                    <param name="isolation" value="REPEATABLE_READ"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.distributed-cache.component.transaction">
+                    <param name="mode" value="BATCH"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.distributed-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.distributed-cache.store.file">
+                    <param name="passivation" value="true"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <param name="local-cache" value="transient"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.locking">
+                    <param name="isolation" value="REPEATABLE_READ"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.transaction">
+                    <param name="mode" value="BATCH"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
+                    <param name="passivation" value="true"/>
+                    <param name="purge" value="true"/>
                 </feature>
             </feature>
         </feature>

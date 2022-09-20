@@ -12,11 +12,11 @@
 
 package org.jboss.as.test.integration.batch.common;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.batch.api.BatchProperty;
-import javax.batch.api.Batchlet;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.Batchlet;
+import jakarta.inject.Inject;
 
 public class BatchletNoNamed extends PostConstructPreDestroyBase implements Batchlet {
     @Inject

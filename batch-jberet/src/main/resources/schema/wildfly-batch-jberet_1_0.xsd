@@ -91,7 +91,6 @@
         <xs:choice minOccurs="1" maxOccurs="1">
             <xs:element name="in-memory" type="in-memoryType"/>
             <xs:element name="jdbc" type="jdbcType"/>
-            <xs:element name="jpa" type="jpaType"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
@@ -107,17 +106,6 @@
     </xs:complexType>
 
     <xs:complexType name="jdbcType">
-        <xs:annotation>
-            <xs:documentation>
-                <![CDATA[
-                        Used to describe how the job repository should connect to a database.
-                ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="data-source" type="xs:token" use="required"/>
-    </xs:complexType>
-	
-    <xs:complexType name="jpaType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[

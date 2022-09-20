@@ -46,7 +46,7 @@ import java.util.Locale;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -65,7 +65,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
-//import org.jboss.as.test.integration.security.common.AddRoleLoginModule;
 import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.SecurityTraceLoggingServerSetupTask;
@@ -80,7 +79,6 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.security.auth.spi.BaseCertLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assume;
@@ -531,7 +529,7 @@ public class HTTPSWebConnectorTestCase {
             final SecurityDomain sd = new SecurityDomain.Builder()
                     .name(SECURITY_DOMAIN_CERT)
                     .loginModules(
-                            new SecurityModule.Builder().name(BaseCertLoginModule.class.getName())
+                            new SecurityModule.Builder().name("org.jboss.security.auth.spi.BaseCertLoginModule")
                                     .putOption("securityDomain", SECURITY_DOMAIN_JSSE)
                                     .putOption("password-stacking", "useFirstPass").build(),
                             new SecurityModule.Builder().name("REMOVED").flag("optional") // AddRoleLoginModule.class.getName()

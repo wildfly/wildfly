@@ -22,25 +22,50 @@
 
 package org.wildfly.clustering.weld.contexts;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.PassivationCapable;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.PassivationCapable;
 
+import org.jboss.weld.Container;
 import org.jboss.weld.bean.ForwardingBean;
+import org.jboss.weld.serialization.spi.BeanIdentifier;
+import org.jboss.weld.serialization.spi.ContextualStore;
+import org.jboss.weld.util.Beans;
 
 /**
  * @author Paul Ferraro
  */
-public class PassivationCapableSerializableBean<B extends Bean<I> & PassivationCapable, I> extends ForwardingBean<I> implements PassivationCapableContextual<B, I> {
+public class PassivationCapableSerializableBean<B extends Bean<I> & PassivationCapable, I> extends ForwardingBean<I> implements PassivationCapableContextual<B, I>, MarshallableContextual<B> {
     private static final long serialVersionUID = -840179425829721439L;
 
     private final String contextId;
-    private final B instance;
+    private final BeanIdentifier identifier;
+    private B instance;
 
     public PassivationCapableSerializableBean(String contextId, B instance) {
+        this(contextId, Beans.getIdentifier(instance, Container.instance(contextId).services().get(ContextualStore.class)), instance);
+    }
+
+    PassivationCapableSerializableBean(String contextId, BeanIdentifier identifier) {
+        this(contextId, identifier, null);
+    }
+
+    private PassivationCapableSerializableBean(String contextId, BeanIdentifier identifier, B instance) {
         this.contextId = contextId;
         this.instance = instance;
+        this.identifier = identifier;
+    }
+
+    @Override
+    public BeanIdentifier getIdentifier() {
+        return this.identifier;
+    }
+
+    @Override
+    public B getInstance() {
+        return this.instance;
     }
 
     @Override
@@ -50,6 +75,12 @@ public class PassivationCapableSerializableBean<B extends Bean<I> & PassivationC
 
     @Override
     public B get() {
+        // Resolve contextual lazily
+        if (this.instance == null) {
+            Container container = Container.instance(this.contextId);
+            ContextualStore store = container.services().get(ContextualStore.class);
+            this.instance = store.getContextual(this.identifier);
+        }
         return this.instance;
     }
 
@@ -63,7 +94,8 @@ public class PassivationCapableSerializableBean<B extends Bean<I> & PassivationC
         return this.contextId;
     }
 
-    private Object writeReplace() {
-        return (this.instance instanceof Serializable) ? this : new PassivationCapableSerializableContextualProxy<>(this.contextId, this.instance);
+    @SuppressWarnings("unused")
+    private Object writeReplace() throws ObjectStreamException {
+        return (this.instance instanceof Serializable) ? this : new PassivationCapableSerializableContextualProxy<>(this.contextId, this.identifier);
     }
 }

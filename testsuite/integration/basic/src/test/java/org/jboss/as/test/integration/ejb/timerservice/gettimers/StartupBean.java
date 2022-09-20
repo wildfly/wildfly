@@ -27,11 +27,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.ejb.Timer;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * @author Tomas Hofman (thofman@redhat.com)

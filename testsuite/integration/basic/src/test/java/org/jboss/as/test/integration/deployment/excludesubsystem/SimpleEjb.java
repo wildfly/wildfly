@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.deployment.excludesubsystem;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class SimpleEjb {

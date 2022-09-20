@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.ejb.timerservice.database;
 
 import java.util.Date;
-import javax.ejb.TimerConfig;
+import jakarta.ejb.TimerConfig;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

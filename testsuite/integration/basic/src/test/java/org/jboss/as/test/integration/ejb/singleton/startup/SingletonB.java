@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.singleton.startup;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Remote;
-import javax.ejb.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Singleton;
 
 import org.jboss.logging.Logger;
 

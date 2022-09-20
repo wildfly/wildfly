@@ -23,23 +23,23 @@ package org.jboss.as.test.manualmode.jca.workmanager.distributed.ra;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.resource.Referenceable;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ResourceAdapterAssociation;
+import jakarta.resource.Referenceable;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.ResourceAdapterAssociation;
 import java.io.Serializable;
 
 import org.jboss.logging.Logger;
 
 /**
  * Note that since the implementation contains a {@link ResourceAdapter} field, and that field is
- * not serializable, the admin object can only be injected via {@link javax.annotation.Resource}.
+ * not serializable, the admin object can only be injected via {@link jakarta.annotation.Resource}.
  *
  * That means that the tests that you write can't use
  * {@link org.jboss.arquillian.container.test.api.RunAsClient} and look up the object remotely.
  *
  * What you can do, is deploy an Jakarta Enterprise Beans, that will report the statistics via its admin object. You
  * should be able to lookup that Jakarta Enterprise Beans and use it as a proxy to the resource adapter below. However,
- * the Jakarta Enterprise Beans has to be {@link javax.ejb.Stateless}, otherwise, once started in a cluster, a session is
+ * the Jakarta Enterprise Beans has to be {@link jakarta.ejb.Stateless}, otherwise, once started in a cluster, a session is
  * going to be created for it which has to be serializable.
  */
 public class DistributedAdminObject1Impl implements DistributedAdminObject1,

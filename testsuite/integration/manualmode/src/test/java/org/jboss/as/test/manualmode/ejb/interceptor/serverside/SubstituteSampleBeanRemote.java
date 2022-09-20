@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.manualmode.ejb.interceptor.serverside;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface SubstituteSampleBeanRemote {

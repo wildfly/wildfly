@@ -508,7 +508,7 @@ to identify one WildFly process to another, typically in a WildFly managed domai
 [source,options="nowrap"]
 ----
 Is this new user going to be used for one AS process to connect to another AS process? 
-e.g. for a slave host controller connecting to the master or for a Remoting connection for server to server Jakarta Enterprise Beans calls.
+e.g. for a secondary host controller connecting to the primary or for a Remoting connection for server to server Jakarta Enterprise Beans calls.
 yes/no?
 ----
 

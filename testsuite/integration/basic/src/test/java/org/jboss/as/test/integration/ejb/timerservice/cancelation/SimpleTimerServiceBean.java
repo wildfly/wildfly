@@ -24,13 +24,13 @@ package org.jboss.as.test.integration.ejb.timerservice.cancelation;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.Singleton;
-import javax.ejb.Timeout;
-import javax.ejb.TimerHandle;
-import javax.ejb.TimerService;
+import jakarta.annotation.Resource;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.TimerHandle;
+import jakarta.ejb.TimerService;
 
 /**
  * @author Stuart Douglas
@@ -64,7 +64,7 @@ public class SimpleTimerServiceBean {
         if (first) {
             timerEntry.countDown();
             try {
-                timerExit.await();
+                timerExit.await(10, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

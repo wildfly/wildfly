@@ -4,9 +4,9 @@ package org.jboss.as.test.integration.ws.basic;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-import javax.xml.ws.BindingType;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.BindingType;
 
 
 @WebService(
@@ -14,7 +14,7 @@ import javax.xml.ws.BindingType;
         targetNamespace = "http://jbossws.org/basic",
         endpointInterface = "org.jboss.as.test.integration.ws.basic.InstanceCountEndpointIface"
 )
-@BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
+@BindingType(jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class InstanceCountEndpoint implements InstanceCountEndpointIface {
 
     public static int instanceNum = 0;

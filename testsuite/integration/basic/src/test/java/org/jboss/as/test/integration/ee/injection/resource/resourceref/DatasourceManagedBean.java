@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 
-import javax.annotation.ManagedBean;
+import jakarta.annotation.ManagedBean;
 import javax.sql.DataSource;
 
 /**

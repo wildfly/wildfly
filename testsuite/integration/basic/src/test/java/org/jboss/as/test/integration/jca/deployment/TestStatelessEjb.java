@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.jca.deployment;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.naming.InitialContext;
-import javax.resource.ConnectionFactoryDefinition;
-import javax.resource.ConnectionFactoryDefinitions;
+import jakarta.resource.ConnectionFactoryDefinition;
+import jakarta.resource.ConnectionFactoryDefinitions;
 
 /**
  * This is the impl for a stateless ejb.

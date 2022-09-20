@@ -25,7 +25,7 @@ import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;

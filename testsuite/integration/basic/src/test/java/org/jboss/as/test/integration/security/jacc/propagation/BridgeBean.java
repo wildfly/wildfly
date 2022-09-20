@@ -21,15 +21,15 @@
  */
 package org.jboss.as.test.integration.security.jacc.propagation;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RolesAllowed;
-import javax.annotation.security.RunAs;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RunAs;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 
 /**
  * Implementation of {@link Manage} interface which has injected {@link TargetBean} EJB and calls it's methods as
- * {@link Manage#ROLE_MANAGER} role (using {@link javax.annotation.security.RunAs} annotation). This class is protected, it
+ * {@link Manage#ROLE_MANAGER} role (using {@link jakarta.annotation.security.RunAs} annotation). This class is protected, it
  * allows access to all test roles. Methods of this class are not protected.
  *
  * @author Josef Cacek

@@ -31,7 +31,7 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
-import org.jboss.as.clustering.infinispan.ChannelConfigurator;
+import org.jboss.as.clustering.infinispan.transport.ChannelConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;

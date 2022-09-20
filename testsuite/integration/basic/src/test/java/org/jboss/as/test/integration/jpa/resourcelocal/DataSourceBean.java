@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.jpa.resourcelocal;
 
-import javax.annotation.Resource;
-import javax.annotation.sql.DataSourceDefinition;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.annotation.sql.DataSourceDefinition;
+import jakarta.ejb.Stateless;
 import javax.sql.DataSource;
 
 /**

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ee.injection.support;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class Charlie {
 

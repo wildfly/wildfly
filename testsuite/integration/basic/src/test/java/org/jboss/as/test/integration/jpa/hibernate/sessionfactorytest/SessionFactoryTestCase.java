@@ -38,6 +38,7 @@ import org.jboss.as.test.integration.jpa.hibernate.Employee;
 import org.jboss.as.test.integration.jpa.hibernate.SFSB1;
 import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSession;
 import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSessionFactory;
+import org.jboss.as.test.shared.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -58,6 +59,10 @@ public class SessionFactoryTestCase {
     // This test needs to be recompiled against Hibernate ORM 6 (WFLY-16178) in order to pass.
     @BeforeClass
     public static void beforeClass() {
+
+        // TODO WFLY-16974
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
+
         assumeTrue(System.getProperty("ts.ee9") == null && System.getProperty("ts.bootable.ee9") == null);
     }
 
@@ -124,6 +129,7 @@ public class SessionFactoryTestCase {
     // Test that a Persistence unit can be injected into a Hibernate Session factory
     @Test
     public void testInjectPUIntoHibernateSessionFactory() throws Exception {
+
         SFSBHibernateSessionFactory sfsbHibernateSessionFactory =
                 lookup("SFSBHibernateSessionFactory", SFSBHibernateSessionFactory.class);
         sfsbHibernateSessionFactory.createEmployee("Sharon", "3 beach ave", 3);

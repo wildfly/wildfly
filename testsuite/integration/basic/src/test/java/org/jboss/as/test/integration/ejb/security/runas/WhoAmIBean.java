@@ -21,14 +21,14 @@
  */
 package org.jboss.as.test.integration.ejb.security.runas;
 
-import static javax.ejb.TransactionAttributeType.SUPPORTS;
+import static jakarta.ejb.TransactionAttributeType.SUPPORTS;
 
 import java.security.Principal;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
 
 import org.jboss.as.test.integration.ejb.security.WhoAmI;
 import org.jboss.ejb3.annotation.SecurityDomain;

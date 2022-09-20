@@ -56,6 +56,7 @@ public class ImplementValidityAuditStrategyTestCase {
 
     @BeforeClass
     public static void beforeClass() throws NamingException {
+
         iniCtx = new InitialContext();
     }
 

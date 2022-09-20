@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="embedded-activemq">
+    <dependencies>
+        <layer name="resource-adapters"/>
+        <layer name="cdi"/>
+        <layer name="ee"/>
+        <layer name="naming"/>
+        <layer name="elytron"/>
+        <!--- For http-invoker and http-acceptors -->
+        <layer name="remoting"/>
+        <layer name="undertow"/>
+    </dependencies>
+    <feature-group name="embedded-activemq"/>
+    <feature-group name="application-http-basic"/>
+    <feature-group name="undertow-http-invoker"/>
+</layer-spec>

@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
 
 /**
  * User: jpai

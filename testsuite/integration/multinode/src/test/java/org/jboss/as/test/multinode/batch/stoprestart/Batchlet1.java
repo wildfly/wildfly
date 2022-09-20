@@ -24,12 +24,14 @@ package org.jboss.as.test.multinode.batch.stoprestart;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.batch.api.BatchProperty;
-import javax.batch.api.Batchlet;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.Batchlet;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 @Named
+@Dependent
 public class Batchlet1 implements Batchlet {
     private final AtomicBoolean stopRequested = new AtomicBoolean();
 

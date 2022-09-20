@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.packaging.multimodule;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
 
 /**
  * User: jpai

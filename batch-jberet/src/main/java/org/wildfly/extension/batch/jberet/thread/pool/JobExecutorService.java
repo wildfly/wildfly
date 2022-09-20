@@ -24,36 +24,37 @@ package org.wildfly.extension.batch.jberet.thread.pool;
 
 import org.jberet.spi.JobExecutor;
 import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class JobExecutorService implements Service<JobExecutor> {
+public class JobExecutorService implements Service {
 
-    private final InjectedValue<ManagedJBossThreadPoolExecutorService> threadPoolInjector = new InjectedValue<>();
-    private WildFlyJobExecutor jobExecutor;
+    private final Consumer<JobExecutor> jobExecutorConsumer;
+    private final Supplier<ManagedJBossThreadPoolExecutorService> threadPoolSupplier;
 
-    @Override
-    public synchronized void start(final StartContext context) throws StartException {
-        jobExecutor = new WildFlyJobExecutor(threadPoolInjector.getValue());
+    public JobExecutorService(final Consumer<JobExecutor> jobExecutorConsumer,
+                              final Supplier<ManagedJBossThreadPoolExecutorService> threadPoolSupplier) {
+        this.jobExecutorConsumer = jobExecutorConsumer;
+        this.threadPoolSupplier = threadPoolSupplier;
     }
 
     @Override
-    public synchronized void stop(final StopContext context) {
-        jobExecutor = null;
+    public void start(final StartContext context) throws StartException {
+        jobExecutorConsumer.accept(new WildFlyJobExecutor(threadPoolSupplier.get()));
     }
 
     @Override
-    public JobExecutor getValue() throws IllegalStateException, IllegalArgumentException {
-        return jobExecutor;
+    public void stop(final StopContext context) {
+        jobExecutorConsumer.accept(null);
     }
 
-    public InjectedValue<ManagedJBossThreadPoolExecutorService> getThreadPoolInjector() {
-        return threadPoolInjector;
-    }
 }

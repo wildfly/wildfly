@@ -613,13 +613,17 @@
                     <http-connector name="http-connector-throughput" socket-binding="http" endpoint="http-acceptor-throughput">
                         <param name="batch-delay" value="50"/>
                     </http-connector>
-                    <in-vm-connector name="in-vm" server-id="0"/>
+                    <in-vm-connector name="in-vm" server-id="0">
+                        <param name="buffer-pooling" value="false"/>
+                    </in-vm-connector>
                     <http-acceptor name="http-acceptor" http-listener="default"/>
                     <http-acceptor name="http-acceptor-throughput" http-listener="default">
                         <param name="batch-delay" value="50"/>
                         <param name="direct-deliver" value="false"/>
                     </http-acceptor>
-                    <in-vm-acceptor name="in-vm" server-id="0"/>
+                    <in-vm-acceptor name="in-vm" server-id="0">
+                        <param name="buffer-pooling" value="false"/>
+                    </in-vm-acceptor>
                     <jms-queue name="ExpiryQueue" entries="java:/jms/queue/ExpiryQueue"/>
                     <jms-queue name="DLQ" entries="java:/jms/queue/DLQ"/>
                     <jms-queue name="testQueue" entries="queue/test"/>
@@ -861,7 +865,7 @@
         <server-group name="reload-test-group" profile="minimal">
             <socket-binding-group ref="reload-sockets"/>
             <jvm name="default">
-                <heap size="64m" max-size="64m"/>
+                <heap size="64m" max-size="100m"/>
             </jvm>
         </server-group>
     </server-groups>

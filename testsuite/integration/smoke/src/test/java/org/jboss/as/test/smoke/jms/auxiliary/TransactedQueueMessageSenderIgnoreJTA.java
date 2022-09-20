@@ -24,22 +24,22 @@ package org.jboss.as.test.smoke.jms.auxiliary;
 
 import org.jboss.logging.Logger;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.enterprise.context.RequestScoped;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSConnectionFactoryDefinition;
-import javax.jms.JMSConnectionFactoryDefinitions;
-import javax.jms.JMSContext;
-import javax.jms.JMSDestinationDefinition;
-import javax.jms.Queue;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSConnectionFactoryDefinition;
+import jakarta.jms.JMSConnectionFactoryDefinitions;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.Queue;
 
 @JMSDestinationDefinition(
         name = "java:/app/jms/nonXAQueue",
-        interfaceName = "javax.jms.Queue"
+        interfaceName = "jakarta.jms.Queue"
 )
 
 @JMSConnectionFactoryDefinitions(

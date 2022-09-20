@@ -51,6 +51,8 @@ public enum EJB3SubsystemXMLAttribute {
     DEFAULT_ACCESS_TIMEOUT("default-access-timeout"),
     DEFAULT_SESSION_TIMEOUT("default-session-timeout"),
     DEFAULT_DATA_STORE("default-data-store"),
+    DEFAULT_PERSISTENT_TIMER_MANAGEMENT(EJB3SubsystemModel.DEFAULT_PERSISTENT_TIMER_MANAGEMENT),
+    DEFAULT_TRANSIENT_TIMER_MANAGEMENT(EJB3SubsystemModel.DEFAULT_TRANSIENT_TIMER_MANAGEMENT),
     DATABASE("database"),
     DATASOURCE_JNDI_NAME("datasource-jndi-name"),
 

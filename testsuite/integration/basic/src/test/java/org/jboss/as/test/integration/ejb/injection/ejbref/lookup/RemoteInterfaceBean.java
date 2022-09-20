@@ -16,7 +16,7 @@
  */
 package org.jboss.as.test.integration.ejb.injection.ejbref.lookup;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class RemoteInterfaceBean implements RemoteInterface {

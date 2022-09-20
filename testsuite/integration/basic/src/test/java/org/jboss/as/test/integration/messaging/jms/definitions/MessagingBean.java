@@ -19,92 +19,80 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.messaging.jms.definitions;
 
-import static javax.jms.JMSContext.AUTO_ACKNOWLEDGE;
+import static jakarta.jms.JMSContext.AUTO_ACKNOWLEDGE;
 import static org.junit.Assert.assertNotNull;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSConnectionFactoryDefinition;
-import javax.jms.JMSConnectionFactoryDefinitions;
-import javax.jms.JMSConsumer;
-import javax.jms.JMSContext;
-import javax.jms.JMSDestinationDefinition;
-import javax.jms.JMSDestinationDefinitions;
-import javax.jms.Queue;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.Topic;
-import javax.jms.TopicConnectionFactory;
-
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSConnectionFactoryDefinition;
+import jakarta.jms.JMSConsumer;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueConnectionFactory;
+import jakarta.jms.Topic;
+import jakarta.jms.TopicConnectionFactory;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
 @JMSDestinationDefinition(
-        name="java:comp/env/myQueue4",
-        interfaceName="javax.jms.Queue"
+        name = "java:comp/env/myQueue4",
+        interfaceName = "jakarta.jms.Queue"
 )
-@JMSDestinationDefinitions(
-        value =  {
-                @JMSDestinationDefinition(
-                        name="java:module/env/myQueue1",
-                        interfaceName="javax.jms.Queue",
-                        destinationName="myQueue1"
-                ),
-                @JMSDestinationDefinition(
-                        name="java:module/env/myTopic1",
-                        interfaceName="javax.jms.Topic",
-                        destinationName="myTopic1"
-                ),
-                @JMSDestinationDefinition(
-                        // explicitly mention a resourceAdapter corresponding to a pooled-connection-factory resource
-                        resourceAdapter = "activemq-ra",
-                        name="java:global/env/myQueue2",
-                        interfaceName="javax.jms.Queue",
-                        destinationName="myQueue2",
-                        properties = {
-                                "durable=false",
-                                "selector=color = 'red'"
-                        }
-                )
+@JMSDestinationDefinition(
+        name = "java:module/env/myQueue1",
+        interfaceName = "jakarta.jms.Queue",
+        destinationName = "myQueue1"
+)
+@JMSDestinationDefinition(
+        name = "java:module/env/myTopic1",
+        interfaceName = "jakarta.jms.Topic",
+        destinationName = "myTopic1"
+)
+@JMSDestinationDefinition(
+        // explicitly mention a resourceAdapter corresponding to a pooled-connection-factory resource
+        resourceAdapter = "activemq-ra",
+        name = "java:global/env/myQueue2",
+        interfaceName = "jakarta.jms.Queue",
+        destinationName = "myQueue2",
+        properties = {
+            "durable=false",
+            "selector=color = 'red'"
         }
 )
-@JMSConnectionFactoryDefinitions(
-        value = {
-                @JMSConnectionFactoryDefinition(
-                        name="java:module/myFactory1",
-                        properties = {
-                                "connector=http-connector",
-                                "initial-connect-attempts=3"
-                        },
-                        user = "guest",
-                        password = "guest",
-                        clientId = "myClientID1",
-                        maxPoolSize = 2,
-                        minPoolSize = 1
-                ),
-                @JMSConnectionFactoryDefinition(
-                        name="java:comp/env/myFactory2"
-                ),
-                @JMSConnectionFactoryDefinition(
-                        name="java:comp/env/myFactory5",
-                        interfaceName = "javax.jms.QueueConnectionFactory",
-                        user = "${test.userName}",
-                        password = "${test.password}"
-                )
-        }
+@JMSConnectionFactoryDefinition(
+        name = "java:module/myFactory1",
+        properties = {
+            "connector=http-connector",
+            "initial-connect-attempts=3"
+        },
+        user = "guest",
+        password = "guest",
+        clientId = "myClientID1",
+        maxPoolSize = 2,
+        minPoolSize = 1
+)
+@JMSConnectionFactoryDefinition(
+        name = "java:comp/env/myFactory2"
+)
+@JMSConnectionFactoryDefinition(
+        name = "java:comp/env/myFactory5",
+        interfaceName = "jakarta.jms.QueueConnectionFactory",
+        user = "${test.userName}",
+        password = "${test.password}"
 )
 @JMSConnectionFactoryDefinition(
         // explicitly mention a resourceAdapter corresponding to a pooled-connection-factory resource
         resourceAdapter = "activemq-ra",
-        name="java:global/myFactory3",
-        interfaceName = "javax.jms.QueueConnectionFactory",
+        name = "java:global/myFactory3",
+        interfaceName = "jakarta.jms.QueueConnectionFactory",
         properties = {
-                "connector=http-connector",
-                "initial-connect-attempts=5"
+            "connector=http-connector",
+            "initial-connect-attempts=5"
         },
         user = "guest",
         password = "guest",

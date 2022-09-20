@@ -51,8 +51,12 @@ public class ByteBufferMarshalledValueFactoryTestCase {
     }
 
     protected ByteBufferMarshalledValueFactoryTestCase(ByteBufferMarshaller marshaller) {
+        this(marshaller, new ByteBufferMarshalledValueFactory(marshaller));
+    }
+
+    ByteBufferMarshalledValueFactoryTestCase(ByteBufferMarshaller marshaller, ByteBufferMarshalledValueFactory factory) {
         this.marshaller = marshaller;
-        this.factory = new ByteBufferMarshalledValueFactory(marshaller);
+        this.factory = factory;
     }
 
     @Test

@@ -19,7 +19,7 @@ package org.jboss.as.jaxrs.deployment;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Map;
-import javax.enterprise.concurrent.ContextService;
+import jakarta.enterprise.concurrent.ContextService;
 
 import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
 import org.jboss.as.ee.concurrent.handle.ResetContextHandle;

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.register;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface TestRemote {

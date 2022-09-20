@@ -24,11 +24,10 @@ package org.jboss.as.test.integration.jca.beanvalidation.ra;
 import java.io.Serializable;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.resource.Referenceable;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ResourceAdapterAssociation;
-
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.resource.Referenceable;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.ResourceAdapterAssociation;
+import jakarta.validation.constraints.NotEmpty;
 
 /**
  * Admin object implementation

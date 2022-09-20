@@ -50,14 +50,15 @@ public class ManagedThreadFactoryAdd extends AbstractAddStepHandler {
         final int priority = ManagedThreadFactoryResourceDefinition.PRIORITY_AD.resolveModelAttribute(context, model).asInt();
 
         final ManagedThreadFactoryService service = new ManagedThreadFactoryService(name, jndiName, priority);
-        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedThreadFactoryResourceDefinition.CAPABILITY, service);
+        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedThreadFactoryResourceDefinition.CAPABILITY);
         String contextService = null;
-        if(model.hasDefined(ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE)) {
+        if (model.hasDefined(ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE)) {
             contextService = ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();
         }
         if (contextService != null) {
             serviceBuilder.addCapabilityRequirement(ContextServiceResourceDefinition.CAPABILITY.getName(), ContextServiceImpl.class, service.getContextServiceInjector(), contextService);
         }
+        serviceBuilder.setInstance(service);
         serviceBuilder.install();
     }
 }

@@ -42,7 +42,7 @@ import static org.junit.Assert.assertEquals;
  *
  * The container should register a servlet with the name
  *
- * javax.ws.rs.core.Application
+ * jakarta.ws.rs.core.Application
  *
  * It is the app providers responsibility to provide a mapping for the servlet
  *
@@ -60,7 +60,7 @@ public class NoApplicationIntegrationTestCase {
         war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(NoApplicationIntegrationTestCase.class, HelloWorldResource.class);
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
                 "\n"),"web.xml");

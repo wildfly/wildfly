@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.jca.rar;
 
 import java.io.Serializable;
-import javax.resource.Referenceable;
+import jakarta.resource.Referenceable;
 
 /**
  * MultipleAdminObject2

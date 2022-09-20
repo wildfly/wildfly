@@ -51,6 +51,7 @@ public class BasicEnversTestCase {
 
     @BeforeClass
     public static void beforeClass() throws NamingException {
+
         iniCtx = new InitialContext();
     }
 
@@ -72,6 +73,7 @@ public class BasicEnversTestCase {
 
     @Test
     public void testSimpleEnversOperation() throws Exception {
+
         SLSBPU slsbpu = lookup("SLSBPU", SLSBPU.class);
         Person p1 = slsbpu.createPerson("Strong", "Liu", "kexueyuan source road", 307);
         Person p2 = slsbpu.createPerson("tom", "cat", "apache", 34);

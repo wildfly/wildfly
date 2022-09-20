@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ws.wsse.trust.holderofkey;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
 
 @WebService
         (

@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.mdb.messagelistener.nomethodinterface;
 
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.EJB;
-import javax.ejb.MessageDriven;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.EJB;
+import jakarta.ejb.MessageDriven;
 
 import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;

@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp</artifactId>
@@ -61,12 +61,9 @@
         <ts.microprofile-tck-provisioning.base.layer>FIXME-must-override</ts.microprofile-tck-provisioning.base.layer>
         <ts.microprofile-tck-provisioning.decorator.layer>FIXME-must-override</ts.microprofile-tck-provisioning.decorator.layer>
 
-        <!-- By default (i.e. Java EE) use the following directory as an additional source -->
-        <ts.microprofile-tck.build-helper.source.dir>src/test/javax/java</ts.microprofile-tck.build-helper.source.dir>
-
         <!-- Use the complete WF dependencyManagement set, not just the default EE set -->
-        <dependency.management.import.artifact>wildfly-feature-pack-parent</dependency.management.import.artifact>
-        
+        <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
+
         <!-- Properties used in certification script -->
         <version.config>${version.org.eclipse.microprofile.config.api}</version.config>
         <version.fault-tolerance>${version.org.eclipse.microprofile.fault-tolerance.api}</version.fault-tolerance>
@@ -194,30 +191,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <!--
-                    Here because for some tests we need some helper classes which need to access the javax/jakarta
-                    APIs.
-                    In these cases use test/javax/java for the EE8 version, and test/jakarta/java for the EE9+ version.
-                    The latter is set up by the ee9.test.profile which is enabled by -Dts.ee9
-                -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>add-test-source-directory</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${ts.microprofile-tck.build-helper.source.dir}</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -291,19 +264,13 @@
             </activation>
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
-                <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
+                <maven.repo.local>${settings.localRepository}</maven.repo.local>
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
-
-                <!-- Test framework only dependencies - don't update in ee-9/pom.xml -->
-                <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
-                <version.org.wildfly.arquillian>5.0.0.Alpha2</version.org.wildfly.arquillian>
-                <!-- For EE9 use the following directory as an additional source -->
-                <ts.microprofile-tck.build-helper.source.dir>src/test/jakarta/java</ts.microprofile-tck.build-helper.source.dir>
                 <!-- Use the WFP dependencyManagement set.
                      This is set in this profile in a parent module, but the explicit global override
                      in this module takes precedence. -->
-                <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
+                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
             </properties>
             <build>
                 <plugins>
@@ -317,7 +284,6 @@
                                 <configuration>
                                     <plugin-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                     </plugin-options>
                                 </configuration>
                             </execution>
@@ -413,6 +379,7 @@
             <properties>
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
+                <maven.repo.local>${settings.localRepository}</maven.repo.local>
             </properties>
             <build>
                 <plugins>
@@ -454,30 +421,13 @@
             <properties>
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
-                <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
                 <!-- Use the WFP dependencyManagement set.
                      This is set in this profile in a parent module, but the explicit global override
                      in this module takes precedence. -->
-                <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
+                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
             </properties>
             <build>
                 <plugins>
-                     <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <!-- Override the standard tck provisioning to add EE 9 transformation settings -->
-                                <id>bootable-jar-microprofile-tck-packaging</id>
-                                <configuration>
-                                    <plugin-options combine-children="append">
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
-                                    </plugin-options>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
@@ -494,13 +444,6 @@
                                 </classpathDependencyExclude>
                             </classpathDependencyExcludes>
                         </configuration>
-                        <!-- Disaable bootable jar Preview tests for now -->
-                        <executions>
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>

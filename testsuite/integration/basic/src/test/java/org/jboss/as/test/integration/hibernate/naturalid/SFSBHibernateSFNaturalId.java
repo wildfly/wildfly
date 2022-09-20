@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.hibernate.naturalid;
 
-import javax.ejb.Stateful;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -56,7 +56,6 @@ public class SFSBHibernateSFNaturalId {
         try {
             final ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder(new BootstrapServiceRegistryBuilder().build())
                     .configure("hibernate.cfg.xml")
-                    .applySetting(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true")
                     .applySetting(AvailableSettings.HBM2DDL_AUTO, "create-drop")
                     .applySetting(AvailableSettings.DATASOURCE, "java:jboss/datasources/ExampleDS")
                     .build();

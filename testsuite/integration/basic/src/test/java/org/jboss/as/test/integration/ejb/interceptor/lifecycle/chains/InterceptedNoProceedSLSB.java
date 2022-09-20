@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.lifecycle.chains;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
 
 /**
  * @author Stuart Douglas

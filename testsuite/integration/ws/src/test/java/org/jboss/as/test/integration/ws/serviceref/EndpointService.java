@@ -25,15 +25,15 @@ package org.jboss.as.test.integration.ws.serviceref;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.WebEndpoint;
-import javax.xml.ws.WebServiceClient;
-import javax.xml.ws.WebServiceFeature;
+import jakarta.xml.ws.WebEndpoint;
+import jakarta.xml.ws.WebServiceClient;
+import jakarta.xml.ws.WebServiceFeature;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @WebServiceClient(name = "EndpointService", targetNamespace = "http://www.openuri.org/2004/04/HelloWorld")
-public class EndpointService extends javax.xml.ws.Service {
+public class EndpointService extends jakarta.xml.ws.Service {
     private static final QName TEST_ENDPOINT_PORT = new QName("http://www.openuri.org/2004/04/HelloWorld", "EJB3BeanPort");
 
     public EndpointService(URL wsdlLocation, QName serviceName) {

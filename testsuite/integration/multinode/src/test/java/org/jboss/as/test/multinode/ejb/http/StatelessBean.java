@@ -24,10 +24,10 @@ package org.jboss.as.test.multinode.ejb.http;
 
 import org.jboss.logging.Logger;
 
-import javax.ejb.Local;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.Local;
+import jakarta.ejb.NoSuchEJBException;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

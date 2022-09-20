@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ws.cdi.interceptor;
 
-import javax.ejb.Stateless;
-import javax.jws.WebService;
+import jakarta.ejb.Stateless;
+import jakarta.jws.WebService;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>

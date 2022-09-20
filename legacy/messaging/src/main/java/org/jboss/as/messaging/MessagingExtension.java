@@ -34,11 +34,13 @@ import static org.jboss.as.messaging.Namespace.MESSAGING_2_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_3_0;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -210,12 +212,12 @@ public class MessagingExtension extends AbstractLegacyExtension {
 
         // Messaging paths
         //todo, shouldn't we leverage Path service from AS? see: package org.jboss.as.controller.services.path
-        for (final String path : PathDefinition.PATHS.keySet()) {
-            ManagementResourceRegistration binding = serverRegistration.registerSubModel(new PathDefinition(pathElement(ModelDescriptionConstants.PATH, path)));
+        for (final Map.Entry<String, SimpleAttributeDefinition> entry : PathDefinition.PATHS.entrySet()) {
+            ManagementResourceRegistration binding = serverRegistration.registerSubModel(new PathDefinition(pathElement(ModelDescriptionConstants.PATH, entry.getKey())));
             // Create the path resolver operation
             if (context.getProcessType().isServer()) {
                 final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
-                        .setPathAttribute(PathDefinition.PATHS.get(path))
+                        .setPathAttribute(entry.getValue())
                         .setRelativeToAttribute(PathDefinition.RELATIVE_TO)
                         .build();
                 binding.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);

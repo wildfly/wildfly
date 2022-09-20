@@ -24,7 +24,7 @@ package org.wildfly.clustering.web.undertow.sso.elytron;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.junit.Assert;
 import org.junit.Test;

@@ -24,9 +24,8 @@ package org.wildfly.clustering.ee.cache.scheduler;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Spliterator;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * {@link ScheduledEntries} implemented using a {@link ConcurrentDirectDeque}.
@@ -57,15 +56,25 @@ public class LinkedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
     }
 
     @Override
+    public boolean contains(K key) {
+        return this.tokens.containsKey(key);
+    }
+
+    @Override
     public Map.Entry<K, V> peek() {
         return this.queue.peekFirst();
+    }
+
+    @Override
+    public Stream<Map.Entry<K, V>> stream() {
+        return this.queue.stream();
     }
 
     @Override
     public Iterator<Map.Entry<K, V>> iterator() {
         Iterator<Map.Entry<K, V>> iterator = this.queue.iterator();
         Map<K, Object> tokens = this.tokens;
-        return new Iterator<Map.Entry<K, V>>() {
+        return new Iterator<>() {
             private K current = null;
 
             @Override
@@ -89,12 +98,7 @@ public class LinkedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
     }
 
     @Override
-    public void forEach(Consumer<? super Map.Entry<K, V>> action) {
-        this.queue.forEach(action);
-    }
-
-    @Override
-    public Spliterator<Map.Entry<K, V>> spliterator() {
-        return this.queue.spliterator();
+    public String toString() {
+        return this.queue.toString();
     }
 }

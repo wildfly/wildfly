@@ -1,4 +1,4 @@
-package javax.faces.component;
+package jakarta.faces.component;
 
 /**
  * @TypeId(500)

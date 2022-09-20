@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.messaging.mgmt;
 
-import static javax.jms.Session.AUTO_ACKNOWLEDGE;
+import static jakarta.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.VALUE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.WRITE_ATTRIBUTE_OPERATION;
@@ -30,13 +30,13 @@ import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicSubscriber;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
+import jakarta.jms.Topic;
+import jakarta.jms.TopicSubscriber;
 import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;

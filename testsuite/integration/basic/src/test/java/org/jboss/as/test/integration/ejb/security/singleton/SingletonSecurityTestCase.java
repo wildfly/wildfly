@@ -29,7 +29,7 @@ import java.util.concurrent.Callable;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.logging.Logger;
 
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 
 import org.junit.Assert;

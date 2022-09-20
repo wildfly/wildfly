@@ -22,22 +22,22 @@ import static org.jboss.as.test.integration.messaging.jms.external.prefix.Extern
 import static org.jboss.as.test.integration.messaging.jms.external.prefix.ExternalJMSDestinationDefinitionMessagingDeploymentTestCase.TOPIC_NAME;
 
 import java.io.IOException;
-import javax.annotation.Resource;
-import javax.inject.Inject;
-import javax.jms.Destination;
-import javax.jms.JMSConnectionFactory;
-import javax.jms.JMSConsumer;
-import javax.jms.JMSContext;
-import javax.jms.JMSDestinationDefinition;
-import javax.jms.JMSDestinationDefinitions;
-import javax.jms.JMSPasswordCredential;
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.inject.Inject;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSConnectionFactory;
+import jakarta.jms.JMSConsumer;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.JMSDestinationDefinitions;
+import jakarta.jms.JMSPasswordCredential;
+import jakarta.jms.Queue;
+import jakarta.jms.Topic;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.jboss.as.test.shared.TimeoutUtil;
 /**
  *
@@ -48,14 +48,14 @@ import org.jboss.as.test.shared.TimeoutUtil;
             @JMSDestinationDefinition(
                     resourceAdapter = REMOTE_PCF,
                     name = QUEUE_LOOKUP,
-                    interfaceName = "javax.jms.Queue",
+                    interfaceName = "jakarta.jms.Queue",
                     destinationName = QUEUE_NAME,
                     properties = {"enable-amq1-prefix=false"}
             ),
             @JMSDestinationDefinition(
                     resourceAdapter = REMOTE_PCF,
                     name = TOPIC_LOOKUP,
-                    interfaceName = "javax.jms.Topic",
+                    interfaceName = "jakarta.jms.Topic",
                     destinationName = TOPIC_NAME,
                     properties = {"enable-amq1-prefix=false"}
             )
@@ -79,7 +79,7 @@ public class AnnotatedMessagingServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        boolean useTopic = req.getParameterMap().keySet().contains("topic");
+        boolean useTopic = req.getParameterMap().containsKey("topic");
         final Destination destination = useTopic ? topic : queue;
         final String text = req.getParameter("text");
 

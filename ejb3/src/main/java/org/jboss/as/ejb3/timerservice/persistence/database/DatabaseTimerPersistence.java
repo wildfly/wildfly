@@ -143,6 +143,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private static final String MSSQL = "mssql";
     private static final String SYBASE = "sybase";
     private static final String JCONNECT = "jconnect";
+    private static final String ENTERPRISEDB = "enterprisedb";
 
     /** Names for the different SQL commands stored in the properties*/
     private static final String CREATE_TABLE = "create-table";
@@ -242,13 +243,15 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         }
 
         // Update the create-auto-timer statements for DB specifics
-        switch (database) {
-            case DB2:
-                adjustCreateAutoTimerStatement("FROM SYSIBM.SysDummy1 ");
-            break;
-            case ORACLE:
-                adjustCreateAutoTimerStatement("FROM DUAL ");
-            break;
+        if (database != null) {
+            switch (database) {
+                case DB2:
+                    adjustCreateAutoTimerStatement("FROM SYSIBM.SysDummy1 ");
+                    break;
+                case ORACLE:
+                    adjustCreateAutoTimerStatement("FROM DUAL ");
+                    break;
+            }
         }
 
         final Iterator<Map.Entry<Object, Object>> iterator = sql.entrySet().iterator();
@@ -296,15 +299,17 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             } finally {
                 safeClose(connection);
             }
-            if (database == null) {
-                EjbLogger.EJB3_TIMER_LOGGER.databaseDialectNotConfiguredOrDetected();
-            } else {
+            if (database != null) {
                 EjbLogger.EJB3_TIMER_LOGGER.debugf("Detect database dialect as '%s'.  If this is incorrect, please specify the correct dialect using the 'database' attribute in your configuration.", database);
             }
         } else {
             EjbLogger.EJB3_TIMER_LOGGER.debugf("Database dialect '%s' read from configuration, adjusting it to match the final database valid value.", database);
             database = identifyDialect(database);
             EjbLogger.EJB3_TIMER_LOGGER.debugf("New Database dialect is '%s'.", database);
+        }
+
+        if (database == null) {
+            EjbLogger.EJB3_TIMER_LOGGER.databaseDialectNotConfiguredOrDetected();
         }
     }
 
@@ -319,7 +324,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
         if (name != null) {
             name = name.toLowerCase(Locale.ROOT);
-            if (name.contains(POSTGRES)) {
+            if (name.contains(POSTGRES) || name.contains(ENTERPRISEDB)) {
                unified = POSTGRESQL;
             } else if (name.contains(MYSQL)) {
                 unified = MYSQL;
@@ -727,7 +732,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             if (methodName != null) {
                 final String paramString = resultSet.getString(23);
                 final String[] params = paramString == null || paramString.isEmpty() ? EMPTY_STRING_ARRAY : TIMER_PARAM_1_ARRAY;
-                final Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(clazz, methodName, params), timerService.getTimedObjectInvoker().getValue().getClassLoader());
+                final Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(clazz, methodName, params), timerService.getInvoker().getClassLoader());
                 if (timeoutMethod == null) {
                     EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), timerId, new NoSuchMethodException());
                     return null;

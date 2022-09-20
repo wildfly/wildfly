@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
-import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
@@ -42,8 +41,8 @@ import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.shared.RetryTaskExecutor;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -68,13 +67,12 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "RolloutPlanTestCase.war");
         war.addClass(RolloutPlanTestServlet.class);
         war.addAsManifestResource(createPermissionsXmlAsset(
-                new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(CLITestSuite.hostAddresses.get("master")) + ":" + TEST_PORT, "listen,resolve"),           // main-one
-                new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(CLITestSuite.hostAddresses.get("master")) + ":" + (TEST_PORT + 350), "listen,resolve")),  // main-three
+                new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(CLITestSuite.hostAddresses.get("primary")) + ":" + TEST_PORT, "listen,resolve"),           // main-one
+                new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(CLITestSuite.hostAddresses.get("primary")) + ":" + (TEST_PORT + 350), "listen,resolve")),  // main-three
                 "permissions.xml");
         String tempDir = System.getProperty("java.io.tmpdir");
         warFile = new File(tempDir + File.separator + "RolloutPlanTestCase.war");
-        //new ZipExporterImpl(war).exportTo(warFile, true);
-        jakartaTransform(war.as(ZipExporter.class), warFile);
+        new ZipExporterImpl(war).exportTo(warFile, true);
 
         AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
 
@@ -82,19 +80,19 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         cli.sendLine("/server-group=test-server-group:add(profile=default,socket-binding-group=standard-sockets)");
         cli.sendLine("/server-group=test-server-group/jvm=default:add");
         // add a server to the group
-        cli.sendLine("/host=master/server-config=test-one:add(group=test-server-group,socket-binding-port-offset=700");
-        cli.sendLine("/host=master/server-config=test-one/interface=public:add(inet-address=" +
-                CLITestSuite.hostAddresses.get("master") + ")");
-        CLITestSuite.addServer("test-one", "master", "test-server-group","default", 700, true);
+        cli.sendLine("/host=primary/server-config=test-one:add(group=test-server-group,socket-binding-port-offset=700");
+        cli.sendLine("/host=primary/server-config=test-one/interface=public:add(inet-address=" +
+                CLITestSuite.hostAddresses.get("primary") + ")");
+        CLITestSuite.addServer("test-one", "primary", "test-server-group","default", 700, true);
 
         // start main-two
-        cli.sendLine("/host=master/server-config=main-two:start(blocking=true)");
+        cli.sendLine("/host=primary/server-config=main-two:start(blocking=true)");
         CLIOpResult res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("main-two", "STARTED");
 
         // start test-one
-        cli.sendLine("/host=master/server-config=test-one:start(blocking=true)");
+        cli.sendLine("/host=primary/server-config=test-one:start(blocking=true)");
         res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("test-one", "STARTED");
@@ -109,13 +107,13 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         }
 
         // stop test-one
-        cli.sendLine("/host=master/server-config=test-one:stop(blocking=true)");
+        cli.sendLine("/host=primary/server-config=test-one:stop(blocking=true)");
         CLIOpResult res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("test-one", "STOPPED");
 
         // stop main-two
-        cli.sendLine("/host=master/server-config=main-two:stop(blocking=true)");
+        cli.sendLine("/host=primary/server-config=main-two:stop(blocking=true)");
         res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("main-two", "DISABLED");

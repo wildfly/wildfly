@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.weld.context.application.lifecycle;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 import java.util.concurrent.TimeUnit;
 
 /**

@@ -29,7 +29,6 @@
     </resources>
 
     <dependencies>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.xml.soap.api"/>
         <module name="javax.xml.ws.api"/>
         <module name="org.jboss.logging"/>

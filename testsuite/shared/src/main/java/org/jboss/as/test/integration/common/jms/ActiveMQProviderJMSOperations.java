@@ -212,11 +212,15 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
         ModelNode attributes = new ModelNode();
         attributes.get("socket-binding").set(socketBinding);
         if (params != null) {
-            for (String key : params.keySet()) {
-                model.get("params").add(key, params.get(key));
-            }
+            addParams(params, model);
         }
         executeOperation(model, ADD, attributes);
+    }
+
+    private void addParams(Map<String, String> params, ModelNode model) {
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            model.get("params").add(entry.getKey(), entry.getValue());
+        }
     }
 
     @Override
@@ -382,9 +386,7 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
         ModelNode attributes = new ModelNode();
         attributes.get("socket-binding").set(socketBinding);
         if (params != null) {
-            for (String key : params.keySet()) {
-                attributes.get("params").add(key, params.get(key));
-            }
+            addParams(params, attributes);
         }
         try {
             executeOperation(address, REMOVE_OPERATION, null);

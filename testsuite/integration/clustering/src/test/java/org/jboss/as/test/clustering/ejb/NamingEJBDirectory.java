@@ -24,12 +24,12 @@ package org.jboss.as.test.clustering.ejb;
 
 import java.util.Properties;
 
-import javax.ejb.EJBHome;
-import javax.ejb.SessionBean;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.SessionBean;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 
 /**

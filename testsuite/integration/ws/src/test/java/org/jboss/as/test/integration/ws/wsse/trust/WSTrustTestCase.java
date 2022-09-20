@@ -56,8 +56,8 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.Service;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -98,7 +98,7 @@ public class WSTrustTestCase {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, STS_DEP + ".war");
         archive
                 .setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.jboss.ws.cxf.sts annotations\n"))
+                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.jboss.ws.cxf.sts export services\n"))
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.sts.STSCallbackHandler.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.sts.SampleSTS.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.shared.WSTrustAppUtils.class)

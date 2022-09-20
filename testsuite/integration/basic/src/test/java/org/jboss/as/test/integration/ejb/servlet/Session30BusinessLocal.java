@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.servlet;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

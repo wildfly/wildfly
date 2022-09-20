@@ -19,9 +19,9 @@ package org.jboss.as.test.integration.weld.deployment;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
 
 public class VerifyingExtension implements Extension {
 

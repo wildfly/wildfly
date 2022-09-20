@@ -16,7 +16,7 @@
 		<resource-ref>
 			<description>Default Mail</description>
             <res-ref-name>MyDefaultMail</res-ref-name>
-            <res-type>javax.mail.Session</res-type>
+            <res-type>jakarta.mail.Session</res-type>
             <res-auth>Container</res-auth>
             <mapped-name>java:jboss/mail/Default</mapped-name>
             

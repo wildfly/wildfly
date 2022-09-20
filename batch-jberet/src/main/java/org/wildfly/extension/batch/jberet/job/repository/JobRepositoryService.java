@@ -19,9 +19,10 @@ package org.wildfly.extension.batch.jberet.job.repository;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.JobInstance;
-import javax.batch.runtime.StepExecution;
+import java.util.function.Consumer;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.batch.runtime.JobInstance;
+import jakarta.batch.runtime.StepExecution;
 
 import org.jberet.job.model.Job;
 import org.jberet.repository.ApplicationAndJobName;
@@ -43,12 +44,15 @@ import org.wildfly.extension.batch.jberet._private.BatchLogger;
  * service has been stopped.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 abstract class JobRepositoryService implements JobRepository, Service<JobRepository> {
     private volatile boolean started;
     private final Integer executionRecordsLimit;
+    private final Consumer<JobRepository> jobRepositoryConsumer;
 
-    public JobRepositoryService(Integer executionRecordsLimit) {
+    public JobRepositoryService(final Consumer<JobRepository> jobRepositoryConsumer, final Integer executionRecordsLimit) {
+        this.jobRepositoryConsumer = jobRepositoryConsumer;
         this.executionRecordsLimit = executionRecordsLimit;
     }
 
@@ -56,16 +60,18 @@ abstract class JobRepositoryService implements JobRepository, Service<JobReposit
     public final void start(final StartContext context) throws StartException {
         startJobRepository(context);
         started = true;
+        jobRepositoryConsumer.accept(this);
     }
 
     @Override
     public final void stop(final StopContext context) {
+        jobRepositoryConsumer.accept(null);
         stopJobRepository(context);
         started = false;
     }
 
     @Override
-    public final JobRepository getValue() throws IllegalStateException, IllegalArgumentException {
+    public JobRepository getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 

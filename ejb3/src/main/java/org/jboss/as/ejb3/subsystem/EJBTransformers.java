@@ -28,6 +28,8 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.kohsuke.MetaInfServices;
@@ -68,5 +70,11 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         subsystemBuilder.rejectChildResource(EJB3SubsystemModel.SIMPLE_CACHE_PATH);
         // Reject ejb3/caches/distributable-cache element
         subsystemBuilder.rejectChildResource(EJB3SubsystemModel.DISTRIBUTABLE_CACHE_PATH);
+
+        subsystemBuilder.addChildResource(EJB3SubsystemModel.TIMER_SERVICE_PATH).getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TimerServiceResourceDefinition.DEFAULT_PERSISTENT_TIMER_MANAGEMENT, TimerServiceResourceDefinition.DEFAULT_TRANSIENT_TIMER_MANAGEMENT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TimerServiceResourceDefinition.DEFAULT_PERSISTENT_TIMER_MANAGEMENT, TimerServiceResourceDefinition.DEFAULT_TRANSIENT_TIMER_MANAGEMENT)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, TimerServiceResourceDefinition.THREAD_POOL_NAME, TimerServiceResourceDefinition.DEFAULT_DATA_STORE)
+                .end();
     }
 }

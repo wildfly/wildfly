@@ -22,8 +22,8 @@
 
 package org.wildfly.clustering.weld.contexts;
 
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.inject.spi.PassivationCapable;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.inject.spi.PassivationCapable;
 
 /**
  * @author Paul Ferraro
@@ -32,6 +32,6 @@ public class PassivationCapableSerializableContextualMarshaller<C extends Contex
 
     @SuppressWarnings("unchecked")
     PassivationCapableSerializableContextualMarshaller() {
-        super((Class<PassivationCapableSerializableContextual<C, I>>) (Class<?>) PassivationCapableSerializableContextual.class, PassivationCapableSerializableContextual::new, PassivationCapableSerializableContextual::getContextId);
+        super((Class<PassivationCapableSerializableContextual<C, I>>) (Class<?>) PassivationCapableSerializableContextual.class, PassivationCapableSerializableContextual::new, PassivationCapableSerializableContextual::new, PassivationCapableSerializableContextual::getContextId);
     }
 }

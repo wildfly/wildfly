@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.transaction.annotation;
 
-import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionManagement;
 
 /**
  * User: jpai

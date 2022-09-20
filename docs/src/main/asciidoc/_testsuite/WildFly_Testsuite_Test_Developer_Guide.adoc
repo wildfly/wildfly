@@ -26,7 +26,7 @@ final ModelNode operation = new ModelNode();
 operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
 operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
 operation.get(ModelDescriptionConstants.RECURSIVE).set(true);
- 
+
 final ModelNode result = managementClient.getControllerClient().execute(operation);
 Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
 ----
@@ -57,7 +57,7 @@ ModelControllerClient client = managementClient.getControllerClient();
 [source,java,options="nowrap"]
 ----
 @ArquillianResource ContainerController cc;
- 
+
 @Test
 public void test() {
     cc.setup("test", ...properties..)
@@ -172,7 +172,7 @@ optionally you might be able to catch it using the manual deployer
 [source,java,options="nowrap"]
 ----
 @Deployment(name = "X", managed = false) ...
- 
+
 @Test
 public void shouldFail(@ArquillianResource Deployer deployer) throws Exception {
   try {
@@ -196,33 +196,33 @@ And then you have tests that run against each.
 @Deployment(name = "deplA", testable = false)
     @TargetsContainer("serverB")
     public static Archive<?> deployment()
- 
+
     @Deployment(name = "deplB", testable = false)
     @TargetsContainer("serverA")
     public static Archive<?> deployment(){ ... }
- 
+
     @Test
     @OperateOnDeployment("deplA")
     public void testA(){ ... }
- 
+
     @Test
     @OperateOnDeployment("deplA")
     public void testA() {...}
 ----
 
-[[how-to-get-the-tests-to-master]]
-== How to get the tests to master
+[[how-to-get-the-tests-to-main]]
+== How to get the tests to main branch
 
 * First of all, *be sure to read the "Before you add a test" section*.
 * *Fetch* the newest mater:
 `git fetch upstream # Provided you have the jbossas/jbossas GitHub repo`
 `as a remote called 'upstream'.`
 * *Rebase* your branch: git checkout WFLY-1234-your-branch; git rebase
-upstream/master
+upstream/main
 * *Run* *_whole_* *testsuite* (integration-tests -DallTests). You may
 use
 https://jenkins.mw.lab.eng.bos.redhat.com/hudson/job/wildfly-as-testsuite-RHEL-matrix-openJDK7/lastCompletedBuild/testReport/.
-** If any tests fail and they do not fail in master, fix it and go back
+** If any tests fail and they do not fail in main, fix it and go back
 to the "Fetch" step.
 * *Push* to a new branch in your GitHub repo:
 `git push origin WFLY-1234-new-XY-tests`
@@ -245,7 +245,7 @@ mail from GitHub.
 * You may also check if it was merged by the following:
 `git fetch upstream; git cherry` `<branch> ## Or` git branch
 --contains\{\{<branch> - see}} `here`
-* Your commits will appear in master. They will have the same hash as in
+* Your commits will appear in main. They will have the same hash as in
 your branch.
 ** You are now safe to delete both your local and remote branches:
 `git branch -D WFLY-1234-your-branch; git push origin :WFLY-1234-your-branch`

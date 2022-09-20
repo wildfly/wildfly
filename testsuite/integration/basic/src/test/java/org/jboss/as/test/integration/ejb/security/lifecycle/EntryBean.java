@@ -23,9 +23,9 @@ package org.jboss.as.test.integration.ejb.security.lifecycle;
 
 import java.util.Map;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 

@@ -26,7 +26,7 @@ import org.jboss.arquillian.container.test.api.Testable;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+//import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -47,7 +47,7 @@ public class ApplicationContextInitializedEventTestCase {
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class)
                 .addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .addClasses(Library.class, ApplicationContextInitializedEventTestCase.class);
-        JavaArchive ejb = Testable.archiveToTest(ShrinkWrap.create(JavaArchive.class).addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml").addClass(SessionBean.class));
+        JavaArchive ejb = Testable.archiveToTest(ShrinkWrap.create(JavaArchive.class).addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml").addClass(SessionBean.class));
         return ShrinkWrap.create(EnterpriseArchive.class).addAsModule(ejb).addAsLibrary(lib);
     }
 

@@ -36,7 +36,6 @@
         <module name="javax.json.bind.api"/>
         <module name="org.apache.commons.io"/>
         <module name="org.eclipse.yasson" services="import"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.annotation.api"/>
         <module name="javax.json.api"/>
         <module name="javax.enterprise.api"/>

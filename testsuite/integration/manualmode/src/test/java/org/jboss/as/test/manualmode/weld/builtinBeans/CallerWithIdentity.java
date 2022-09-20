@@ -17,9 +17,9 @@ package org.jboss.as.test.manualmode.weld.builtinBeans;
 
 import org.jboss.ejb3.annotation.RunAsPrincipal;
 
-import javax.annotation.security.RunAs;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
+import jakarta.annotation.security.RunAs;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 
 @Stateless
 @RunAs("Admin")

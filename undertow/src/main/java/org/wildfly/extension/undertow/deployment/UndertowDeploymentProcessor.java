@@ -600,10 +600,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         }
 
         //we also register them under the new namespaces
-        for (String k : new HashSet<>(ret.keySet())) {
-            if (k != null && k.startsWith(OLD_URI_PREFIX)) {
-                String newUri = k.replace(OLD_URI_PREFIX, NEW_URI_PREFIX);
-                ret.put(newUri, ret.get(k));
+        for (Map.Entry<String, TagLibraryInfo> entry : new HashSet<>(ret.entrySet())) {
+            if (entry.getKey() != null && entry.getKey().startsWith(OLD_URI_PREFIX)) {
+                String newUri = entry.getKey().replace(OLD_URI_PREFIX, NEW_URI_PREFIX);
+                ret.put(newUri, entry.getValue());
             }
         }
 

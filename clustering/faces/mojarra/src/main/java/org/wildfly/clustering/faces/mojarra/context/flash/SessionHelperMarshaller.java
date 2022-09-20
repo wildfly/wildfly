@@ -26,12 +26,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
 
-import javax.servlet.http.HttpSessionActivationListener;
+import jakarta.servlet.http.HttpSessionActivationListener;
 
 import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import com.sun.faces.context.flash.ELFlash;
 
 /**
  * @author Paul Ferraro
@@ -44,14 +42,14 @@ public class SessionHelperMarshaller extends ValueMarshaller<HttpSessionActivati
             public HttpSessionActivationListener run() {
                 try {
                     // *sigh* SessionHelper is package protected
-                    Class<? extends HttpSessionActivationListener> targetClass = ELFlash.class.getClassLoader().loadClass("com.sun.faces.context.flash.SessionHelper").asSubclass(HttpSessionActivationListener.class);
+                    Class<? extends HttpSessionActivationListener> targetClass = Reflect.getSessionHelperClass();
                     Constructor<? extends HttpSessionActivationListener> constructor = targetClass.getDeclaredConstructor();
                     constructor.setAccessible(true);
                     HttpSessionActivationListener listener = constructor.newInstance();
                     // Set passivated flag
                     listener.sessionWillPassivate(null);
                     return listener;
-                } catch (NoSuchMethodException | ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                     throw new IllegalStateException(e);
                 }
             }

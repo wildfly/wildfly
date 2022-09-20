@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.injection.multiple.view;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.jws.WebService;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
+import jakarta.jws.WebService;
 
 /**
  * @author Jaikiran Pai

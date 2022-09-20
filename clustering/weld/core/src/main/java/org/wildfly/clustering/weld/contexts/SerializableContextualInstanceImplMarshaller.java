@@ -22,6 +22,13 @@
 
 package org.wildfly.clustering.weld.contexts;
 
+import java.io.IOException;
+import java.security.PrivilegedAction;
+
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.PassivationCapable;
+
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.weld.Container;
 import org.jboss.weld.bean.proxy.MethodHandler;
@@ -32,13 +39,6 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import java.io.IOException;
-import java.security.PrivilegedAction;
-
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.PassivationCapable;
 
 /**
  * @author Paul Ferraro

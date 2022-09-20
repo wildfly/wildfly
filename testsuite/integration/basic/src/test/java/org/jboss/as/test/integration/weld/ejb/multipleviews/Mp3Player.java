@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.weld.ejb.multipleviews;
 
-import javax.ejb.Local;
-import javax.ejb.Stateful;
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.ejb.Local;
+import jakarta.ejb.Stateful;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * @author Stuart Douglas

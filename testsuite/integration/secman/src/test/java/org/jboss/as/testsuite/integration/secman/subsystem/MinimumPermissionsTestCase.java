@@ -25,7 +25,7 @@ package org.jboss.as.testsuite.integration.secman.subsystem;
 import java.net.URI;
 import java.net.URL;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

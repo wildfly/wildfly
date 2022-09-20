@@ -24,15 +24,15 @@ package org.jboss.as.test.integration.jca.beanvalidation.ra;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ResourceAdapterInternalException;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.BootstrapContext;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.ResourceAdapterInternalException;
+import jakarta.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Resource adapter
@@ -84,7 +84,7 @@ public class ValidResourceAdapter implements ResourceAdapter, Serializable {
      *
      * @param endpointFactory A message endpoint factory instance.
      * @param spec            An activation spec JavaBean instance.
-     * @throws javax.resource.ResourceException generic exception
+     * @throws jakarta.resource.ResourceException generic exception
      */
     public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) throws ResourceException {
         ValidActivation activation = new ValidActivation(this, endpointFactory, (ValidActivationSpec) spec);
@@ -109,7 +109,7 @@ public class ValidResourceAdapter implements ResourceAdapter, Serializable {
      * This is called when a resource adapter instance is bootstrapped.
      *
      * @param ctx A bootstrap context containing references
-     * @throws javax.resource.spi.ResourceAdapterInternalException indicates bootstrap failure.
+     * @throws jakarta.resource.spi.ResourceAdapterInternalException indicates bootstrap failure.
      */
     public void start(BootstrapContext ctx) throws ResourceAdapterInternalException {
     }
@@ -125,7 +125,7 @@ public class ValidResourceAdapter implements ResourceAdapter, Serializable {
      *
      * @param specs An array of ActivationSpec JavaBeans
      * @return An array of XAResource objects
-     * @throws javax.resource.ResourceException generic exception
+     * @throws jakarta.resource.ResourceException generic exception
      */
     public XAResource[] getXAResources(ActivationSpec[] specs) throws ResourceException {
         return null;

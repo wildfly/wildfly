@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.war;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.junit.Assert;

@@ -61,27 +61,35 @@ public class CodecSessionConfigTestCase {
         result = this.subject.findSessionId(exchange);
 
         assertSame(sessionId, result);
-
-        verify(this.config, never()).setSessionId(same(exchange), anyString());
-
-        String reencodedSessionId = "session.route2";
-
-        when(this.codec.encode(sessionId)).thenReturn(reencodedSessionId);
-
-        result = this.subject.findSessionId(exchange);
-
-        assertSame(sessionId, result);
-
-        verify(this.config).setSessionId(exchange, reencodedSessionId);
     }
 
     @Test
     public void setSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        String encodedSessionId = "session.route";
+        String encodedSessionId = "session.route1";
         String sessionId = "session";
 
+        when(this.config.findSessionId(exchange)).thenReturn(null);
         when(this.codec.encode(sessionId)).thenReturn(encodedSessionId);
+
+        // Validate new session
+        this.subject.setSessionId(exchange, sessionId);
+
+        verify(this.config).setSessionId(exchange, encodedSessionId);
+
+        reset(this.config);
+
+        // Validate existing session
+        when(this.config.findSessionId(exchange)).thenReturn(encodedSessionId);
+
+        this.subject.setSessionId(exchange, sessionId);
+
+        verify(this.config, never()).setSessionId(exchange, encodedSessionId);
+
+        reset(this.config);
+
+        // Validate failover request for existing session
+        when(this.config.findSessionId(exchange)).thenReturn("session.route2");
 
         this.subject.setSessionId(exchange, sessionId);
 

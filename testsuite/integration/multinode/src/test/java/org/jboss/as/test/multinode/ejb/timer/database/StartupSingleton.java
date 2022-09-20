@@ -24,17 +24,17 @@ package org.jboss.as.test.multinode.ejb.timer.database;
 
 import java.io.Serializable;
 import java.util.Collection;
-import javax.annotation.Resource;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.Schedule;
-import javax.ejb.Schedules;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import jakarta.annotation.Resource;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Schedules;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 @Singleton
 @Startup

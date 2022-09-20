@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.register;
 
-import javax.ejb.EJB;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.ejb.EJB;
+import jakarta.ejb.NoSuchEJBException;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 @Startup
 @Singleton

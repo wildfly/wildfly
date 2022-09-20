@@ -24,7 +24,7 @@ package org.wildfly.clustering.weld.injection;
 
 import java.io.IOException;
 
-import javax.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.Bean;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.weld.Container;

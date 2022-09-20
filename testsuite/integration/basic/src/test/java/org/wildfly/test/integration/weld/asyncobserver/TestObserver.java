@@ -22,8 +22,8 @@
 
 package org.wildfly.test.integration.weld.asyncobserver;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.ObservesAsync;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.ObservesAsync;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

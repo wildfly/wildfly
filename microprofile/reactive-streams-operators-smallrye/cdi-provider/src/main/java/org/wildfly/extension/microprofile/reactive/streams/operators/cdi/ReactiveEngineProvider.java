@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.microprofile.reactive.streams.operators.cdi;
 
-import static org.wildfly.extension.microprofile.reactive.streams.operators.cdi._private.MicroProfileReactiveStreamsOperatorsCdiProviderLogger.LOGGER;
+import static org.wildfly.extension.microprofile.reactive.streams.operators.cdi._private.CdiProviderLogger.LOGGER;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;

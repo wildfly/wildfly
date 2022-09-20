@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.clustering.cluster.jsf.webapp;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
 
 @ApplicationScoped
 public class Generator {

@@ -148,6 +148,38 @@ An encrypted `filesystem-realm` that makes use of the `credential-store` could b
 /subsystem=elytron/filesystem-realm=exampleFsRealm:add(path=fs-realm-users,relative-to=jboss.server.config.dir, credential-store=mycredstore, secret-key=key)
 ----
 
+==== Integrity
+
+It is also possible to enable support for integrity checking on the filesystem realm by configuring the key-store and key-store-alias attributes for the realm.
+
+When enabling integrity checking on a filesystem realm, you will have to specify the following 2 attributes
+
+* `key-store`: This attribute specifies the key-store that contains the key pair (private key and public key) that's used for signing each identity file and for integrity checking.
+
+* `key-store-alias`: This attribute specifies the alias within the key-store that identifies the PrivateKeyEntry to use to sign identity files and perform filesystem integrity checks.
+
+To create a key-store and a key-pair for the attributes above, you can create a key-store resource using the following commands. This will create a key-store called `keystore` with the alias `localhost`, and the password `secret`.
+[source,options="nowrap"]
+----
+/subsystem=elytron/key-store=keystore:add(path=keystore, relative-to=jboss.server.config.dir, type=JKS, credential-reference={clear-text=secret})
+/subsystem=elytron/key-store=keystore:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,distinguished-name="CN=localhost")
+/subsystem=elytron/key-store=keystore:store()
+----
+
+To create an integrity enabled filesystem realm with a ``key-store`` called ``keystore`` and the key-store-alias ``localhost``, the following command would be used
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=exampleFsRealm:add(path=fs-realm-users,relative-to=jboss.server.config.dir, key-store=keystore, key-store-alias=localhost)
+----
+
+Integrity and Encryption can be used in conjuction together. To create an encrypted filesystem realm with integrity enabled, the following command would be used
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=exampleFsRealm:add(path=fs-realm-users,relative-to=jboss.server.config.dir, credential-store=mycredstore, secret-key=key, key-store=keystore, key-store-alias=localhost)
+----
+
 [[add-a-user]]
 ==== Add a user:
 
@@ -2647,7 +2679,7 @@ As existing services and deployments could have cached the default `SSLContext` 
 
 Using the WildFly Elytron subsystem it is possible to configure an SSL context which supports SNI.  By supporting SNI if an SNI host name is available whilst the SSLSession is being negotiated a host specific SSLContext will be selected.  If no host specific SSLContext is identified either because no host name was received or because there is no match a default SSLContext will be used instead.  By identifying a host specific SSLContext it means that a certificate appropriate for that host can be used.
 
-The following command demonstrates how an SNI aware SSLContext can be added: - 
+The following command demonstrates how an SNI aware SSLContext can be added: -
 
 [source,options="nowrap"]
 ----

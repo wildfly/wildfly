@@ -23,9 +23,9 @@ package org.jboss.as.test.integration.jsf.doctype;
 
 import java.io.Serializable;
 
-import javax.enterprise.context.SessionScoped;
-import javax.faces.annotation.FacesConfig;
-import javax.inject.Named;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.annotation.FacesConfig;
+import jakarta.inject.Named;
 
 /**
  * A simple bean.

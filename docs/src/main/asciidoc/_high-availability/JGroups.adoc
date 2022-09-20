@@ -1,0 +1,11 @@
+= JGroups
+
+include::jgroups/JGroups_Subsystem.adoc[leveloffset=+1]
+
+== Member Discovery
+
+include::jgroups/Kubernetes.adoc[]
+
+// TODO Discovery in AWS
+
+// TODO Discovery in Azure

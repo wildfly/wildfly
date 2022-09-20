@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ee.injection.mappedname;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 
 /**
  * User: jpai

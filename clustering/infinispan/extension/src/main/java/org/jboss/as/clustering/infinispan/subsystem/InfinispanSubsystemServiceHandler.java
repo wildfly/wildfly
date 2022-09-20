@@ -23,7 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;

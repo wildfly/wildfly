@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.ejb.localview;
 
 import java.io.Serializable;
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * Bean with a single local interface, declared on the interface

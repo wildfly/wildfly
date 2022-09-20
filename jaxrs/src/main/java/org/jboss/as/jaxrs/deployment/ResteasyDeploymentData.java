@@ -24,7 +24,7 @@ package org.jboss.as.jaxrs.deployment;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;

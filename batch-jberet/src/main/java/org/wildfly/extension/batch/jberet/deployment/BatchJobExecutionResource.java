@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
 
 /**
- * Represents a dynamic resource for batch {@link javax.batch.runtime.JobExecution job executions}.
+ * Represents a dynamic resource for batch {@link jakarta.batch.runtime.JobExecution job executions}.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

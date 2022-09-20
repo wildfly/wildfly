@@ -28,9 +28,9 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import java.util.PropertyPermission;
 import java.util.UUID;
 
-import javax.annotation.Resource;
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
+import jakarta.annotation.Resource;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Queue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

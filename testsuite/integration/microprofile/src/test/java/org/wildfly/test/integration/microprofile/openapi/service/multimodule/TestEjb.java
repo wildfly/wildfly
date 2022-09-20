@@ -16,7 +16,7 @@
 
 package org.wildfly.test.integration.microprofile.openapi.service.multimodule;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Joachim Grimm

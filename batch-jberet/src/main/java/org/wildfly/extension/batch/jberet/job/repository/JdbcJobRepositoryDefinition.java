@@ -38,14 +38,21 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.batch.jberet.BatchResourceDescriptionResolver;
 import org.wildfly.extension.batch.jberet._private.Capabilities;
+
+import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Represents a JDBC job repository.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
 
@@ -91,12 +98,14 @@ public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
             final String dsName = DATA_SOURCE.resolveModelAttribute(context, model).asString();
             final Integer executionRecordsLimit = CommonAttributes.EXECUTION_RECORDS_LIMIT.resolveModelAttribute(context, model).asIntOrNull();
             final ServiceTarget target = context.getServiceTarget();
-            final JdbcJobRepositoryService service = new JdbcJobRepositoryService(executionRecordsLimit);
-            Services.addServerExecutorDependency(
-                    target.addService(context.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), name, JobRepository.class), service),
-                    service.getExecutorServiceInjector())
-                    .addDependency(context.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY, dsName, DataSource.class), DataSource.class, service.getDataSourceInjector())
-                    .install();
+            final ServiceName sn = context.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), name, JobRepository.class);
+            final ServiceBuilder<?> sb = target.addService(sn);
+            final Consumer<JobRepository> jobRepositoryConsumer = sb.provides(sn);
+            final Supplier<ExecutorService> executorSupplier = Services.requireServerExecutor(sb);
+            final Supplier<DataSource> dataSourceSupplier = sb.requires(context.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY, dsName, DataSource.class));
+            final JdbcJobRepositoryService service = new JdbcJobRepositoryService(jobRepositoryConsumer, dataSourceSupplier, executorSupplier, executionRecordsLimit);
+            sb.setInstance(service);
+            sb.install();
         }
     }
 }

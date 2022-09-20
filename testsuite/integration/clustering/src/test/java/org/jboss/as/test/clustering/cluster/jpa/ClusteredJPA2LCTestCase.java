@@ -25,9 +25,9 @@ package org.jboss.as.test.clustering.cluster.jpa;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -106,12 +106,14 @@ public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
         final String entityId = "1";
         createEntity(node0, entityId);
         Assert.assertTrue(isInCache(node0, entityId));
+        Thread.sleep(GRACE_TIME_TO_REPLICATE);
         Assert.assertTrue(isInCache(node1, entityId));
         evictFromCache(node1, entityId);
         Assert.assertFalse(isInCache(node0, entityId));
         Assert.assertFalse(isInCache(node1, entityId));
         addToCache(node0, entityId);
         Assert.assertTrue(isInCache(node0, entityId));
+        Thread.sleep(GRACE_TIME_TO_REPLICATE);
         Assert.assertTrue(isInCache(node1, entityId));
     }
 

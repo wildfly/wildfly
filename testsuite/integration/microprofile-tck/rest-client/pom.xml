@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
     <artifactId>wildfly-ts-integ-mp-rest-client</artifactId>
     <name>WildFly Test Suite: Integration - MicroProfile - REST Client TCK</name>
@@ -60,13 +60,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client-microprofile-base</artifactId>
+            <groupId>org.jboss.resteasy.microprofile</groupId>
+            <artifactId>microprofile-rest-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client-microprofile</artifactId>
+            <groupId>org.jboss.resteasy.microprofile</groupId>
+            <artifactId>microprofile-rest-client-base</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Required by the RESTEasy Client -->
@@ -160,6 +160,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <scope>test</scope>
@@ -172,6 +177,11 @@
         <dependency>
             <groupId>io.smallrye.config</groupId>
             <artifactId>smallrye-config</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>parsson</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -340,7 +350,7 @@
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${full.maven.groupId}</groupId>
-                                    <artifactId>wildfly-galleon-pack</artifactId>
+                                    <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
                                     <version>${full.maven.version}</version>
                                     <excluded-packages>
                                         <name>docs</name>
@@ -465,7 +475,9 @@
                         <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                         <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
-                        <microprofile.jvm.args>${microprofile.jvm.args} -Dorg.eclipse.microprofile.rest.client.tck.timeoutCushion=50 -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</microprofile.jvm.args>
+                        <!-- -Dts.include.servlet.4=true is needed due to https://github.com/eclipse/microprofile-rest-client/issues/346 -->
+                        <microprofile.jvm.args>${microprofile.jvm.args} -Dts.include.servlet.4=true -Dorg.eclipse.microprofile.rest.client.tck.timeoutCushion=50000 -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</microprofile.jvm.args>
+
                         <test.url>http://localhost:8080</test.url>
                     </systemPropertyVariables>
                 </configuration>
@@ -551,38 +563,10 @@
                 </property>
             </activation>
             <properties>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
                 <bootable-jar-generate-properties-file.phase>compile</bootable-jar-generate-properties-file.phase>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>jakarta.annotation</groupId>
-                    <artifactId>jakarta.annotation-api</artifactId>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>jakarta.ws.rs</groupId>
-                    <artifactId>jakarta.ws.rs-api</artifactId>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.eclipse.parsson</groupId>
-                    <artifactId>parsson</artifactId>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-rest-client</artifactId>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-rest-client-base</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -631,7 +615,6 @@
                 </property>
             </activation>
             <properties>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Enable galleon provisioning -->
                 <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
@@ -648,48 +631,8 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <systemPropertyVariables>
-                                <microprofile.jvm.args>${microprofile.jvm.args} -Dts.include.servlet.4=true -Dorg.eclipse.microprofile.rest.client.tck.timeoutCushion=50000 -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</microprofile.jvm.args>
-                            </systemPropertyVariables>
-                            <classpathDependencyExcludes>
-                                <classpathDependencyExclude>org.jboss.resteasy:resteasy-client-microprofile</classpathDependencyExclude>
-                                <classpathDependencyExclude>org.jboss.resteasy:resteasy-client-microprofile-base</classpathDependencyExclude>
-                            </classpathDependencyExcludes>
-                        </configuration>
-                    </plugin>
                 </plugins>
             </build>
-            <dependencies>
-                <dependency>
-                    <groupId>jakarta.annotation</groupId>
-                    <artifactId>jakarta.annotation-api</artifactId>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>jakarta.ws.rs</groupId>
-                    <artifactId>jakarta.ws.rs-api</artifactId>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.eclipse.parsson</groupId>
-                    <artifactId>parsson</artifactId>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-rest-client</artifactId>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-rest-client-base</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
         </profile>
 
         <!-- Skip TCK testing on Windows due to issues with beans.xml deployment overlay -->

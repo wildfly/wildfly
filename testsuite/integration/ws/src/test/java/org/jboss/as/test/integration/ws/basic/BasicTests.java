@@ -23,8 +23,8 @@ package org.jboss.as.test.integration.ws.basic;
 
 import java.util.Iterator;
 import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPFault;
-import javax.xml.ws.soap.SOAPFaultException;
+import jakarta.xml.soap.SOAPFault;
+import jakarta.xml.ws.soap.SOAPFaultException;
 
 import org.junit.Assert;
 import org.junit.Test;

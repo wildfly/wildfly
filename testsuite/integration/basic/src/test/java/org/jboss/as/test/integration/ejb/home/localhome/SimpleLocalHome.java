@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.home.localhome;
 
-import javax.ejb.EJBLocalHome;
+import jakarta.ejb.EJBLocalHome;
 
 /**
  * Simple local home interface

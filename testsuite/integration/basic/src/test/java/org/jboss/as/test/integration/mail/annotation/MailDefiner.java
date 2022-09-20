@@ -24,8 +24,8 @@
 
 package org.jboss.as.test.integration.mail.annotation;
 
-import javax.ejb.Stateless;
-import javax.mail.MailSessionDefinition;
+import jakarta.ejb.Stateless;
+import jakarta.mail.MailSessionDefinition;
 
 
 /**

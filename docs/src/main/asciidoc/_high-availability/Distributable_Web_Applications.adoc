@@ -1,0 +1,368 @@
+[[Distributable_Web_Applications]]
+= Distributable Web Applications
+
+In a standard web application, session state does not survive beyond the lifespan of the servlet container.
+A distributable web application allows session state to survive beyond the lifespan of a single server, either via persistence or by replicating state to other nodes in the cluster.
+A web application indicates its intention to be distributable via the `<distributable/>` element within the web application's deployment descriptor.
+
+e.g.
+
+./WEB-INF/web.xml:
+[source,xml]
+----
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+    <distributable/>
+</web-app>
+----
+
+[[distributable-web-subsystem]]
+== Distributable Web Subsystem
+
+The distributable-web subsystem manages a set of session management profiles that encapsulate the configuration of a distributable session manager.
+One of these profiles will be designated as the default profile (via the "default-session-management" attribute) and thus defines the default behavior of a distributable web application.
+
+[source]
+----
+[standalone@embedded /] /subsystem=distributable-web:read-attribute(name=default-session-management)
+{
+    "outcome" => "success",
+    "result" => "default"
+}
+----
+
+The default session management stores web session data within an Infinispan cache.
+We can introspect its configuration:
+
+[source]
+----
+[standalone@embedded /] /subsystem=distributable-web/infinispan-session-management=default:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "cache" => undefined,
+        "cache-container" => "web",
+        "granularity" => "SESSION",
+        "affinity" => {"primary-owner" => undefined}
+    }
+}
+----
+
+=== Infinispan session management
+
+The `infinispan-session-management` resource configures a distributable session manager that uses an embedded Infinispan cache.
+
+cache-container::
+This references a cache-container defined in the Infinispan subsystem into which session data will be stored.
+cache::
+This references a cache within associated cache-container upon whose configuration the web application's cache will be based.
+If undefined, the default cache of the associated cache container will be used.
+granularity::
+This defines how the session manager will map a session into individual cache entries.
+Possible values are:
+SESSION:::
+Stores all session attributes within a single cache entry.
+This is generally more expensive than ATTRIBUTE granularity, but preserves any cross-attribute object references.
+ATTRIBUTE:::
+Stores each session attribute within a separate cache entry.
+This is generally more efficient than SESSION granularity, but does not preserve any cross-attribute object references.
+affinity::
+This resource defines the affinity that a web request should have for a given server.
+The affinity of the associated web session determines the algorithm for generating the route to be appended onto the session ID (within the JSESSIONID cookie, or when encoding URLs).
+This annotation of the session ID is used by load balancers to advise how future requests for existing sessions should be directed.
+Routing is designed to be opaque to application code such that calls to `HttpSession.getId()` always return an unmodified session ID.
+This is only generated when creating/updating the JSESSIONID cookie, or when encoding URLs via `HttpServletResponse.encodeURL()` and `encodeRedirectURL()`.
+Possible values are:
+affinity=none:::
+Web requests will have no affinity to any particular node.
+This option is intended for use cases where web session state is not maintained within the application server.
+affinity=local:::
+Web requests will have an affinity to the server that last handled a request for a given session.
+This option corresponds to traditional sticky session behavior.
+affinity=primary-owner:::
+Web requests will have an affinity to the primary owner of a given session.
+This is the default affinity for this distributed session manager.
+Behaves the same as affinity=local if the backing cache is not distributed nor replicated.
+affinity=ranked:::
+Web requests will have an affinity to the first available node in a ranked list comprised of: primary owner, backup nodes, local node (if not a primary nor backup owner).
+Only for use with load balancers that support multiple routes.
+Behaves the same as affinity=local if cache is not distributed nor replicated.
+marshaller::
+Specifies the marshalling implementation used to serialize session attributes.
+JBOSS:::
+Marshals session attributes using <<jboss_marshalling>>.
+PROTOSTREAM:::
+Marshals session attributes using <<protostream>>.
+
+e.g. Creating a new session management profile, using ATTRIBUTE granularity with local session affinity:
+
+[source]
+----
+[standalone@embedded /] /subsystem=distributable-web/infinispan-session-management=foo:add(cache-container=web, granularity=ATTRIBUTE)
+{
+    "outcome" => "success"
+}
+[standalone@embedded /] /subsystem=distributable-web/infinispan-session-management=foo/affinity=local:add(){allow-resource-service-restart=true}
+{
+    "outcome" => "success"
+}
+----
+
+=== HotRod session management
+
+The `hotrod-session-management` resource configures a distributable session manager where session data is stored in a remote infinispan-server cluster via the HotRod protocol.
+
+remote-cache-container::
+This references a <<remote_cache_container,remote-cache-container>> defined in the Infinispan subsystem into which session data will be stored.
+cache-configuration::
+If a remote cache whose name matches the deployment name does not exist, this attribute defines a cache configuration within the remote infinispan server, from which an application-specific cache will be created.
+granularity::
+This defines how the session manager will map a session into individual cache entries.
+Possible values are:
+SESSION:::
+Stores all session attributes within a single cache entry.
+This is generally more expensive than ATTRIBUTE granularity, but preserves any cross-attribute object references.
+ATTRIBUTE:::
+Stores each session attribute within a separate cache entry.
+This is generally more efficient than SESSION granularity, but does not preserve any cross-attribute object references.
+affinity::
+This resource defines the affinity that a web request should have for a given server.
+The affinity of the associated web session determines the algorithm for generating the route to be appended onto the session ID (within the JSESSIONID cookie, or when encoding URLs).
+This annotation of the session ID is used by load balancers to advise how future requests for existing sessions should be directed.
+Routing is designed to be opaque to application code such that calls to `HttpSession.getId()` always return an unmodified session ID.
+This is only generated when creating/updating the JSESSIONID cookie, or when encoding URLs via `HttpServletResponse.encodeURL()` and `encodeRedirectURL()`.
+Possible values are:
+affinity=none:::
+Web requests will have no affinity to any particular node.
+This option is intended for use cases where web session state is not maintained within the application server.
+affinity=local:::
+Web requests will have an affinity to the server that last handled a request for a given session.
+This option corresponds to traditional sticky session behavior.
+marshaller::
+Specifies the marshalling implementation used to serialize session attributes.
+JBOSS:::
+Marshals session attributes using <<jboss_marshalling>>.
+PROTOSTREAM:::
+Marshals session attributes using <<protostream>>.
+
+e.g. Creating a new session management profile "foo" using the cache configuration "bar" defined on a remote infinispan server "datagrid" with ATTRIBUTE granularity:
+
+[source]
+----
+[standalone@embedded /] /subsystem=distributable-web/hotrod-session-management=foo:add(remote-cache-container=datagrid, cache-configuration=bar, granularity=ATTRIBUTE)
+{
+    "outcome" => "success"
+}
+----
+
+== Overriding default behavior
+
+A web application can override the default distributable session management behavior in 1 of 2 ways:
+
+. Reference a session-management profile by name
+. Provide deployment-specific session management configuration
+
+=== Referencing an existing session management profile
+
+To use an existing distributed session management profile, a web application should include a distributable-web.xml deployment descriptor located within the application's /WEB-INF directory.
+
+e.g.
+
+./WEB-INF/distributable-web.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<distributable-web xmlns="urn:jboss:distributable-web:2.0">
+    <session-management name="foo"/>
+</distributable-web>
+----
+
+Alternatively, the target distributed session management profile can be defined within an existing jboss-all.xml deployment descriptor:
+
+e.g.
+
+./META-INF/jboss-all.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss xmlns="urn:jboss:1.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
+        <session-management name="foo"/>
+    </distributable-web>
+</jboss>
+----
+
+=== Using a deployment-specific session management profile
+
+If custom session management configuration will only be used by a single web application, you may find it more convenient to define the configuration within the deployment descriptor itself.
+Ad hoc configuration looks identical to the configuration used by the distributable-web subsystem.
+
+e.g.
+
+./WEB-INF/distributable-web.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<distributable-web xmlns="urn:jboss:distributable-web:2.0">
+    <infinispan-session-management cache-container="foo" cache="bar" granularity="SESSION">
+        <primary-owner-affinity/>
+    </infinispan-session-management>
+</distributable-web>
+----
+
+Alternatively, session management configuration can be defined within an existing jboss-all.xml deployment descriptor:
+
+e.g.
+
+./META-INF/jboss-all.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss xmlns="urn:jboss:1.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
+        <infinispan-session-management cache-container="foo" cache="bar" granularity="ATTRIBUTE">
+            <local-affinity/>
+        </infinispan-session-management>
+    </distributable-web>
+</jboss>
+----
+
+== Distributable Shared Sessions
+
+WildFly supports the ability to share sessions across web applications within an enterprise archive.
+In previous releases, WildFly always presumed distributable session management of shared sessions.
+Version 2.0 of the shared-session-config deployment descriptor was updated to allow an EAR to opt-in to this behavior using the familiar `<distributable/>` element.
+Additionally, you can customize the behavior of the distributable session manager used for session sharing via the same configuration mechanism described in the above sections.
+
+e.g.
+
+./META-INF/jboss-all.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss xmlns="urn:jboss:1.0">
+    <shared-session-config xmlns="urn:jboss:shared-session-config:2.0">
+        <distributable/>
+        <session-config>
+            <cookie-config>
+                <path>/</path>
+            </cookie-config>
+        </session-config>
+    </shared-session-config>
+    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
+        <session-management name="foo"/>
+    </distributable-web>
+</jboss>
+----
+
+== Optimizing performance of distributed web applications
+
+One of the primary design goals of WildFly's distributed session manager was the parity of HttpSession semantics between distributable and non-distributable web applications.
+In order to provide predictable behavior suitable for most web applications, the default distributed session manager configuration is quite conservative, generally favoring consistency over availability.
+However, these defaults may not be appropriate for your application.
+In general, the effective performance of the distributed session manager is constrained by:
+
+. Replication/persistence payload size
+. Locking/isolation of a given session
+
+To optimize the configuration of the distributed session manager for your application, you can address the above constraints by tuning one or more of the following:
+
+* <<session_granularity,Granularity>>
+* <<session_concurrency,Concurrency>>
+* <<session_attribute_immutability,Immutability>>
+* <<session_attribute_marshalling,Marshalling>>
+
+[[session_granularity]]
+=== Session granularity
+
+By default, WildFly's distributed session manager uses SESSION granularity, meaning that all session attributes are stored within a single cache entry.
+While this ensures that any object references shared between session attributes are preserved following replication/persistence, it means that a change to a single attribute results in the replication/persistence of *all* attributes.
+
+If your application does not share any object references between attributes, users are strongly advised to use ATTRIBUTE granularity.
+Using ATTRIBUTE granularity, each session attribute is stored in a separate cache entry.
+This means that a given request is only required to replicate/persist those attributes that were added/modified/removed/mutated in a given request.
+For read-heavy applications, this can dramatically reduce the replication/persistence payload per request.
+
+[[session_concurrency]]
+=== Session concurrency
+
+WildFly's default distributed session manager behavior is also conservative with respect to concurrent access to a given session.
+By default, a request acquires exclusive access to its associated session for the duration of a request, and until any async child context is complete.
+This maximizes the performance of a single request, as each request corresponds to a single cache transaction; allows for repeatable read semantics to the session; and ensures that subsequent requests are not prone to stale reads, even when handled by another cluster member.
+
+However, if multiple requests attempt to access the same session concurrently, their processing will be effectively serialized.  This might not be feasible, especially for heavily asynchronous web applications.
+
+Relaxing transaction isolation from REPEATABLE_READ to READ_COMMITTED on the associated cache configuration will allow concurrent requests to perform lock-free (but potentially stale) reads by deferring locking to the first attempt to write to the session.
+This improves the throughput of requests for the same session for highly asynchronous web applications whose session access is read-heavy.
+
+e.g.
+[source]
+----
+/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=locking:write-attribute(name=isolation, value=READ_COMMITTED)
+----
+
+For asynchronous web applications whose session access is write-heavy, merely relaxing transaction isolation is not likely to be sufficient.
+These web applications will likely benefit from disabling cache transactions altogether.
+When transactions are disabled, cache entries are locked and released for every write to the session, resulting in last-write-wins semantics.
+For write-heavy applications, this typically improves the throughput of concurrent requests for the same session, at the cost of longer response times for individual requests.
+
+[source]
+----
+/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=transaction:write-attribute(name=mode, value=NONE)
+----
+
+NOTE: Relaxing transaction isolation currently prevents WildFly from enforcing that a given session is handled by one JVM at a time, a constraint dictated by the servlet specification.
+
+[[session_attribute_immutability]]
+=== Session attribute immutability
+
+In WildFly, distributed session attributes are presumed to be mutable objects, unless of a known immutable type, or unless otherwise specified.
+
+Take the following session access pattern:
+[source,java]
+----
+HttpSession session = request.getSession();
+MutableObject object = session.getAttribute("...");
+object.mutate();
+----
+
+By default, WildFly replicates/persists the mutable session attributes at the end of the request, ensuring that a subsequent request will read the mutated value, not the original value.
+However, the replication/persistence of mutable session attributes at the end of the request happens whether or not these objects were actually mutated.
+To avoid redundant session writes, users are strongly encouraged to store immutable objects in the session whenever possible.
+This allows the application more control over when session attributes will replicate/persist, since immutable session attributes will only update upon explicit calls to `HttpSession.setAttribute(...)`.
+
+WildFly can determine whether most JDK types are immutable, but any unrecognized/custom types are presumed to be mutable.
+To indicate that a given session attribute of a custom type should be treated as immutable by the distributed session manager, annotate the class with one of the following annotations:
+
+. `@org.wildfly.clustering.web.annotation.Immutable`
+. `@net.jcip.annotations.Immutable`
+
+e.g.
+[source,java]
+----
+@Immutable
+public class ImmutableClass implements Serializable {
+    // ...
+}
+----
+
+Alternatively, immutable classes can be enumerated via the distributable-web deployment descriptor.
+
+e.g.
+[source,xml]
+----
+<distributable-web xmlns="urn:jboss:distributable-web:2.0">
+    <session-management>
+        <immutable-class>foo.bar.ImmutableClass</immutable-class>
+        <immutable-class>...</immutable-class>
+    </session-management>
+</distributable-web>
+----
+
+[[session_attribute_marshalling]]
+=== Session attribute marshalling
+
+Minimizing the replication/persistence payload for individual session attributes has a direct impact on performance by reducing the number of bytes sent over the network or persisted to storage.
+See the <<marshalling>> section for more details.

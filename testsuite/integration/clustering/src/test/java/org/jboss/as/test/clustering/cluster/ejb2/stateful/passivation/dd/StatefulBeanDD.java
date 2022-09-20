@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.passivation.dd;
 
-import javax.ejb.SessionBean;
+import jakarta.ejb.SessionBean;
 
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.passivation.StatefulBeanBase;
 

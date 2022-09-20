@@ -12,7 +12,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -21,7 +21,8 @@
     <name>WildFly: JPA</name>
 
     <properties>
-        <dependency.management.pom.artifactId>wildfly-ee-feature-pack-parent</dependency.management.pom.artifactId>
+        <!-- Default to the legacy WildFly dependency set until most child modules use standard WildFly dependencies -->
+        <dependency.management.pom.artifactId>wildfly-legacy-ee-bom</dependency.management.pom.artifactId>
     </properties>
 
     <dependencyManagement>
@@ -37,25 +38,32 @@
     </dependencyManagement>
 
     <modules>
-        <module>subsystem</module>
-        <module>spi</module>
-        <module>hibernate5</module>
-        <module>hibernate5_3</module>
-        <module>eclipselink</module>
-        <module>openjpa</module>
+        <module>hibernate6</module>
     </modules>
 
     <profiles>
         <profile>
-            <id>include-hibernate-6</id>
+            <id>ee8.build.profile</id>
             <activation>
                 <property>
-                    <name>!skip.preview</name>
+                    <name>!skip.ee8</name>
                 </property>
             </activation>
             <modules>
-                <module>hibernate6</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>subsystem</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>spi</module>
+                <!-- TODO remove-->
+                <module>hibernate5</module>
+                <!-- TODO remove-->
+                <module>hibernate5_3</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>eclipselink</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>openjpa</module>
             </modules>
         </profile>
     </profiles>
+
 </project>

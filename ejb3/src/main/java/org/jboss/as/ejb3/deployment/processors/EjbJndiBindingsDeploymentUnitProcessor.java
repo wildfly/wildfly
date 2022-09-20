@@ -52,7 +52,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Values;
+import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
 import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker;
@@ -231,7 +231,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader, appclient)));
         componentDescription.getConfigurators().add(new ComponentConfigurator() {
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                viewClassLoader.setValue(Values.immediateValue(configuration.getModuleClassLoader()));
+                viewClassLoader.setValue(new ImmediateValue(configuration.getModuleClassLoader()));
             }
         });
     }
@@ -242,7 +242,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         final RemoteViewInjectionSource delegate = new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader, appclient);
         final ServiceName depName = ControlPointService.serviceName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName(), EJBComponentSuspendDeploymentUnitProcessor.ENTRY_POINT_NAME + deploymentUnit.getName() + "." + componentDescription.getComponentName());
         componentDescription.getConfigurators().add((context, description, configuration) -> {
-            viewClassLoader.setValue(Values.immediateValue(configuration.getModuleClassLoader()));
+            viewClassLoader.setValue(new ImmediateValue(configuration.getModuleClassLoader()));
             configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.addDependency(depName, ControlPoint.class, controlPointInjectedValue));
         });
         //we need to wrap the injection source to allow graceful shutdown to function, although this is not ideal

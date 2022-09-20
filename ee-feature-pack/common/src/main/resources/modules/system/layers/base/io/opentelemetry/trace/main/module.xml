@@ -29,7 +29,6 @@
         <artifact name="${io.opentelemetry:opentelemetry-sdk-metrics}"/>
         <artifact name="${io.opentelemetry:opentelemetry-sdk-trace}"/>
         <artifact name="${io.opentelemetry:opentelemetry-sdk-common}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-semconv}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-jaeger}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-trace}"/>

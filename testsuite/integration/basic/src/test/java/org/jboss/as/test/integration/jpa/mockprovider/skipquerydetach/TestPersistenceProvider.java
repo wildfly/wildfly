@@ -26,10 +26,10 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.spi.PersistenceProvider;
-import javax.persistence.spi.PersistenceUnitInfo;
-import javax.persistence.spi.ProviderUtil;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.spi.PersistenceProvider;
+import jakarta.persistence.spi.PersistenceUnitInfo;
+import jakarta.persistence.spi.ProviderUtil;
 
 /**
  * TestPersistenceProvider
@@ -58,12 +58,12 @@ public class TestPersistenceProvider implements PersistenceProvider {
 
         TestEntityManagerFactory testEntityManagerFactory =
                 new TestEntityManagerFactory(info.getProperties());
-        Class[] targetInterfaces = javax.persistence.EntityManagerFactory.class.getInterfaces();
+        Class[] targetInterfaces = jakarta.persistence.EntityManagerFactory.class.getInterfaces();
         Class[] proxyInterfaces = new Class[targetInterfaces.length + 1];  // include extra element for extensionClass
         boolean alreadyHasInterfaceClass = false;
         for (int interfaceIndex = 0; interfaceIndex < targetInterfaces.length; interfaceIndex++) {
             Class interfaceClass = targetInterfaces[interfaceIndex];
-            if (interfaceClass.equals(javax.persistence.EntityManagerFactory.class)) {
+            if (interfaceClass.equals(jakarta.persistence.EntityManagerFactory.class)) {
                 proxyInterfaces = targetInterfaces;                     // targetInterfaces already has all interfaces
                 alreadyHasInterfaceClass = true;
                 break;
@@ -71,7 +71,7 @@ public class TestPersistenceProvider implements PersistenceProvider {
             proxyInterfaces[1 + interfaceIndex] = interfaceClass;
         }
         if (!alreadyHasInterfaceClass) {
-            proxyInterfaces[0] = javax.persistence.EntityManagerFactory.class;
+            proxyInterfaces[0] = jakarta.persistence.EntityManagerFactory.class;
         }
 
         EntityManagerFactory proxyEntityManagerFactory = (EntityManagerFactory) Proxy.newProxyInstance(

@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-layers</artifactId>
@@ -38,12 +38,12 @@
             <artifactId>wildfly-launcher</artifactId>
         </dependency>
     </dependencies>
-    
+
     <properties>
         <layers.install.dir>${project.build.directory}/layers-results</layers.install.dir>
         <layers.delete.installations>true</layers.delete.installations>
         <jbossas.project.dir>${jbossas.ts.dir}/../..</jbossas.project.dir>
-        
+
         <!-- GAVs to use for feature packs. Profiles can reset to trigger provisioning
              using alternative feature packs. -->
         <ee.feature.pack.groupId>${testsuite.ee.galleon.pack.groupId}</ee.feature.pack.groupId>
@@ -58,7 +58,8 @@
              Default is none. Profiles set these to other values to enable executions.
              Provisioning executions using the wildfly-test-galleon-pack are handled separately from others. -->
         <provisioning.phase>none</provisioning.phase>
-        <provisioning.phase.preview.excluded>none</provisioning.phase.preview.excluded>
+        <provisioning.phase.preview.excluded>none</provisioning.phase.preview.excluded> <!-- Use for executions that won't work with WildFly Preview -->
+        <provisioning.phase.preview.only>none</provisioning.phase.preview.only> <!-- Use for executions that will only work with WildFly Preview -->
         <!-- Don't run the default surefire execution unless a profile enables it -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
     </properties>
@@ -91,6 +92,7 @@
                 <!-- Turn on normal plugin execution by changing the phase props from 'none'.
                      Note that we leave 'provisioning.phase.preview.excluded' as 'none' -->
                 <provisioning.phase>compile</provisioning.phase>
+                <provisioning.phase.preview.only>compile</provisioning.phase.preview.only>
                 <surefire.default-test.phase>test</surefire.default-test.phase>
                 <!-- Reset the feature pack GAV props to use wildfly-preview -->
                 <ee.feature.pack.groupId>${project.groupId}</ee.feature.pack.groupId>
@@ -98,11 +100,11 @@
                 <ee.feature.pack.version>${project.version}</ee.feature.pack.version>
                 <full.feature.pack.artifactId>wildfly-preview-feature-pack</full.feature.pack.artifactId>
                 <!-- Use the transformed artifact repo -->
-                <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
+                <maven.repo.local>${settings.localRepository}</maven.repo.local>
             </properties>
         </profile>
     </profiles>
-    
+
             <build>
                 <plugins>
                     <plugin>
@@ -451,6 +453,34 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>embedded-activemq-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/embedded-activemq</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>embedded-activemq</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>iiop-openjdk-provisioning-test</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -629,14 +659,14 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
+                                <phase>${provisioning.phase}</phase>
                                 <configuration>
                                     <install-dir>${layers.install.dir}/jpa-distributed</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-test-galleon-pack</artifactId>
-                                            <version>${ee.maven.version}</version>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1247,7 +1277,7 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-                            <execution>   
+                            <execution>
                                 <id>h2-default-datasource-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -1277,7 +1307,7 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-                            <execution>   
+                            <execution>
                                 <id>h2-driver-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -1590,6 +1620,36 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+
+                            <execution>
+                                <id>mod_cluster-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/mod_cluster</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>mod_cluster</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                             <execution>
                                 <id>observability-provisioning</id>
                                 <goals>
@@ -1726,6 +1786,62 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>sar</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>singleton-local-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/singleton-local</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>singleton-local</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>singleton-ha-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/singleton-ha</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>singleton-ha</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -2189,6 +2305,7 @@
                                                 <layer>ejb-lite</layer>
                                                 <layer>ejb-local-cache</layer>
                                                 <layer>elytron</layer>
+                                                <layer>embedded-activemq</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>h2-driver</layer>
@@ -2208,16 +2325,17 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>messaging-activemq</layer>
+                                                <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
                                                 <layer>opentelemetry</layer>
                                                 <layer>pojo</layer>
-                                                <layer>remote-activemq</layer>
                                                 <layer>remoting</layer>
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>
                                                 <layer>sar</layer>
                                                 <layer>security-manager</layer>
+                                                <layer>singleton-local</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>
                                                 <layer>undertow-https</layer>
@@ -2249,11 +2367,11 @@
 
                            <!-- This is an all layers variant excluding jpa and adding jpa-distributed -->
                             <execution>
-                                <id>all-layers-jpa-distributed-provisioning-full</id>
+                                <id>all-layers-distributed-provisioning-full</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
+                                <phase>${provisioning.phase}</phase>
                                 <configuration>
                                     <install-dir>${layers.install.dir}/test-all-layers-jpa-distributed</install-dir>
                                     <feature-packs>
@@ -2309,6 +2427,7 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>messaging-activemq</layer>
+                                                <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
                                                 <layer>opentelemetry</layer>
@@ -2319,6 +2438,7 @@
                                                 <layer>resource-adapters</layer>
                                                 <layer>sar</layer>
                                                 <layer>security-manager</layer>
+                                                <layer>singleton-ha</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>
                                                 <layer>undertow-https</layer>
@@ -2341,6 +2461,7 @@
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>
+                                                <layer>ejb-local-cache</layer>
                                             </excluded-layers>
                                         </config>
                                     </configurations>
@@ -2376,37 +2497,6 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-                            <!-- [WFLY-15001] Legacy security is being incrementally removed.
-                            <execution>
-                                <id>legacy-remoting-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/legacy-remoting</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
-                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>legacy-remoting</layer>
-                                                <layer>undertow</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            -->
                         </executions>
                     </plugin>
 
@@ -2426,5 +2516,5 @@
                     </plugin>
                 </plugins>
             </build>
-    
+
 </project>

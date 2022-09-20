@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-reactive-streams-operators</artifactId>
@@ -147,7 +147,6 @@
             <properties>
                 <!-- Turn off provisioning since it is enabled by default-->
                 <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
 
@@ -161,9 +160,6 @@
                     <name>ts.ee9</name>
                 </property>
             </activation>
-            <properties>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
-            </properties>
         </profile>
     </profiles>
 </project>

@@ -33,12 +33,11 @@
     </exports>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-jaxrs@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-jaxrs}"/>
     </resources>
 
     <dependencies>
         <module name="java.logging"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
         <module name="javax.ws.rs.api"/>
         <module name="javax.servlet.api"/>

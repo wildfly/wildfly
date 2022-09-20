@@ -162,7 +162,7 @@ link:#gal.naming[naming] +
 |
 link:#gal.cdi[cdi] +
 
-|[[gal.ejb]]ejb-http-invoker
+|[[gal.ejb-http-invoker]]ejb-http-invoker
 |Support for invoking Jakarta Enterprise Beans over HTTP.
 |
 link:#gal.ejb-lite[ejb-lite] +
@@ -201,6 +201,18 @@ link:#gal.transactions[transactions] +
 |Support for Elytron security.
 |
 link:#gal.base-server[base-server] +
+
+|[[gal.embedded-activemq]]embedded-activemq
+|Support for an embedded Apache Activemq Artemis Jakarta Messaging broker. +
+_Alternative:_ link:#gal.remote-activemq[remote-activemq]
+|
+link:#gal.cdi[cdi] +
+link:#gal.ee[ee] +
+link:#gal.elytron[elytron] +
+link:#gal.naming[naming] +
+link:#gal.remoting[remoting] +
+link:#gal.resource-adapters[resource-adapters] +
+link:#gal.undertow[undertow] +
 
 |[[gal.git-history]]git-history
 |Support for using _git_ for configuration management.
@@ -277,7 +289,7 @@ link:#gal.datasources[datasources] +
 |Support for Jakarta Server Faces.
 |
 link:#gal.bean-validation[bean-validation] (optional) +
-link:#gal.cdi[cdi] (optional) +
+link:#gal.cdi[cdi] +
 link:#gal.web-server[web-server] +
 
 |[[gal.jsonb]]jsonb
@@ -387,6 +399,10 @@ link:#gal.microprofile-reactive-messaging[reactive-messaging] +
 |
 link:#gal.cdi[cdi] +
 
+|[[gal.mod_cluster]]mod_cluster
+|Support for mod_cluster subsystem.
+|
+link:#gal.web-server[web-server] +
 
 |[[gal.naming]]naming
 |Support for JNDI.
@@ -407,7 +423,8 @@ link:#gal.microprofile-opentracing[microprofile-opentracing] (optional) +
 link:#gal.base-server[base-server] +
 
 |[[gal.remote-activemq]]remote-activemq
-|Support for connections to a remote Apache Activemq Artemis Jakarta Messaging broker.
+|Support for connections to a remote Apache Activemq Artemis Jakarta Messaging broker. +
+_Alternative:_ link:#gal.embedded-activemq[embedded-activemq]
 |
 link:#gal.resource-adapters[resource-adapters] +
 

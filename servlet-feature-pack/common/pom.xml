@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-feature-pack-common</artifactId>
@@ -42,23 +42,27 @@
     <name>WildFly: Servlet Feature Pack Common Resources</name>
     <packaging>pom</packaging>
 
+    <dependencyManagement>
+        <!--
+        TODO remove this once the parent pom declares the same thing.
+        -->
+        <dependencies>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
 
         <!-- module and copy artifact dependencies -->
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-elytron-integration</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -126,11 +130,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
             <artifactId>wildfly-http-client-common</artifactId>
             <exclusions>
@@ -145,8 +144,8 @@
             <artifactId>undertow-server-servlet</artifactId>
             <exclusions>
                 <exclusion>
-                    <artifactId>*</artifactId>
                     <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -169,7 +168,7 @@
 
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -245,8 +244,8 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -301,8 +300,8 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-undertow</artifactId>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-undertow-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -312,8 +311,8 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common</artifactId>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-web-common-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

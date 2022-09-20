@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.environment;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 import org.jboss.logging.Logger;
 

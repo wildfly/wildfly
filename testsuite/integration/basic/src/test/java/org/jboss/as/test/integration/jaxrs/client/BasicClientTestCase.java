@@ -22,9 +22,9 @@
 package org.jboss.as.test.integration.jaxrs.client;
 
 import java.net.URL;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -55,7 +55,7 @@ public class BasicClientTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsapp.war");
         war.addClasses(BasicClientTestCase.class, ClientResource.class);
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
                 "\n"), "web.xml");

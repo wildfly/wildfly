@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.jpa.epcpropagation.contextduel;
 
-import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
+import jakarta.ejb.Stateful;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContextType;
 
 /**
  * CMT stateful bean

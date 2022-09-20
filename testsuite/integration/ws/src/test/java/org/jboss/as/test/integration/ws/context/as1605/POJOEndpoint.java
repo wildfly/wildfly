@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ws.context.as1605;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 /**
  * POJO endpoint.

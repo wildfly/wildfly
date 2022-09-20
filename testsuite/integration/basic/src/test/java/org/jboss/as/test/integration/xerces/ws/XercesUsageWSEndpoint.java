@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.xerces.ws;
 
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
+import jakarta.jws.WebService;
+import jakarta.jws.soap.SOAPBinding;
 
 /**
  * User: jpai

@@ -22,9 +22,9 @@
 package org.wildfly.test.integration.elytron.realm;
 
 
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.jboss.as.test.integration.security.common.Utils.makeCallWithTokenAuthn;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;

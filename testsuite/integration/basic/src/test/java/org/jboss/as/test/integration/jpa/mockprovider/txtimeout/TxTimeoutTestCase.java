@@ -60,9 +60,9 @@ public class TxTimeoutTestCase {
                 TestPersistenceProvider.class
         );
 
-        // META-INF/services/javax.persistence.spi.PersistenceProvider
+        // META-INF/services/jakarta.persistence.spi.PersistenceProvider
         persistenceProvider.addAsResource(new StringAsset("org.jboss.as.test.integration.jpa.mockprovider.txtimeout.TestPersistenceProvider"),
-                "META-INF/services/javax.persistence.spi.PersistenceProvider");
+                "META-INF/services/jakarta.persistence.spi.PersistenceProvider");
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
 

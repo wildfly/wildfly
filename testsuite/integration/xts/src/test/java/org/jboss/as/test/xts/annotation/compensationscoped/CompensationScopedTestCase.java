@@ -36,7 +36,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>

@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ee.appclient.basic;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author Stuart Douglas

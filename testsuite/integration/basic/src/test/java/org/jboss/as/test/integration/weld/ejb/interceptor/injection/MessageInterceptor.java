@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.weld.ejb.interceptor.injection;
 
-import javax.inject.Inject;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.inject.Inject;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * EJB interceptor that uses CDI injection

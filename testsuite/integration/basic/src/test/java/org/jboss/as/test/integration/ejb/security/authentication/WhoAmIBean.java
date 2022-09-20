@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.security.authentication;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 import org.jboss.as.test.integration.ejb.security.WhoAmI;
 import org.jboss.ejb3.annotation.SecurityDomain;

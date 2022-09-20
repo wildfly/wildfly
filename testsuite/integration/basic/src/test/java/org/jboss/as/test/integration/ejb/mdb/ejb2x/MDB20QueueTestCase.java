@@ -40,15 +40,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.jms.Message;
-import javax.jms.Queue;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
 import javax.naming.InitialContext;
 import java.util.PropertyPermission;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
-import javax.jms.QueueRequestor;
-import javax.jms.QueueSession;
+import jakarta.jms.QueueRequestor;
+import jakarta.jms.QueueSession;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 

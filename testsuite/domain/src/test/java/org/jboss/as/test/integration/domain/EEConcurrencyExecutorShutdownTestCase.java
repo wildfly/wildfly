@@ -45,7 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIMARY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -96,13 +96,13 @@ public class EEConcurrencyExecutorShutdownTestCase {
             final DomainTestSupport.Configuration configuration;
             if (Boolean.getBoolean("wildfly.master.debug")) {
                 configuration = DomainTestSupport.Configuration.createDebugMaster(testName,
-                        "domain-configs/domain-standard-ee.xml", "host-configs/host-master.xml", null);
+                        "domain-configs/domain-standard-ee.xml", "host-configs/host-primary.xml", null);
             } else if (Boolean.getBoolean("wildfly.slave.debug")) {
                 configuration = DomainTestSupport.Configuration.createDebugSlave(testName,
-                        "domain-configs/domain-standard-ee.xml", "host-configs/host-master.xml", null);
+                        "domain-configs/domain-standard-ee.xml", "host-configs/host-primary.xml", null);
             } else {
                 configuration = DomainTestSupport.Configuration.create(testName,
-                        "domain-configs/domain-standard-ee.xml", "host-configs/host-master.xml", null);
+                        "domain-configs/domain-standard-ee.xml", "host-configs/host-primary.xml", null);
             }
             final DomainTestSupport testSupport = DomainTestSupport.create(configuration);
             testSupport.start();
@@ -170,7 +170,7 @@ public class EEConcurrencyExecutorShutdownTestCase {
      */
     private void stopServer(final String serverName) {
         ModelNode op = new ModelNode();
-        op.get(OP_ADDR).add(HOST, MASTER);
+        op.get(OP_ADDR).add(HOST, PRIMARY);
         op.get(OP_ADDR).add(SERVER_CONFIG, FIRST_SERVER_NAME);
         op.get(OP).set(STOP);
         op.get(TIMEOUT).set(0);
@@ -200,7 +200,7 @@ public class EEConcurrencyExecutorShutdownTestCase {
 
             private String checkServerStatus() {
                 ModelNode op = new ModelNode();
-                op.get(OP_ADDR).add(HOST, MASTER);
+                op.get(OP_ADDR).add(HOST, PRIMARY);
                 op.get(OP_ADDR).add(SERVER_CONFIG, serverName);
                 op.get(OP).set(READ_ATTRIBUTE_OPERATION);
                 op.get(NAME).set(STATUS);

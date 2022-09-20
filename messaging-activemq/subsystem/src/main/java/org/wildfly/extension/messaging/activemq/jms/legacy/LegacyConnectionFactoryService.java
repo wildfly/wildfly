@@ -175,7 +175,7 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
 
         DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
         if (discoveryGroupName != null) {
-            if (activeMQServer.getConfiguration().getDiscoveryGroupConfigurations().keySet().contains(discoveryGroupName)) {
+            if (activeMQServer.getConfiguration().getDiscoveryGroupConfigurations().containsKey(discoveryGroupName)) {
                 discoveryGroupConfiguration = translateDiscoveryGroupConfiguration(activeMQServer.getConfiguration().getDiscoveryGroupConfigurations().get(discoveryGroupName));
             } else {
                 throw MessagingLogger.ROOT_LOGGER.discoveryGroupIsNotDefined(discoveryGroupName);

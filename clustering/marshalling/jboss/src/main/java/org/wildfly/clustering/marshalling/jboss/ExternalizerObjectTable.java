@@ -24,7 +24,6 @@ package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -52,8 +51,8 @@ public class ExternalizerObjectTable implements ObjectTable {
     }
 
     @SafeVarargs
-    public ExternalizerObjectTable(Externalizer<Object>... externalizers) {
-        this(Arrays.asList(externalizers));
+    public ExternalizerObjectTable(Externalizer<?>... externalizers) {
+        this(List.of(externalizers));
     }
 
     private ExternalizerObjectTable(IntSerializer indexSerializer, List<Externalizer<?>> externalizers) {

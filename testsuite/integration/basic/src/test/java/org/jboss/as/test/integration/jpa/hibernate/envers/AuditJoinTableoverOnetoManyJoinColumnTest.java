@@ -50,6 +50,7 @@ public class AuditJoinTableoverOnetoManyJoinColumnTest {
 
     @BeforeClass
     public static void beforeClass() throws NamingException {
+
         iniCtx = new InitialContext();
     }
 

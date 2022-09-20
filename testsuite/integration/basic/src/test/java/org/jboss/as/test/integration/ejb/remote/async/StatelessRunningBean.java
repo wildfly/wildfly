@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.remote.async;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Stuart Douglas

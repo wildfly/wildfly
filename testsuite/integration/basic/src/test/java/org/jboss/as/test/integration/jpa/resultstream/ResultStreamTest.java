@@ -24,16 +24,16 @@ package org.jboss.as.test.integration.jpa.resultstream;
 
 import java.util.stream.Stream;
 
-import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.PersistenceContext;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * Stateful session bean for testing Jakarta Persistence 2.2 API
- * javax.persistence.Query#getResultStream
+ * jakarta.persistence.Query#getResultStream
  *
  * @author Gail Badner
  */

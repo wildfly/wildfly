@@ -23,7 +23,7 @@
 package org.wildfly.test.integration.elytron.ssl;
 
 import static java.security.AccessController.doPrivileged;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT;
 import static org.junit.Assert.fail;
 
@@ -40,10 +40,10 @@ import java.security.PrivilegedAction;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;

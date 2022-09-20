@@ -36,19 +36,11 @@ public class LayersTestCase {
     // but not used in the test-all-layers installation.
     // This is the expected set of not provisioned modules when all layers are provisioned.
     private static final String[] NOT_USED = {
-        // TODO  WFLY-16452 we need to add a mod_cluster layer
-        "org.wildfly.extension.mod_cluster",
-        "org.wildfly.mod_cluster.undertow",
-        "org.jboss.mod_cluster.container.spi",
-        "org.jboss.mod_cluster.core",
-        "org.jboss.mod_cluster.load.spi",
         // TODO we need to add an rts layer
         "org.wildfly.extension.rts",
         "org.jboss.narayana.rts",
         // TODO we need to add an xts layer
         "org.jboss.as.xts",
-        // TODO  WFLY-16453 we need to add a clustering singleton layer
-        "org.wildfly.extension.clustering.singleton",
         // TODO we need to add an agroal layer
         "org.wildfly.extension.datasources-agroal",
         "io.agroal",
@@ -76,6 +68,7 @@ public class LayersTestCase {
         "org.jboss.as.jsr77",
         "org.jboss.as.messaging",
         "org.jboss.as.web",
+        "org.keycloak.keycloak-adapter-subsystem",
         // TODO nothing references this
         "org.wildfly.security.http.sfbasic",
         // TODO Legacy Seam integration. Does it even work with EE 10?
@@ -100,36 +93,29 @@ public class LayersTestCase {
         "org.jboss.resteasy.resteasy-rxjava2",
         // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
         "org.wildfly.reactive.dep.jts",
-        // Used by Hibernate Search 6 TODO remove these entries as part of the big-bang, as they are used, just not in javax Hibernate Search
-        "com.carrotsearch.hppc",
-        "org.elasticsearch.client.rest-client",
-        // Used by Hibernate Search 5 but not part of the jpa layer (aiui they are optional aspects of Hibernate Search)
-        // These modules are dropped with Hibernate Search 6 so no point evaluating whether they should be provisioned
-        // by the jpa layer
-        "org.hibernate.search.backend-jms",
-        "org.hibernate.search.serialization-avro",
-        "org.apache.avro",
-        // Optionally used by Hibernate Search 6 but not provided by the jpa layer
-        // TODO determine if they should be
+        // Optionally used by Hibernate Search but not provided by the jpa layer
+        // TODO they probably should be, see https://github.com/wildfly/wildfly/pull/15965
+        "org.hibernate.search.orm",
         "org.hibernate.search.backend.elasticsearch",
+        "org.elasticsearch.client.rest-client",
         "org.hibernate.search.backend.lucene",
+        "com.carrotsearch.hppc",
         "org.apache.lucene",
-        "org.apache.lucene.internal",
+        // Used by Hibernate Search but only in preview
+        "org.hibernate.search.mapper.orm.coordination.outboxpolling", // Present only in preview
+        "org.apache.avro", // Used by outboxpolling
         // TODO these implement SPIs from RESTEasy or JBoss WS but I don't know how they integrate
         // as there is no ref to them in any module.xml nor any in WF java code.
         // Perhaps via deployment descriptor? In any case, no layer provides them
         "org.wildfly.security.jakarta.client.resteasy",
         "org.wildfly.security.jakarta.client.webservices",
         "org.jboss.resteasy.microprofile.config",
-        // TODO remove in the big-bang. No longer referenced by org.hibernate in Hibernate 6
-        "org.javassist",
-        // TODO no longer referenced by org.jboss.as.clustering.infinispan in WildFly Preview. Remove this as part of the big bang.
-        "internal.jakarta.transaction.api",
     };
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning
     // the default configuration.
     private static final String[] NOT_REFERENCED = {
+        "org.wildfly.extension.clustering.singleton",
         // Standard configs don't include various MP subsystems
         "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
         "org.wildfly.extension.microprofile.health-smallrye",
@@ -206,14 +192,15 @@ public class LayersTestCase {
         "org.jboss.resteasy.resteasy-json-binding-provider",
         // injected by jpa
         "org.hibernate.search.orm",
-        "org.hibernate.search.backend.lucene",
         "org.hibernate.search.backend.elasticsearch",
+        "org.hibernate.search.backend.lucene",
+        "org.hibernate.search.mapper.orm.coordination.outboxpolling", // Present only in preview
         // Used by the hibernate search that's injected by jpa
-        "org.hibernate.search.serialization-avro",
-        "org.hibernate.search.backend-jms",
-        "org.apache.avro",
+        "org.elasticsearch.client.rest-client",
+        "com.google.code.gson",
+        "com.carrotsearch.hppc",
         "org.apache.lucene",
-        "org.apache.lucene.internal",
+        "org.apache.avro",
         // injected by jsf
         "org.jboss.as.jsf-injection",
         // injected by sar
@@ -230,6 +217,7 @@ public class LayersTestCase {
         "ibm.jdk",
         // TODO just a testsuite utility https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
         "org.jboss.ws.cxf.sts",
+        "org.wildfly.security.jakarta.security" // Dynamically added by ee-security and mp-jwt-smallrye DUPs but not referenced by subsystems.
     };
 
     /**

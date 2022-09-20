@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.clustering.cluster.xsite;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -203,7 +203,7 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
             super(NODE_1_2_3_4, createContainerConfigurationBuilder()
                     .setupScript(createScriptBuilder()
                             .startBatch()
-                                .add("/subsystem=infinispan/cache-container=foo:add")
+                                .add("/subsystem=infinispan/cache-container=foo:add(marshaller=JBOSS)")
                                 .add("/subsystem=infinispan/cache-container=foo/transport=jgroups:add")
                                 .add("/subsystem=infinispan/cache-container=foo/distributed-cache=bar:add")
                             .endBatch()

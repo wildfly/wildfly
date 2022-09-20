@@ -21,8 +21,8 @@
  */
 package org.wildfly.test.integration.elytron.ejb;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Stateless;
 
 /**
  * EJB that will be called to demonstrate that roles have been configured properly even without specifying security domain explicitly.

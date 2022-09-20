@@ -35,7 +35,6 @@
     <dependencies>
         <module name="java.logging"/>
         <module name="java.management"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.security.auth.message.api"/>
         <module name="javax.servlet.api" />
         <module name="javax.jws.api" />

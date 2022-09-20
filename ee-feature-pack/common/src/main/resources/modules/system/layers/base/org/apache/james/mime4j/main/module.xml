@@ -35,7 +35,6 @@
     </resources>
 
     <dependencies>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.apache.commons.logging"/>
     </dependencies>
 </module>

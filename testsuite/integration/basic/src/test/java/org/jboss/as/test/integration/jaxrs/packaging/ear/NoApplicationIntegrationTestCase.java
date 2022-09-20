@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
  * <p/>
  * The container should register a servlet with the name
  * <p/>
- * javax.ws.rs.core.Application
+ * jakarta.ws.rs.core.Application
  * <p/>
  * It is the app providers responsibility to provide a mapping for the servlet
  * <p/>
@@ -67,7 +67,7 @@ public class NoApplicationIntegrationTestCase {
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war");
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
                     "\n"), "web.xml");

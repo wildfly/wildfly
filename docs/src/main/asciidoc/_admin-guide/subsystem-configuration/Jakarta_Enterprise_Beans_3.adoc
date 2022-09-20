@@ -24,12 +24,12 @@ of each
   <entity-bean>
     <bean-instance-pool-ref pool-name="entity-strict-max-pool"/>
   </entity-bean>
-  <pools>
+    <pools>
     <bean-instance-pools>
       <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
       <strict-max-pool name="mdb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
       <strict-max-pool name="entity-strict-max-pool" max-pool-size="100" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
-  </bean-instance-pools>
+    </bean-instance-pools>
   </pools>
   <caches>
     <simple-cache name="simple"/>
@@ -147,6 +147,21 @@ instance pools themselves are configured in the `<pools>` element.
 
 [[pools]]
 == <pools>
+
+[[bean-instance-pools]]
+=== <bean-instance-pools>
+
+This element is used to configure pools used by stateless session, message driven beans and entity beans.
+
+[[strict-max-pool]]
+==== <strict-max-pool>
+
+Each pool is configured using `strict-max-pool` element.
+
+* `name` Name of the pool.
+* `max-pool-size` Configured maximum number of bean instances that the pool can hold at a given point in time.
+* `instance-acquisition-timeout` The maximum amount of time to wait for a bean instance to be available from the pool.
+* `instance-acquisition-timeout-unit` The instance acquisition timeout unit
 
 [[caches]]
 == <caches>

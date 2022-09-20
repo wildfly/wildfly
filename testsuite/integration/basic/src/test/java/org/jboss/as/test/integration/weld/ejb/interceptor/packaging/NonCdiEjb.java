@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.ejb.interceptor.packaging;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * This is not deployed in an archive with a beans.xml file

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.remote.ejbnamespace;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author Stuart Douglas

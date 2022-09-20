@@ -32,10 +32,10 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
-        <module name="javax.inject.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="jakarta.inject.api"/>
+        <module name="jakarta.servlet.api"/>
 
-        <module name="javax.validation.api"/>
+        <module name="jakarta.validation.api"/>
         <module name="javax.xml.stream.api"/>
     </dependencies>
 </module>

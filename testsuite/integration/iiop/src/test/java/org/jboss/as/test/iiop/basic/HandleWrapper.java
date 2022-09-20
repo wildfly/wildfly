@@ -2,7 +2,7 @@ package org.jboss.as.test.iiop.basic;
 
 import java.io.Serializable;
 
-import javax.ejb.Handle;
+import jakarta.ejb.Handle;
 
 /**
  * @author Stuart Douglas

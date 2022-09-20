@@ -26,13 +26,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
-import javax.validation.valueextraction.ExtractedValue;
-import javax.validation.valueextraction.UnwrapByDefault;
-import javax.validation.valueextraction.ValueExtractor;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.valueextraction.ExtractedValue;
+import jakarta.validation.valueextraction.UnwrapByDefault;
+import jakarta.validation.valueextraction.ValueExtractor;
 
 import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;

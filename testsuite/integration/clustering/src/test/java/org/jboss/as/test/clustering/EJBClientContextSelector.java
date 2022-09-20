@@ -47,9 +47,7 @@ public class EJBClientContextSelector {
 
         // add or replace properties passed from file
         if (propertiesToReplace != null) {
-            for (Object key: propertiesToReplace.keySet()) {
-                properties.put(key, propertiesToReplace.get(key));
-            }
+            properties.putAll(propertiesToReplace);
         }
 
         // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties

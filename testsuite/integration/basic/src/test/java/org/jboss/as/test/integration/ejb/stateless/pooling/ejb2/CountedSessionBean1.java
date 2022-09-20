@@ -24,9 +24,9 @@ package org.jboss.as.test.integration.ejb.stateless.pooling.ejb2;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.SessionBean;
+import jakarta.ejb.SessionContext;
 import org.jboss.logging.Logger;
 
 /**

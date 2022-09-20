@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.weld.jndi;
 
-import javax.annotation.Resource;
-import javax.enterprise.inject.Produces;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.inject.Produces;
 
 /**
  * @author Stuart Douglas

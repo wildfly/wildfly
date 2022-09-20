@@ -37,7 +37,7 @@ functions can be controlled with this permission.
 * read
 
 The read function allows users to use the getter methods from the
-`javax.batch.operations.JobOperator` or read the `batch-jberet`
+`jakarta.batch.operations.JobOperator` or read the `batch-jberet`
 deployment resource, for example
 `/deployment=my.war/subsystem=batch-jberet:read-resource`.
 

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.transaction.cmt.timeout;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 @Local
 public interface TimeoutLocalView {

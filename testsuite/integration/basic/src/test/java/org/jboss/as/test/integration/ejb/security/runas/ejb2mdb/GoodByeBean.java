@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import jakarta.ejb.SessionBean;
+import jakarta.ejb.SessionContext;
 
 /**
  * Bean returning goodbye greeting.

@@ -38,12 +38,12 @@ import java.io.IOException;
 import java.util.PropertyPermission;
 import java.util.UUID;
 
-import javax.annotation.Resource;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSConsumer;
-import javax.jms.JMSContext;
-import javax.jms.Queue;
-import javax.jms.TemporaryQueue;
+import jakarta.annotation.Resource;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSConsumer;
+import jakarta.jms.JMSContext;
+import jakarta.jms.Queue;
+import jakarta.jms.TemporaryQueue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

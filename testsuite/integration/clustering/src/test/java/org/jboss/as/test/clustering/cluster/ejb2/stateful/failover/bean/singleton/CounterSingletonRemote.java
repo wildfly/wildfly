@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.singleton;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @author Ondrej Chaloupka

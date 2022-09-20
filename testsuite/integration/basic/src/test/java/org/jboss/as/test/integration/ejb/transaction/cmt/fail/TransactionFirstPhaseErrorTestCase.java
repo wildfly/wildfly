@@ -26,8 +26,8 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 
 import java.util.PropertyPermission;
 
-import javax.ejb.EJBException;
-import javax.inject.Inject;
+import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.xa.XAResource;
@@ -92,7 +92,7 @@ public class TransactionFirstPhaseErrorTestCase {
             Assert.fail("Expecting the one phase commit failed and exception was propagated to the caller.");
         } catch (EJBException expected) {
             Assert.assertTrue("Expecting on RMFAIL to get unknown state of the transaction outcome - ie. HeuristicMixedException",
-                    expected.getCause() != null && expected.getCause().getClass().equals(javax.transaction.HeuristicMixedException.class));
+                    expected.getCause() != null && expected.getCause().getClass().equals(jakarta.transaction.HeuristicMixedException.class));
         }
     }
 
@@ -121,7 +121,7 @@ public class TransactionFirstPhaseErrorTestCase {
             Assert.fail("Expecting the one phase commit failed and exception was propagated to the caller.");
         } catch (EJBException expected) {
             Assert.assertTrue("Expecting on RMFAIL to get unknown state of the transaction outcome - ie. HeuristicMixedException",
-                    expected.getCause() != null && expected.getCause().getClass().equals(javax.transaction.HeuristicMixedException.class));
+                    expected.getCause() != null && expected.getCause().getClass().equals(jakarta.transaction.HeuristicMixedException.class));
         }
     }
 }

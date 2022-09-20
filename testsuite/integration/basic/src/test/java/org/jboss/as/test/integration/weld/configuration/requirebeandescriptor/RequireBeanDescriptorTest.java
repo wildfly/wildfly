@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.configuration.requirebeandescriptor;
 
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

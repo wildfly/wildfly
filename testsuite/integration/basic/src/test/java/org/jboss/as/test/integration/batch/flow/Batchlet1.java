@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.batch.flow;
 
-import javax.batch.api.BatchProperty;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.batch.api.BatchProperty;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.jboss.as.test.integration.batch.common.Batchlet0;
 import org.junit.Assert;

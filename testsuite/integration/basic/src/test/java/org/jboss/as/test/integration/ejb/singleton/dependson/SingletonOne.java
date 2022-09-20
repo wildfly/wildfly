@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.singleton.dependson;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
 
 /**
  * @author Ondrej Chaloupka

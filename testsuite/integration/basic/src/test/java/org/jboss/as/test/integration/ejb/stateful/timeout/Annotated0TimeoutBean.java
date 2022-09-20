@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.stateful.timeout;
 
-import javax.annotation.PreDestroy;
-import javax.ejb.Stateful;
-import javax.ejb.StatefulTimeout;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.StatefulTimeout;
 import java.util.concurrent.TimeUnit;
 
 /**

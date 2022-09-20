@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.batch.deployment;
 
-import javax.batch.runtime.BatchStatus;
-import javax.batch.runtime.JobExecution;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.JobExecution;
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;

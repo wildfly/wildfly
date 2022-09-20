@@ -22,8 +22,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import javax.annotation.Resource;
-import javax.resource.cci.Connection;
+import jakarta.annotation.Resource;
+import jakarta.resource.cci.Connection;
 import javax.security.auth.PrivateCredentialPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -143,7 +143,7 @@ public class WildFlyActivationRaWithElytronAuthContextTestCase {
                 .addAsManifestResource(WildFlyActivationRaWithElytronAuthContextTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.as.controller-client\n"), "MANIFEST.MF");
         rar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
-                new PrivateCredentialPermission("javax.resource.spi.security.PasswordCredential org.wildfly.security.auth.principal.NamePrincipal \"sa\"", "read")), "permissions.xml");
+                new PrivateCredentialPermission("jakarta.resource.spi.security.PasswordCredential org.wildfly.security.auth.principal.NamePrincipal \"sa\"", "read")), "permissions.xml");
 
         return rar;
     }

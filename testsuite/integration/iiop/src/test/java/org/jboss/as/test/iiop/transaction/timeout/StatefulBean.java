@@ -24,16 +24,17 @@ package org.jboss.as.test.iiop.transaction.timeout;
 
 import java.rmi.RemoteException;
 
-import javax.annotation.Resource;
-import javax.ejb.EJBException;
-import javax.ejb.Remote;
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionSynchronization;
-import javax.ejb.Stateful;
-import javax.inject.Inject;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+import jakarta.annotation.Resource;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Remote;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.SessionSynchronization;
+import jakarta.ejb.Stateful;
+import jakarta.inject.Inject;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.ejb3.annotation.TransactionTimeout;
@@ -66,7 +67,7 @@ public class StatefulBean implements SessionSynchronization {
         checker.setSynchronizedAfter(committed);
     }
 
-    public void ejbCreate() throws java.rmi.RemoteException, javax.ejb.CreateException {
+    public void ejbCreate() throws RemoteException, CreateException {
         log.debugf("Creating method for home interface '%s' was invoked", this.getClass());
     }
 

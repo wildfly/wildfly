@@ -17,13 +17,13 @@
 package org.jboss.as.test.integration.jsf.injection;
 
 import java.net.URL;
-import javax.enterprise.context.RequestScoped;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.FacesConverter;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.FacesConverter;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * Converter bean used in the url.xhtml.

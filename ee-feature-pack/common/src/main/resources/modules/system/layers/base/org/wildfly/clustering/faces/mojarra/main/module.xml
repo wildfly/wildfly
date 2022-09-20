@@ -29,14 +29,15 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-clustering-faces-mojarra@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-clustering-faces-mojarra}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.faces.api"/>
+        <module name="jakarta.faces.api"/>
 
         <module name="com.sun.jsf-impl"/>
         <module name="org.infinispan.protostream"/>
+        <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.faces.api"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.common"/>

@@ -1,7 +1,7 @@
 package org.jboss.as.test.iiop.security;
 
 import java.rmi.RemoteException;
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Stuart Douglas

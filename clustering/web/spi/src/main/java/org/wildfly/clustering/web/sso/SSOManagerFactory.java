@@ -33,10 +33,9 @@ import org.wildfly.clustering.ee.Batch;
 public interface SSOManagerFactory<A, D, S, B extends Batch> {
     /**
      * Creates a new SSO manager using the specified configuration.
-     * @param <C> marshalling context type
      * @param <L> local context type
      * @param config a SSO manager configuration
      * @return a new SSO manager
      */
-    <C, L> SSOManager<A, D, S, L, B> createSSOManager(SSOManagerConfiguration<C, L> config);
+    <L> SSOManager<A, D, S, L, B> createSSOManager(SSOManagerConfiguration<L> config);
 }

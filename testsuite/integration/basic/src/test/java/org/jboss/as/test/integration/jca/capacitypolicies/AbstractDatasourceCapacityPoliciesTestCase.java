@@ -40,7 +40,7 @@ import java.util.Map;
 import java.io.FilePermission;
 import java.util.PropertyPermission;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -250,11 +250,7 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
 
                     if (!capacityConfiguration.getCapacityDecrementerProperties().isEmpty()) {
                         Map<String, String> properties = capacityConfiguration.getCapacityDecrementerProperties();
-                        for (String key : properties.keySet()) {
-                            ModelNode props = new ModelNode();
-                            props.add(key, properties.get(key));
-                            addOperation.get("capacity-incrementer-properties").set(props);
-                        }
+                        addProperties(addOperation, properties);
                     }
                 }
 
@@ -264,11 +260,7 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
 
                     if (!capacityConfiguration.getCapacityIncrementerProperties().isEmpty()) {
                         Map<String, String> properties = capacityConfiguration.getCapacityIncrementerProperties();
-                        for (String key : properties.keySet()) {
-                            ModelNode props = new ModelNode();
-                            props.add(key, properties.get(key));
-                            addOperation.get("capacity-incrementer-properties").set(props);
-                        }
+                        addProperties(addOperation, properties);
                     }
                 }
             }
@@ -289,6 +281,14 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
 
             writeAttribute(xa ? XA_DS_ADDRESS : DS_ADDRESS, ENABLED, "true");
             reload();
+        }
+
+        private static void addProperties(ModelNode addOperation, Map<String, String> properties) {
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                ModelNode props = new ModelNode();
+                props.add(entry.getKey(), entry.getValue());
+                addOperation.get("capacity-incrementer-properties").set(props);
+            }
         }
     }
 

@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ejb.transaction.descriptor;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @author Stuart Douglas

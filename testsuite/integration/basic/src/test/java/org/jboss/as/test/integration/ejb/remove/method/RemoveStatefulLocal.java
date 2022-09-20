@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.remove.method;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * Local implementation of "Remove"

@@ -3,9 +3,9 @@ package org.jboss.as.test.clustering.cluster.registry.bean;
 import java.util.Collection;
 import java.util.TreeSet;
 
-import javax.ejb.EJB;
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 import org.wildfly.clustering.registry.Registry;
 

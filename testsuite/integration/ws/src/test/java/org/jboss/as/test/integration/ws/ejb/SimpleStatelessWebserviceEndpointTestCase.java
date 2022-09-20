@@ -26,7 +26,7 @@ import java.net.URL;
 
 import javax.naming.Context;
 import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
+import jakarta.xml.ws.Service;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -69,7 +69,7 @@ public class SimpleStatelessWebserviceEndpointTestCase {
     }
 
     /*
-     * Test for javax.ejb.Remote annotation in WS interface
+     * Test for jakarta.ejb.Remote annotation in WS interface
      */
     @Test
     public void testRemoteAccess() throws Exception {

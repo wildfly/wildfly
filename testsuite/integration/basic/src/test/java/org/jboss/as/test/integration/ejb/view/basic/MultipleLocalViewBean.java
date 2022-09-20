@@ -3,8 +3,8 @@ package org.jboss.as.test.integration.ejb.view.basic;
 import java.io.Externalizable;
 import java.io.Serializable;
 
-import javax.ejb.Local;
-import javax.ejb.Stateful;
+import jakarta.ejb.Local;
+import jakarta.ejb.Stateful;
 
 /**
  * @author: Jaikiran Pai

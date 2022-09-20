@@ -28,9 +28,9 @@
         <message-driven>
             <ejb-name>ContainerManagedTransactionNotSupportedMDBWithDD</ejb-name>
             <ejb-class>org.jboss.as.test.integration.ejb.mdb.cmt.notsupported.ContainerManagedTransactionNotSupportedMDBWithDD</ejb-class>
-            <messaging-type>javax.jms.MessageListener</messaging-type>
+            <messaging-type>jakarta.jms.MessageListener</messaging-type>
             <transaction-type>Container</transaction-type>
-            <message-destination-type>javax.jms.Queue</message-destination-type>
+            <message-destination-type>jakarta.jms.Queue</message-destination-type>
             <activation-config>
                 <activation-config-property>
                     <activation-config-property-name>destinationLookup</activation-config-property-name>
@@ -38,7 +38,7 @@
                 </activation-config-property>
                 <activation-config-property>
                     <activation-config-property-name>destinationType</activation-config-property-name>
-                    <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+                    <activation-config-property-value>jakarta.jms.Queue</activation-config-property-value>
                 </activation-config-property>
             </activation-config>
         </message-driven>
@@ -49,7 +49,7 @@
                 <ejb-name>ContainerManagedTransactionNotSupportedMDBWithDD</ejb-name>
                 <method-name>onMessage</method-name>
                 <method-params>
-                    <method-param>javax.jms.Message</method-param>
+                    <method-param>jakarta.jms.Message</method-param>
                 </method-params>
             </method>
             <trans-attribute>NotSupported</trans-attribute>

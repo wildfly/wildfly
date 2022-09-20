@@ -6,6 +6,9 @@
         <feature spec="subsystem.undertow.buffer-cache">
             <param name="buffer-cache" value="default" />
         </feature>
+        <feature spec="subsystem.undertow.byte-buffer-pool">
+            <param name="byte-buffer-pool" value="default" />
+        </feature>
         <feature spec="subsystem.undertow.configuration.filter"/>
         <feature spec="subsystem.undertow.configuration.handler"/>
         <feature spec="subsystem.undertow.server">

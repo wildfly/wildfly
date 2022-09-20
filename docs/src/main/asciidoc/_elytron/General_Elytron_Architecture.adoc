@@ -22,7 +22,7 @@ Within WildFly Elytron a SecurityDomain can be considered as a security
 policy backed by one or more SecurityRealm instances. Resources that
 make authorization decisions will be associated with a SecurityDomain,
 from the SecurityDomain a SecurityIdentity can be obtained which is a
-representation of the current identity, from this the identities roles
+representation of the current identity, from this the identity's roles
 and permissions can be checked to make the authorization decision for
 the resource.
 
@@ -45,16 +45,16 @@ based on the supplied name for authentication.
 
 * SecurityRealm
 
-One more named SecurityRealms are associated with a SecurityDomain,
-the SecurityRealms are the access to the underlying repository of
-identities and are used for obtaining credentials to allow
+One or more named SecurityRealms are associated with a SecurityDomain.
+A SecurityRealm provides access to the underlying repository of
+identities. It is used for obtaining credentials to allow
 authentication mechanisms to perform verification, for validation of
-Evidence and for obtaining the raw AuthorizationIdentity performing the
+Evidence, and for obtaining the raw AuthorizationIdentity performing the
 authentication.
 
-Some SecurityRealm implementations are also modifiable so expose an API
-that allows for updates to be made to the repository containing the
-identities.
+Some SecurityRealm implementations are also modifiable and therefore 
+expose an API that allows for updates to be made to the repository 
+containing the identities.
 
 * RoleDecoder
 
@@ -64,38 +64,39 @@ returned from the SecurityRealm and converts its attributes into roles.
 
 * RoleMapper
 
-After the roles have been decoded for an identity further mapping can be
-applied, this could be as simple at normalising the format of the names
-through to adding or removing specific role names. If a RoleMapper is
-referenced by the SecurityRealm association that RoleMapper is applied
+After the roles have been decoded for an identity, further mapping can be
+applied. This could be as simple as normalising the format of role names,
+or perhaps adding or removing specific role names. If a RoleMapper is
+referenced by a SecurityRealm association, that RoleMapper is applied
 first before applying the RoleMapper associated with the SecurityDomain.
 
 * PrincipalDecoder
 
 A PrincipalDecoder converts from a Principal to a String representation
-of a name, one example for this is we have an X500PrincipalDecoder which
+of a name. One example for this is the X500PrincipalDecoder, which
 is able to extract an attribute from a distinguished name.
 
 * PermissionMapper
 
-In addition to having roles a SecurityIdentity can also have a set of
-permissions, the PermissionMapper assigns those permissions to the
+In addition to having roles, a SecurityIdentity can also have a set of
+permissions. The PermissionMapper assigns those permissions to the
 identity.
 
 Different secured resources can be associated with different
-SecurityDomains for their authorization decisions, within WildFly
+SecurityDomains for their authorization decisions. Within WildFly
 Elytron we have the ability to configure inflow between different
 SecurityDomains. The inflow process means that a SecurityIdentity
 inflowed into a second SecurityDomain has the mappings of the new
-SecurityDomain applied to it so although a common identity may be
-calling different resources each of those resources could have a very
-different view.
+SecurityDomain applied to it. So although a common identity may be
+calling different resources, each of those resources could have a very
+different view of the roles and permissions associated with the 
+identity.
 
 [[sasl-authentication]]
 == SASL Authentication
 
 The SaslAuthenticationFactory is an authentication policy for
-authentication using SASL authentication mechanisms, in addition to
+authentication using SASL authentication mechanisms. In addition to
 being a policy it is also a factory for configured authentication
 mechanisms backed by a SecurityDomain.
 
@@ -114,7 +115,7 @@ mechanisms.
 * MechanismConfigurationSelector
 
 Additional configuration can be supplied for the authentication
-mechanisms, the configuration will be described in more detail later but
+mechanisms. The configuration will be described in more detail later but
 the purpose of the MechanismConfigurationSelector is to obtain
 configuration specific to the mechanism selected. This can include
 information about realm names a mechanism should present to a remote
@@ -122,7 +123,7 @@ client plus additional NameRewriters and RealmMappers to use during the
 authentication process.
 
 The reason some components referenced by the SecurityDomain are
-duplicated is so that mechanism specific mappings can be applied.
+duplicated is so that mechanism-specific mappings can be applied.
 
 [[http-authentication]]
 == HTTP Authentication
@@ -148,7 +149,7 @@ mechanisms.
 * MechanismConfigurationSelector
 
 Additional configuration can be supplied for the authentication
-mechanisms, the configuration will be described in more detail later but
+mechanisms. The configuration will be described in more detail later but
 the purpose of the `MechanismConfigurationSelector` is to obtain
 configuration specific to the mechanism selected. This can include
 information about realm names a mechanism should present to a remote
@@ -156,7 +157,7 @@ client plus additional NameRewriters and RealmMappers to use during the
 authentication process.
 
 The reason some components referenced by the SecurityDomain are
-duplicated is so that mechanism specific mappings can be applied.
+duplicated is so that mechanism-specific mappings can be applied.
 
 [[ssl-tls]]
 == SSL / TLS
@@ -183,11 +184,11 @@ turn can also reference a KeyStore to load the certificates.
 
 * SecurityDomain
 
-This is optional, however if an SSLContext is configured to reference a
+If an SSLContext is (optionally) configured to reference a
 SecurityDomain then verification of a client's certificate can be
 performed as an authentication ensuring the appropriate permissions to
 Logon are assigned before even allowing the connection to be fully
-opened, additionally the SecurityIdentity can be established at the time
+opened. Additionally, the SecurityIdentity can be established at the time
 the connection is opened and used for any invocations over the
 connection.
 

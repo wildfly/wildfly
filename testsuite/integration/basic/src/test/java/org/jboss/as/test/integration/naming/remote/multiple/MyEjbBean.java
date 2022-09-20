@@ -2,7 +2,7 @@ package org.jboss.as.test.integration.naming.remote.multiple;
 
 import java.util.Properties;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

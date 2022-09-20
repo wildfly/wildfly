@@ -23,17 +23,17 @@
 package org.jboss.as.test.integration.ejb.management.deployments;
 
 import java.util.concurrent.TimeUnit;
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.ejb.AfterBegin;
-import javax.ejb.AfterCompletion;
-import javax.ejb.BeforeCompletion;
-import javax.ejb.LocalBean;
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
-import javax.ejb.StatefulTimeout;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.ejb.AfterBegin;
+import jakarta.ejb.AfterCompletion;
+import jakarta.ejb.BeforeCompletion;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Remove;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.StatefulTimeout;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 import org.jboss.ejb3.annotation.Cache;
 import org.jboss.ejb3.annotation.SecurityDomain;

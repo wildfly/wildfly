@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.interceptor.classinherit;
 
-import javax.interceptor.Interceptors;
+import jakarta.interceptor.Interceptors;
 
 /**
  * @author <a href="mailto:amay@ingenta.com">Andrew May</a>

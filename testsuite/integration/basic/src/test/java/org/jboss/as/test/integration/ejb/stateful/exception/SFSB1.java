@@ -22,14 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.stateful.exception;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.LocalBean;
-import javax.ejb.Remote;
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Remove;
+import jakarta.ejb.Stateful;
 
 /**
  * stateful session bean

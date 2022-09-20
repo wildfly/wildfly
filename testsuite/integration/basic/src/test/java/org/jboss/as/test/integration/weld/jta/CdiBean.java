@@ -18,11 +18,11 @@
 
 package org.jboss.as.test.integration.weld.jta;
 
-import javax.annotation.Resource;
-import javax.enterprise.context.ApplicationScoped;
-import javax.transaction.Status;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.Transactional;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Status;
+import jakarta.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.Transactional;
 
 @ApplicationScoped
 public class CdiBean {

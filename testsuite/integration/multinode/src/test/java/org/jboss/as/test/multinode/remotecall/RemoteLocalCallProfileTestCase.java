@@ -32,7 +32,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 
 import java.util.Arrays;
 import java.util.Collections;
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;

@@ -134,7 +134,7 @@ public class ServletResourceOverlaysTestCase {
     }
 
     /**
-     * Tests that a servlet (through the use of {@link javax.servlet.ServletContext#getResourceAsStream(String)} (or similar APIs)
+     * Tests that a servlet (through the use of {@link jakarta.servlet.ServletContext#getResourceAsStream(String)} (or similar APIs)
      * cannot access paths outside of the deployment
      *
      * @throws Exception

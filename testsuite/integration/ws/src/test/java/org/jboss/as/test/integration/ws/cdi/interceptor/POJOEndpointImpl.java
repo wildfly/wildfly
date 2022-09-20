@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ws.cdi.interceptor;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>

@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.mdb.messagedestination;
 
-import javax.ejb.EJB;
-import javax.jms.Message;
+import jakarta.ejb.EJB;
+import jakarta.jms.Message;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

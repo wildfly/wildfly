@@ -40,9 +40,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -254,14 +254,13 @@ abstract class AbstractConfigTestCase {
                 }
             }
             boolean isFirst = true;
-            for (String key : params.keySet()) {
+            for (Map.Entry<String, String> entry : params.entrySet()) {
                 if (isFirst) {
                     result.append('?');
                 } else {
                     result.append('&');
                 }
-                final String value = params.get(key);
-                result.append(URLEncoder.encode(key, "UTF-8")).append('=').append(URLEncoder.encode(value, "UTF-8"));
+                result.append(URLEncoder.encode(entry.getKey(), "UTF-8")).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                 isFirst = false;
             }
             return result.toString();

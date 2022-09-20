@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.deployment.structure.parsing;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Jaikiran Pai

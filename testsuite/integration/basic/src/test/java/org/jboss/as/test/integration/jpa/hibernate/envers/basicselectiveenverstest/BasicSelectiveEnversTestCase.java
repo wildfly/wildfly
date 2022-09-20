@@ -51,6 +51,7 @@ public class BasicSelectiveEnversTestCase {
 
     @BeforeClass
     public static void beforeClass() throws NamingException {
+
         iniCtx = new InitialContext();
     }
 

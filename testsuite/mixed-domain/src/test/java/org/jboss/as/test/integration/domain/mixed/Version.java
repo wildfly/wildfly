@@ -134,7 +134,7 @@ public @interface Version {
          * execute tests. The check is disabled if system property "jboss.test.host.slave.jvmhome" is set.
          */
         public void assumeMaxVM() {
-            if (System.getProperty("jboss.test.host.slave.jvmhome") == null) {
+            if (System.getProperty("jboss.test.host.secondary.jvmhome") == null) {
                 String javaSpecVersion = System.getProperty("java.specification.version");
                 int vm = "1.8".equals(javaSpecVersion) ? 8 : Integer.parseInt(javaSpecVersion);
                 Assume.assumeFalse(vm > maxVM);

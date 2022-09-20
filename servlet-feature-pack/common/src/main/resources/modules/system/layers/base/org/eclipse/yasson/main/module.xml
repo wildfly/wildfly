@@ -23,7 +23,6 @@
     </properties>
 
     <dependencies>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
         <module name="javax.json.api"/>
         <module name="javax.json.bind.api"/>

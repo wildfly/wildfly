@@ -118,7 +118,7 @@
                 <xs:documentation>Indicates the default cache for this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="marshaller" type="tns:marshaller">
+        <xs:attribute name="marshaller" type="tns:marshaller" default="LEGACY">
             <xs:annotation>
                 <xs:documentation>Defines the marshalling implementation used to marshal cache entries.</xs:documentation>
             </xs:annotation>
@@ -499,7 +499,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="passivation" type="xs:boolean" default="true">
+        <xs:attribute name="passivation" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>
                     If true, data is only written to the cache store when it is evicted from memory, a phenomenon known as 'passivation'.
@@ -514,7 +514,7 @@
                 <xs:documentation>If true, fetch persistent state when joining a cluster.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="purge" type="xs:boolean" default="true">
+        <xs:attribute name="purge" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>If true, purges this cache store when it starts up.</xs:documentation>
             </xs:annotation>
@@ -1024,12 +1024,14 @@
             </xs:enumeration>
             <xs:enumeration value="JBOSS">
                 <xs:annotation>
-                    <xs:documentation>Marshals cache entries using JBoss Marshalling.</xs:documentation>
+                    <xs:documentation>Marshals cache entries using JBoss Marshalling using externalizers loaded from modules associated with this container.</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="PROTOSTREAM">
                 <xs:annotation>
-                    <xs:documentation>Marshals cache entries using ProtoStream.</xs:documentation>
+                    <xs:documentation>
+                        Marshals cache entries using ProtoStream configured to use schemas/marshallers loaded from modules associated with this container.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>
@@ -1139,7 +1141,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="marshaller" type="tns:marshaller">
+        <xs:attribute name="marshaller" type="tns:marshaller" default="LEGACY">
             <xs:annotation>
                 <xs:documentation>Defines the marshalling implementation used to marshal cache entries.</xs:documentation>
             </xs:annotation>

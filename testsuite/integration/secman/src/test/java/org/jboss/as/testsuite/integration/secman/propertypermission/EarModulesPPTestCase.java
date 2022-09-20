@@ -33,10 +33,10 @@ import java.net.URI;
 import java.net.URL;
 import java.security.AccessControlException;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.hamcrest.CoreMatchers;
 import org.jboss.arquillian.container.test.api.Deployment;

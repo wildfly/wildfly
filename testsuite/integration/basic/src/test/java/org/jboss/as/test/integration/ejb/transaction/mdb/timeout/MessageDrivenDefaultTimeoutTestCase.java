@@ -26,8 +26,8 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 
 import java.util.PropertyPermission;
 
-import javax.inject.Inject;
-import javax.jms.Queue;
+import jakarta.inject.Inject;
+import jakarta.jms.Queue;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -51,7 +51,7 @@ import org.junit.runner.RunWith;
  * timeout is redefined to be small enough to timeout being hit.
  * <p>
  * Default transaction timeout is defined under {@link TransactionDefaultTimeoutSetupTask}
- * and the timeout time in MDB is specified by {@link TxTestUtil#waitForTimeout(javax.transaction.TransactionManager)}.
+ * and the timeout time in MDB is specified by {@link TxTestUtil#waitForTimeout(jakarta.transaction.TransactionManager)}.
  */
 @RunWith(Arquillian.class)
 @ServerSetup({TransactionTimeoutQueueSetupTask.class, TransactionDefaultTimeoutSetupTask.class})

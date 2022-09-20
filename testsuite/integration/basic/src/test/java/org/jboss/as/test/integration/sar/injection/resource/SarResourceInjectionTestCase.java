@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.sar.injection.resource;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;

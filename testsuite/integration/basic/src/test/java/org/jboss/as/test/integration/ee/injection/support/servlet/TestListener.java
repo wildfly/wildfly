@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.ee.injection.support.servlet;
 
-import javax.inject.Inject;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.annotation.WebListener;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.inject.Inject;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.ServletRequestListener;
+import jakarta.servlet.annotation.WebListener;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.jboss.as.test.integration.ee.injection.support.Alpha;
 import org.jboss.as.test.integration.ee.injection.support.AroundConstructBinding;

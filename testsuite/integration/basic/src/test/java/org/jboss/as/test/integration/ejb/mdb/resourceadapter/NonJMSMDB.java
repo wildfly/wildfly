@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.mdb.resourceadapter;
 
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.MessageDriven;
 
 import org.jboss.ejb3.annotation.ResourceAdapter;
 

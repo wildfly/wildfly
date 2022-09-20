@@ -56,7 +56,6 @@
         <module name="io.netty.netty-transport-native-epoll"/>
         <module name="io.netty.netty-transport-native-kqueue"/>
         <module name="io.netty.netty-codec-http"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
         <module name="javax.jms.api"/>
         <module name="javax.json.api"/>

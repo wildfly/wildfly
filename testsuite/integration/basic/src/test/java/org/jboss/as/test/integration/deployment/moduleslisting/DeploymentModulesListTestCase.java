@@ -59,7 +59,7 @@ public class DeploymentModulesListTestCase {
     private static final String INNER_WAR_ARCHIVE_NAME = "list-modules.war";
     private static final String EAR_DEPLOYMENT_NAME = "list-modules-ear-test.ear";
     private static final String USER_MODULE = "org.hibernate";
-    private static final String CUSTOM_SLOT = "5.0";
+    private static final String CUSTOM_SLOT = "6.0";
 
     @ContainerResource
     private static ManagementClient managementClient;

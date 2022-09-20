@@ -29,8 +29,8 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
 
 import org.jboss.as.test.integration.ee.injection.support.ComponentInterceptor;
 import org.jboss.as.test.integration.ee.injection.support.ComponentInterceptor.Interception;

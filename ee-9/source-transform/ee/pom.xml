@@ -31,19 +31,15 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-ee-jakarta</artifactId>
 
     <name>WildFly: EE subsystem (Jakarta Namespace)</name>
-	
-    <packaging>jar</packaging>
 
-    <properties>
-        <transformer-input-dir>${project.basedir}/../../../ee</transformer-input-dir>
-    </properties>
+    <packaging>jar</packaging>
 
     <dependencies>
 
@@ -153,6 +149,10 @@
             <artifactId>wildfly-elytron-security-manager-action</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.transaction</groupId>
+            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -164,4 +164,21 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.extras.batavia</groupId>
+                <artifactId>transformer-tools-mvn</artifactId>
+                <version>${version.org.wildfly.extras.batavia}</version>
+                <executions>
+                    <execution>
+                        <id>transform-sources</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

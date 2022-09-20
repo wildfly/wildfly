@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.annorar;
 
-import javax.resource.cci.ResourceAdapterMetaData;
+import jakarta.resource.cci.ResourceAdapterMetaData;
 
 /**
  * AnnoRaMetaData

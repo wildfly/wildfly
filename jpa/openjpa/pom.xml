@@ -12,12 +12,12 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>jipijapa-openjpa</artifactId>
 
-    <name>jipijapa OpenJPA integration</name>
+    <name>WildFly: Jipijapa OpenJPA integration</name>
 
     <dependencies>
 

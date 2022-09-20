@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
-import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -29,6 +28,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -38,8 +38,8 @@ import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -66,8 +66,7 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
         String tempDir = System.getProperty("java.io.tmpdir");
         warFile = new File(tempDir + File.separator + "SimpleServlet.war");
 
-        //new ZipExporterImpl(war).exportTo(warFile, true);
-        jakartaTransform(war.as(ZipExporter.class), warFile);
+        new ZipExporterImpl(war).exportTo(warFile, true);
 
         serverGroups = CLITestSuite.serverGroups.keySet().toArray(new String[CLITestSuite.serverGroups.size()]);
 
@@ -116,8 +115,7 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version2"), "page.html");
-        //new ZipExporterImpl(war).exportTo(warFile, true);
-        jakartaTransform(war.as(ZipExporter.class), warFile);
+        new ZipExporterImpl(war).exportTo(warFile, true);
 
         // redeploy to group servers
         assertFalse(cli.sendLine("deploy --server-groups=" + serverGroups[0] + " " + warFile.getAbsolutePath(), true));
@@ -158,9 +156,9 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
         ArrayList<String> groupServers  = new ArrayList<String>();
         Collections.addAll(groupServers, CLITestSuite.serverGroups.get(serverGroup));
 
-        for (String host : CLITestSuite.hostAddresses.keySet()) {
-            String address = CLITestSuite.hostAddresses.get(host);
-            for (String server : CLITestSuite.hostServers.get(host)) {
+        for (Map.Entry<String, String> entry : CLITestSuite.hostAddresses.entrySet()) {
+            String address = entry.getValue();
+            for (String server : CLITestSuite.hostServers.get(entry.getKey())) {
                 if (! groupServers.contains(server)) continue;  // server not in the group
                 if (! CLITestSuite.serverStatus.get(server)) continue; // server not started
                 Integer portOffset = CLITestSuite.portOffsets.get(server);

@@ -98,7 +98,7 @@ public class EarApplicationRESTInEJBIsolatedTestCase {
 
         WebArchive war2 = ShrinkWrap.create(WebArchive.class, "web2.war");
         war2.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/api/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
                     "\n"), "web.xml");

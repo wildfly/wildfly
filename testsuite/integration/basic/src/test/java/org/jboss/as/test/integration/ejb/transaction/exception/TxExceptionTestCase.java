@@ -25,10 +25,10 @@ package org.jboss.as.test.integration.ejb.transaction.exception;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -64,20 +64,20 @@ public class TxExceptionTestCase extends TxExceptionBaseTestCase {
             case NONE:
                 switch (testCnf.getEjbType()) {
                 case EJB2:
-                    assertThat(receivedEx.getClass(), equalTo(javax.ejb.TransactionRolledbackLocalException.class));
+                    assertThat(receivedEx.getClass(), equalTo(jakarta.ejb.TransactionRolledbackLocalException.class));
                     break;
                 case EJB3:
-                    assertThat(receivedEx.getClass(), equalTo(javax.ejb.EJBTransactionRolledbackException.class));
+                    assertThat(receivedEx.getClass(), equalTo(jakarta.ejb.EJBTransactionRolledbackException.class));
                     break;
                 }
                 break;
             case HEURISTIC_CAUSED_BY_XA_EXCEPTION:
             case HEURISTIC_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION:
-                assertThat(receivedEx.getClass(), equalTo(javax.transaction.HeuristicMixedException.class));
+                assertThat(receivedEx.getClass(), equalTo(jakarta.transaction.HeuristicMixedException.class));
                 break;
             case ROLLBACK_CAUSED_BY_XA_EXCEPTION:
             case ROLLBACK_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION:
-                assertThat(receivedEx.getClass(), equalTo(javax.transaction.RollbackException.class));
+                assertThat(receivedEx.getClass(), equalTo(jakarta.transaction.RollbackException.class));
                 break;
             }
             break;
@@ -85,17 +85,17 @@ public class TxExceptionTestCase extends TxExceptionBaseTestCase {
         case START_BEAN_MANAGED_TX:
             switch (testCnf.getTxManagerException()) {
             case NONE:
-                assertThat(receivedEx.getClass(), equalTo(javax.ejb.EJBException.class));
+                assertThat(receivedEx.getClass(), equalTo(jakarta.ejb.EJBException.class));
                 break;
             case HEURISTIC_CAUSED_BY_XA_EXCEPTION:
             case HEURISTIC_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION:
-                assertThat(receivedEx.getClass(), equalTo(javax.ejb.EJBException.class));
-                assertThat(receivedEx.getCause().getClass(), equalTo(javax.transaction.HeuristicMixedException.class));
+                assertThat(receivedEx.getClass(), equalTo(jakarta.ejb.EJBException.class));
+                assertThat(receivedEx.getCause().getClass(), equalTo(jakarta.transaction.HeuristicMixedException.class));
                 break;
             case ROLLBACK_CAUSED_BY_XA_EXCEPTION:
             case ROLLBACK_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION:
-                assertThat(receivedEx.getClass(), equalTo(javax.ejb.EJBTransactionRolledbackException.class));
-                assertThat(receivedEx.getCause().getClass(), equalTo(javax.transaction.RollbackException.class));
+                assertThat(receivedEx.getClass(), equalTo(jakarta.ejb.EJBTransactionRolledbackException.class));
+                assertThat(receivedEx.getCause().getClass(), equalTo(jakarta.transaction.RollbackException.class));
             }
         }
     }

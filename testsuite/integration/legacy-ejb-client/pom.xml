@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha3-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-legacy-ejb-client</artifactId>
@@ -23,73 +23,72 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
 
-        <!-- Blow up compilation if anything pulls in jboss-ejb-client (see HACK comment below) -->
+        <!-- Blow up compilation if anything pulls in jboss-ejb-client -->
         <version.org.jboss.ejb-client>The legacy testsuite is unintentionally including ejb client!
             It MUST be excluded to function properly! See the HACK comment in pom.xml</version.org.jboss.ejb-client>
+
+        <!-- Use the legacy javax.* testsuite/shared as it's used client-side and client-side is currently javax.* -->
+        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared</wildfly-testsuite-shared.artifactId>
+
     </properties>
 
     <dependencies>
+        <!-- Compile deps in server side code (EE 10) -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.interceptor</groupId>
+            <artifactId>jakarta.interceptor-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Compile deps in client side code (EE 8) -->
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client-legacy</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.javax.interceptor</groupId>
-            <artifactId>jboss-interceptors-api_1.2_spec</artifactId>
+            <groupId>org.jboss.narayana.jts</groupId>
+            <artifactId>narayana-jts-idlj</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.3_spec</artifactId>
+        </dependency>
+
+        <!-- Runtime deps -->
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- HACK!!! We must override anything that brings in the standard jboss-ejb-client, and forcefully exclude it.
-             Otherwise there will be classpath conflicts, since they define the same package.  -->
-        <dependency>
-            <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-ejb-client</artifactId>
-            <exclusions>
-              <exclusion>
-                 <groupId>org.jboss</groupId>
-                 <artifactId>jboss-ejb-client</artifactId>
-              </exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-webservices-tests-integration</artifactId>
-            <version>${project.version}</version>
-            <exclusions>
-               <exclusion>
-                  <groupId>org.jboss</groupId>
-                  <artifactId>jboss-ejb-client</artifactId>
-               </exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
-            <version>${project.version}</version>
-            <exclusions>
-               <exclusion>
-                  <groupId>org.jboss</groupId>
-                  <artifactId>jboss-ejb-client</artifactId>
-               </exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- END HACK -->
-
     </dependencies>
+
     <build>
 
         <pluginManagement>

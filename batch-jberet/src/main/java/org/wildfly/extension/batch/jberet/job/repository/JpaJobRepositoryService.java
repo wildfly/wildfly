@@ -29,26 +29,24 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Supplier;
-import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.JobInstance;
-import javax.batch.runtime.StepExecution;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.SharedCacheMode;
-import javax.persistence.spi.PersistenceUnitTransactionType;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.batch.runtime.JobInstance;
+import jakarta.batch.runtime.StepExecution;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.SharedCacheMode;
+import jakarta.persistence.spi.PersistenceUnitTransactionType;
+import java.util.function.Consumer;
 import javax.sql.DataSource;
 import static org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO;
-import static org.hibernate.cfg.AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS;
 import org.hibernate.jpa.boot.spi.Bootstrap;
 
 import org.jberet.jpa.repository.JpaRepository;
 import org.jberet.repository.JobRepository;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
 import org.hibernate.jpa.boot.spi.EntityManagerFactoryBuilder;
 import org.jberet.job.model.Job;
@@ -68,12 +66,23 @@ import org.jberet.jpa.util.BatchPersistenceUnitInfo;
  */
 public class JpaJobRepositoryService extends JobRepositoryService implements Service<JobRepository> {
 
-    private final InjectedValue<DataSource> dataSourceValue = new InjectedValue<>();
-    private final InjectedValue<ExecutorService> executor = new InjectedValue<>();
+    private final Supplier<DataSource> dataSourceSupplier;
+    private final Supplier<ExecutorService> executorSupplier;
     private EntityManagerFactoryBuilder entityManagerFactoryBuilder;
     private EntityManagerFactory entityManagerFactory;
-    private final ThreadLocal<EntityManager> entityManager = new ThreadLocal<EntityManager>();
-    private final ThreadLocal<JobRepository> repository = new ThreadLocal<JobRepository>();
+    private final ThreadLocal<EntityManager> entityManager = new ThreadLocal<>();
+    private final ThreadLocal<JobRepository> repository = new ThreadLocal<>();
+
+    public JpaJobRepositoryService(
+            final Consumer<JobRepository> jobRepositoryConsumer,
+            final Supplier<DataSource> dataSourceSupplier,
+            final Supplier<ExecutorService> executorSupplier,
+            final Integer executionRecordsLimit
+    ) {
+        super(jobRepositoryConsumer, executionRecordsLimit);
+        this.dataSourceSupplier = dataSourceSupplier;
+        this.executorSupplier = executorSupplier;
+    }
 
     private EntityManager getEntityManager() {
         if (Objects.isNull(this.entityManager.get())) {
@@ -109,14 +118,14 @@ public class JpaJobRepositoryService extends JobRepositoryService implements Ser
 
     @Override
     public void startJobRepository(final StartContext context) throws StartException {
-        final ExecutorService service = executor.getValue();
+        final ExecutorService service = executorSupplier.get();
         final Runnable task = () -> {
             try {
                 BatchPersistenceUnitInfo batchPersistenceUnitInfo = new BatchPersistenceUnitInfo();
                 batchPersistenceUnitInfo.setPersistenceUnitName(JpaJobRepositoryService.class.getSimpleName());
                 batchPersistenceUnitInfo.setClassLoader(Thread.currentThread().getContextClassLoader());
                 batchPersistenceUnitInfo.setProperties(new Properties());
-                batchPersistenceUnitInfo.setNonJtaDataSource(dataSourceValue.getValue());
+                batchPersistenceUnitInfo.setNonJtaDataSource(dataSourceSupplier.get());
                 batchPersistenceUnitInfo.setTransactionType(PersistenceUnitTransactionType.RESOURCE_LOCAL);
                 batchPersistenceUnitInfo.setSharedCacheMode(SharedCacheMode.ALL);
                 batchPersistenceUnitInfo.setExcludeUnlistedClasses(false);
@@ -124,8 +133,7 @@ public class JpaJobRepositoryService extends JobRepositoryService implements Ser
                 this.entityManagerFactoryBuilder = Bootstrap.getEntityManagerFactoryBuilder(
                         batchPersistenceUnitInfo,
                         Map.of(
-                                HBM2DDL_AUTO, "update",
-                                USE_NEW_ID_GENERATOR_MAPPINGS, "false"
+                                HBM2DDL_AUTO, "update"
                         )
                 );
                 this.entityManagerFactory = entityManagerFactoryBuilder.build();
@@ -310,11 +318,4 @@ public class JpaJobRepositoryService extends JobRepositoryService implements Ser
         return wrapInTransaction(() -> super.getJobExecutionsByJob(string, intgr));
     }
 
-    public InjectedValue<DataSource> getDataSourceInjector() {
-        return dataSourceValue;
-    }
-
-    public Injector<ExecutorService> getExecutorServiceInjector() {
-        return executor;
-    }
 }

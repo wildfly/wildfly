@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager.rar;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnectionMetaData;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnectionMetaData;
 
 import org.jboss.logging.Logger;
 

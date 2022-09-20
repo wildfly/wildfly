@@ -37,7 +37,7 @@ import com.arjuna.mw.wst11.BusinessActivityManagerFactory;
 import com.arjuna.wst.SystemException;
 import com.arjuna.wst11.BAParticipantManager;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static org.jboss.as.test.xts.util.ServiceCommand.*;
 
@@ -77,7 +77,7 @@ public abstract class BAParticipantCompletionSuperService implements BAParticipa
             throw new RuntimeException("Error on getting TX id from BusinessActivityManager", se);
         }
 
-        if (participantRegistry.keySet().contains(txid) && ServiceCommand.isPresent(REUSE_BA_PARTICIPANT, serviceCommands)) {
+        if (participantRegistry.containsKey(txid) && ServiceCommand.isPresent(REUSE_BA_PARTICIPANT, serviceCommands)) {
             log.trace("[BA PARTICIPANT COMPL SERVICE] Reusing BA participant manager - command: " + REUSE_BA_PARTICIPANT);
             participantManager = participantRegistry.get(txid);
         } else {

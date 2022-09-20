@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.smoke.jms;
 
-import javax.ejb.EJB;
-import javax.enterprise.event.Observes;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.TextMessage;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.event.Observes;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -36,9 +36,8 @@ import org.jboss.as.test.jms.auxiliary.CreateTopicSetupTask;
 import org.jboss.as.test.smoke.jms.auxiliary.TopicMessageDrivenBean;
 import org.jboss.as.test.smoke.jms.auxiliary.TransactedTopicMessageSender;
 import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
@@ -76,9 +75,7 @@ public class SendToTopicFromWithinTransactionTest {
                 .addClass(TopicMessageDrivenBean.class)
                 .addClass(CreateTopicSetupTask.class)
                 .addPackage(JMSOperations.class.getPackage())
-                .addAsManifestResource(
-                        EmptyAsset.INSTANCE,
-                        ArchivePaths.create("beans.xml"));
+                .addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
     }
 
     @Test

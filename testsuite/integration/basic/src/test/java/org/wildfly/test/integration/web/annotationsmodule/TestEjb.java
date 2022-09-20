@@ -16,7 +16,7 @@
 
 package org.wildfly.test.integration.web.annotationsmodule;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class TestEjb {

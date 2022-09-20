@@ -423,23 +423,28 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
                 Properties properties = persistenceUnit.getProperties();
                 String backendType = properties == null ? null
-                        : properties.getProperty(Configuration.HIBERNATE_SEARCH_BACKEND_TYPE);
-                if (backendType != null) {
-                    backendType = trimToNull(backendType);
-                }
+                        : trimToNull(properties.getProperty(Configuration.HIBERNATE_SEARCH_BACKEND_TYPE));
                 if (backendType != null) {
                     HibernateSearchDeploymentMarker.markBackendType(deploymentUnit, backendType);
+                }
+                String coordinationStrategy = properties == null ? null
+                        : trimToNull(properties.getProperty(Configuration.HIBERNATE_SEARCH_COORDINATION_STRATEGY));
+                if (coordinationStrategy != null) {
+                    HibernateSearchDeploymentMarker.markCoordinationStrategy(deploymentUnit, coordinationStrategy);
                 }
             }
         }
     }
 
-    private String trimToNull(String backendType) {
-        backendType = backendType.trim();
-        if (backendType.isEmpty()) {
+    private String trimToNull(String string) {
+        if (string == null) {
             return null;
         }
-        return backendType;
+        string = string.trim();
+        if (string.isEmpty()) {
+            return null;
+        }
+        return string;
     }
 
     private void incrementPersistenceUnitCount(DeploymentUnit topDeploymentUnit, int persistenceUnitCount) {
