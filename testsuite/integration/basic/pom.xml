@@ -3166,6 +3166,9 @@
                                         <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
                                     </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/messaging/mgmt/GenericJmsResourceAdpterTestCase.java</exclude>
+                                    </excludes>
                                 </configuration>
                             </execution>
                             <!-- Tests against the install with ejb and remote broker-->
@@ -3196,6 +3199,7 @@
                                     </includes>
                                     <excludes>
                                         <exclude>org/jboss/as/test/integration/messaging/mgmt/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/mgmt/GenericJmsResourceAdpterTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/jms/definitions/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/xmldeployment/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/jms/external/DiscoveryGroupExternalMessagingDeploymentTestCase.java</exclude>

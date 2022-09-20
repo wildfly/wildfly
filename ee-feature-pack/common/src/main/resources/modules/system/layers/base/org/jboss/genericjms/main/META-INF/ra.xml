@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<connector xmlns="http://java.sun.com/xml/ns/j2ee"
+<!-- TODO Upgrade to 2.1 once https://issues.redhat.com/browse/WFLY-16991 is fixed -->
+<connector xmlns="https://jakarta.ee/xml/ns/jakartaee"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
-           http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
-           version="1.5">
+           xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+           https://jakarta.ee/xml/ns/jakartaee/connector_2_0.xsd"
+           version="2.0">
 
     <description>JBoss Generic JMS JCA Resource Adapter</description>
     <display-name>Generic JMS Adapter</display-name>
@@ -102,13 +102,13 @@
                 </connectionfactory-interface>
                 <connectionfactory-impl-class>org.jboss.resource.adapter.jms.JmsConnectionFactoryImpl
                 </connectionfactory-impl-class>
-                <connection-interface>javax.jms.Session</connection-interface>
+                <connection-interface>jakarta.jms.Session</connection-interface>
                 <connection-impl-class>org.jboss.resource.adapter.jms.JmsSession</connection-impl-class>
             </connection-definition>
             <transaction-support>XATransaction</transaction-support>
             <authentication-mechanism>
                 <authentication-mechanism-type>BasicPassword</authentication-mechanism-type>
-                <credential-interface>javax.resource.spi.security.PasswordCredential</credential-interface>
+                <credential-interface>jakarta.resource.spi.security.PasswordCredential</credential-interface>
             </authentication-mechanism>
             <reauthentication-support>false</reauthentication-support>
         </outbound-resourceadapter>
@@ -116,7 +116,7 @@
         <inbound-resourceadapter>
             <messageadapter>
                 <messagelistener>
-                    <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
+                    <messagelistener-type>jakarta.jms.MessageListener</messagelistener-type>
                     <activationspec>
                         <activationspec-class>org.jboss.resource.adapter.jms.inflow.JmsActivationSpec
                         </activationspec-class>
