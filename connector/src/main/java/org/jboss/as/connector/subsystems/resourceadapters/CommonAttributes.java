@@ -48,7 +48,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATION_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
@@ -101,7 +100,6 @@ public class CommonAttributes {
             MODULE,
             TRANSACTION_SUPPORT,
             BOOTSTRAP_CONTEXT,
-            CONFIG_PROPERTIES,
             BEANVALIDATION_GROUPS,
             WM_SECURITY,
             WM_SECURITY_MAPPING_REQUIRED,
