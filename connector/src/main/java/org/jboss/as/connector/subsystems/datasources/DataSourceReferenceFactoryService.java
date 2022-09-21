@@ -35,7 +35,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -50,7 +49,7 @@ public class DataSourceReferenceFactoryService implements Service<ManagedReferen
     private ManagedReference reference;
 
     public synchronized void start(StartContext startContext) throws StartException {
-        reference = new ValueManagedReference(new ImmediateValue<Object>(dataSourceValue.getValue()));
+        reference = new ValueManagedReference(dataSourceValue.getValue());
     }
 
     public synchronized void stop(StopContext stopContext) {

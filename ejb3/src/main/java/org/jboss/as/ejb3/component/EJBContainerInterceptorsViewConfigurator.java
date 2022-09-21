@@ -29,7 +29,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -66,9 +65,6 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.modules.Module;
-import org.jboss.msc.value.CachedValue;
-import org.jboss.msc.value.ConstructedValue;
-import org.jboss.msc.value.Value;
 
 /**
  * A {@link ViewConfigurator} which sets up the Jakarta Enterprise Beans view with the relevant {@link Interceptor}s
@@ -302,16 +298,20 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
         }
 
         private InterceptorFactory createInterceptorFactoryForContainerInterceptor(final Method method, final Constructor interceptorConstructor) {
-            // The managed reference is going to be ConstructedValue, using the container-interceptor's constructor
-            final ConstructedValue interceptorInstanceValue = new ConstructedValue(interceptorConstructor, Collections.<Value<?>>emptyList());
             // we *don't* create multiple instances of the container-interceptor class, but we just reuse a single instance and it's *not*
             // tied to the Jakarta Enterprise Beans component instance lifecycle.
-            final CachedValue cachedInterceptorInstanceValue = new CachedValue(interceptorInstanceValue);
-            // ultimately create the managed reference which is backed by the CachedValue
-            final ManagedReference interceptorInstanceRef = new ValueManagedReference(cachedInterceptorInstanceValue);
+            final ManagedReference interceptorInstanceRef = new ValueManagedReference(newInstance(interceptorConstructor));
             // return the ContainerInterceptorMethodInterceptorFactory which is responsible for creating an Interceptor
             // which can invoke the container-interceptor's around-invoke/around-timeout methods
             return new ContainerInterceptorMethodInterceptorFactory(interceptorInstanceRef, method);
+        }
+    }
+
+    private static Object newInstance(final Constructor ctor) {
+        try {
+            return ctor.newInstance(new Object[] {});
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 

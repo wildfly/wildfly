@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.AroundTimeout;
@@ -48,9 +47,6 @@ import org.jboss.jandex.Indexer;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.value.CachedValue;
-import org.jboss.msc.value.ConstructedValue;
-import org.jboss.msc.value.Value;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -144,15 +140,20 @@ public class ServerInterceptorCache {
     }
 
     private InterceptorFactory createInterceptorFactoryForServerInterceptor(final Method method, final Constructor interceptorConstructor) {
-        // The managed reference is going to be ConstructedValue, using the container-interceptor's constructor
-        final ConstructedValue interceptorInstanceValue = new ConstructedValue(interceptorConstructor, Collections.<Value<?>>emptyList());
         // we *don't* create multiple instances of the container-interceptor class, but we just reuse a single instance and it's *not*
         // tied to the Jakarta Enterprise Beans component instance lifecycle.
-        final CachedValue cachedInterceptorInstanceValue = new CachedValue(interceptorInstanceValue);
-        // ultimately create the managed reference which is backed by the CachedValue
-        final ManagedReference interceptorInstanceRef = new ValueManagedReference(cachedInterceptorInstanceValue);
+        final ManagedReference interceptorInstanceRef = new ValueManagedReference(newInstance(interceptorConstructor));
         // return the ContainerInterceptorMethodInterceptorFactory which is responsible for creating an Interceptor
         // which can invoke the container-interceptor's around-invoke/around-timeout methods
         return new ContainerInterceptorMethodInterceptorFactory(interceptorInstanceRef, method);
     }
+
+    private static Object newInstance(final Constructor ctor) {
+        try {
+            return ctor.newInstance(new Object[] {});
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
 }
