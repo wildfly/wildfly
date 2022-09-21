@@ -443,7 +443,7 @@
         <!-- Dependencies specific to the integration tests. -->
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client</artifactId>
+            <artifactId>wildfly-naming-client-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
 

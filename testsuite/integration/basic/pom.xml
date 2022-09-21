@@ -610,7 +610,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client</artifactId>
+            <artifactId>wildfly-naming-client-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -805,7 +805,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-client-common</artifactId>
+            <artifactId>wildfly-http-client-common-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
