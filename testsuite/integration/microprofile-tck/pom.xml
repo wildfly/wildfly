@@ -75,6 +75,15 @@
         <version.rest-client>${version.org.eclipse.microprofile.rest.client.api}</version.rest-client>
     </properties>
 
+    <dependencies>
+        <!-- TODO confirm if this is needed -->
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming-client-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <modules>
         <module>config</module>
         <module>fault-tolerance</module>
