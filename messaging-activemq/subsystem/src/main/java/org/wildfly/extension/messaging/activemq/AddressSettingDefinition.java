@@ -86,6 +86,12 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    public static final SimpleAttributeDefinition AUTO_DELETE_CREATED_QUEUES = create("auto-delete-created-queues", ModelType.BOOLEAN)
+            .setDefaultValue(ModelNode.FALSE)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .build();
+
     public static final SimpleAttributeDefinition AUTO_DELETE_QUEUES = create("auto-delete-queues", ModelType.BOOLEAN)
             .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
@@ -226,7 +232,8 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             AUTO_CREATE_ADDRESSES,
             AUTO_DELETE_ADDRESSES,
             AUTO_CREATE_QUEUES,
-            AUTO_DELETE_QUEUES
+            AUTO_DELETE_QUEUES,
+            AUTO_DELETE_CREATED_QUEUES
     };
 
     static final AddressSettingDefinition INSTANCE = new AddressSettingDefinition();
