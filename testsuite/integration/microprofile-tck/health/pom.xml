@@ -75,6 +75,13 @@
         </dependency>
 
         <dependency>
+            <!-- This is a transitive dep of com.google.guava -->
+            <groupId>com.google.guava</groupId>
+            <artifactId>failureaccess</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <!-- WFLY-15265. This is a workaround for an unclear dep tree pollution problem.
                  TODO Remove this if elytron aligns its version with WF or some other solution is found. -->
             <groupId>com.fasterxml.jackson.core</groupId>
