@@ -64,7 +64,6 @@ public class TracerAttributes {
 
     public static final SimpleAttributeDefinition SENDER_BINDING = SimpleAttributeDefinitionBuilder.create(TracerConfigurationConstants.SENDER_AGENT_BINDING, ModelType.STRING, true)
             .setAttributeGroup("sender-configuration")
-            .setAllowExpression(true)
             .setCapabilityReference(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .setRestartAllServices()
