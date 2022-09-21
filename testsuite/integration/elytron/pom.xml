@@ -403,6 +403,13 @@
             <artifactId>jakarta.activation-api</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- TODO confirm if this is needed -->
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming-client-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

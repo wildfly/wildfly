@@ -52,6 +52,12 @@
             <version>4.0.13.Final</version>
             <scope>test</scope>
         </dependency>
+        <!-- TODO confirm thi is needed -->
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming-client</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
 
