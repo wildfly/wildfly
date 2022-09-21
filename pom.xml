@@ -473,7 +473,7 @@
         <legacy.version.org.glassfish.jakarta.json>1.1.6</legacy.version.org.glassfish.jakarta.json>
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF. Use the version expression from the root
          pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
-        <version.org.glassfish.jaxb>4.0.0</version.org.glassfish.jaxb>
+        <version.org.glassfish.jaxb>4.0.1</version.org.glassfish.jaxb>
         <version.org.glassfish.jaxb.jaxb-xjc>${version.org.glassfish.jaxb}</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.glassfish.soteria>3.0.0</version.org.glassfish.soteria>
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
