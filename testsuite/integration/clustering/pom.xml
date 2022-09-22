@@ -218,6 +218,10 @@
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-cli-client</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.marshalling</groupId>
+                    <artifactId>jboss-marshalling-osgi</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
