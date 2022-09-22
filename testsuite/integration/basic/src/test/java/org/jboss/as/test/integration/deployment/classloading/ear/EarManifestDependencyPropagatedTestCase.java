@@ -90,7 +90,7 @@ public class EarManifestDependencyPropagatedTestCase {
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<ejb-jar xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" \n" +
                 "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
-                "         xsi:schemaLocation=\"https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee//ejb-jar_4_0.xsd\"\n" +
+                "         xsi:schemaLocation=\"https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd\"\n" +
                 "         version=\"4.0\">\n" +
                 "   \n" +
                 "</ejb-jar>");

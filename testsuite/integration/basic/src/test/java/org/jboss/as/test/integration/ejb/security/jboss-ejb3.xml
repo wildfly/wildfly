@@ -2,7 +2,7 @@
 <jboss:ejb-jar 
         xmlns="https://jakarta.ee/xml/ns/jakartaee"
         xmlns:jboss="urn:jboss:jakartaee:1.0"
-        xmlns:s="urn:security:1.1"
+        xmlns:s="urn:security:2.0"
         version="4.0">
 
     <assembly-descriptor>
