@@ -32,8 +32,9 @@ import org.jboss.as.clustering.controller.Schema;
 public enum TimerServiceMetaDataSchema implements Schema<TimerServiceMetaDataSchema> {
     VERSION_1_0(1, 0),
     VERSION_2_0(2, 0),
+    VERSION_3_0(3, 0),
     ;
-    static final Schema<TimerServiceMetaDataSchema> CURRENT = VERSION_2_0;
+    static final Schema<TimerServiceMetaDataSchema> CURRENT = VERSION_3_0;
 
     private final int major;
     private final int minor;
