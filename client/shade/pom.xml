@@ -190,16 +190,6 @@
             <artifactId>commons-collections</artifactId>
         </dependency>
 
-
-        <!--
-            Netty 4
-            io.netty:netty-all is for Netty 4.x versions
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-        </dependency>
-        -->
-
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
@@ -293,16 +283,6 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-selector</artifactId>
-        </dependency>
-        <!-- Required by the artemis-jms-client -->
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.json</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.json</groupId>
-            <artifactId>jakarta.json-api</artifactId>
         </dependency>
 
         <dependency>
