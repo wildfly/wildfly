@@ -2428,18 +2428,6 @@
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>jose-jwt</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-atom-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
             </dependency>

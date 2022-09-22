@@ -88,8 +88,8 @@ public class LayersTestCase {
         "org.bouncycastle",
         // TODO WFLY-16583 -- cruft
         "javax.management.j2ee.api",
-        // TODO possible cruft? https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
-        "org.jboss.resteasy.jose-jwt",
+            // This was brought in as part an RFE, WFLY-10632 & WFLY-10636. While the module is currently marked as private,
+            // for now we should keep this module.
         "org.jboss.resteasy.resteasy-rxjava2",
         // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
         "org.wildfly.reactive.dep.jts",
