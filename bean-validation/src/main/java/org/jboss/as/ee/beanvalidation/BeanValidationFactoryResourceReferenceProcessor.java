@@ -33,7 +33,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * Handled resource injections for the Validator Factory
@@ -61,7 +60,7 @@ public class BeanValidationFactoryResourceReferenceProcessor implements EEResour
         @Override
         public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
             final ClassLoader classLoader = phaseContext.getDeploymentUnit().getAttachment(Attachments.MODULE).getClassLoader();
-            injector.inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(new LazyValidatorFactory(classLoader))));
+            injector.inject(new ValueManagedReferenceFactory(new LazyValidatorFactory(classLoader)));
         }
     }
 }
