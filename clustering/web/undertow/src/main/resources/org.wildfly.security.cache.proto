@@ -1,0 +1,13 @@
+package org.wildfly.security.cache;
+
+// IDs: 250-254
+
+/**
+ * @TypeId(250)
+ */
+message CachedIdentity {
+	optional	string	mechanism	 = 1;
+	optional	string	nonProgrammaticName	 = 2;
+	optional	string	programmaticName	 = 3;
+	repeated	string	role	 = 4;
+}

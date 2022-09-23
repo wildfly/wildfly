@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster.web.authentication;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,7 +50,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
 import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
 /**
@@ -158,12 +156,10 @@ public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTe
         }
     }
 
-    static class ElytronDomainSetupOverride extends ElytronDomainSetup {
+    static class ElytronDomainSetupOverride extends ElytronDomainServerSetupTask {
 
         public ElytronDomainSetupOverride() {
-            super(new File(FormAuthenticationWebFailoverTestCase.class.getResource("users.properties").getFile()).getAbsolutePath(),
-                    new File(FormAuthenticationWebFailoverTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath(),
-                    SECURITY_DOMAIN_NAME);
+            super(SECURITY_DOMAIN_NAME);
         }
     }
 

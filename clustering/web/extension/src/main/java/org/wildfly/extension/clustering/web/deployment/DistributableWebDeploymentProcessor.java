@@ -52,6 +52,7 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
     private static final String WELD_EJB = "org.wildfly.clustering.weld.ejb";
     private static final String WELD_WEB = "org.wildfly.clustering.weld.web";
     private static final String FACES_MOJARRA = "org.wildfly.clustering.faces.mojarra";
+    private static final String UNDERTOW = "org.wildfly.clustering.web.undertow";
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
@@ -65,6 +66,7 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
 
             if (provider.getSessionManagementConfiguration().getMarshallerFactory() == SessionMarshallerFactory.PROTOSTREAM) {
                 specification.addSystemDependency(new ModuleDependency(loader, PROTOSTREAM, false, false, false, false));
+                specification.addSystemDependency(new ModuleDependency(loader, UNDERTOW, false, false, true, false));
 
                 CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
                 if (support.hasCapability(Capabilities.WELD_CAPABILITY_NAME)) {

@@ -57,6 +57,7 @@ import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 import org.wildfly.clustering.web.undertow.sso.SSOManagerServiceConfigurator;
 import org.wildfly.extension.undertow.Capabilities;
+import org.wildfly.security.cache.CachedIdentity;
 import org.wildfly.security.http.util.sso.SingleSignOnManager;
 
 import io.undertow.server.session.SessionIdGenerator;
@@ -64,13 +65,13 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public class DistributableSingleSignOnManagerServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch>, SingleSignOnManager> {
+public class DistributableSingleSignOnManagerServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<SSOManager<CachedIdentity, String, Map.Entry<String, URI>, LocalSSOContext, Batch>, SingleSignOnManager> {
 
     private final SecurityDomainSingleSignOnManagementConfiguration configuration;
     private final LegacySSOManagementProviderFactory legacyProviderFactory;
 
     private volatile SupplierDependency<DistributableSSOManagementProvider> provider;
-    private volatile SupplierDependency<SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch>> manager;
+    private volatile SupplierDependency<SSOManager<CachedIdentity, String, Map.Entry<String, URI>, LocalSSOContext, Batch>> manager;
     private volatile Consumer<ServiceTarget> installer;
 
     public DistributableSingleSignOnManagerServiceConfigurator(ServiceName name, SecurityDomainSingleSignOnManagementConfiguration configuration, LegacySSOManagementProviderFactory legacyProviderFactory) {
@@ -80,7 +81,7 @@ public class DistributableSingleSignOnManagerServiceConfigurator extends SimpleS
     }
 
     @Override
-    public SingleSignOnManager apply(SSOManager<ElytronAuthentication, String, Entry<String, URI>, LocalSSOContext, Batch> manager) {
+    public SingleSignOnManager apply(SSOManager<CachedIdentity, String, Entry<String, URI>, LocalSSOContext, Batch> manager) {
         return new DistributableSingleSignOnManager(manager);
     }
 
@@ -99,7 +100,7 @@ public class DistributableSingleSignOnManagerServiceConfigurator extends SimpleS
                 ServiceConfigurator factoryConfigurator = provider.get().getServiceConfigurator(securityDomainName).configure(support);
                 factoryConfigurator.build(target).install();
 
-                SupplierDependency<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>> factoryDependency = new ServiceSupplierDependency<>(factoryConfigurator);
+                SupplierDependency<SSOManagerFactory<CachedIdentity, String, Map.Entry<String, URI>, Batch>> factoryDependency = new ServiceSupplierDependency<>(factoryConfigurator);
                 SupplierDependency<SessionIdGenerator> generatorDependency = new SimpleSupplierDependency<>(new SessionIdGeneratorAdapter(generator));
                 new SSOManagerServiceConfigurator<>(managerServiceName, factoryDependency, generatorDependency, new LocalSSOContextFactory()).configure(support).build(target).install();
             }

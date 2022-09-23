@@ -58,6 +58,9 @@
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.extension.undertow"/>
+        <module name="org.wildfly.security.elytron-base"/>
         <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.security.elytron-web.undertow-server"/>
+        <module name="org.wildfly.security.elytron-web.undertow-server-servlet"/>
     </dependencies>
 </module>

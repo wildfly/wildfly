@@ -148,11 +148,22 @@
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-http-sso</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.security.elytron-web</groupId>
+            <artifactId>undertow-server-servlet</artifactId>
+        </dependency>
 
-        <!-- Test dependencies -->
+        <!-- Internal test dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-api</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
@@ -170,6 +181,13 @@
             <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
+        </dependency>
+
+        <!-- External test dependencies -->
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
