@@ -667,6 +667,11 @@ public class TimerServiceImpl implements ManagedTimerService {
         long delay = nextExpiration.getTime() - currentTime;
         long intervalDuration = timer.getInterval();
         final Task task = new Task(timerTask, this.invoker.getComponent().getControlPoint());
+
+        // maintain it in timerservice for future use (like cancellation)
+        scheduledTimerFutures.compute(timer.getId(), (k, v) -> timer.isCanceled() ? null : task);
+
+        // schedule the task
         if (intervalDuration > 0) {
             EJB3_TIMER_LOGGER.debugv("Scheduling timer {0} at fixed rate, starting at {1} milliseconds from now with repeated interval={2}",
                     timer, delay, intervalDuration);
@@ -674,6 +679,7 @@ public class TimerServiceImpl implements ManagedTimerService {
             if (delay < 0) {
                 delay = 0;
             }
+            this.timer.scheduleAtFixedRate(task, delay, intervalDuration);
         } else {
             EJB3_TIMER_LOGGER.debugv("Scheduling a single action timer {0} starting at {1} milliseconds from now", timer, delay);
             // if in past, then trigger immediately; if overdue by 5 minutes, set next expiration to current time
@@ -683,22 +689,8 @@ public class TimerServiceImpl implements ManagedTimerService {
                 }
                 delay = 0;
             }
+            this.timer.schedule(task, delay);
         }
-        final long delayFinal = delay;
-        // maintain it in timerservice for future use (like cancellation)
-        scheduledTimerFutures.compute(timer.getId(), (k, v) -> {
-            if (timer.isCanceled()) {
-                return null;
-            } else {
-                // schedule the task
-                if (intervalDuration > 0) {
-                    this.timer.scheduleAtFixedRate(task, delayFinal, intervalDuration);
-                } else {
-                    this.timer.schedule(task, delayFinal);
-                }
-                return task;
-            }
-        });
     }
 
     /**
