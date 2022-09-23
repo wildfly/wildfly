@@ -21,9 +21,9 @@ package org.wildfly.test.integration.observability.opentelemetry;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
-import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.security.SecurityPermission;
+import java.util.PropertyPermission;
 
 import jakarta.inject.Inject;
 import javax.management.MBeanPermission;
@@ -74,8 +74,6 @@ public class BasicOpenTelemetryTestCase {
                 .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        // Required for the ClientBuilder.newBuilder() so the ServiceLoader will work
-                        new FilePermission("<<ALL FILES>>", "read"),
                         // Required for com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider. During <init> there is a
                         // reflection test to check for JAXRS 2.0.
                         new RuntimePermission("accessDeclaredMembers"),
@@ -87,7 +85,10 @@ public class BasicOpenTelemetryTestCase {
                         new MBeanPermission("*", "registerMBean, unregisterMBean, invoke"),
                         new RuntimePermission("getClassLoader"),
                         new RuntimePermission("modifyThread"),
-                        new RuntimePermission("setContextClassLoader")
+                        new RuntimePermission("setContextClassLoader"),
+                        // These two permissions can be removed once RESTEASY-3229 is resolved
+                        new RuntimePermission("getenv.dev.resteasy.exception.mapper"),
+                        new PropertyPermission("dev.resteasy.exception.mapper", "read")
                 ), "permissions.xml");
     }
 

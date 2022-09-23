@@ -2,7 +2,6 @@ package org.jboss.as.test.manualmode.server.nongraceful;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
-import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.util.PropertyPermission;
 
@@ -65,12 +64,13 @@ public class NongracefulStartTestCase {
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
                 .addClass(TimeoutUtil.class)
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        // Required for the ClientBuilder.newBuilder() so the ServiceLoader will work
-                        new FilePermission("<<ALL FILES>>", "read"),
                         // Required for the TimeoutUtil.adjust call when determining how long DEPLOYMENTB should poll
                         new PropertyPermission("ts.timeout.factor", "read"),
                         // Required for the client to connect
-                        new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")
+                        new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve"),
+                        // These two permissions can be removed once RESTEASY-3229 is resolved
+                        new RuntimePermission("getenv.dev.resteasy.exception.mapper"),
+                        new PropertyPermission("dev.resteasy.exception.mapper", "read")
                 ), "permissions.xml");
     }
 
