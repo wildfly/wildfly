@@ -810,16 +810,6 @@ we first get the `suffix` from the operation address, and the `tick`
 value from the operation parameter's `resolvedValue` parameter, and use
 that to update the model.
 
-We then add a new step associated with the `RUNTIME` stage to update the
-tick of the TrackerService for our suffix. This is essential since the
-call to `context.getServiceRegistry()` will fail unless the step
-accessing it belongs to the `RUNTIME` stage.
-
-[NOTE]
-
-When implementing `execute()`, you *must* call `context.completeStep()`
-when you are done.
-
 [[parsing-and-marshalling-of-the-subsystem-xml]]
 == Parsing and marshalling of the subsystem xml
 
