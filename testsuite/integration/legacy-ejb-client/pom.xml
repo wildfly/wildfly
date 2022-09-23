@@ -30,6 +30,9 @@
         <!-- Use the legacy javax.* testsuite/shared as it's used client-side and client-side is currently javax.* -->
         <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared</wildfly-testsuite-shared.artifactId>
 
+        <!-- Tell the server to run in javax<->jakarta interop mode -->
+        <extra.server.jvm.args>-Dorg.wildfly.ee.namespace.interop=true</extra.server.jvm.args>
+
     </properties>
 
     <dependencies>
