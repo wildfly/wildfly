@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- TODO Upgrade to 2.1 once https://issues.redhat.com/browse/WFLY-16991 is fixed -->
 <connector xmlns="https://jakarta.ee/xml/ns/jakartaee"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
-           https://jakarta.ee/xml/ns/jakartaee/connector_2_0.xsd"
-           version="2.0">
+           https://jakarta.ee/xml/ns/jakartaee/connector_2_1.xsd"
+           version="2.1">
 
     <description>JBoss Generic JMS JCA Resource Adapter</description>
     <display-name>Generic JMS Adapter</display-name>
