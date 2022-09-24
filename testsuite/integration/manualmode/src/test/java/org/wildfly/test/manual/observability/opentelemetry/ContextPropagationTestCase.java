@@ -22,12 +22,12 @@ package org.wildfly.test.manual.observability.opentelemetry;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
-import java.io.FilePermission;
 import java.io.IOException;
 import java.net.NetPermission;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.Map;
+import java.util.PropertyPermission;
 
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
@@ -116,8 +116,6 @@ public class ContextPropagationTestCase {
                 .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        // Required for the ClientBuilder.newBuilder() so the ServiceLoader will work
-                        new FilePermission("<<ALL FILES>>", "read"),
                         // Required for com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider. During <init> there is a
                         // reflection test to check for JAXRS 2.0.
                         new RuntimePermission("accessDeclaredMembers"),
@@ -126,7 +124,10 @@ public class ContextPropagationTestCase {
                         new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":14250", "connect,resolve"),
                         new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":16686", "connect,resolve"),
                         new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" +
-                                TestSuiteEnvironment.getHttpPort(), "connect,resolve")
+                                TestSuiteEnvironment.getHttpPort(), "connect,resolve"),
+                        // These two permissions can be removed once RESTEASY-3229 is resolved
+                        new RuntimePermission("getenv.dev.resteasy.exception.mapper"),
+                        new PropertyPermission("dev.resteasy.exception.mapper", "read")
                 ), "permissions.xml");
     }
 
