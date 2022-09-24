@@ -49,7 +49,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -249,7 +248,6 @@ public class EJBClientAPIUsageTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("WFLY-16646")
     public void testNonExistentViewForEJB() throws Exception {
         final StatelessEJBLocator<NotAnEJBInterface> locator = new StatelessEJBLocator<NotAnEJBInterface>(NotAnEJBInterface.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
         final NotAnEJBInterface nonExistentBean = EJBClient.createProxy(locator);
@@ -292,7 +290,6 @@ public class EJBClientAPIUsageTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("WFLY-16646")
     public void testSystemExceptionOnSLSBMethod() throws Exception {
         final StatelessEJBLocator<ExceptionThrowingRemote> locator = new StatelessEJBLocator<ExceptionThrowingRemote>(ExceptionThrowingRemote.class, APP_NAME, MODULE_NAME, ExceptionThrowingBean.class.getSimpleName(), "");
         final ExceptionThrowingRemote exceptionThrowingBean = EJBClient.createProxy(locator);
