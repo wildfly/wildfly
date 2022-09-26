@@ -22,6 +22,7 @@
 package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
+import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 
 import javax.net.ssl.SSLContext;
 
@@ -55,15 +56,7 @@ class HttpsListenerAdd extends ListenerAdd {
         final boolean proxyProtocol = HttpListenerResourceDefinition.PROXY_PROTOCOL.resolveModelAttribute(context, model).asBoolean();
         String cipherSuites = null;
         if(securityRealmModel.isDefined()) {
-            //we only support setting these options for security realms
-            HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model, builder);
-
-            ModelNode value = HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.resolveModelAttribute(context, model);
-            cipherSuites = value.isDefined() ? value.asString() : null;
-
-            HttpsListenerResourceDefinition.ENABLED_PROTOCOLS.resolveOption(context, model, builder);
-            HttpsListenerResourceDefinition.SSL_SESSION_CACHE_SIZE.resolveOption(context, model, builder);
-            HttpsListenerResourceDefinition.SSL_SESSION_TIMEOUT.resolveOption(context, model, builder);
+            throw ROOT_LOGGER.runtimeSecurityRealmUnsupported();
         }
 
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);

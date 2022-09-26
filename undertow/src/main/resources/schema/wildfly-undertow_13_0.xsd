@@ -201,9 +201,7 @@
                 <xs:attribute name="security-realm" type="xs:string">
                     <xs:annotation>
                         <xs:documentation>
-                            Reference to the legacy security realm to use to obtain an SSLContext.
-
-                            If neither ssl-context or security-realm are set the JVM wide default SSLContext will be used instead.
+                            Deprecated:  ssl-context should be set instead to reference a defined SSLContext.
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
@@ -325,7 +323,13 @@
     <xs:complexType name="http-invokerType">
         <xs:attribute name="path" use="optional" type="xs:string" default="wildfly-services"/>
         <xs:attribute name="http-authentication-factory" type="xs:string" use="optional"/>
-        <xs:attribute name="security-realm" type="xs:string" use="optional"/>
+        <xs:attribute name="security-realm" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Deprecated: The http-authentication-factory attribute should be used to configure authentication.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="websocketsType">
@@ -747,7 +751,13 @@
         <xs:attribute name="path" use="optional" type="xs:string" default=""/>
         <xs:attribute name="instance-id" use="optional" type="xs:string"/>
         <xs:attribute name="ssl-context" type="xs:string" />
-        <xs:attribute name="security-realm" type="xs:string" use="optional" />
+        <xs:attribute name="security-realm" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Deprecated: The ssl-context attribute should be used to reference a defined SSLContext.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="enable-http2" type="xs:boolean" use="optional" default="false" />
     </xs:complexType>
 
@@ -894,7 +904,13 @@
         <xs:attribute name="connection-idle-timeout" type="xs:int" use="optional" />
         <xs:attribute name="request-queue-size" type="xs:int" use="optional" />
         <xs:attribute name="ssl-context" type="xs:string" />
-        <xs:attribute name="security-realm" type="xs:string" use="optional" />
+        <xs:attribute name="security-realm" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Deprecated: The ssl-context attribute should be used to reference a defined SSLContext.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="use-alias" type="xs:string" use="optional" default="false" />
         <xs:attribute name="enable-http2" type="xs:string" use="optional" default="false" />
         <xs:attribute name="max-ajp-packet-size" type="xs:int" use="optional" />
