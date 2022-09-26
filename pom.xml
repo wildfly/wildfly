@@ -299,6 +299,7 @@
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.13.4</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
+        <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
         <version.com.github.ben-manes.caffeine>2.9.3</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
@@ -318,7 +319,7 @@
         <version.com.nimbus.jose-jwt>9.23</version.com.nimbus.jose-jwt>
         <legacy.version.com.squareup.okhttp>3.14.9</legacy.version.com.squareup.okhttp>
         <version.com.squareup.okhttp>4.10.0</version.com.squareup.okhttp>
-        <version.com.squareup.okio>2.8.0</version.com.squareup.okio>
+        <version.com.squareup.okio-jvm>3.2.0</version.com.squareup.okio-jvm>
         <legacy.version.com.sun.activation.jakarta.activation>1.2.2</legacy.version.com.sun.activation.jakarta.activation>
         <legacy.version.com.sun.faces>2.3.17.SP01</legacy.version.com.sun.faces>
         <version.com.sun.faces>4.0.0.SP01</version.com.sun.faces>

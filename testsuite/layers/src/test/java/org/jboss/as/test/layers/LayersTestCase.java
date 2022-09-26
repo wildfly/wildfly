@@ -102,6 +102,10 @@ public class LayersTestCase {
         "org.wildfly.security.jakarta.client.resteasy",
         "org.wildfly.security.jakarta.client.webservices",
         "org.jboss.resteasy.microprofile.config",
+        // TODO see gRPC proposal
+        "io.grpc",
+        // TODO analysis
+        "com.google.protobuf",
     };
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning
@@ -117,14 +121,12 @@ public class LayersTestCase {
         "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
         "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
         "io.jaegertracing",
-        "io.grpc",
         "io.smallrye.health",
         "io.smallrye.openapi",
         "io.vertx.client",
         "org.eclipse.microprofile.health.api",
         "org.eclipse.microprofile.openapi.api",
         "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
-        "com.google.protobuf",
         "org.jboss.resteasy.resteasy-client-microprofile",
         "io.netty.netty-codec-dns",
         "io.netty.netty-codec-http2",
