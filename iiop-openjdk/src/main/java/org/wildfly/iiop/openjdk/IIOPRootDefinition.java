@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -364,6 +365,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .setAllowExpression(true)
+            .setDeprecated(ModelVersion.create(3))
             .build();
 
     protected static final AttributeDefinition REQUIRED = new SimpleAttributeDefinitionBuilder(

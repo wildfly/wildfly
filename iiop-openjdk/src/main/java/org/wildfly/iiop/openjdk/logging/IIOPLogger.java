@@ -422,4 +422,7 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 118, value = "Legacy security is no longer supported.")
     IllegalStateException legacySecurityUnsupported();
 
+    @Message(id = 119, value = "The use of security realms at runtime is unsupported.")
+    OperationFailedException runtimeSecurityRealmUnsupported();
+
 }

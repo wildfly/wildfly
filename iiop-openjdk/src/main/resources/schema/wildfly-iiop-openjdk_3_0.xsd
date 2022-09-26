@@ -282,7 +282,14 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="auth-method" type="authMethodEnum" use="optional" default="username_password"/>
-        <xs:attribute name="realm" type="xs:string" use="optional"/>
+        <xs:attribute name="realm" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Deprecated: References to security-realms should be updated to reference security-domain
+                    and ssl-context resources as appropriate.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="required" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 

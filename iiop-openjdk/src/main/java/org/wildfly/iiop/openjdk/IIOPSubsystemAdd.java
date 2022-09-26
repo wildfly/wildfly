@@ -401,7 +401,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final IORASContextMetaData asContextMetaData = new IORASContextMetaData();
         asContextMetaData.setAuthMethod(IIOPRootDefinition.AUTH_METHOD.resolveModelAttribute(context, resourceModel).asString());
         if (resourceModel.hasDefined(IIOPRootDefinition.REALM.getName())) {
-            asContextMetaData.setRealm(IIOPRootDefinition.REALM.resolveModelAttribute(context, resourceModel).asString());
+            throw ROOT_LOGGER.runtimeSecurityRealmUnsupported();
         }
         asContextMetaData.setRequired(IIOPRootDefinition.REQUIRED.resolveModelAttribute(context, resourceModel).asBoolean());
         securityConfigMetaData.setAsContext(asContextMetaData);
