@@ -47,7 +47,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("empty-resourceadapters.xml");
+        return readResource("resource-adapters-full.xml");
     }
 
     @Override
@@ -70,7 +70,6 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
     public void testFullConfig() throws Exception {
         standardSubsystemTest("resource-adapters-pool.xml", null, true);
     }
-
 
     @Test
     public void testFullConfigXa() throws Exception {

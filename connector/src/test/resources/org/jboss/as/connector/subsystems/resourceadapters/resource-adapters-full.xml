@@ -1,0 +1,126 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:6.1">
+    <resource-adapters>
+        <resource-adapter id="myRA" statistics-enabled="false">
+            <archive>archive</archive>
+            <bean-validation-groups>
+                <bean-validation-group>group</bean-validation-group>
+            </bean-validation-groups>
+            <bootstrap-context>bootstrapContext</bootstrap-context>
+            <transaction-support>NoTransaction</transaction-support>
+            <workmanager>
+                <security>
+                    <mapping-required>false</mapping-required>
+                    <domain>domain</domain>
+                    <default-groups>
+                        <group>group</group>
+                    </default-groups>
+                    <mappings>
+                        <groups>
+                            <map from="from" to="to"/>
+                        </groups>
+                    </mappings>
+                </security>
+            </workmanager>
+            <connection-definitions>
+                <connection-definition use-ccm="true" sharable="false" enlistment="true" class-name="token" jndi-name="java:jboss/cf/PoolName"
+                                       enabled="true" use-java-context="true" pool-name="poolName" connectable="true"
+                                       enlistment-trace="true" mcp="org.ironjcamar.myclass">
+                    <config-property name="config2">value</config-property>
+                    <pool>
+                        <min-pool-size>200</min-pool-size>
+                        <initial-pool-size>200</initial-pool-size>
+                        <max-pool-size>200</max-pool-size>
+                        <prefill>true</prefill>
+                        <use-strict-min>true</use-strict-min>
+                        <flush-strategy>FailingConnectionOnly</flush-strategy>
+                    </pool>
+                    <security>
+                        <elytron-enabled>true</elytron-enabled>
+                        <authentication-context>context</authentication-context>
+                    </security>
+                    <timeout>
+                        <blocking-timeout-millis>200</blocking-timeout-millis>
+                        <idle-timeout-minutes>200</idle-timeout-minutes>
+                        <allocation-retry>200</allocation-retry>
+                        <allocation-retry-wait-millis>200</allocation-retry-wait-millis>
+                        <xa-resource-timeout>200</xa-resource-timeout>
+                    </timeout>
+                    <validation>
+                        <background-validation>false</background-validation>
+                        <background-validation-millis>200</background-validation-millis>
+                        <use-fast-fail>false</use-fast-fail>
+                    </validation>
+                    <recovery no-recovery="false">
+                        <recover-credential>
+                            <user-name>userName</user-name>
+                            <password>pwd</password>
+                            <security-domain>token</security-domain>
+                        </recover-credential>
+                        <recover-plugin class-name="aClass">
+                            <config-property name="config3">value</config-property>
+                        </recover-plugin>
+                    </recovery>
+                </connection-definition>
+            </connection-definitions>
+            <admin-objects>
+                <admin-object class-name="aClass" jndi-name="java:jboss/ao/anotherPool" enabled="true" use-java-context="true" pool-name="anotherPool">
+                    <config-property name="config4">value</config-property>
+                </admin-object>
+            </admin-objects>
+        </resource-adapter>
+        <resource-adapter id="myXARA">
+            <archive>archive</archive>
+            <bean-validation-groups>
+                <bean-validation-group>group</bean-validation-group>
+            </bean-validation-groups>
+            <bootstrap-context>bootstrapContext</bootstrap-context>
+            <config-property name="config1">value</config-property>
+            <transaction-support>XATransaction</transaction-support>
+            <connection-definitions>
+                <connection-definition use-ccm="true" class-name="token" sharable="false" enlistment="false" jndi-name="java:jboss/cf/PoolName" enabled="true" use-java-context="true" pool-name="poolName" connectable="false"
+                                       enlistment-trace="true" mcp="org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreArrayListManagedConnectionPool">
+                    <config-property name="config2">value</config-property>
+                    <xa-pool>
+                        <min-pool-size>200</min-pool-size>
+                        <max-pool-size>200</max-pool-size>
+                        <prefill>true</prefill>
+                        <use-strict-min>true</use-strict-min>
+                        <flush-strategy>FailingConnectionOnly</flush-strategy>
+                        <is-same-rm-override>true</is-same-rm-override>
+                        <interleaving/>
+                        <no-tx-separate-pools />
+                        <pad-xid>true</pad-xid>
+                        <wrap-xa-resource>false</wrap-xa-resource>
+                    </xa-pool>
+                    <timeout>
+                        <blocking-timeout-millis>200</blocking-timeout-millis>
+                        <idle-timeout-minutes>200</idle-timeout-minutes>
+                        <allocation-retry>200</allocation-retry>
+                        <allocation-retry-wait-millis>200</allocation-retry-wait-millis>
+                        <xa-resource-timeout>200</xa-resource-timeout>
+                    </timeout>
+                    <validation>
+                        <background-validation>false</background-validation>
+                        <background-validation-millis>200</background-validation-millis>
+                        <use-fast-fail>false</use-fast-fail>
+                    </validation>
+                    <recovery no-recovery="false">
+                        <recover-credential>
+                            <user-name>userName</user-name>
+                            <password>pwd</password>
+                        </recover-credential>
+                        <recover-plugin class-name="aClass">
+                            <config-property name="config3">value</config-property>
+                        </recover-plugin>
+                    </recovery>
+                </connection-definition>
+            </connection-definitions>
+            <admin-objects>
+                <admin-object class-name="aClass" jndi-name="java:jboss/ao/anotherPool" enabled="true" use-java-context="true" pool-name="anotherPool">
+                    <config-property name="config4">value</config-property>
+                </admin-object>
+            </admin-objects>
+        </resource-adapter>
+    </resource-adapters>
+    <report-directory path="/tmp"/>
+</subsystem>
