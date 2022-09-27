@@ -513,7 +513,6 @@
         <legacy.version.org.jboss.resteasy>4.7.4.Final</legacy.version.org.jboss.resteasy>
         <version.org.jboss.resteasy>6.2.0.Final</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.microprofile>2.0.0.Final</version.org.jboss.resteasy.microprofile>
-        <version.org.jboss.resteasy.spring>3.0.0.Beta1</version.org.jboss.resteasy.spring>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
@@ -594,8 +593,7 @@
             WildFly Preview version properties.
             Property names should be in the form 'preview.version.xxx'. 
         -->
-
-        <!-- currently none-->
+        <preview.version.org.jboss.resteasy.spring>3.0.0.Beta1</preview.version.org.jboss.resteasy.spring>
 
     </properties>
 
