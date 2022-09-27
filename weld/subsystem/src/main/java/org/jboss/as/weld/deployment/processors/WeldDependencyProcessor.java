@@ -46,7 +46,6 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier JBOSS_AS_WELD_ID = ModuleIdentifier.create("org.jboss.as.weld");
     private static final ModuleIdentifier JBOSS_AS_WELD_EJB_ID = ModuleIdentifier.create("org.jboss.as.weld.ejb");
     private static final ModuleIdentifier WELD_CORE_ID = ModuleIdentifier.create("org.jboss.weld.core");
-    private static final ModuleIdentifier WELD_PROBE_ID = ModuleIdentifier.create("org.jboss.weld.probe");
     private static final ModuleIdentifier WELD_API_ID = ModuleIdentifier.create("org.jboss.weld.api");
     private static final ModuleIdentifier WELD_SPI_ID = ModuleIdentifier.create("org.jboss.weld.spi");
     private static final ModuleIdentifier JAVAX_ENTERPRISE_API = ModuleIdentifier.create("javax.enterprise.api");
@@ -70,7 +69,6 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         }
         addDependency(moduleSpecification, moduleLoader, JAVAX_PERSISTENCE_API_ID);
         addDependency(moduleSpecification, moduleLoader, WELD_CORE_ID);
-        addDependency(moduleSpecification, moduleLoader, WELD_PROBE_ID, true);
         addDependency(moduleSpecification, moduleLoader, WELD_API_ID);
         addDependency(moduleSpecification, moduleLoader, WELD_SPI_ID);
 
