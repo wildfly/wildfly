@@ -104,10 +104,12 @@ public class LayersTestCase {
         "org.wildfly.security.jakarta.client.resteasy",
         "org.wildfly.security.jakarta.client.webservices",
         "org.jboss.resteasy.microprofile.config",
-        // TODO see gRPC proposal
-        "io.grpc",
-        // TODO analysis
+        // otel?
         "com.google.protobuf",
+        "io.grpc",
+        "io.opentelemetry.trace",
+        "org.wildfly.extension.opentelemetry",
+        "org.wildfly.extension.opentelemetry-api"
     };
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning
@@ -213,7 +215,8 @@ public class LayersTestCase {
         "ibm.jdk",
         // TODO just a testsuite utility https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
         "org.jboss.ws.cxf.sts",
-        "org.wildfly.security.jakarta.security" // Dynamically added by ee-security and mp-jwt-smallrye DUPs but not referenced by subsystems.
+        "org.wildfly.security.jakarta.security", // Dynamically added by ee-security and mp-jwt-smallrye DUPs but not referenced by subsystems.
+
     };
 
     /**

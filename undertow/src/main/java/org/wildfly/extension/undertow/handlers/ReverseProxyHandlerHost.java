@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow.handlers;
 import static org.wildfly.extension.undertow.Capabilities.REF_OUTBOUND_SOCKET;
 import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_REVERSE_PROXY_HANDLER_HOST;
+import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,6 +43,7 @@ import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -128,6 +130,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
+            .setDeprecated(ModelVersion.create(12))
             .build();
 
     public static final SimpleAttributeDefinition ENABLE_HTTP2 = new SimpleAttributeDefinitionBuilder(Constants.ENABLE_HTTP2, ModelType.BOOLEAN)
@@ -179,6 +182,9 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             final boolean enableHttp2 = ENABLE_HTTP2.resolveModelAttribute(context, model).asBoolean();
             final String jvmRoute;
             final ModelNode securityRealm = SECURITY_REALM.resolveModelAttribute(context, model);
+            if (securityRealm.isDefined()) {
+                throw ROOT_LOGGER.runtimeSecurityRealmUnsupported();
+            }
             final ModelNode sslContext = SSL_CONTEXT.resolveModelAttribute(context, model);
             if (model.hasDefined(Constants.INSTANCE_ID)) {
                 jvmRoute = INSTANCE_ID.resolveModelAttribute(context, model).asString();

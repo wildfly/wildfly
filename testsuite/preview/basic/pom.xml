@@ -81,6 +81,10 @@
             <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
