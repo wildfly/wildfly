@@ -50,7 +50,7 @@
                         </xs:element>
                         <xs:element name="transient-timer-management" type="xs:string" maxOccurs="1">
                             <xs:annotation>
-                                <xs:documentation>Identifies the timer-management provider to use for persistent timers.</xs:documentation>
+                                <xs:documentation>Identifies the timer-management provider to use for transient (i.e. non-persistent) timers.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
                     </xs:sequence>
