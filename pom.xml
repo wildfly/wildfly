@@ -151,7 +151,23 @@
         <!-- TarArchiver behavior -->
         <assembly.tarLongFileMode>posix</assembly.tarLongFileMode>
 
-        <!-- Modularized JDK support (various workarounds) - activated via profile -->
+        <!--
+            Modularized JDK support. These are our recommended client-side JPMS settings.
+            This list should only be modified if we are making a change to our general
+            recommendation of what settings an external *client* application should use
+            *in order to utilize our client-side libraries*. It is not meant to cover
+            settings a client app might need to support it's own code.
+
+            This list is not meant to control server-side JPMS settings.
+
+            DO NOT add entries here just to support JPMS needs for specialized tests.
+            The testsuite/pom.xml declares a 'modular.jdk.testsuite.args' property that
+            defaults to ${modular.jdk.args}, i.e. this list. If particular tests need
+            additional settings to support client-side behavior in their test code,
+            then that property should be overridden in as fine-grained a location as
+            practical, and no more coarse-grained than the global config of the pom
+            for the maven module that includes the test.
+         -->
         <modular.jdk.args>
             --add-exports=java.desktop/sun.awt=ALL-UNNAMED
             --add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED
@@ -166,7 +182,6 @@
             --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
             --add-opens=java.management/javax.management=ALL-UNNAMED
             --add-opens=java.naming/javax.naming=ALL-UNNAMED
-            --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED
         </modular.jdk.args>
         <modular.jdk.props></modular.jdk.props>
 
