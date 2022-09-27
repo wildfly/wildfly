@@ -37,7 +37,9 @@ import org.jboss.metadata.property.PropertyReplacer;
  */
 public class EJBBoundCacheParser extends AbstractEJBBoundMetaDataParser<EJBBoundCacheMetaData> {
 
-    public static final String NAMESPACE_URI = "urn:ejb-cache:1.0";
+    public static final String NAMESPACE_URI_1_0 = "urn:ejb-cache:1.0";
+    public static final String NAMESPACE_URI_2_0 = "urn:ejb-cache:2.0";
+
 
     private static final String ROOT_ELEMENT_CACHE = "cache";
     private static final String CACHE_REF = "cache-ref";
@@ -59,7 +61,7 @@ public class EJBBoundCacheParser extends AbstractEJBBoundMetaDataParser<EJBBound
         final String namespaceURI = reader.getNamespaceURI();
         final String elementName = reader.getLocalName();
         // if it doesn't belong to our namespace then let the super handle this
-        if (!NAMESPACE_URI.equals(namespaceURI)) {
+        if (!NAMESPACE_URI_1_0.equals(namespaceURI) && !NAMESPACE_URI_2_0.equals(namespaceURI)) {
             super.processElement(cacheMetaData, reader, propertyReplacer);
             return;
         }

@@ -39,6 +39,7 @@ public class ContainerInterceptorsParser extends AbstractMetaDataParser<Containe
 
     public static final ContainerInterceptorsParser INSTANCE = new ContainerInterceptorsParser();
     public static final String NAMESPACE_URI_1_0 = "urn:container-interceptors:1.0";
+    public static final String NAMESPACE_URI_2_0 = "urn:container-interceptors:2.0";
 
     private static final String ELEMENT_CONTAINER_INTERCEPTORS = "container-interceptors";
     private static final String ELEMENT_INTERCEPTOR_BINDING = "interceptor-binding";
@@ -46,7 +47,7 @@ public class ContainerInterceptorsParser extends AbstractMetaDataParser<Containe
     @Override
     public ContainerInterceptorsMetaData parse(XMLStreamReader reader, PropertyReplacer propertyReplacer) throws XMLStreamException {
         // make sure it's the right namespace
-        if (!reader.getNamespaceURI().equals(NAMESPACE_URI_1_0)) {
+        if (!NAMESPACE_URI_1_0.equals(reader.getNamespaceURI()) && !NAMESPACE_URI_2_0.equals(reader.getNamespaceURI())) {
             throw unexpectedElement(reader);
         }
         // only process relevant elements

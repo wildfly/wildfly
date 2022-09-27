@@ -1,14 +1,13 @@
 <?xml version="1.0"?>  
-   <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
-                  xmlns="http://java.sun.com/xml/ns/javaee"
+<jboss:ejb-jar xmlns:jboss="urn:jboss:jakartaee:1.0"
+                  xmlns="https://jakarta.ee/xml/ns/jakartaee"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
-                     http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
-                  version="3.1"
-                  impl-version="2.0">
+                  xsi:schemaLocation="urn:jboss:jakartaee:1.0 https://www.jboss.org/schema/jbossas/jboss-ejb3-4_0.xsd
+                     https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd"
+                  version="4.0">
     <enterprise-beans>
         
-       <session>
+        <session>
             <ejb-name>ResourceRefBean</ejb-name>
             <!-- This resource-ref has no corresponding res-type specified
             neither in ejb-jar.xml nor in the bean as a @Resource (see EJBTHREE-1823
@@ -26,9 +25,9 @@
         <session>
             <ejb-name>ResUrlCheckerBean</ejb-name>
             <resource-ref>
-	        	<res-ref-name>url2</res-ref-name>
-	        	<res-url>http://somewhere/url2</res-url>
-	        </resource-ref>
+                <res-ref-name>url2</res-ref-name>
+                <res-url>http://somewhere/url2</res-url>
+            </resource-ref>
         </session>
         
     </enterprise-beans>

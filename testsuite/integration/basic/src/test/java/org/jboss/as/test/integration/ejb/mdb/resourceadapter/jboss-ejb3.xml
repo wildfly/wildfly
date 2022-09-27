@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jboss xmlns="http://www.jboss.com/xml/ns/javaee" 
-    xmlns:jee="http://java.sun.com/xml/ns/javaee"
-    xmlns:mdb="urn:resource-adapter-binding"
-    xmlns:security="urn:security">
+<ejb-jar xmlns="urn:jboss:jakartaee:1.0" 
+    xmlns:jee="https://jakarta.ee/xml/ns/jakartaee"
+    xmlns:mdb="urn:resource-adapter-binding:2.0"
+    xmlns:security="urn:security:2.0" version="4.0">
 
     <jee:assembly-descriptor>
         <mdb:resource-adapter-binding>
@@ -10,4 +10,4 @@
             <mdb:resource-adapter-name>activemq-ra.rar</mdb:resource-adapter-name>
         </mdb:resource-adapter-binding>
     </jee:assembly-descriptor>
-</jboss>
+</ejb-jar>

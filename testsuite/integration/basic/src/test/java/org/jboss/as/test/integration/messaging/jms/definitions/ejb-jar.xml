@@ -42,8 +42,8 @@
                     <name>initial-connect-attempts</name>
                     <value>6</value>
                 </property>
-                <min-pool-size>4</min-pool-size>
                 <max-pool-size>5</max-pool-size>
+                <min-pool-size>4</min-pool-size>
             </jms-connection-factory>
             <jms-connection-factory>
                 <name>java:app/myFactory6</name>

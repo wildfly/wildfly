@@ -46,6 +46,7 @@ import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser;
 import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundMdbDeliveryMetaDataParser;
 import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundMdbDeliveryMetaDataParser11;
 import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundMdbDeliveryMetaDataParser12;
+import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundMdbDeliveryMetaDataParser20;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.interceptor.ContainerInterceptorsParser;
@@ -54,6 +55,7 @@ import org.jboss.as.ejb3.pool.EJBBoundPoolParser;
 import org.jboss.as.ejb3.resourceadapterbinding.parser.EJBBoundResourceAdapterBindingMetaDataParser;
 import org.jboss.as.ejb3.security.parser.EJBBoundSecurityMetaDataParser;
 import org.jboss.as.ejb3.security.parser.EJBBoundSecurityMetaDataParser11;
+import org.jboss.as.ejb3.security.parser.EJBBoundSecurityMetaDataParser20;
 import org.jboss.as.ejb3.security.parser.SecurityRoleMetaDataParser;
 import org.jboss.as.ejb3.timerservice.TimerServiceMetaDataParser;
 import org.jboss.as.ejb3.timerservice.TimerServiceMetaDataSchema;
@@ -158,7 +160,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         if (ejbJarMetaData.isMetadataComplete()) {
             MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
         }
-        if (!ejbJarMetaData.isEJB3x()) {
+        if (!ejbJarMetaData.isEJB3x() && !ejbJarMetaData.isEJB40()) {
             //EJB spec 20.5.1, we do not process annotations for older deployments
             MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
         }
@@ -311,20 +313,38 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         parsers.put(EJBBoundSecurityMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundSecurityMetaDataParser.INSTANCE);
         parsers.put(EJBBoundSecurityMetaDataParser.NAMESPACE_URI_1_0, EJBBoundSecurityMetaDataParser.INSTANCE);
         parsers.put(EJBBoundSecurityMetaDataParser11.NAMESPACE_URI_1_1, EJBBoundSecurityMetaDataParser11.INSTANCE);
+        parsers.put(EJBBoundSecurityMetaDataParser20.NAMESPACE_URI_2_0, EJBBoundSecurityMetaDataParser20.INSTANCE);
+
         parsers.put(SecurityRoleMetaDataParser.LEGACY_NAMESPACE_URI, SecurityRoleMetaDataParser.INSTANCE);
-        parsers.put(SecurityRoleMetaDataParser.NAMESPACE_URI, SecurityRoleMetaDataParser.INSTANCE);
+        parsers.put(SecurityRoleMetaDataParser.NAMESPACE_URI_1_0, SecurityRoleMetaDataParser.INSTANCE);
+        parsers.put(SecurityRoleMetaDataParser.NAMESPACE_URI_2_0, SecurityRoleMetaDataParser.INSTANCE);
+
         parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
-        parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.NAMESPACE_URI, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
+        parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.NAMESPACE_URI_1_0, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
+        parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.NAMESPACE_URI_2_0, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
+
         parsers.put(EJBBoundMdbDeliveryMetaDataParser.NAMESPACE_URI_1_0, EJBBoundMdbDeliveryMetaDataParser.INSTANCE);
         parsers.put(EJBBoundMdbDeliveryMetaDataParser11.NAMESPACE_URI_1_1, EJBBoundMdbDeliveryMetaDataParser11.INSTANCE);
         parsers.put(EJBBoundMdbDeliveryMetaDataParser12.NAMESPACE_URI_1_2, EJBBoundMdbDeliveryMetaDataParser12.INSTANCE);
+        parsers.put(EJBBoundMdbDeliveryMetaDataParser20.NAMESPACE_URI_2_0, EJBBoundMdbDeliveryMetaDataParser20.INSTANCE);
+
         parsers.put("urn:iiop", new IIOPMetaDataParser());
         parsers.put("urn:iiop:1.0", new IIOPMetaDataParser());
+        parsers.put("urn:iiop:2.0", new IIOPMetaDataParser());
+
         parsers.put("urn:trans-timeout", new TransactionTimeoutMetaDataParser());
         parsers.put("urn:trans-timeout:1.0", new TransactionTimeoutMetaDataParser());
-        parsers.put(EJBBoundPoolParser.NAMESPACE_URI, new EJBBoundPoolParser());
-        parsers.put(EJBBoundCacheParser.NAMESPACE_URI, new EJBBoundCacheParser());
+        parsers.put("urn:trans-timeout:2.0", new TransactionTimeoutMetaDataParser());
+
+        parsers.put(EJBBoundPoolParser.NAMESPACE_URI_1_0, new EJBBoundPoolParser());
+        parsers.put(EJBBoundPoolParser.NAMESPACE_URI_2_0, new EJBBoundPoolParser());
+
+        parsers.put(EJBBoundCacheParser.NAMESPACE_URI_1_0, new EJBBoundCacheParser());
+        parsers.put(EJBBoundCacheParser.NAMESPACE_URI_2_0, new EJBBoundCacheParser());
+
         parsers.put(ContainerInterceptorsParser.NAMESPACE_URI_1_0, ContainerInterceptorsParser.INSTANCE);
+        parsers.put(ContainerInterceptorsParser.NAMESPACE_URI_2_0, ContainerInterceptorsParser.INSTANCE);
+
         for (Schema<TimerServiceMetaDataSchema> schema : EnumSet.allOf(TimerServiceMetaDataSchema.class)) {
             parsers.put(schema.getNamespaceUri(), new TimerServiceMetaDataParser(schema));
         }

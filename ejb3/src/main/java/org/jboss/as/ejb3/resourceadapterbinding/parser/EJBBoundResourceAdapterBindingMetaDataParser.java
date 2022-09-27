@@ -37,7 +37,8 @@ import org.jboss.metadata.property.PropertyReplacer;
 public class EJBBoundResourceAdapterBindingMetaDataParser extends AbstractEJBBoundMetaDataParser<EJBBoundResourceAdapterBindingMetaData> {
 
     public static final String LEGACY_NAMESPACE_URI = "urn:resource-adapter-binding";
-    public static final String NAMESPACE_URI = "urn:resource-adapter-binding:1.0";
+    public static final String NAMESPACE_URI_1_0 = "urn:resource-adapter-binding:1.0";
+    public static final String NAMESPACE_URI_2_0 = "urn:resource-adapter-binding:2.0";
     public static final EJBBoundResourceAdapterBindingMetaDataParser INSTANCE = new EJBBoundResourceAdapterBindingMetaDataParser();
 
     private EJBBoundResourceAdapterBindingMetaDataParser() {
@@ -56,11 +57,13 @@ public class EJBBoundResourceAdapterBindingMetaDataParser extends AbstractEJBBou
         final String namespaceURI = reader.getNamespaceURI();
         final String localName = reader.getLocalName();
         if (LEGACY_NAMESPACE_URI.equals(namespaceURI) ||
-                NAMESPACE_URI.equals(namespaceURI)) {
-            if ("resource-adapter-name".equals(localName))
+                NAMESPACE_URI_2_0.equals(namespaceURI) ||
+                NAMESPACE_URI_1_0.equals(namespaceURI)) {
+            if ("resource-adapter-name".equals(localName)) {
                 metaData.setResourceAdapterName(getElementText(reader, propertyReplacer));
-            else
+            } else {
                 throw unexpectedElement(reader);
+            }
         } else {
             super.processElement(metaData, reader, propertyReplacer);
         }
