@@ -37,6 +37,21 @@
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-launcher</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <properties>
@@ -111,7 +126,7 @@
                         <groupId>org.jboss.galleon</groupId>
                         <artifactId>galleon-maven-plugin</artifactId>
                         <configuration>
-                            <record-state>false</record-state>
+                            <record-state>true</record-state>
                             <log-time>${galleon.log.time}</log-time>
                             <offline>${galleon.offline}</offline>
                             <plugin-options>
@@ -2328,7 +2343,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase}</phase>
+                                <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
                                     <install-dir>${layers.install.dir}/test-all-layers</install-dir>
                                     <feature-packs>
@@ -2432,7 +2447,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase}</phase>
+                                <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
                                     <install-dir>${layers.install.dir}/test-all-layers-jpa-distributed</install-dir>
                                     <feature-packs>
@@ -2606,6 +2621,7 @@
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>h2-driver</layer>
+                                                <layer>health</layer>
                                                 <layer>iiop-openjdk</layer>
                                                 <layer>io</layer>
                                                 <layer>jaxrs</layer>
@@ -2622,11 +2638,9 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>messaging-activemq</layer>
-                                                <layer>metrics</layer>
                                                 <layer>micrometer</layer>
                                                 <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
-                                                <layer>observability</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remoting</layer>
                                                 <layer>request-controller</layer>
@@ -2646,17 +2660,14 @@
                                                     Galleon layers defined only in the wildfly-galleon-pack
                                                  -->
                                                 <layer>microprofile-config</layer>
-                                                <layer>microprofile-fault-tolerance</layer>
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-metrics</layer>
                                                 <layer>microprofile-openapi</layer>
                                                 <layer>microprofile-opentracing</layer>
                                                 <layer>microprofile-reactive-streams-operators</layer>
                                                 <layer>microprofile-reactive-messaging</layer>
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>microprofile-rest-client</layer>
-                                                <layer>microprofile-platform</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -2708,6 +2719,7 @@
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>h2-driver</layer>
+                                                <layer>health</layer>
                                                 <layer>iiop-openjdk</layer>
                                                 <layer>io</layer>
                                                 <layer>jaxrs</layer>
@@ -2724,11 +2736,9 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>messaging-activemq</layer>
-                                                <layer>metrics</layer>
                                                 <layer>micrometer</layer>
                                                 <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
-                                                <layer>observability</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remote-activemq</layer>
                                                 <layer>remoting</layer>
@@ -2749,13 +2759,10 @@
                                                     Galleon layers defined only in the wildfly-galleon-pack
                                                  -->
                                                 <layer>microprofile-config</layer>
-                                                <layer>microprofile-fault-tolerance</layer>
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-metrics</layer>
                                                 <layer>microprofile-openapi</layer>
                                                 <layer>microprofile-opentracing</layer>
-                                                <layer>microprofile-platform</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>
