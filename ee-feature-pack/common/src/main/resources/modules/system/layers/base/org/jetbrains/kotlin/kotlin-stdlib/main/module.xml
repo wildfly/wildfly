@@ -26,6 +26,7 @@
         <artifact name="${org.jetbrains.kotlin:kotlin-stdlib}"/>
         <artifact name="${org.jetbrains.kotlin:kotlin-stdlib-common}"/>
         <artifact name="${org.jetbrains.kotlin:kotlin-stdlib-jdk8}"/>
+        <artifact name="${org.jetbrains.kotlin:kotlin-stdlib-jdk7}"/>
     </resources>
 
 </module>
