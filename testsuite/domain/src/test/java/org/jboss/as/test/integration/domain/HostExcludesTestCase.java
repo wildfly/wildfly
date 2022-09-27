@@ -52,6 +52,7 @@ import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
@@ -86,7 +87,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private static DomainClient masterClient;
     private static WildFlyManagedConfiguration masterConfig;
     private static final  BiFunction<Set<String>, Set<String>, Set<String>> diff = (a, b) -> a.stream().filter(e -> !b.contains(e)).collect(Collectors.toSet());
-    private final boolean isEeGalleonPack = "ee-".equals(System.getProperty("testsuite.default.build.project.prefix"));
+    private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
+    private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
     private static final String MAJOR = "27.";
 
@@ -200,12 +202,14 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         )),
         // If an extension is added to this enum, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
         // to the internal mpExtensions Set defined on this class.
+        // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
+        // of wildfly preview. In such a case, add them to previewExtensions
         CURRENT(MAJOR, WILDFLY_26_0, Arrays.asList(
                 "org.wildfly.extension.clustering.ejb",
                 "org.wildfly.extension.datasources-agroal"
-        ), getCurrentRemovedExtenstions());
+        ), getCurrentRemovedExtensions());
 
-        private static List<String> getCurrentRemovedExtenstions() {
+        private static List<String> getCurrentRemovedExtensions() {
             // TODO If we decide to remove these modules from WFP, uncomment this.
             // See https://issues.redhat.com/browse/WFLY-16686
             /*
@@ -229,7 +233,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         private static final Map<String, ExtensionConf> MAP;
         private final boolean modified;
 
-        // List of extensions added only by the wildfly-galleon-pack
+        // List of extensions added by the wildfly-galleon-pack
         private Set<String> mpExtensions = new HashSet<>(Arrays.asList(
                 "org.wildfly.extension.microprofile.config-smallrye",
                 "org.wildfly.extension.microprofile.health-smallrye",
@@ -240,6 +244,11 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.openapi-smallrye",
                 "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
                 "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"
+        ));
+
+        // List of extensions added only by the WildFly Preview
+        private Set<String> previewExtensions = new HashSet<>(Arrays.asList(
+                "org.wildfly.extension.micrometer"
         ));
 
         ExtensionConf(String name, List<String> addedExtensions) {
@@ -299,8 +308,11 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             return removed;
         }
 
-        public Set<String> getExtensions(boolean isEeGalleonPack) {
-            if (isEeGalleonPack) {
+        public Set<String> getExtensions(boolean isFullDistribution, boolean isPreview) {
+            if (this.name.equals(MAJOR) && isPreview) {
+                this.extensions.addAll(previewExtensions);
+            }
+            if (!isFullDistribution && !isPreview) {
                 return diff.apply(extensions, mpExtensions);
             }
             return extensions;
@@ -352,7 +364,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         }
 
         // Check that the list of all available extensions is in the ExtensionConf.CURRENT configuration
-        Set<String> current = ExtensionConf.forName(MAJOR).getExtensions(isEeGalleonPack);
+        Set<String> current = ExtensionConf.forName(MAJOR).getExtensions(isFullDistribution, isPreviewGalleonPack);
         if (!current.equals(availableExtensions)) {
             Set<String> extensionsAdded = diff.apply(current, availableExtensions);
             Set<String> extensionsRemoved = diff.apply(availableExtensions, current);
@@ -390,18 +402,18 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
             //check duplicated extensions
             Assert.assertTrue(String.format (
-                    "There are duplicated extensions declared for %s host-exclude", name),
+                            "There are duplicated extensions declared for %s host-exclude", name),
                     excludedExtensions.size() == new HashSet<>(excludedExtensions).size()
             );
 
             //check we have defined the current host-exclude configuration in the test
             ExtensionConf confPrevRelease = ExtensionConf.forName(name);
             Assert.assertNotNull(String.format(
-                    "This host-exclude name is not defined in this test: %s", name),
+                            "This host-exclude name is not defined in this test: %s", name),
                     confPrevRelease);
 
             //check that available extensions - excluded extensions = expected extensions in a previous release - removed
-            Set<String> expectedExtensions = ExtensionConf.forName(name).getExtensions(isEeGalleonPack);
+            Set<String> expectedExtensions = ExtensionConf.forName(name).getExtensions(isFullDistribution, isPreviewGalleonPack);
             expectedExtensions.removeAll(ExtensionConf.forName(MAJOR).getRemovedExtensions());
 
             Set<String> extensionsUnderTest = new HashSet<>(availableExtensions);
@@ -423,7 +435,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // Verifies all the exclusions Id added as configurations for this test are defined as host exclusions in the current server release
         for(ExtensionConf extensionConf : ExtensionConf.values()) {
             if (extensionConf != ExtensionConf.CURRENT && !processedExclusionsIds.contains(extensionConf.getName())) {
-                Set<String> extensions = extensionConf.getExtensions(isEeGalleonPack);
+                Set<String> extensions = extensionConf.getExtensions(isFullDistribution, isPreviewGalleonPack);
                 extensions.removeAll(ExtensionConf.forName(MAJOR).getRemovedExtensions());
                 if (!extensions.equals(availableExtensions)) {
                     fail(String.format("The %s exclusion id is not defined as host exclusion for the current release.", extensionConf.getName()));

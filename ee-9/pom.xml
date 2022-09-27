@@ -46,6 +46,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-preview-ee-bom</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- Just import the preview-expansion bom -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
