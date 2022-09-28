@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.ee.cache.tx;
 
-import javax.transaction.Transaction;
+import jakarta.transaction.Transaction;
 
 import org.wildfly.clustering.ee.Batch;
 

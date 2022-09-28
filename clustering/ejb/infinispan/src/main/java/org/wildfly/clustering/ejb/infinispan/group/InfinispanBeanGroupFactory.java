@@ -36,13 +36,13 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
-import org.infinispan.util.concurrent.CompletableFutures;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.ee.Mutator;

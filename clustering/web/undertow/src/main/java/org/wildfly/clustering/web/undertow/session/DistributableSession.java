@@ -259,7 +259,6 @@ public class DistributableSession implements io.undertow.server.session.Session 
     @Override
     public void invalidate(HttpServerExchange exchange) {
         Map.Entry<Session<Map<String, Object>>, SessionConfig> entry = this.getSessionEntry();
-        @SuppressWarnings("resource")
         Session<Map<String, Object>> session = entry.getKey();
         if (session.isValid()) {
             // Invoke listeners outside of the context of the batch associated with this session

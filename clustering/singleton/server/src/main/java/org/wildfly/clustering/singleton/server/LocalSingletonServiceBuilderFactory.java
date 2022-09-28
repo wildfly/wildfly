@@ -33,7 +33,7 @@ import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
  * Factory for creating local {@link SingletonServiceBuilder} instances.
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({ "removal", "deprecation" })
 public class LocalSingletonServiceBuilderFactory extends LocalSingletonServiceConfiguratorFactory implements SingletonServiceBuilderFactory {
 
     private final LegacyLocalSingletonServiceConfiguratorContext context;

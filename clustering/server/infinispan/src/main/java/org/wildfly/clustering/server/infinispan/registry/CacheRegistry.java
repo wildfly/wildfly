@@ -40,6 +40,7 @@ import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.metadata.Metadata;
@@ -54,7 +55,6 @@ import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 import org.infinispan.notifications.cachelistener.filter.EventType;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.util.concurrent.CompletableFutures;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.DefaultThreadFactory;

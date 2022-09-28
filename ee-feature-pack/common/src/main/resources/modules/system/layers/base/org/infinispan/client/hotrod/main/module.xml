@@ -23,17 +23,16 @@
 <module xmlns="urn:jboss:module:1.9" name="org.infinispan.client.hotrod">
 
     <resources>
-        <artifact name="${org.infinispan:infinispan-client-hotrod}"/>
+        <artifact name="\${org.infinispan:infinispan-client-hotrod@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
         <module name="java.management"/>
         <module name="java.naming"/>
         <module name="java.security.sasl"/>
-        <module name="internal.javax.transaction.api"/>
+        <module name="javax.transaction.api"/>
 
         <module name="com.github.ben-manes.caffeine"/>
-        <!--<module name="io.netty"/>-->
         <module name="io.netty.netty-buffer"/>
         <module name="io.netty.netty-transport"/>
         <module name="io.netty.netty-handler"/>

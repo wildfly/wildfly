@@ -61,7 +61,7 @@ public class MockTagAttribute extends TagAttribute {
     }
 
     @Override
-    public MethodExpression getMethodExpression(FaceletContext ctx, @SuppressWarnings("rawtypes") Class type, @SuppressWarnings("rawtypes") Class[] paramTypes) {
+    public MethodExpression getMethodExpression(FaceletContext ctx, Class type, Class[] paramTypes) {
         return null;
     }
 
@@ -91,12 +91,12 @@ public class MockTagAttribute extends TagAttribute {
     }
 
     @Override
-    public Object getObject(FaceletContext ctx, @SuppressWarnings("rawtypes") Class type) {
+    public Object getObject(FaceletContext ctx, Class type) {
         return null;
     }
 
     @Override
-    public ValueExpression getValueExpression(FaceletContext ctx, @SuppressWarnings("rawtypes") Class type) {
+    public ValueExpression getValueExpression(FaceletContext ctx, Class type) {
         return null;
     }
 

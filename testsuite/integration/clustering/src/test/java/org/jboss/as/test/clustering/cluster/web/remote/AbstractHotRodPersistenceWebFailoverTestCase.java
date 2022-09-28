@@ -63,7 +63,7 @@ public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends Abstr
         public ServerSetupTask() {
             this.builder.node(THREE_NODES)
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:add")
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/store=hotrod:add(remote-cache-container=web, cache-configuration=default, fetch-state=false, shared=true)")
+                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/store=hotrod:add(remote-cache-container=web, cache-configuration=default, shared=true)")
                     .teardown("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:remove")
                     ;
         }

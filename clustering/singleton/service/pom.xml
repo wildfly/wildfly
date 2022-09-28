@@ -45,13 +45,24 @@
     </description>
 
     <dependencies>
+        <!-- Internal dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-singleton-api</artifactId>
+        </dependency>
+
+        <!-- External dependencies -->
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
         </dependency>
     </dependencies>
 

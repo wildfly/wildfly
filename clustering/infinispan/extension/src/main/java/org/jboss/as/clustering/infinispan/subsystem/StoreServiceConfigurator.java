@@ -53,9 +53,9 @@ public abstract class StoreServiceConfigurator<C extends StoreConfiguration, B e
     private final Properties properties = new Properties();
 
     private volatile boolean passivation;
-    private volatile boolean fetchState;
     private volatile boolean preload;
     private volatile boolean purge;
+    private volatile boolean segmented;
     private volatile boolean shared;
     private volatile int maxBatchSize;
 
@@ -73,9 +73,9 @@ public abstract class StoreServiceConfigurator<C extends StoreConfiguration, B e
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.passivation = PASSIVATION.resolveModelAttribute(context, model).asBoolean();
-        this.fetchState = FETCH_STATE.resolveModelAttribute(context, model).asBoolean();
         this.preload = PRELOAD.resolveModelAttribute(context, model).asBoolean();
         this.purge = PURGE.resolveModelAttribute(context, model).asBoolean();
+        this.segmented = SEGMENTED.resolveModelAttribute(context, model).asBoolean();
         this.shared = SHARED.resolveModelAttribute(context, model).asBoolean();
         this.maxBatchSize = MAX_BATCH_SIZE.resolveModelAttribute(context, model).asInt();
         this.properties.clear();
@@ -90,10 +90,10 @@ public abstract class StoreServiceConfigurator<C extends StoreConfiguration, B e
         B builder = new ConfigurationBuilder().persistence()
                 .passivation(this.passivation)
                 .addStore(this.builderClass)
-                    .fetchPersistentState(this.fetchState)
                     .maxBatchSize(this.maxBatchSize)
                     .preload(this.preload)
                     .purgeOnStartup(this.purge)
+                    .segmented(this.segmented)
                     .shared(this.shared)
                     .withProperties(this.properties)
                     ;

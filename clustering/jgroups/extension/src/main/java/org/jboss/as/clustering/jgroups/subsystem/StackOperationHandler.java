@@ -68,7 +68,7 @@ public class StackOperationHandler extends AbstractRuntimeOnlyHandler implements
         String name = op.get(ModelDescriptionConstants.OP).asString();
         Operation<ChannelFactory> operation = this.operations.get(name);
         ServiceName serviceName = JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, UnaryCapabilityNameResolver.DEFAULT);
-        Function<ChannelFactory, ModelNode> operationFunction = new Function<ChannelFactory, ModelNode>() {
+        Function<ChannelFactory, ModelNode> operationFunction = new Function<>() {
             @Override
             public ModelNode apply(ChannelFactory factory) {
                 try {

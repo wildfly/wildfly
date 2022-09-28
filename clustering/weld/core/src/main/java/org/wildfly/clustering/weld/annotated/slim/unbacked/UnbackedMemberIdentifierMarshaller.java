@@ -45,7 +45,6 @@ public class UnbackedMemberIdentifierMarshaller<X> implements ProtoStreamMarshal
         return (Class<UnbackedMemberIdentifier<X>>) (Class<?>) UnbackedMemberIdentifier.class;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public UnbackedMemberIdentifier<X> readFrom(ProtoStreamReader reader) throws IOException {
         String memberId = null;

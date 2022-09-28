@@ -1557,11 +1557,6 @@
         <!-- module and copy artifact dependencies -->
 
         <dependency>
-            <groupId>jakarta.transaction</groupId>
-            <artifactId>jakarta.transaction-api</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.3_spec</artifactId>
             <exclusions>
@@ -3016,7 +3011,7 @@
 
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cachestore-jdbc</artifactId>
+            <artifactId>infinispan-cachestore-jdbc-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -3026,7 +3021,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cachestore-jdbc-common</artifactId>
+            <artifactId>infinispan-cachestore-jdbc-common-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -3046,7 +3041,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-client-hotrod</artifactId>
+            <artifactId>infinispan-client-hotrod-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -3056,7 +3051,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons</artifactId>
+            <artifactId>infinispan-commons-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -3076,7 +3071,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
+            <artifactId>infinispan-core-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -3106,7 +3101,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-hibernate-cache-v53</artifactId>
+            <artifactId>infinispan-hibernate-cache-v60</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

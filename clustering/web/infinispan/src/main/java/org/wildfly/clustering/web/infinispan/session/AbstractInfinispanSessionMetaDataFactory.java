@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-import javax.transaction.SystemException;
+import jakarta.transaction.SystemException;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;

@@ -31,10 +31,10 @@ import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinit
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.jgroups.ClassLoaderThreadFactory;
@@ -48,6 +48,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jgroups.protocols.TP;
+import org.jgroups.stack.DiagnosticsHandler;
 import org.jgroups.util.DefaultThreadFactory;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.clustering.service.CompositeDependency;
@@ -123,9 +124,9 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
 
     @Override
     public Map<String, SocketBinding> getSocketBindings() {
-        Map<String, SocketBinding> bindings = new HashMap<>();
+        Map<String, SocketBinding> bindings = new TreeMap<>();
         SocketBinding binding = this.getSocketBinding();
-        for (String serviceName : Arrays.asList("jgroups.udp.mcast_sock", "jgroups.udp.sock", "jgroups.tcp.server", "jgroups.nio.client", "jgroups.nio.server", "jgroups.tunnel.ucast_sock")) {
+        for (String serviceName : Set.of("jgroups.udp.mcast_sock", "jgroups.udp.sock", "jgroups.tcp.server", "jgroups.nio.client", "jgroups.nio.server", "jgroups.tunnel.ucast_sock")) {
             bindings.put(serviceName, binding);
         }
         bindings.put("jgroups.tp.diag.mcast_sock", this.diagnosticsSocketBinding.get());
@@ -144,8 +145,8 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
             // JGroups cannot select a client mapping based on the source address, so just use the first one
             ClientMapping mapping = clientMappings.get(0);
             try {
-                this.setValue(protocol, "external_addr", InetAddress.getByName(mapping.getDestinationAddress()));
-                this.setValue(protocol, "external_port", mapping.getDestinationPort());
+                protocol.setExternalAddr(InetAddress.getByName(mapping.getDestinationAddress()));
+                protocol.setExternalPort(mapping.getDestinationPort());
             } catch (UnknownHostException e) {
                 throw new IllegalArgumentException(e);
             }
@@ -154,21 +155,22 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
         protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true), JChannelFactory.class.getClassLoader()));
         protocol.setThreadPool(this.threadPoolFactory.get().apply(protocol.getThreadFactory()));
 
-        protocol.setInternalThreadPoolThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups-int", false, false), JChannelFactory.class.getClassLoader()));
-        // Because we provide the transport with a thread pool, TP.init() won't auto-create the internal thread pool
-        // So create one explicitly matching the logic in TP.init() but with our thread factory
-        QueuelessThreadPoolFactory factory = new QueuelessThreadPoolFactory()
-                .setMaxThreads(Math.max(4, Runtime.getRuntime().availableProcessors()))
-                .setKeepAliveTime(30000)
-                ;
-        protocol.setInternalThreadPool(factory.apply(protocol.getInternalThreadPoolThreadFactory()));
-
-        SocketBinding diagnosticsBinging = this.diagnosticsSocketBinding.get();
-        this.setValue(protocol, "enable_diagnostics", diagnosticsBinging != null);
-        if (diagnosticsBinging != null) {
-            InetSocketAddress address = diagnosticsBinging.getSocketAddress();
-            this.setValue(protocol, "diagnostics_addr", address.getAddress());
-            this.setValue(protocol, "diagnostics_port", address.getPort());
+        SocketBinding diagnosticsBinding = this.diagnosticsSocketBinding.get();
+        if (diagnosticsBinding != null) {
+            DiagnosticsHandler handler = new DiagnosticsHandler(protocol.getLog(), protocol.getSocketFactory(), protocol.getThreadFactory());
+            InetSocketAddress address = diagnosticsBinding.getSocketAddress();
+            handler.setBindAddress(address.getAddress());
+            if (diagnosticsBinding.getMulticastAddress() != null) {
+                handler.setMcastAddress(diagnosticsBinding.getMulticastAddress());
+                handler.setPort(diagnosticsBinding.getMulticastPort());
+            } else {
+                handler.setPort(diagnosticsBinding.getPort());
+            }
+            try {
+                protocol.setDiagnosticsHandler(handler);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
         }
     }
 
@@ -177,7 +179,8 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
         return this.topology;
     }
 
-    SocketBinding getSocketBinding() {
+    @Override
+    public SocketBinding getSocketBinding() {
         return this.socketBinding.get();
     }
 }

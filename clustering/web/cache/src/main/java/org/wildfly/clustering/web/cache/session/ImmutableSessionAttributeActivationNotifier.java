@@ -132,7 +132,7 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
             L listener = reference.get();
             // Prevents redundant session activation events for a given listener.
             AtomicBoolean active = new AtomicBoolean(this.active);
-            Consumer<S> prePassivate = new Consumer<S>() {
+            Consumer<S> prePassivate = new Consumer<>() {
                 @Override
                 public void accept(S session) {
                     if (active.compareAndSet(true, false)) {
@@ -140,7 +140,7 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
                     }
                 }
             };
-            Consumer<S> postActivate = new Consumer<S>() {
+            Consumer<S> postActivate = new Consumer<>() {
                 @Override
                 public void accept(S session) {
                     if (active.compareAndSet(false, true)) {

@@ -21,12 +21,12 @@
  */
 package org.wildfly.clustering.server.infinispan.dispatcher;
 
-import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.jgroups.JChannel;
+import org.jgroups.Message;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
@@ -34,7 +34,7 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
  * @author Paul Ferraro
  */
 public interface ChannelCommandDispatcherFactoryConfiguration {
-    Predicate<ByteBuffer> getUnknownForkPredicate();
+    Predicate<Message> getUnknownForkPredicate();
     JChannel getChannel();
     ByteBufferMarshaller getMarshaller();
     Duration getTimeout();

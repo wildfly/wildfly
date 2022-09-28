@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
@@ -31,5 +32,12 @@ public class SharedStateCacheResourceTransformer extends ClusteredCacheResourceT
 
     SharedStateCacheResourceTransformer(ResourceTransformationDescriptionBuilder builder) {
         super(builder);
+    }
+
+    @Override
+    public void accept(ModelVersion version) {
+        super.accept(version);
+
+        new PartitionHandlingResourceTransformer(this.builder).accept(version);
     }
 }

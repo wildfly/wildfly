@@ -121,7 +121,7 @@ public abstract class AbstractProtocolConfigurationServiceConfigurator<P extends
             Class<? extends Protocol> protocolClass = module.getClassLoader().loadClass(className).asSubclass(Protocol.class);
             Map<String, String> properties = new HashMap<>(this.defaults.get().getProperties(protocolClass));
             properties.putAll(this.properties);
-            PrivilegedExceptionAction<Protocol> action = new PrivilegedExceptionAction<Protocol>() {
+            PrivilegedExceptionAction<Protocol> action = new PrivilegedExceptionAction<>() {
                 @Override
                 public Protocol run() throws Exception {
                     try {
@@ -131,7 +131,7 @@ public abstract class AbstractProtocolConfigurationServiceConfigurator<P extends
                         StackType type = Util.getIpStackType();
                         Configurator.resolveAndAssignFields(protocol, copy, type);
                         Configurator.resolveAndInvokePropertyMethods(protocol, copy, type);
-                        List<Object> objects = protocol.getConfigurableObjects();
+                        List<Object> objects = protocol.getComponents();
                         if (objects != null) {
                             for (Object object : objects) {
                                 Configurator.resolveAndAssignFields(object, copy, type);
@@ -160,7 +160,7 @@ public abstract class AbstractProtocolConfigurationServiceConfigurator<P extends
     }
 
     void setValue(P protocol, String propertyName, Object propertyValue) {
-        PrivilegedAction<P> action = new PrivilegedAction<P>() {
+        PrivilegedAction<P> action = new PrivilegedAction<>() {
             @Override
             public P run() {
                 return protocol.setValue(propertyName, propertyValue);

@@ -22,7 +22,7 @@
   -->
 <!-- N.B. This is *not* a usable protocol stack -->
 <!-- This file supplies the internal defaults per protocol -->
-<config xmlns="urn:org:jgroups" xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd">
+<config xmlns="urn:org:jgroups">
     <UDP
         ip_ttl="2"
         mcast_recv_buf_size="25m"
@@ -30,37 +30,40 @@
         ucast_recv_buf_size="20m"
         ucast_send_buf_size="1m"
         port_range="0"
-        bundler_type="no-bundler"
+        bundler_type="transfer-queue"
+        bundler.max_size="64k"
     />
     <TCP
         send_buf_size="640k"
         sock_conn_timeout="300"
         port_range="0"
-        bundler_type="no-bundler"
+        bundler_type="transfer-queue"
     />
     <TCP_NIO2
         send_buf_size="640k"
         sock_conn_timeout="300"
         port_range="0"
-        bundler_type="no-bundler"
+        bundler_type="transfer-queue"
     />
-    <TCPPING port_range="0" num_discovery_runs="4"/>
+    <TCPPING
+        port_range="0"
+        num_discovery_runs="3"
+    />
     <MPING ip_ttl="2"/>
     <kubernetes.KUBE_PING port_range="0"/>
     <MERGE3
         min_interval="10000"
         max_interval="30000"
     />
-    <FD max_tries="5"
-        msg_counts_as_heartbeat="false"
-        timeout="3000"
-    />
     <FD_ALL
         interval="15000"
         timeout="60000"
-        timeout_check_interval="5000"/>
-    <FD_SOCK/>
+        timeout_check_interval="5000"
+    />
+    <FD_SOCK port_range="0"/>
+    <FD_SOCK2 port_range="1" offset="1"/>
     <VERIFY_SUSPECT timeout="1000"/>
+    <VERIFY_SUSPECT2 timeout="1000"/>
     <pbcast.NAKACK2
         xmit_interval="100"
         xmit_table_num_rows="50"
@@ -74,9 +77,9 @@
         max_bytes="1m"
     />
     <pbcast.GMS print_local_addr="false"/>
-    <UFC max_credits="2m"/>
+    <UFC max_credits="4m"/>
     <UFC_NB max_credits="3m"/>
-    <MFC max_credits="2m"/>
+    <MFC max_credits="4m"/>
     <MFC_NB max_credits="3m"/>
-    <FRAG2 frag_size="30k"/>
+    <FRAG4 frag_size="60k"/>
 </config>

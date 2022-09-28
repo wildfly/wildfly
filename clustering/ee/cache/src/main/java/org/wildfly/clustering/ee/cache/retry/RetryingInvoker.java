@@ -74,7 +74,7 @@ public class RetryingInvoker implements Invoker {
 
     @Override
     public <E extends Exception> void invoke(ExceptionRunnable<E> action) throws E {
-        ExceptionSupplier<Void, E> adapter = new ExceptionSupplier<Void, E>() {
+        ExceptionSupplier<Void, E> adapter = new ExceptionSupplier<>() {
             @Override
             public Void get() throws E {
                 action.run();

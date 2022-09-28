@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,17 +24,21 @@ package org.jboss.as.clustering.infinispan.client;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
+import org.infinispan.client.hotrod.impl.operations.PingResponse;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
 import org.jboss.as.clustering.infinispan.dataconversion.MediaTypeFactory;
 import org.jboss.modules.ModuleLoader;
-import org.wildfly.clustering.infinispan.client.NearCacheFactory;
+import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.marshalling.ByteBufferMarshallerFactory;
 import org.wildfly.clustering.infinispan.marshalling.UserMarshaller;
@@ -46,30 +50,37 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author Radoslav Husar
  * @author Paul Ferraro
+ *
  */
 public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
 
-    private final RemoteCacheManager manager;
+    private final RemoteCacheManager container;
+    private final OperationsFactory factory;
+    private final String name;
     private final Function<ClassLoader, ByteBufferMarshaller> marshallerFactory;
+    private final Registrar<String> registrar;
 
-    public ManagedRemoteCacheContainer(RemoteCacheManager manager, ModuleLoader loader) {
-        this.manager = manager;
-        this.marshallerFactory = new ByteBufferMarshallerFactory(manager.getConfiguration().marshaller().mediaType(), loader);
+    public ManagedRemoteCacheContainer(RemoteCacheManager container, String name, ModuleLoader loader, Registrar<String> registrar) {
+        this.container = container;
+        this.name = name;
+        this.registrar = registrar;
+        this.marshallerFactory = new ByteBufferMarshallerFactory(container.getConfiguration().marshaller().mediaType(), loader);
+        this.factory = new OperationsFactory(container.getChannelFactory(), container.getCodec(), null, container.getConfiguration());
     }
 
     @Override
     public String getName() {
-        return this.manager.getName();
+        return this.name;
     }
 
     @Override
     public RemoteCacheManagerAdmin administration() {
-        return this.manager.administration();
+        return this.container.administration();
     }
 
     @Override
-    public <K, V> NearCacheRegistration registerNearCacheFactory(String cacheName, NearCacheFactory<K, V> factory) {
-        return this.manager.registerNearCacheFactory(cacheName, factory);
+    public CompletionStage<Boolean> isAvailable() {
+        return this.factory.newFaultTolerantPingOperation().execute().thenApply(PingResponse::isSuccess);
     }
 
     @Override
@@ -79,9 +90,9 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
 
     @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName) {
-        RemoteCache<K, V> cache = this.manager.getCache(cacheName);
+        RemoteCache<K, V> cache = this.container.getCache(cacheName);
         if (cache == null) return null;
-        Marshaller defaultMarshaller = this.manager.getMarshaller();
+        Marshaller defaultMarshaller = this.container.getMarshaller();
         DataFormat.Builder builder = DataFormat.builder().from(cache.getDataFormat())
                 .keyType(defaultMarshaller.mediaType())
                 .valueType(defaultMarshaller.mediaType())
@@ -101,76 +112,93 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
                 builder.valueMarshaller(marshaller);
             }
         }
-        return cache.withDataFormat(builder.build());
+        return new ManagedRemoteCache<>(this, this.container, cache.withDataFormat(builder.build()), this.registrar);
     }
 
     @Override
     public Configuration getConfiguration() {
-        return this.manager.getConfiguration();
+        return this.container.getConfiguration();
     }
 
     @Override
     public boolean isStarted() {
-        return this.manager.isStarted();
+        return this.container.isStarted();
     }
 
     @Override
     public boolean switchToCluster(String clusterName) {
-        return this.manager.switchToCluster(clusterName);
+        return this.container.switchToCluster(clusterName);
     }
 
     @Override
     public boolean switchToDefaultCluster() {
-        return this.manager.switchToDefaultCluster();
+        return this.container.switchToDefaultCluster();
     }
 
     @Override
     public Marshaller getMarshaller() {
-        return this.manager.getMarshaller();
-    }
-
-    @Override
-    public Set<String> getCacheNames() {
-        return this.manager.getCacheNames();
-    }
-
-    @Override
-    public void start() {
-        // no-op - lifecycle controller by the container
-    }
-
-    @Override
-    public void stop() {
-        // no-op - lifecycle controller by the container
-    }
-
-    @Override
-    public String[] getServers() {
-        return this.manager.getServers();
-    }
-
-    @Override
-    public int getActiveConnectionCount() {
-        return this.manager.getActiveConnectionCount();
-    }
-
-    @Override
-    public int getConnectionCount() {
-        return this.manager.getConnectionCount();
-    }
-
-    @Override
-    public int getIdleConnectionCount() {
-        return this.manager.getIdleConnectionCount();
-    }
-
-    @Override
-    public long getRetries() {
-        return this.manager.getRetries();
+        return this.container.getMarshaller();
     }
 
     @Override
     public boolean isTransactional(String cacheName) {
-        return this.manager.isTransactional(cacheName);
+        return this.container.isTransactional(cacheName);
+    }
+
+    @Override
+    public Set<String> getCacheNames() {
+        return this.container.getCacheNames();
+    }
+
+    @Override
+    public void start() {
+        // Do nothing
+    }
+
+    @Override
+    public void stop() {
+        // Do nothing
+    }
+
+    @Override
+    public String[] getServers() {
+        return this.container.getServers();
+    }
+
+    @Override
+    public int getActiveConnectionCount() {
+        return this.container.getActiveConnectionCount();
+    }
+
+    @Override
+    public int getConnectionCount() {
+        return this.container.getConnectionCount();
+    }
+
+    @Override
+    public int getIdleConnectionCount() {
+        return this.container.getIdleConnectionCount();
+    }
+
+    @Override
+    public long getRetries() {
+        return this.container.getRetries();
+    }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof RemoteCacheContainer)) return false;
+        RemoteCacheContainer container = (RemoteCacheContainer) object;
+        return this.name.equals(container.getName());
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
     }
 }

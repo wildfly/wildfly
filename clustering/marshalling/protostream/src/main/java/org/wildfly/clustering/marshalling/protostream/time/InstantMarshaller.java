@@ -34,13 +34,13 @@ import org.wildfly.common.function.ExceptionFunction;
  */
 public class InstantMarshaller extends FunctionalMarshaller<Instant, Duration> {
 
-    private static final ExceptionFunction<Instant, Duration, IOException> DURATION_SINCE_EPOCH = new ExceptionFunction<Instant, Duration, IOException>() {
+    private static final ExceptionFunction<Instant, Duration, IOException> DURATION_SINCE_EPOCH = new ExceptionFunction<>() {
         @Override
         public Duration apply(Instant instant) {
             return Duration.ofSeconds(instant.getEpochSecond(), instant.getNano());
         }
     };
-    private static final ExceptionFunction<Duration, Instant, IOException> FACTORY = new ExceptionFunction<Duration, Instant, IOException>() {
+    private static final ExceptionFunction<Duration, Instant, IOException> FACTORY = new ExceptionFunction<>() {
         @Override
         public Instant apply(Duration duration) {
             return Instant.ofEpochSecond(duration.getSeconds(), duration.getNano());

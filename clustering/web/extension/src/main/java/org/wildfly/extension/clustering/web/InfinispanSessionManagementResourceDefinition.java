@@ -81,7 +81,7 @@ public class InfinispanSessionManagementResourceDefinition extends SessionManage
         }
     }
 
-    private static final UnaryOperator<ResourceDescriptor> CONFIGURATOR = new UnaryOperator<ResourceDescriptor>() {
+    private static final UnaryOperator<ResourceDescriptor> CONFIGURATOR = new UnaryOperator<>() {
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return descriptor.addAttributes(Attribute.class)

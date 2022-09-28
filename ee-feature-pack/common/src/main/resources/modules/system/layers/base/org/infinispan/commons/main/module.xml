@@ -23,7 +23,7 @@
 <module xmlns="urn:jboss:module:1.9" name="org.infinispan.commons">
 
     <resources>
-        <artifact name="${org.infinispan:infinispan-commons}"/>
+        <artifact name="\${org.infinispan:infinispan-commons@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
@@ -31,7 +31,7 @@
         <module name="java.naming"/>
         <module name="java.security.sasl"/>
         <module name="java.xml"/>
-        <module name="internal.javax.transaction.api"/>
+        <module name="javax.transaction.api"/>
 
         <module name="com.github.ben-manes.caffeine"/>
         <module name="io.reactivex.rxjava3.rxjava"/>

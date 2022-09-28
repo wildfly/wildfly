@@ -125,7 +125,7 @@ public enum XMLElement {
             }
         }
 
-        Function<ModelNode, XMLElement> function = new Function<ModelNode, XMLElement>() {
+        Function<ModelNode, XMLElement> function = new Function<>() {
             @Override
             public XMLElement apply(ModelNode model) {
                 // Use socket-protocol element only if optional socket-binding was defined

@@ -79,7 +79,18 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
     }
 
     enum SocketProtocol {
-        FD_SOCK;
+        FD_SOCK(LegacyFailureDetectionProtocolConfigurationServiceConfigurator::new),
+        FD_SOCK2(FailureDetectionProtocolConfigurationServiceConfigurator::new),
+        ;
+        private final ResourceServiceConfiguratorFactory factory;
+
+        SocketProtocol(ResourceServiceConfiguratorFactory factory) {
+            this.factory = factory;
+        }
+
+        ResourceServiceConfiguratorFactory getResourceServiceConfiguratorFactory() {
+            return this.factory;
+        }
     }
 
     enum LegacyProtocol {
@@ -131,7 +142,7 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
 
         // Override definitions for protocol types
         for (SocketProtocol protocol : EnumSet.allOf(SocketProtocol.class)) {
-            new SocketProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new SocketProtocolResourceDefinition(protocol.name(), this.configurator, protocol.getResourceServiceConfiguratorFactory(), this.parentServiceConfiguratorFactory).register(registration);
         }
         for (MulticastProtocol protocol : EnumSet.allOf(MulticastProtocol.class)) {
             new MulticastProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfiguratorFactory).register(registration);

@@ -115,7 +115,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         },
         MAX_RETRIES("max-retries", ModelType.INT, new ModelNode(10)),
         PROPERTIES("properties"),
-        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_31.toString())) {
+        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_40.toString())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new org.jboss.as.controller.operations.validation.EnumValidator<>(ProtocolVersion.class, EnumSet.complementOf(EnumSet.of(ProtocolVersion.PROTOCOL_VERSION_AUTO))));

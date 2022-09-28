@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.client;
 
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -32,7 +33,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import javax.transaction.TransactionManager;
+import javax.management.ObjectName;
+
+import jakarta.transaction.TransactionManager;
 
 import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.DataFormat;
@@ -42,8 +45,13 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.StreamingRemoteCache;
+import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.client.hotrod.impl.ClientStatistics;
+import org.infinispan.client.hotrod.impl.InternalRemoteCache;
 import org.infinispan.client.hotrod.impl.RemoteCacheSupport;
-import org.infinispan.client.hotrod.jmx.RemoteCacheClientStatisticsMXBean;
+import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
+import org.infinispan.client.hotrod.impl.operations.PingResponse;
+import org.infinispan.client.hotrod.impl.operations.RetryAwareCompletionStage;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.commons.util.CloseableIteratorCollection;
 import org.infinispan.commons.util.CloseableIteratorSet;
@@ -52,23 +60,26 @@ import org.infinispan.query.dsl.Query;
 import org.reactivestreams.Publisher;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 
 /**
  * {@link RemoteCache} decorator that handles registration on {@link #start()} and deregistration on {@link #stop()}.
  * @author Paul Ferraro
  */
-public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implements UnaryOperator<Registration> {
+public class ManagedRemoteCache<K, V> extends RemoteCacheSupport<K, V> implements InternalRemoteCache<K, V>, UnaryOperator<Registration> {
 
     private final Registrar<String> registrar;
     private final AtomicReference<Registration> registration;
+    private final RemoteCacheContainer container;
     private final RemoteCacheManager manager;
-    private final RemoteCache<K, V> cache;
+    private final InternalRemoteCache<K, V> cache;
 
-    public RegisteredRemoteCache(RemoteCacheManager manager, RemoteCache<K, V> cache, Registrar<String> registrar) {
-        this(manager, cache, registrar, new AtomicReference<>());
+    public ManagedRemoteCache(RemoteCacheContainer container, RemoteCacheManager manager, RemoteCache<K, V> cache, Registrar<String> registrar) {
+        this(container, manager, (InternalRemoteCache<K, V>) cache, registrar, new AtomicReference<>());
     }
 
-    private RegisteredRemoteCache(RemoteCacheManager manager, RemoteCache<K, V> cache, Registrar<String> registrar, AtomicReference<Registration> registration) {
+    private ManagedRemoteCache(RemoteCacheContainer container, RemoteCacheManager manager, InternalRemoteCache<K, V> cache, Registrar<String> registrar, AtomicReference<Registration> registration) {
+        this.container = container;
         this.manager = manager;
         this.cache = cache;
         this.registrar = registrar;
@@ -107,6 +118,12 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
+    public RemoteCacheContainer getRemoteCacheContainer() {
+        return this.container;
+    }
+
+    @Deprecated
+    @Override
     public RemoteCacheManager getRemoteCacheManager() {
         return this.manager;
     }
@@ -122,7 +139,7 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public RemoteCacheClientStatisticsMXBean clientStatistics() {
+    public ClientStatistics clientStatistics() {
         return this.cache.clientStatistics();
     }
 
@@ -218,13 +235,13 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
-    public <T, U> RemoteCache<T, U> withDataFormat(DataFormat dataFormat) {
-        return new RegisteredRemoteCache<>(this.manager, this.cache.withDataFormat(dataFormat), this.registrar, this.registration);
+    public <T, U> InternalRemoteCache<T, U> withDataFormat(DataFormat dataFormat) {
+        return new ManagedRemoteCache<>(this.container, this.manager, this.cache.withDataFormat(dataFormat), this.registrar, this.registration);
     }
 
     @Override
-    public RemoteCache<K, V> withFlags(Flag... flags) {
-        return new RegisteredRemoteCache<>(this.manager, this.cache.withFlags(flags), this.registrar, this.registration);
+    public InternalRemoteCache<K, V> withFlags(Flag... flags) {
+        return new ManagedRemoteCache<>(this.container, this.manager, this.cache.withFlags(flags), this.registrar, this.registration);
     }
 
     @Override
@@ -345,5 +362,75 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     @Override
     public CompletionStage<ServerStatistics> serverStatisticsAsync() {
         return this.cache.serverStatisticsAsync();
+    }
+
+    @Override
+    public CloseableIterator<K> keyIterator(IntSet segments) {
+        return this.cache.keyIterator(segments);
+    }
+
+    @Override
+    public CloseableIterator<Entry<K, V>> entryIterator(IntSet segments) {
+        return this.cache.entryIterator(segments);
+    }
+
+    @Override
+    public RetryAwareCompletionStage<MetadataValue<V>> getWithMetadataAsync(K key, SocketAddress preferredAddress) {
+        return this.cache.getWithMetadataAsync(key, preferredAddress);
+    }
+
+    @Override
+    public boolean hasForceReturnFlag() {
+        return this.cache.hasForceReturnFlag();
+    }
+
+    @Override
+    public void resolveStorage(boolean objectStorage) {
+        this.cache.resolveStorage(objectStorage);
+    }
+
+    @Override
+    public void init(OperationsFactory operationsFactory, Configuration configuration, ObjectName jmxParent) {
+        this.cache.init(operationsFactory, configuration, jmxParent);
+    }
+
+    @Override
+    public void init(OperationsFactory operationsFactory, Configuration configuration) {
+        this.cache.init(operationsFactory, configuration);
+    }
+
+    @Override
+    public OperationsFactory getOperationsFactory() {
+        return this.cache.getOperationsFactory();
+    }
+
+    @Override
+    public boolean isObjectStorage() {
+        return this.cache.isObjectStorage();
+    }
+
+    @Override
+    public K keyAsObjectIfNeeded(Object key) {
+        return this.cache.keyAsObjectIfNeeded(key);
+    }
+
+    @Override
+    public byte[] keyToBytes(Object object) {
+        return this.cache.keyToBytes(object);
+    }
+
+    @Override
+    public CompletionStage<PingResponse> ping() {
+        return this.cache.ping();
+    }
+
+    @Override
+    public SocketAddress addNearCacheListener(Object listener, int bloomBits) {
+        return this.cache.addNearCacheListener(listener, bloomBits);
+    }
+
+    @Override
+    public CompletionStage<Void> updateBloomFilter() {
+        return this.cache.updateBloomFilter();
     }
 }

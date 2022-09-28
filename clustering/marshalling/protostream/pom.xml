@@ -46,6 +46,7 @@
     </description>
 
     <dependencies>
+        <!-- Internal dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-api</artifactId>
@@ -54,6 +55,8 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-spi</artifactId>
         </dependency>
+
+        <!-- External dependencies -->
         <dependency>
             <groupId>org.infinispan.protostream</groupId>
             <artifactId>protostream</artifactId>
@@ -67,6 +70,12 @@
             <artifactId>wildfly-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager</artifactId>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-api</artifactId>
             <version>${project.version}</version>
@@ -80,23 +89,11 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
+
         <dependency>
             <groupId>org.infinispan.protostream</groupId>
             <artifactId>protostream-processor</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.annotation</groupId>
-            <artifactId>jboss-annotations-api_1.3_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-base</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-security-manager</artifactId>
         </dependency>
     </dependencies>
 

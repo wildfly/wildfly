@@ -99,7 +99,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         @Override
         public Object read(final Object object) throws Exception {
-            PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>() {
+            PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<>() {
                 @Override
                 public Object run() throws Exception {
                     AbstractAttribute.this.accessible.setAccessible(true);
@@ -238,7 +238,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         String name = operation.get(ModelDescriptionConstants.NAME).asString();
         String protocolName = context.getCurrentAddressValue();
         ServiceName channelServiceName = JGroupsRequirement.CHANNEL.getServiceName(context, UnaryCapabilityNameResolver.PARENT);
-        ExceptionFunction<JChannel, ModelNode, Exception> function = new ExceptionFunction<JChannel, ModelNode, Exception>() {
+        ExceptionFunction<JChannel, ModelNode, Exception> function = new ExceptionFunction<>() {
             @Override
             public ModelNode apply(JChannel channel) throws Exception {
                 int index = protocolName.lastIndexOf('.');

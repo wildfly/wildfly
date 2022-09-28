@@ -55,7 +55,7 @@ public class RemoteClusterOperationExecutor implements OperationExecutor<Map.Ent
     public ModelNode execute(OperationContext context, ModelNode op, Operation<Map.Entry<String, RemoteCacheManagerMXBean>> operation) throws OperationFailedException {
         ServiceName name = InfinispanClientRequirement.REMOTE_CONTAINER.getServiceName(context, UnaryCapabilityNameResolver.PARENT);
         FunctionExecutor<RemoteCacheContainer> executor = this.executors.get(name);
-        Function<RemoteCacheContainer, Map.Entry<String, RemoteCacheManagerMXBean>> mapper = new Function<RemoteCacheContainer, Map.Entry<String, RemoteCacheManagerMXBean>>() {
+        Function<RemoteCacheContainer, Map.Entry<String, RemoteCacheManagerMXBean>> mapper = new Function<>() {
             @Override
             public Map.Entry<String, RemoteCacheManagerMXBean> apply(RemoteCacheContainer container) {
                 String cluster = context.getCurrentAddressValue();

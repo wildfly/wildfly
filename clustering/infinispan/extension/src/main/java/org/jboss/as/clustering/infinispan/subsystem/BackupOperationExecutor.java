@@ -54,7 +54,8 @@ public class BackupOperationExecutor implements OperationExecutor<Map.Entry<Stri
     @Override
     public ModelNode execute(OperationContext context, ModelNode operation, Operation<Map.Entry<String, XSiteAdminOperations>> executable) throws OperationFailedException {
         ServiceName name = InfinispanCacheRequirement.CACHE.getServiceName(context, BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
-        Function<Cache<?, ?>, Map.Entry<String, XSiteAdminOperations>> mapper = new Function<Cache<?, ?>, Map.Entry<String, XSiteAdminOperations>>() {
+        Function<Cache<?, ?>, Map.Entry<String, XSiteAdminOperations>> mapper = new Function<>() {
+            @SuppressWarnings("deprecation")
             @Override
             public Map.Entry<String, XSiteAdminOperations> apply(Cache<?, ?> cache) {
                 String site = context.getCurrentAddressValue();

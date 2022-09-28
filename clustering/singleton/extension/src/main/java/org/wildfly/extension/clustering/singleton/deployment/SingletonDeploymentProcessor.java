@@ -40,7 +40,7 @@ import org.wildfly.extension.clustering.singleton.SingletonLogger;
  * DUP that attaches the singleton DeploymentUnitPhaseBuilder if a deployment policy is attached.
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings("removal")
 public class SingletonDeploymentProcessor implements DeploymentUnitProcessor, LifecycleListener {
 
     public static final AttachmentKey<SingletonPolicy> POLICY_KEY = AttachmentKey.create(SingletonPolicy.class);

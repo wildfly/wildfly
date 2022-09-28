@@ -78,7 +78,6 @@ public class MethodInjectionPointMarshaller<T, X> implements ProtoStreamMarshall
         return (Class<MethodInjectionPoint<T, X>>) (Class<?>) MethodInjectionPoint.class;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public MethodInjectionPoint<T, X> readFrom(ProtoStreamReader reader) throws IOException {
         MethodInjectionPointType injectionPointType = DEFAULT_TYPE;

@@ -140,6 +140,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return getCacheAddress(containerName, cacheType, cacheName).append(JDBCStoreResourceDefinition.PATH);
     }
 
+    @SuppressWarnings("deprecation")
     protected static PathAddress getRemoteCacheStoreAddress(String containerName, String cacheType, String cacheName) {
         return getCacheAddress(containerName, cacheType, cacheName).append(RemoteStoreResourceDefinition.PATH);
     }

@@ -40,7 +40,7 @@ import org.wildfly.extension.clustering.singleton.SingletonResourceDefinition.Ca
 /**
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({ "removal", "deprecation" })
 public class SingletonServiceHandler implements ResourceServiceHandler {
 
     @Override

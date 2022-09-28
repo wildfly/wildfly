@@ -25,23 +25,17 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.clustering.jgroups.subsystem.SocketProtocolResourceDefinition.Attribute.CLIENT_SOCKET_BINDING;
 import static org.jboss.as.clustering.jgroups.subsystem.SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jgroups.protocols.FD_SOCK;
+import org.jgroups.protocols.TP;
+import org.jgroups.stack.Protocol;
+import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
@@ -52,18 +46,20 @@ import org.wildfly.clustering.service.SupplierDependency;
  * Configures a service that provides a FD_SOCK protocol.
  * @author Paul Ferraro
  */
-public class SocketProtocolConfigurationServiceConfigurator extends ProtocolConfigurationServiceConfigurator<FD_SOCK> {
+public abstract class SocketProtocolConfigurationServiceConfigurator<P extends Protocol> extends ProtocolConfigurationServiceConfigurator<P> {
 
     private volatile SupplierDependency<SocketBinding> binding;
     private volatile SupplierDependency<SocketBinding> clientBinding;
+    private final SupplierDependency<TransportConfiguration<? extends TP>> transport;
 
     public SocketProtocolConfigurationServiceConfigurator(PathAddress address) {
         super(address);
+        this.transport = new ServiceSupplierDependency<>(new SingletonProtocolServiceNameProvider(address.getParent(), TransportResourceDefinition.WILDCARD_PATH));
     }
 
     @Override
     public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        return super.register(new CompositeDependency(this.binding, this.clientBinding).register(builder));
+        return super.register(new CompositeDependency(this.binding, this.clientBinding, this.transport).register(builder));
     }
 
     @Override
@@ -78,38 +74,15 @@ public class SocketProtocolConfigurationServiceConfigurator extends ProtocolConf
         return (bindingName != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, bindingName)) : new SimpleSupplierDependency<>(null);
     }
 
-    @Override
-    public Map<String, SocketBinding> getSocketBindings() {
-        Map<String, SocketBinding> bindings = new HashMap<>();
-        bindings.put("jgroups.fd_sock.srv_sock", this.binding.get());
-        bindings.put("jgroups.fd.ping_sock", this.clientBinding.get());
-        return bindings;
+    SocketBinding getSocketBinding() {
+        return this.binding.get();
     }
 
-    @Override
-    public void accept(FD_SOCK protocol) {
-        // If binding is undefined, protocol will use bind address of transport and a random ephemeral port
-        SocketBinding binding = this.binding.get();
-        if (binding != null) {
-            protocol.setValue("bind_addr", binding.getAddress());
-            protocol.setValue("start_port", binding.getPort());
+    SocketBinding getClientSocketBinding() {
+        return this.clientBinding.get();
+    }
 
-            List<ClientMapping> clientMappings = binding.getClientMappings();
-            if (!clientMappings.isEmpty()) {
-                // JGroups cannot select a client mapping based on the source address, so just use the first one
-                ClientMapping mapping = clientMappings.get(0);
-                try {
-                    this.setValue(protocol, "external_addr", InetAddress.getByName(mapping.getDestinationAddress()));
-                    this.setValue(protocol, "external_port", mapping.getDestinationPort());
-                } catch (UnknownHostException e) {
-                    throw new IllegalArgumentException(e);
-                }
-            }
-        }
-        SocketBinding clientBinding = this.clientBinding.get();
-        if (clientBinding != null) {
-            InetSocketAddress socketAddress = clientBinding.getSocketAddress();
-            protocol.setValue("client_bind_port", socketAddress.getPort());
-        }
+    TransportConfiguration<? extends TP> getTransport() {
+        return this.transport.get();
     }
 }

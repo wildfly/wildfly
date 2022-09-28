@@ -35,7 +35,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.client.NearCacheFactory;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.FunctionalService;
@@ -55,31 +54,23 @@ public class RemoteCacheServiceConfigurator<K, V> extends SimpleServiceNameProvi
     private final String containerName;
     private final String cacheName;
     private final Consumer<RemoteCacheConfigurationBuilder> configurator;
-    private final NearCacheFactory<K, V> nearCacheFactory;
 
     private volatile SupplierDependency<RemoteCacheContainer> container;
 
     public RemoteCacheServiceConfigurator(ServiceName name, String containerName, String cacheName, Consumer<RemoteCacheConfigurationBuilder> configurator) {
-        this(name, containerName, cacheName, configurator, null);
-    }
-
-    public RemoteCacheServiceConfigurator(ServiceName name, String containerName, String cacheName, Consumer<RemoteCacheConfigurationBuilder> configurator, NearCacheFactory<K, V> nearCacheFactory) {
         super(name);
         this.containerName = containerName;
         this.cacheName = cacheName;
         this.configurator = configurator;
-        this.nearCacheFactory = nearCacheFactory;
     }
 
     @Override
     public RemoteCache<K, V> get() {
-        this.container.get().getConfiguration().addRemoteCache(this.cacheName, this.configurator);
         RemoteCacheContainer container = this.container.get();
-        try (RemoteCacheContainer.NearCacheRegistration registration = (this.nearCacheFactory != null) ? container.registerNearCacheFactory(this.cacheName, this.nearCacheFactory) : null) {
-            RemoteCache<K, V> cache = container.getCache(this.cacheName);
-            cache.start();
-            return cache;
-        }
+        container.getConfiguration().addRemoteCache(this.cacheName, this.configurator);
+        RemoteCache<K, V> cache = container.getCache(this.cacheName);
+        cache.start();
+        return cache;
     }
 
     @Override

@@ -180,6 +180,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);

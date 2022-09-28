@@ -58,7 +58,6 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        ENABLED("enabled", ModelType.BOOLEAN, ModelNode.TRUE),
         FAILURE_POLICY("failure-policy", ModelType.STRING, new ModelNode(BackupFailurePolicy.WARN.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -122,6 +121,27 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         }
     }
 
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        ENABLED("enabled", ModelType.BOOLEAN, ModelNode.TRUE, InfinispanModel.VERSION_16_0_0),
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
     private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
     private final FunctionExecutorRegistry<Cache<?, ?>> executors;
 
@@ -138,6 +158,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addAttributes(TakeOfflineAttribute.class)
+                .addAttributes(DeprecatedAttribute.class)
                 ;
         new RestartParentResourceRegistration(this.parentServiceConfiguratorFactory, descriptor).register(registration);
 

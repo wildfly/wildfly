@@ -519,6 +519,11 @@
                 <xs:documentation>If true, purges this cache store when it starts up.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="segmented" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>If true, purges this cache store when it starts up.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="write-behind">
@@ -748,9 +753,14 @@
     </xs:complexType>
 
     <xs:complexType name="partition-handling">
-        <xs:attribute name="enabled" type="xs:boolean" default="false">
+        <xs:attribute name="when-split" type="tns:when-split" default="ALLOW_READ_WRITES">
             <xs:annotation>
-                <xs:documentation>If enabled, the cache will enter degraded mode upon detecting a network partition that threatens the integrity of the cache.</xs:documentation>
+                <xs:documentation>Defines the availability of cache entries after a network partition is detected.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="merge-policy" type="tns:merge-policy" default="NONE">
+            <xs:annotation>
+                <xs:documentation>Defines the policy for resolving cache entry conflicts when merging partitions.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -1323,6 +1333,23 @@
             <xs:enumeration value="2.9"/>
             <xs:enumeration value="3.0"/>
             <xs:enumeration value="3.1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="when-split">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ALLOW_READS"/>
+            <xs:enumeration value="ALLOW_READ_WRITES"/>
+            <xs:enumeration value="DENY_READ_WRITES"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="merge-policy">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="NONE"/>
+            <xs:enumeration value="PREFERRED_ALWAYS"/>
+            <xs:enumeration value="PREFERRED_NON_NULL"/>
+            <xs:enumeration value="REMOVE_ALL"/>
         </xs:restriction>
     </xs:simpleType>
 

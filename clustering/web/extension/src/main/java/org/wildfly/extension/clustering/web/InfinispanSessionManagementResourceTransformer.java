@@ -43,7 +43,5 @@ public class InfinispanSessionManagementResourceTransformer extends SessionManag
         ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH);
 
         this.accept(version, builder);
-
-        new RankedAffinityResourceTransformer(builder).accept(version);
     }
 }

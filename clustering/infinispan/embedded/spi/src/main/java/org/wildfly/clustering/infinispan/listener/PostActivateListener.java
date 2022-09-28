@@ -28,10 +28,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.BiConsumer;
 
+import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
-import org.infinispan.util.concurrent.CompletableFutures;
 
 /**
  * Generic non-blocking passivation listener that consumes an activation event.
