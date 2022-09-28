@@ -188,7 +188,6 @@
             <activation><property><name>allTests</name></property></activation>
             <modules>
                 <module>basic</module>
-                <module>source-transform</module>
                 <!--<module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
@@ -215,7 +214,6 @@
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
                 <module>basic</module>
-                <module>source-transform</module>
                 <!--><module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
