@@ -19,6 +19,7 @@ env:
   RESULT_POLL_WAIT_SECONDS: 300
   #   Maximum number of polls before we time out
   RESULT_MAX_POLL_ATTEMPTS: 10
+permissions: {}
 jobs:
   run-tests:
     runs-on: ubuntu-latest
