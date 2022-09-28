@@ -27,13 +27,13 @@ package org.jboss.as.mail.extension;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.mail.Session;
-
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.junit.Assert;
 import org.junit.Test;
+
+import jakarta.mail.Session;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>

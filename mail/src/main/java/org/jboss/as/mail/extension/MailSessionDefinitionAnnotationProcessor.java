@@ -32,8 +32,8 @@ import org.jboss.metadata.javaee.spec.PropertiesMetaData;
 import org.jboss.metadata.javaee.spec.PropertyMetaData;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.mail.MailSessionDefinition;
-import javax.mail.MailSessionDefinitions;
+import jakarta.mail.MailSessionDefinition;
+import jakarta.mail.MailSessionDefinitions;
 
 /**
  * Deployment processor responsible for processing {@link MailSessionDefinition} and {@link MailSessionDefinitions}.

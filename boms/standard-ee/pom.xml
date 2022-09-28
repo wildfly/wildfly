@@ -343,7 +343,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-mail-jakarta</artifactId>
+                <artifactId>wildfly-mail</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>

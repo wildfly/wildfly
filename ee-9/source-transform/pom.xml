@@ -60,7 +60,6 @@
         <module>jpa/eclipselink</module>
         <module>jpa/subsystem</module>
         <module>jsf</module>
-        <module>mail</module>
         <module>microprofile</module>
         <module>shared</module>
         <module>web-common</module>

@@ -12,7 +12,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
-import javax.mail.Session;
+import jakarta.mail.Session;
 
 /**
  * @author Stuart Douglas

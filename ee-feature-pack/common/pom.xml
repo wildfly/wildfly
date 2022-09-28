@@ -1269,7 +1269,7 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-mail-jakarta</artifactId>
+            <artifactId>wildfly-mail</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
