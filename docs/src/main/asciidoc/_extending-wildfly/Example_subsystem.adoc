@@ -15,8 +15,8 @@ create a skeleton project for implementing subsystems.
 ----
 mvn archetype:generate \
     -DarchetypeArtifactId=wildfly-subsystem \
-    -DarchetypeGroupId=org.wildfly.archetypes \
-    -DarchetypeVersion=8.0.0.Final \
+    -DarchetypeGroupId=org.wildfly.archetype \
+    -DarchetypeVersion=26.1.0.Final \
     -DarchetypeRepository=https://repository.jboss.org/nexus/content/groups/public
 ----
 
@@ -27,8 +27,8 @@ some questions:
 ----
 $ mvn archetype:generate \
     -DarchetypeArtifactId=wildfly-subsystem \
-    -DarchetypeGroupId=org.wildfly.archetypes \
-    -DarchetypeVersion=8.0.0.Final \
+    -DarchetypeGroupId=org.wildfly.archetype \
+    -DarchetypeVersion=26.1.0.Final \
     -DarchetypeRepository=https://repository.jboss.org/nexus/content/groups/public
 [INFO] Scanning for projects...
 [INFO]
@@ -39,11 +39,11 @@ $ mvn archetype:generate \
  
 .........
  
-Define value for property 'groupId': : com.acme.corp
-Define value for property 'artifactId': : acme-subsystem
+Define value for property 'module': com.acme.corp.tracker
+Define value for property 'groupId': com.acme.corp
+Define value for property 'artifactId': acme-subsystem
 Define value for property 'version':  1.0-SNAPSHOT: :
 Define value for property 'package':  com.acme.corp: : com.acme.corp.tracker
-Define value for property 'module': : com.acme.corp.tracker
 [INFO] Using property: name = WildFly subsystem project
 Confirm properties configuration:
 groupId: com.acme.corp
@@ -67,17 +67,17 @@ $
 |=======================================================================
 | |Instruction
 
-|1 |Enter the groupId you wish to use
+|1 |Enter the module name you wish to use for your extension.
 
-|2 |Enter the artifactId you wish to use
+|2 |Enter the groupId you wish to use
 
-|3 |Enter the version you wish to use, or just hit Enter if you wish to
+|3 |Enter the artifactId you wish to use
+
+|4 |Enter the version you wish to use, or just hit Enter if you wish to
 accept the default 1.0-SNAPSHOT
 
-|4 |Enter the java package you wish to use, or just hit Enter if you
+|5 |Enter the java package you wish to use, or just hit Enter if you
 wish to accept the default (which is copied from groupId ).
-
-|5 |Enter the module name you wish to use for your extension.
 
 |6 |Finally, if you are happy with your choices, hit Enter and Maven
 will generate the project for you.
@@ -227,6 +227,20 @@ public class SubsystemExtension implements Extension {
     ...
 ----
 
+Modify the `src/main/resources/com/acme/corp/tracker/LocalDescriptions.properties`
+with the new extension name, too
+
+[source,properties,options="nowrap"]
+----
+tracker=My Tracker subsystem
+tracker.add=Operation Adds subsystem
+tracker.remove=Operation Removes subsystem
+tracker.type=The type of file
+tracker.type.add=Operation Adds type child
+tracker.type.remove=Operation Removes type child
+tracker.type.tick=The tick time in millis
+----
+
 Once we are finished our subsystem will be available under
 `/subsystem=tracker`.
 
@@ -236,17 +250,17 @@ currently it sets up the basics to add our subsystem to the model:
 [source,java,options="nowrap"]
 ----
 @Override
-    public void initialize(ExtensionContext context) {
-        //register subsystem with its model version
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
-        //register subsystem model with subsystem definition that defines all attributes and operations
+public void initialize(ExtensionContext context) {
+    //register subsystem with its model version
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, ModelVersion.create(1, 0));
+    //register subsystem model with subsystem definition that defines all attributes and operations
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SubsystemDefinition.INSTANCE);
-        //register describe operation, note that this can be also registered in SubsystemDefinition
-        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+    //register describe operation, note that this can be also registered in SubsystemDefinition
+    registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         //we can register additional submodels here
-        //
-        subsystem.registerXMLElementWriter(parser);
-    }
+    //
+    subsystem.registerXMLElementWriter(parser);
+}
 ----
 
 The `registerSubsystem()` call registers our subsystem with the
@@ -273,28 +287,31 @@ comes from model that is defined by `SubsystemDefinition.INSTANCE`.
 
 [source,java,options="nowrap"]
 ----
-public class SubsystemDefinition extends SimpleResourceDefinition {
-    public static final SubsystemDefinition INSTANCE = new SubsystemDefinition();
- 
-    private SubsystemDefinition() {
-        super(SubsystemExtension.SUBSYSTEM_PATH,
-                SubsystemExtension.getResourceDescriptionResolver(null),
-                //We always need to add an 'add' operation
-                SubsystemAdd.INSTANCE,
-                //Every resource that is added, normally needs a remove operation
-                SubsystemRemove.INSTANCE);
-    }
- 
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        //you can register aditional operations here
-    }
- 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        //you can register attributes here
-    }
+public class SubsystemDefinition extends PersistentResourceDefinition {
+
+    static final AttributeDefinition[] ATTRIBUTES = { /* you can include attributes here */ };
+
+    static final SubsystemDefinition INSTANCE = new SubsystemDefinition();
+
+    private SubsystemDefinition() {
+        super(SubsystemExtension.SUBSYSTEM_PATH,
+                SubsystemExtension.getResourceDescriptionResolver(null),
+                //We always need to add an 'add' operation
+                SubsystemAdd.INSTANCE,
+                //Every resource that is added, normally needs a remove operation
+                SubsystemRemove.INSTANCE);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        //you can register additional operations here
+    }
+
+    @Override
+    public Collection<AttributeDefinition> getAttributes() {
+        return Arrays.asList(ATTRIBUTES);
+    }
 }
 ----
 
@@ -305,33 +322,14 @@ The `ManagementResourceRegistration` obtained in
 `SubsystemExtension.initialize()` is then used to add additional
 operations or to register submodels to the `/subsystem=tracker` address.
 Every subsystem and resource *must* have an `ADD` method which can be
-achieved by the following line inside `registerOperations` in your
-`ResourceDefinition` or by providing it in constructor of your
-`SimpleResourceDefinition` just as we did in example above.
+achieved by providing it in constructor of your `ResourceDefinition` 
+just as we did in example above.
 
-[source,java,options="nowrap"]
-----
-//We always need to add an 'add' operation
-        resourceRegistration.registerOperationHandler(ADD, SubsystemAdd.INSTANCE, new DefaultResourceAddDescriptionProvider(resourceRegistration,descriptionResolver), false);
-----
+Let us first look at the description provider which is quite simple, 
+it provides information (description, list of attributes, list of children) 
+describing the structure of an addressable model node or operation.
 
-The parameters when registering an operation handler are:
-
-1.  *The name* - i.e. `ADD`.
-2.  The handler instance - we will talk more about this below
-3.  The handler description provider - we will talk more about this
-below.
-4.  Whether this operation handler is inherited - `false` means that
-this operation is not inherited, and will only apply to
-`/subsystem=tracker`. The content for this operation handler will be
-provided by `3`.
-
-Let us first look at the description provider which is quite simple
-since this operation takes no parameters. The addition of `type`
-children will be handled by another operation handler, as we will see
-later on.
-
-There are two way to define `DescriptionProvider`, one is by defining it
+There are three way to define `DescriptionProvider`, one is by defining it
 by hand using ModelNode, but as this has show to be very error prone
 there are lots of helper methods to help you automatically describe the
 model. Following example is done by manually defining Description
@@ -355,35 +353,37 @@ provider for ADD operation handler
     };
 ----
 
-Or you can use API that helps you do that for you. For Add and Remove
-methods there are classes `DefaultResourceAddDescriptionProvider` and
-`DefaultResourceRemoveDescriptionProvider` that do work for you. In case
-you use `SimpleResourceDefinition` even that part is hidden from you.
+You can also use API that helps you do that for you. `SimpleOperationDefinitionBuilder` 
+is the class for the case. With a set of fields to build operation's definitions. 
+In case you use `PersistentResourceDefinition` even that part is hidden from you.
 
 [source,java,options="nowrap"]
 ----
-resourceRegistration.registerOperationHandler(ADD, SubsystemAdd.INSTANCE, new DefaultResourceAddDescriptionProvider(resourceRegistration,descriptionResolver), false);
-resourceRegistration.registerOperationHandler(REMOVE, SubsystemRemove.INSTANCE, new DefaultResourceRemoveDescriptionProvider(resourceRegistration,descriptionResolver), false);
+// Registration of an add operation
+resourceRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, SubsystemExtension.getResourceDescriptionResolver(null)).build(), SubsystemAdd.INSTANCE);
+// Registration of a remove operation
+resourceRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, SubsystemExtension.getResourceDescriptionResolver(null)).build(), SubsystemAdd.INSTANCE);
+// Registration of a custom operation
+resourceRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder("mime-type", SubsystemExtension.getResourceDescriptionResolver("container.mime-mapping")).build(), new MimeTypeStepOperationHandler());
 ----
 
-For other operation handlers that are not add/remove you can use
-`DefaultOperationDescriptionProvider` that takes additional parameter of
-what is the name of operation and optional array of
-parameters/attributes operation takes. This is an example to register
-operation " `add-mime`" with two parameters:
+The last one is implicit used when you pass the operation handler through the 
+`SimpleResourceDefinition` class constructor. A `DefaultResourceAddDescriptionProvider`
+will be create under the hood. For this reason, you don't need to add a description
+provider explicit in this example
 
 [source,java,options="nowrap"]
 ----
-container.registerOperationHandler("add-mime",
-                MimeMappingAdd.INSTANCE,
-                new DefaultOperationDescriptionProvider("add-mime", Extension.getResourceDescriptionResolver("container.mime-mapping"), MIME_NAME, MIME_VALUE));
+// The framework will take care to handle a default `DescriptionProvider`
+private SubsystemDefinition() {
+    super(SubsystemExtension.SUBSYSTEM_PATH,
+            SubsystemExtension.getResourceDescriptionResolver(null),
+            //We always need to add an 'add' operation
+            SubsystemAdd.INSTANCE,
+            //Every resource that is added, normally needs a remove operation
+            SubsystemRemove.INSTANCE);
+}
 ----
-
-[NOTE]
-
-When descriping an operation its description provider's `OPERATION_NAME`
-must match the name used when calling
-`ManagementResourceRegistration.registerOperationHandler()`
 
 Next we have the actual operation handler instance, note that we have
 changed its `populateModel()` method to initialize the `type` child of
@@ -394,8 +394,11 @@ the model.
 class SubsystemAdd extends AbstractBoottimeAddStepHandler {
  
     static final SubsystemAdd INSTANCE = new SubsystemAdd();
- 
+
+    private final Logger log = Logger.getLogger(SubsystemAdd.class); 
+
     private SubsystemAdd() {
+        super(SubsystemDefinition.ATTRIBUTES);
     }
  
     /** {@inheritDoc} */
@@ -414,22 +417,11 @@ talk about the deployers later on. However, the basic idea for all
 operation handlers is that we do any model updates before changing the
 actual runtime state.
 
-The rule of thumb is that every thing that can be added, can also be
-removed so we have a remove handler for the subsystem registered +
-in `SubsystemDefinition.registerOperations` or just provide the
-operation handler in constructor.
-
-[source,java,options="nowrap"]
-----
-//Every resource that is added, normally needs a remove operation
-        registration.registerOperationHandler(REMOVE, SubsystemRemove.INSTANCE, DefaultResourceRemoveDescriptionProvider(resourceRegistration,descriptionResolver) , false);
-----
-
 `SubsystemRemove` extends `AbstractRemoveStepHandler` which takes care
 of removing the resource from the model so we don't need to override its
 `performRemove()` operation, also the add handler did not install any
-services (services will be discussed later) so we can delete the
-`performRuntime()` method generated by the archetype.
+services (services will be discussed later) so we can delete the methods
+`performRuntime()` and `recoverServices()` generated by the archetype.
 
 [source,java,options="nowrap"]
 ----
@@ -454,18 +446,30 @@ changes.
 The `type` child does not exist in our skeleton project so we need to
 implement the operations to add and remove them from the model.
 
-First we need an add operation to add the `type` child, create a class
+Create two constant in SubsystemExtension with the the name and property of
+the new child, and mount child path
+
+[source,java,options="nowrap"]
+----
+class SubsystemExtension extends Extension {
+    ...
+    protected static final String TICK = "tick";
+    protected static final String TYPE = "type";
+    protected static final PathElement TYPE_PATH = PathElement.pathElement(TYPE);
+    ...
+----
+
+Now, we need an add operation to add the `type` child. Create a class
 called `com.acme.corp.tracker.extension.TypeAddHandler`. In this case we
-extend the `org.jboss.as.controller.AbstractAddStepHandler` class and
-implement the `org.jboss.as.controller.descriptions.DescriptionProvider`
-interface. `org.jboss.as.controller.OperationStepHandler` is the main
+extend the `org.jboss.as.controller.AbstractAddStepHandler`. 
+`org.jboss.as.controller.OperationStepHandler` is the main
 interface for the operation handlers, and `AbstractAddStepHandler` is an
 implementation of that which does the plumbing work for adding a
 resource to the model.
 
 [source,java,options="nowrap"]
 ----
-class TypeAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+class TypeAddHandler extends AbstractAddStepHandler {
  
     public static final TypeAddHandler INSTANCE = new TypeAddHandler();
  
@@ -474,33 +478,23 @@ class TypeAddHandler extends AbstractAddStepHandler implements DescriptionProvid
 ----
 
 Then we define subsystem model. Lets call it `TypeDefinition` and for
-ease of use let it extend `SimpleResourceDefinition` instead just
-implement `ResourceDefinition`.
+ease of use let declare just the tick attribute.
 
 [source,java,options="nowrap"]
 ----
-public class TypeDefinition extends SimpleResourceDefinition {
+public class TypeDefinition {
  
- public static final TypeDefinition INSTANCE = new TypeDefinition();
+    public static final TypeDefinition INSTANCE = new TypeDefinition();
  
  //we define attribute named tick
-protected static final SimpleAttributeDefinition TICK =
-new SimpleAttributeDefinitionBuilder(TrackerExtension.TICK, ModelType.LONG)
-  .setAllowExpression(true)
-  .setXmlName(TrackerExtension.TICK)
-  .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-  .setDefaultValue(new ModelNode(1000))
-  .setRequired(true)
-  .build();
- 
-private TypeDefinition(){
-   super(TYPE_PATH, TrackerExtension.getResourceDescriptionResolver(TYPE),TypeAdd.INSTANCE,TypeRemove.INSTANCE);
-}
- 
-@Override
-public void registerAttributes(ManagementResourceRegistration resourceRegistration){
-   resourceRegistration.registerReadWriteAttribute(TICK, null, TrackerTickHandler.INSTANCE);
-}
+    protected static final SimpleAttributeDefinition TICK =
+        new SimpleAttributeDefinitionBuilder(SubsystemExtension.TICK, ModelType.LONG)
+          .setAllowExpression(true)
+          .setXmlName(SubsystemExtension.TICK)
+          .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+          .setDefaultValue(new ModelNode(1000))
+          .setRequired(true)
+          .build();
  
 }
 ----
@@ -525,10 +519,13 @@ the model based on definition of the attribute.
 
 [source,java,options="nowrap"]
 ----
-@Override
+public class TypeAddHandler extends AbstractAddStepHandler {
+    ...
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-         TICK.validateAndSet(operation,model);
+        TypeDefinition.TICK.validateAndSet(operation,model);
     }
+    ...
 ----
 
 We then override the `performRuntime()` method to perform our runtime
@@ -540,21 +537,22 @@ updated before runtime changes are made.
 
 [source,java,options="nowrap"]
 ----
-@Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-            ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
-            throws OperationFailedException {
+public class TypeAddHandler extends AbstractAddStepHandler {
+    ...
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         String suffix = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        long tick = TICK.resolveModelAttribute(context,model).asLong();
+        long tick = TypeDefinition.TICK.resolveModelAttribute(context,model).asLong();
         TrackerService service = new TrackerService(suffix, tick);
-        ServiceName name = TrackerService.createServiceName(suffix);
-        ServiceController<TrackerService> controller = context.getServiceTarget()
-                .addService(name, service)
-                .addListener(verificationHandler)
+        ServiceName serviceName = TrackerService.createServiceName(suffix);
+
+        context.getServiceTarget()
+                .addService(serviceName)
+                .setInstance(service)
                 .setInitialMode(Mode.ACTIVE)
                 .install();
-        newControllers.add(controller);
     }
+    ...
 }
 ----
 
@@ -580,30 +578,30 @@ run outputs all the deployments registered with our service.
 ----
 private AtomicLong tick = new AtomicLong(10000);
  
-    private Set<String> deployments = Collections.synchronizedSet(new HashSet<String>());
-    private Set<String> coolDeployments = Collections.synchronizedSet(new HashSet<String>());
-    private final String suffix;
+private Set<String> deployments = Collections.synchronizedSet(new HashSet<String>());
+private Set<String> coolDeployments = Collections.synchronizedSet(new HashSet<String>());
+private final String suffix;
  
-    private Thread OUTPUT = new Thread() {
-        @Override
-        public void run() {
-            while (true) {
-                try {
-                    Thread.sleep(tick.get());
-                    System.out.println("Current deployments deployed while " + suffix + " tracking active:\n" + deployments
-                       + "\nCool: " + coolDeployments.size());
-                } catch (InterruptedException e) {
-                    interrupted();
-                    break;
-                }
+private Thread OUTPUT = new Thread() {
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                Thread.sleep(tick.get());
+                System.out.println("Current deployments deployed while " + suffix + " tracking active:\n" + deployments
+                   + "\nCool: " + coolDeployments.size());
+            } catch (InterruptedException e) {
+                interrupted();
+                break;
             }
         }
-    };
- 
-    public TrackerService(String suffix, long tick) {
-        this.suffix = suffix;
-        this.tick.set(tick);
     }
+};
+ 
+public TrackerService(String suffix, long tick) {
+    this.suffix = suffix;
+    this.tick.set(tick);
+}
 ----
 
 Next we have three methods which come from the `Service` interface.
@@ -615,19 +613,19 @@ the deployments.
 [source,java,options="nowrap"]
 ----
 @Override
-    public TrackerService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
+public TrackerService getValue() throws IllegalStateException, IllegalArgumentException {
+    return this;
+}
  
-    @Override
-    public void start(StartContext context) throws StartException {
-        OUTPUT.start();
-    }
+@Override
+public void start(StartContext context) throws StartException {
+    OUTPUT.start();
+}
  
-    @Override
-    public void stop(StopContext context) {
-        OUTPUT.interrupt();
-    }
+@Override
+public void stop(StopContext context) {
+    OUTPUT.interrupt();
+}
 ----
 
 Next we have a utility method to create the `ServiceName` which is used
@@ -646,25 +644,25 @@ and read the `tick`. The 'cool' deployments will be explained later.
 [source,java,options="nowrap"]
 ----
 public void addDeployment(String name) {
-        deployments.add(name);
-    }
+    deployments.add(name);
+}
  
-    public void addCoolDeployment(String name) {
-        coolDeployments.add(name);
-    }
+public void addCoolDeployment(String name) {
+    coolDeployments.add(name);
+}
  
-    public void removeDeployment(String name) {
-        deployments.remove(name);
-        coolDeployments.remove(name);
-    }
+public void removeDeployment(String name) {
+    deployments.remove(name);
+    coolDeployments.remove(name);
+}
  
-    void setTick(long tick) {
-        this.tick.set(tick);
-    }
+void setTick(long tick) {
+    this.tick.set(tick);
+}
  
-    public long getTick() {
-        return this.tick.get();
-    }
+public long getTick() {
+    return this.tick.get();
+}
 }//TrackerService - end
 ----
 
@@ -673,10 +671,8 @@ remove them, so we create a
 `com.acme.corp.tracker.extension.TypeRemoveHandler`. In this case we
 extend `AbstractRemoveStepHandler` which takes care of removing the
 resource from the model so we don't need to override its
-`performRemove()` operationa. But we need to implement the
-`DescriptionProvider` method to provide the model description, and since
-the add handler installs the TrackerService, we need to remove that in
-the `performRuntime()` method.
+`performRemove()` operation. Once the add handler installs the TrackerService, 
+we need to remove that in the `performRuntime()` method.
 
 [source,java,options="nowrap"]
 ----
@@ -698,18 +694,39 @@ public class TypeRemoveHandler extends AbstractRemoveStepHandler {
 }
 ----
 
-We then need a description provider for the `type` part of the model
-itself, so we modify TypeDefinitnion to registerAttribute
+So far `TypeDefinition` is just a simple Java class, however, it must be an 
+addressable management resource. Modify this class to extend `SimpleResourceDefinition`, 
+register the Add and Remove handlers created before and register the `TICK` attribute:
 
 [source,java,options="nowrap"]
 ----
-class TypeDefinition{
-...
-@Override
-public void registerAttributes(ManagementResourceRegistration resourceRegistration){
-    resourceRegistration.registerReadWriteAttribute(TICK, null, TrackerTickHandler.INSTANCE);
-}
- 
+public class TypeDefinition extends SimpleResourceDefinition {
+    
+    public static final TypeDefinition INSTANCE = new TypeDefinition();
+    
+    protected static final SimpleAttributeDefinition TICK =
+            new SimpleAttributeDefinitionBuilder(SubsystemExtension.TICK, ModelType.LONG)
+              .setAllowExpression(true)
+              .setXmlName(SubsystemExtension.TICK)
+              .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+              .setDefaultValue(new ModelNode(1000))
+              .setRequired(true)
+              .build();
+
+    public TypeDefinition() {
+        super(
+                SubsystemExtension.TYPE_PATH, 
+                SubsystemExtension.getResourceDescriptionResolver(SubsystemExtension.TYPE), 
+                TypeAddHandler.INSTANCE,
+                TypeRemoveHandler.INSTANCE
+        );
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerReadWriteAttribute(TICK, null, TrackerTickHandler.INSTANCE);
+    }        
+    
 }
 ----
 
@@ -721,13 +738,13 @@ we add the following just before the end of the method.
 [source,java,options="nowrap"]
 ----
 @Override
-public void initialize(ExtensionContext context)
-{
- final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
- final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(TrackerSubsystemDefinition.INSTANCE);
- //Add the type child
- ManagementResourceRegistration typeChild = registration.registerSubModel(TypeDefinition.INSTANCE);
- subsystem.registerXMLElementWriter(parser);
+public void initialize(ExtensionContext context){
+    final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, ModelVersion.create(1, 0));
+    final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SubsystemExtension.INSTANCE);
+    registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+    //Add the type child
+    ManagementResourceRegistration typeChild = registration.registerSubModel(TypeDefinition.INSTANCE);
+    subsystem.registerXMLElementWriter(parser);
 }
 ----
 
@@ -792,16 +809,6 @@ The operation used to execute this will be of the form
 we first get the `suffix` from the operation address, and the `tick`
 value from the operation parameter's `resolvedValue` parameter, and use
 that to update the model.
-
-We then add a new step associated with the `RUNTIME` stage to update the
-tick of the TrackerService for our suffix. This is essential since the
-call to `context.getServiceRegistry()` will fail unless the step
-accessing it belongs to the `RUNTIME` stage.
-
-[NOTE]
-
-When implementing `execute()`, you *must* call `context.completeStep()`
-when you are done.
 
 [[parsing-and-marshalling-of-the-subsystem-xml]]
 == Parsing and marshalling of the subsystem xml
@@ -903,7 +910,7 @@ public class SubsystemExtension implements Extension {
 
 So in the above we always create the add operation for our subsystem.
 Due to its address `/subsystem=tracker` defined by `SUBSYSTEM_PATH` this
-will trigger the `SubsystemAddHandler` we created earlier when we invoke
+will trigger the `SubsystemAdd` we created earlier when we invoke
 `/subsystem=tracker:add`. We then parse the child elements and create an
 add operation for the child address for each `type` child. Since the
 address will for example be `/subsystem=tracker/type=sar` (defined by
@@ -926,7 +933,7 @@ private static class SubsystemParser implements XMLStreamConstants, XMLElementRe
         @Override
         public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
             //Write out the main subsystem element
-            context.startSubsystemElement(TrackerExtension.NAMESPACE, false);
+            context.startSubsystemElement(SubsystemExtension.NAMESPACE, false);
             writer.writeStartElement("deployment-types");
             ModelNode node = context.getModelNode();
             ModelNode type = node.get(TYPE);
@@ -991,19 +998,6 @@ private static class SubsystemDescribeHandler implements OperationStepHandler, D
 [[testing-the-parsers]]
 === Testing the parsers
 
-Changes to tests between 7.0.0 and 7.0.1
-
-[NOTE]
-
-The testing framework was moved from the archetype into the core JBoss
-AS 7 sources between JBoss AS 7.0.0 and JBoss AS 7.0.1, and has been
-improved upon and is used internally for testing JBoss AS 7's
-subsystems. The differences between the two versions is that in
-7.0.0.Final the testing framework is bundled with the code generated by
-the archetype (in a sub-package of the package specified for your
-subsystem, e.g. `com.acme.corp.tracker.support`), and the test extends
-the `AbstractParsingTest` class.
-
 From 7.0.1 the testing framework is now brought in via the
 `org.jboss.as:jboss-as-subsystem-test` maven artifact, and the test's
 superclass is `org.jboss.as.subsystem.test.AbstractSubsystemTest`. The
@@ -1032,15 +1026,15 @@ we tell the test to parse the xml into operations
 [source,xml,options="nowrap"]
 ----
 @Test
-    public void testParseSubsystem() throws Exception {
-        //Parse the subsystem xml into operations
-        String subsystemXml =
-                "<subsystem xmlns=\"" + SubsystemExtension.NAMESPACE + "\">" +
-                "   <deployment-types>" +
-                "       <deployment-type suffix=\"tst\" tick=\"12345\"/>" +
-                "   </deployment-types>" +
-                "</subsystem>";
-        List<ModelNode> operations = super.parse(subsystemXml);
+public void testParseSubsystem() throws Exception {
+    //Parse the subsystem xml into operations
+    String subsystemXml =
+            "<subsystem xmlns=\"" + SubsystemExtension.NAMESPACE + "\">" +
+            "   <deployment-types>" +
+            "       <deployment-type suffix=\"tst\" tick=\"12345\"/>" +
+            "   </deployment-types>" +
+            "</subsystem>";
+    List<ModelNode> operations = super.parse(subsystemXml);
 ----
 
 There should be one operation for adding the subsystem itself and an
@@ -1050,7 +1044,7 @@ operations
 [source,java,options="nowrap"]
 ----
 ///Check that we have the expected number of operations
-        Assert.assertEquals(2, operations.size());
+Assert.assertEquals(2, operations.size());
 ----
 
 Now check that the first operation is `add` for the address
@@ -1059,14 +1053,14 @@ Now check that the first operation is `add` for the address
 [source,java,options="nowrap"]
 ----
 //Check that each operation has the correct content
-        //The add subsystem operation will happen first
-        ModelNode addSubsystem = operations.get(0);
-        Assert.assertEquals(ADD, addSubsystem.get(OP).asString());
-        PathAddress addr = PathAddress.pathAddress(addSubsystem.get(OP_ADDR));
-        Assert.assertEquals(1, addr.size());
-        PathElement element = addr.getElement(0);
-        Assert.assertEquals(SUBSYSTEM, element.getKey());
-        Assert.assertEquals(SubsystemExtension.SUBSYSTEM_NAME, element.getValue());
+//The add subsystem operation will happen first
+ModelNode addSubsystem = operations.get(0);
+Assert.assertEquals(ADD, addSubsystem.get(OP).asString());
+PathAddress addr = PathAddress.pathAddress(addSubsystem.get(OP_ADDR));
+Assert.assertEquals(1, addr.size());
+PathElement element = addr.getElement(0);
+Assert.assertEquals(SUBSYSTEM, element.getKey());
+Assert.assertEquals(SubsystemExtension.SUBSYSTEM_NAME, element.getValue());
 ----
 
 Then check that the second operation is `add` for the address
@@ -1076,18 +1070,18 @@ the `tick` parameter:
 [source,java,options="nowrap"]
 ----
 //Then we will get the add type operation
-        ModelNode addType = operations.get(1);
-        Assert.assertEquals(ADD, addType.get(OP).asString());
-        Assert.assertEquals(12345, addType.get("tick").asLong());
-        addr = PathAddress.pathAddress(addType.get(OP_ADDR));
-        Assert.assertEquals(2, addr.size());
-        element = addr.getElement(0);
-        Assert.assertEquals(SUBSYSTEM, element.getKey());
-        Assert.assertEquals(SubsystemExtension.SUBSYSTEM_NAME, element.getValue());
-        element = addr.getElement(1);
-        Assert.assertEquals("type", element.getKey());
-        Assert.assertEquals("tst", element.getValue());
-    }
+    ModelNode addType = operations.get(1);
+    Assert.assertEquals(ADD, addType.get(OP).asString());
+    Assert.assertEquals(12345, addType.get("tick").asLong());
+    addr = PathAddress.pathAddress(addType.get(OP_ADDR));
+    Assert.assertEquals(2, addr.size());
+    element = addr.getElement(0);
+    Assert.assertEquals(SUBSYSTEM, element.getKey());
+    Assert.assertEquals(SubsystemExtension.SUBSYSTEM_NAME, element.getValue());
+    element = addr.getElement(1);
+    Assert.assertEquals("type", element.getKey());
+    Assert.assertEquals("tst", element.getValue());
+}
 ----
 
 The second test we need to modify is `testInstallIntoController()` which
@@ -1101,15 +1095,15 @@ using the created operations
 [source,java,options="nowrap"]
 ----
 @Test
-    public void testInstallIntoController() throws Exception {
-        //Parse the subsystem xml and install into the controller
-        String subsystemXml =
-                "<subsystem xmlns=\"" + SubsystemExtension.NAMESPACE + "\">" +
-                "   <deployment-types>" +
-                "       <deployment-type suffix=\"tst\" tick=\"12345\"/>" +
-                "   </deployment-types>" +
-                "</subsystem>";
-        KernelServices services = super.installInController(subsystemXml);
+public void testInstallIntoController() throws Exception {
+    //Parse the subsystem xml and install into the controller
+    String subsystemXml =
+            "<subsystem xmlns=\"" + SubsystemExtension.NAMESPACE + "\">" +
+            "   <deployment-types>" +
+            "       <deployment-type suffix=\"tst\" tick=\"12345\"/>" +
+            "   </deployment-types>" +
+            "</subsystem>";
+    KernelServices services = super.createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 ----
 
 The returned `KernelServices` allow us to execute operations on the
@@ -1118,9 +1112,9 @@ controller, and to read the whole model.
 [source,java,options="nowrap"]
 ----
 //Read the whole model and make sure it looks as expected
-        ModelNode model = services.readWholeModel();
-        //Useful for debugging :-)
-        //System.out.println(model);
+ModelNode model = services.readWholeModel();
+//Useful for debugging :-)
+//System.out.println(model);
 ----
 
 Now we make sure that the structure of the model within the controller
@@ -1128,12 +1122,12 @@ has the expected format and values
 
 [source,java,options="nowrap"]
 ----
-Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(SubsystemExtension.SUBSYSTEM_NAME));
-        Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME).hasDefined("type"));
-        Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type").hasDefined("tst"));
-        Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "tst").hasDefined("tick"));
-        Assert.assertEquals(12345, model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "tst", "tick").asLong());
-    }
+    Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(SubsystemExtension.SUBSYSTEM_NAME));
+    Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME).hasDefined("type"));
+    Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type").hasDefined("tst"));
+    Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "tst").hasDefined("tick"));
+    Assert.assertEquals(12345, model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "tst", "tick").asLong());
+}
 ----
 
 The last test provided is called `testParseAndMarshalModel()`. It's main
@@ -1144,15 +1138,15 @@ as before
 [source,java,options="nowrap"]
 ----
 @Test
-    public void testParseAndMarshalModel() throws Exception {
-        //Parse the subsystem xml and install into the first controller
-        String subsystemXml =
-                "<subsystem xmlns=\"" + SubsystemExtension.NAMESPACE + "\">" +
-                "   <deployment-types>" +
-                "       <deployment-type suffix=\"tst\" tick=\"12345\"/>" +
-                "   </deployment-types>" +
-                "</subsystem>";
-        KernelServices servicesA = super.installInController(subsystemXml);
+public void testParseAndMarshalModel() throws Exception {
+    //Parse the subsystem xml and install into the first controller
+    String subsystemXml =
+            "<subsystem xmlns=\"" + SubsystemExtension.NAMESPACE + "\">" +
+            "   <deployment-types>" +
+            "       <deployment-type suffix=\"tst\" tick=\"12345\"/>" +
+            "   </deployment-types>" +
+            "</subsystem>";
+    KernelServices servicesA = super.createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 ----
 
 Now we read the model and the xml that was persisted from the first
@@ -1161,11 +1155,11 @@ controller, and use that xml to start a second controller
 [source,java,options="nowrap"]
 ----
 //Get the model and the persisted xml from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-        String marshalled = servicesA.getPersistedSubsystemXml();
+ModelNode modelA = servicesA.readWholeModel();
+String marshalled = servicesA.getPersistedSubsystemXml();
  
-        //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(marshalled);
+//Install the persisted xml from the first controller into a second controller
+KernelServices servicesB = super.createKernelServicesBuilder(null).setSubsystemXml(marshalled).build();
 ----
 
 Finally we read the model from the second controller, and make sure that
@@ -1173,61 +1167,11 @@ the models are identical by calling `compare()` on the test superclass.
 
 [source,java,options="nowrap"]
 ----
-ModelNode modelB = servicesB.readWholeModel();
+    ModelNode modelB = servicesB.readWholeModel();
  
-        //Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
-    }
-----
-
-We then have a test that needs no changing from what the archetype
-provides us with. As we have seen before we start a controller
-
-[source,java,options="nowrap"]
-----
-@Test
-    public void testDescribeHandler() throws Exception {
-        //Parse the subsystem xml and install into the first controller
-        String subsystemXml =
-                "<subsystem xmlns=\"" + SubsystemExtension.NAMESPACE + "\">" +
-                "</subsystem>";
-        KernelServices servicesA = super.installInController(subsystemXml);
-----
-
-We then call `/subsystem=tracker:describe` which outputs the subsystem
-as operations needed to reach the current state (Done by our
-`SubsystemDescribeHandler`)
-
-[source,java,options="nowrap"]
-----
-//Get the model and the describe operations from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-        ModelNode describeOp = new ModelNode();
-        describeOp.get(OP).set(DESCRIBE);
-        describeOp.get(OP_ADDR).set(
-                PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME)).toModelNode());
-        List<ModelNode> operations = super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
-----
-
-Then we create a new controller using those operations
-
-[source,java,options="nowrap"]
-----
-//Install the describe options from the first controller into a second controller
-        KernelServices servicesB = super.installInController(operations);
-----
-
-And then we read the model from the second controller and make sure that
-the two subsystems are identical +
-ModelNode modelB = servicesB.readWholeModel();
-
-[source,java,options="nowrap"]
-----
-//Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
- 
-    }
+    //Make sure the models from the two controllers are identical
+    super.compare(modelA, modelB);
+}
 ----
 
 To test the removal of the the subsystem and child resources we modify
@@ -1254,7 +1198,7 @@ String subsystemXml =
                 "       <deployment-type suffix=\"tst\" tick=\"12345\"/>" +
                 "   </deployment-types>" +
                 "</subsystem>";
-        KernelServices services = super.installInController(subsystemXml);
+KernelServices services = super.createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 ----
 
 Having installed the xml into the controller we make sure the
@@ -1263,7 +1207,7 @@ TrackerService is there
 [source,java,options="nowrap"]
 ----
 //Sanity check to test the service for 'tst' was there
-        services.getContainer().getRequiredService(TrackerService.createServiceName("tst"));
+services.getContainer().getRequiredService(TrackerService.createServiceName("tst"));
 ----
 
 This call from the subsystem test harness will call remove for each
@@ -1273,7 +1217,7 @@ that the subsystem model is empty at the end.
 [source,java,options="nowrap"]
 ----
 //Checks that the subsystem was removed from the model
-        super.assertRemoveSubsystemResources(services);
+super.assertRemoveSubsystemResources(services);
 ----
 
 Finally we check that all the services were removed by the remove
@@ -1282,12 +1226,12 @@ handlers
 [source,java,options="nowrap"]
 ----
 //Check that any services that were installed were removed here
-        try {
-            services.getContainer().getRequiredService(TrackerService.createServiceName("tst"));
-            Assert.fail("Should have removed services");
-        } catch (Exception expected) {
-        }
+    try {
+        services.getContainer().getRequiredService(TrackerService.createServiceName("tst"));
+        Assert.fail("Should have removed services");
+    } catch (Exception expected) {
     }
+}
 ----
 
 For good measure let us throw in another test which adds a
@@ -1297,14 +1241,14 @@ all boot up the controller with the same xml we have been using so far
 [source,java,options="nowrap"]
 ----
 @Test
-    public void testExecuteOperations() throws Exception {
-        String subsystemXml =
-                "<subsystem xmlns=\"" + SubsystemExtension.NAMESPACE + "\">" +
-                "   <deployment-types>" +
-                "       <deployment-type suffix=\"tst\" tick=\"12345\"/>" +
-                "   </deployment-types>" +
-                "</subsystem>";
-        KernelServices services = super.installInController(subsystemXml);
+public void testExecuteOperations() throws Exception {
+    String subsystemXml =
+            "<subsystem xmlns=\"" + SubsystemExtension.NAMESPACE + "\">" +
+            "   <deployment-types>" +
+            "       <deployment-type suffix=\"tst\" tick=\"12345\"/>" +
+            "   </deployment-types>" +
+            "</subsystem>";
+    KernelServices services = super.createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 ----
 
 Now create an operation which does the same as the following CLI command
@@ -1313,13 +1257,13 @@ Now create an operation which does the same as the following CLI command
 [source,java,options="nowrap"]
 ----
 //Add another type
-        PathAddress fooTypeAddr = PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement("type", "foo"));
-        ModelNode addOp = new ModelNode();
-        addOp.get(OP).set(ADD);
-        addOp.get(OP_ADDR).set(fooTypeAddr.toModelNode());
-        addOp.get("tick").set(1000);
+PathAddress fooTypeAddr = PathAddress.pathAddress(
+        PathElement.pathElement(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME),
+        PathElement.pathElement("type", "foo"));
+ModelNode addOp = new ModelNode();
+addOp.get(OP).set(ADD);
+addOp.get(OP_ADDR).set(fooTypeAddr.toModelNode());
+addOp.get("tick").set(1000);
 ----
 
 Execute the operation and make sure it was successful
@@ -1327,7 +1271,7 @@ Execute the operation and make sure it was successful
 [source,java,options="nowrap"]
 ----
 ModelNode result = services.executeOperation(addOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 ----
 
 Read the whole model and make sure that the original data is still there
@@ -1336,11 +1280,11 @@ Read the whole model and make sure that the original data is still there
 [source,java,options="nowrap"]
 ----
 ModelNode model = services.readWholeModel();
-        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(SubsystemExtension.SUBSYSTEM_NAME));
-        Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME).hasDefined("type"));
-        Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type").hasDefined("tst"));
-        Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "tst").hasDefined("tick"));
-        Assert.assertEquals(12345, model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "tst", "tick").asLong());
+Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(SubsystemExtension.SUBSYSTEM_NAME));
+Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME).hasDefined("type"));
+Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type").hasDefined("tst"));
+Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "tst").hasDefined("tick"));
+Assert.assertEquals(12345, model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "tst", "tick").asLong());
 ----
 
 Then make sure our new `type` has been added:
@@ -1348,8 +1292,8 @@ Then make sure our new `type` has been added:
 [source,java,options="nowrap"]
 ----
 Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type").hasDefined("foo"));
-        Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "foo").hasDefined("tick"));
-        Assert.assertEquals(1000, model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "foo", "tick").asLong());
+Assert.assertTrue(model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "foo").hasDefined("tick"));
+Assert.assertEquals(1000, model.get(SUBSYSTEM, SubsystemExtension.SUBSYSTEM_NAME, "type", "foo", "tick").asLong());
 ----
 
 Then we call `write-attribute` to change the `tick` value of
@@ -1358,13 +1302,13 @@ Then we call `write-attribute` to change the `tick` value of
 [source,java,options="nowrap"]
 ----
 //Call write-attribute
-        ModelNode writeOp = new ModelNode();
-        writeOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        writeOp.get(OP_ADDR).set(fooTypeAddr.toModelNode());
-        writeOp.get(NAME).set("tick");
-        writeOp.get(VALUE).set(3456);
-        result = services.executeOperation(writeOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+ModelNode writeOp = new ModelNode();
+writeOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+writeOp.get(OP_ADDR).set(fooTypeAddr.toModelNode());
+writeOp.get(NAME).set("tick");
+writeOp.get(VALUE).set(3456);
+result = services.executeOperation(writeOp);
+Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 ----
 
 To give you exposure to other ways of doing things, now instead of
@@ -1374,12 +1318,12 @@ instead, and make sure it has the value we set it to.
 [source,java,options="nowrap"]
 ----
 //Check that write attribute took effect, this time by calling read-attribute instead of reading the whole model
-        ModelNode readOp = new ModelNode();
-        readOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        readOp.get(OP_ADDR).set(fooTypeAddr.toModelNode());
-        readOp.get(NAME).set("tick");
-        result = services.executeOperation(readOp);
-        Assert.assertEquals(3456, checkResultAndGetContents(result).asLong());
+ModelNode readOp = new ModelNode();
+readOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
+readOp.get(OP_ADDR).set(fooTypeAddr.toModelNode());
+readOp.get(NAME).set("tick");
+result = services.executeOperation(readOp);
+Assert.assertEquals(3456, checkResultAndGetContents(result).asLong());
 ----
 
 Since each `type` installs its own copy of `TrackerService`, we get the
@@ -1388,9 +1332,9 @@ the kernel services and make sure it has the right value
 
 [source,java,options="nowrap"]
 ----
-TrackerService service = (TrackerService)services.getContainer().getService(TrackerService.createServiceName("foo")).getValue();
-        Assert.assertEquals(3456, service.getTick());
-    }
+    TrackerService service = (TrackerService)services.getContainer().getService(TrackerService.createServiceName("foo")).getValue();
+    Assert.assertEquals(3456, service.getTick());
+}
 ----
 
 TypeDefinition.TICK.
@@ -1398,7 +1342,7 @@ TypeDefinition.TICK.
 [[add-the-deployers]]
 == Add the deployers
 
-When discussing `SubsystemAddHandler` we did not mention the work done
+When discussing `SubsystemAdd` we did not mention the work done
 to install the deployers, which is done in the following method:
 
 [source,java,options="nowrap"]
@@ -1415,7 +1359,7 @@ to install the deployers, which is done in the following method:
         //see SubDeploymentProcessor for explanation of the phases
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(SubsystemDeploymentProcessor.PHASE, SubsystemDeploymentProcessor.priority, new SubsystemDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(SubsystemExtension.SUBSYSTEM_NAME, SubsystemDeploymentProcessor.PHASE, SubsystemDeploymentProcessor.PRIORITY, new SubsystemDeploymentProcessor());
  
             }
         }, OperationContext.Stage.RUNTIME);
@@ -1692,8 +1636,8 @@ see more about the subsystem. For example
 [standalone@localhost:9999 /] /subsystem=tracker/:read-resource-description(recursive=true, operations=true)
 ----
 
-will return a lot of information, including what we provided in the
-`DescriptionProvider`s we created to document our subsystem.
+will return a lot of information, including a description of our subsystem 
+generated automatically by a `DescriptionProvider`
 
 To see the current subsystem state you can execute
 
