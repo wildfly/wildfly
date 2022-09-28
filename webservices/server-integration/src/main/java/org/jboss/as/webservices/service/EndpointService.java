@@ -59,8 +59,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.security.SecurityConstants;
-import org.jboss.security.SecurityUtil;
 import org.jboss.ws.api.monitoring.RecordProcessor;
 import org.jboss.ws.common.ObjectNameFactory;
 import org.jboss.ws.common.management.AbstractServerConfig;
@@ -105,6 +103,8 @@ public final class EndpointService implements Service {
     private final Supplier<ApplicationSecurityDomainService.ApplicationSecurityDomain> ejbApplicationSecurityDomain;
     private final Supplier<EJBViewMethodSecurityAttributesService> ejbMethodSecurityAttributeService;
     private final Supplier<SecurityDomain> elytronSecurityDomain;
+    private static final String DEFAULT_SECURITY_NAME = "other";
+    private static final String JAAS_CONTEXT_ROOT = "java:/jaas/";
 
     private EndpointService(final Endpoint endpoint, final ServiceName name, final ServiceName aliasName, final Consumer<Endpoint> endpointConsumer,
                             Supplier<AbstractServerConfig> serverConfigService,
@@ -251,11 +251,18 @@ public final class EndpointService implements Service {
                         .getCapabilityServiceName(domainName, ApplicationSecurityDomainService.ApplicationSecurityDomain.class);
                 ejbApplicationSecurityDomain = builder.requires(ejbSecurityDomainServiceName);
             } else {
-                ServiceName securityDomainName = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
-                        .getCapabilityServiceName(
-                                Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN,
-                                domainName).append(Constants.SECURITY_DOMAIN);
-                elytronSecurityDomain = builder.requires(securityDomainName);
+                CapabilityServiceSupport capabilityServiceSupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+                if (capabilityServiceSupport != null) {
+                    ServiceName securityDomainName = capabilityServiceSupport.getCapabilityServiceName(
+                            Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN,
+                            domainName).append(Constants.SECURITY_DOMAIN);
+                    elytronSecurityDomain = builder.requires(securityDomainName);
+                } else {
+                    //There is no CAPABILITY_SERVICE_SUPPORT attachment in the DeploymentUnit created by org.jboss.as.webservices.service.EndpointPublisherImpl
+                    ServiceName publishEndpointSecurityDomainName = ServiceNameFactory.parseServiceName(WEB_APPLICATION_SECURITY_DOMAIN).append(domainName)
+                            .append(Constants.SECURITY_DOMAIN);
+                    elytronSecurityDomain = builder.requires(publishEndpointSecurityDomainName);
+                }
             }
             endpoint.setProperty(ELYTRON_SECURITY_DOMAIN, true);
         }
@@ -289,10 +296,10 @@ public final class EndpointService implements Service {
             if (unit.hasAttachment(UndertowAttachments.DEFAULT_SECURITY_DOMAIN)) {
                 metaDataSecurityDomain = unit.getAttachment(UndertowAttachments.DEFAULT_SECURITY_DOMAIN);
             } else {
-                metaDataSecurityDomain = SecurityConstants.DEFAULT_APPLICATION_POLICY;
+                metaDataSecurityDomain = DEFAULT_SECURITY_NAME;
             }
         } else {
-            metaDataSecurityDomain = SecurityUtil.unprefixSecurityDomain(metaDataSecurityDomain.trim());
+            metaDataSecurityDomain = unprefixSecurityDomain(metaDataSecurityDomain.trim());
         }
         return metaDataSecurityDomain;
     }
@@ -345,5 +352,21 @@ public final class EndpointService implements Service {
         }
         final ServiceName serviceName = SECURITY_DOMAIN_SERVICE.append(domainName);
         return currentServiceContainer().getService(serviceName) != null;
+    }
+
+    public static String unprefixSecurityDomain(String securityDomain) {
+        String result = null;
+        if (securityDomain != null) {
+            if (securityDomain.startsWith("java:jboss/jaas/")) {
+                result = securityDomain.substring("java:jboss/jaas/".length());
+            } else if (securityDomain.startsWith("java:jboss/jbsx/")) {
+                result = securityDomain.substring("java:jboss/jbsx/".length());
+            } else if (securityDomain.startsWith(JAAS_CONTEXT_ROOT)) {
+                result = securityDomain.substring(JAAS_CONTEXT_ROOT.length());
+            } else {
+                result = securityDomain;
+            }
+        }
+        return result;
     }
 }

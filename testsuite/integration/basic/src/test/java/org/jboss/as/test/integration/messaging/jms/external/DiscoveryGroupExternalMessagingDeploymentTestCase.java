@@ -46,6 +46,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -74,6 +75,11 @@ import org.junit.runner.RunWith;
 @RunAsClient
 @ServerSetup(DiscoveryGroupExternalMessagingDeploymentTestCase.SetupTask.class)
 public class DiscoveryGroupExternalMessagingDeploymentTestCase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-10993 Unignore DiscoveryGroupExternalMessagingDeploymentTestCase");
+    }
 
     public static final boolean SKIP = AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> {
                 boolean badIPv6System = Util.checkForWindows() ||
