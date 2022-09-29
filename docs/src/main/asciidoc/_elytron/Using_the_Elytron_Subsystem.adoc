@@ -102,8 +102,7 @@ as _FORM_.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
-Applications to Use Elytron or Legacy Security for Authentication>>
+<<configure-applications-to-use-elytron-for-authentication,Configure Applications to Use Elytron for Authentication>>
 section.
 
 [[configure-authentication-with-a-filesystem-based-identity-store]]
@@ -239,8 +238,7 @@ as _FORM_.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
-Applications to Use Elytron or Legacy Security for Authentication>>
+<<configure-applications-to-use-elytron-for-authentication,Configure Applications to Use Elytron for Authentication>>
 section.
 
 Your application is now using a filesystem-based identity store for
@@ -327,8 +325,7 @@ as _FORM_.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
-Applications to Use Elytron or Legacy Security for Authentication>>
+<<configure-applications-to-use-elytron-for-authentication,Configure Applications to Use Elytron for Authentication>>
 section.
 
 [[configure-authentication-with-an-ldap-based-identity-store]]
@@ -453,8 +450,7 @@ as _FORM_.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
-Applications to Use Elytron or Legacy Security for Authentication>>
+<<configure-applications-to-use-elytron-for-authentication,Configure Applications to Use Elytron for Authentication>>
 section.
 
 *IMPORTANT:* In cases where you configure an LDAP server in the
@@ -662,8 +658,7 @@ principal from _ksRealm_ but other approaches may also be used.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
-Applications to Use Elytron or Legacy Security for Authentication>>
+<<configure-applications-to-use-elytron-for-authentication,Configure Applications to Use Elytron for Authentication>>
 section.
 
 In addition, you need to update your _web.xml_ to use _CLIENT-CERT_ as
@@ -773,8 +768,7 @@ jboss-deployment-structure.xml.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
-Applications to Use Elytron or Legacy Security for Authentication>>
+<<configure-applications-to-use-elytron-for-authentication,Configure Applications to Use Elytron for Authentication>>
 section.
 
 In addition, you need to update your _web.xml_ to use _SPNEGO_ as its
@@ -847,11 +841,10 @@ and error pages.
 </login-config>
 ----
 
-[[configure-applications-to-use-elytron-or-legacy-security-for-authentication]]
-=== Configure Applications to Use Elytron or Legacy Security for
-Authentication
+[[configure-applications-to-use-elytron-for-authentication]]
+=== Configure Applications to Use Elytron for Authentication
 
-After you have configured the _elytron_ or legacy _security_ subsystems
+After you have configured the _elytron_ subsystem
 for authentication, you need to configure your application to use it.
 
 [[configure-your-applications-web.xml.]]
@@ -859,9 +852,7 @@ for authentication, you need to configure your application to use it.
 
 Your application's _web.xml_ needs to be configured to use the
 appropriate authentication method. When using _elytron_, this is defined
-in the _http-authentication-factory_ you created. When using the legacy
-_security_ subsystem, this depends on your login module and the type of
-authentication you want to configure.
+in the _http-authentication-factory_ you created.
 
 Example _web.xml_ with _BASIC_ Authentication
 
@@ -902,8 +893,7 @@ contained authorization header, otherwise it is assumed another method will send
 You can configure your application's _jboss-web.xml_ to specify the
 security domain you want to use for authentication. When using the
 _elytron_ subsystem, this is defined when you created the
-_application-security-domain_. When using the legacy _security_
-subsystem, this is the name of the legacy security domain.
+_application-security-domain_.
 
 Example _jboss-web.xml_
 
@@ -930,19 +920,6 @@ subsystem will apply to *ALL* applications. If _default-security-domain_
 is set and an application specifies a security domain in a
 _jboss-web.xml_ file, the configuration in _jboss-web.xml_ will override
 the _default-security-domain_ in the _undertow_ subsystem.
-
-[[using-elytron-and-legacy-security-subsystems-in-parallel]]
-==== Using Elytron and Legacy Security Subsystems in Parallel
-
-You can define authentication in both the _elytron_ and legacy
-_security_ subsystems and use them in parallel. If you use both
-_jboss-web.xml_ and _default-security-domain_ in the _undertow_
-subsystem, WildFly will first try to match the configured security
-domain in the _elytron_ subsystem. If a match is not found, then WildFly
-will attempt to match the security domain with one configured in the
-legacy _security_ subsystem. If the _elytron_ and legacy _security_
-subsystem each have a security domain with the same name, the _elytron_
-security domain is used.
 
 [[override-an-applications-authentication-configuration]]
 === Override an Application's Authentication Configuration
@@ -1490,10 +1467,7 @@ between those, you have to use batch operation:
 
 [source,options="nowrap"]
 ----
-batch
-/subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
 /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context,value=httpsSSC)
-run-batch
 ----
 
 [[reload-the-server]]
@@ -2710,76 +2684,10 @@ The resulting resource looks like: -
 
 Within the `host-context-map` it is also possible to define wildcard mappings such as `&#42;` and `&#42;.wildfly.org`.
 
-[[configuring-the-elytron-and-security-subsystems]]
-== Configuring the Elytron and Security Subsystems
+[[use-the-elytron-subsystem]]
+=== Use the Elytron Subsystem
 
-[[enable-and-disable-the-elytron-subsystem]]
-=== Enable and Disable the Elytron Subsystem
-
-[[to-add-the-elytron-extension-required-for-the-elytron-subsystem]]
-==== To add the elytron extension required for the elytron subsystem:
-
-[source,options="nowrap"]
-----
-/extension=org.wildfly.extension.elytron:add()
-----
-
-[[to-enable-the-elytron-subsystem-in-wildfly]]
-==== To enable the Elytron subsystem in WildFly:
-
-[source,options="nowrap"]
-----
-/subsystem=elytron:add
- 
-reload
-----
-
-[[to-disable-the-elytron-subsystem-in-wildfly]]
-==== To disable the Elytron subsystem in WildFly:
-
-[source,options="nowrap"]
-----
-/subsystem=elytron:remove
- 
-reload
-----
-
-*IMPORTANT:* Other subsystems within WildFly may have dependencies on
-the _elytron_ subsystem. If these dependencies are not resolved before
-disabling it, you will see errors when starting WildFly.
-
-[[enable-and-disable-the-security-subsystem]]
-=== Enable and Disable the Security Subsystem
-
-[[to-disable-the-security-subsystem-in-wildfly]]
-==== To disable the security subsystem in WildFly:
-
-[source,options="nowrap"]
-----
-/subsystem=security:remove
- 
-reload
-----
-
-*IMPORTANT:* Other subsystems within WildFly may have dependencies on
-the _security_ subsystem. If these dependencies are not resolved before
-disabling it, you will see errors when starting WildFly.
-
-[[to-enable-the-security-subsystem-in-wildfly]]
-==== To enable the security subsystem in WildFly:
-
-[source,options="nowrap"]
-----
-/subsystem=security:add
- 
-reload
-----
-
-[[use-the-elytron-and-security-subsystems-in-parallel]]
-=== Use the Elytron and Security Subsystems in Parallel
-
-By default the _elytron_ and _security_ subsystems will run in parallel
-if both are enabled. For authentication in applications, you can use the
+For authentication in applications, you can use the
 _application-security-domain_ property in the _undertow_ subsystem to
 configure a security domain in the _elytron_ subsystem.
 
@@ -2791,34 +2699,11 @@ configure a security domain in the _elytron_ subsystem.
 *NOTE:* This must match the _security-domain_ configured in the
 _jboss-web.xml_ of your application.
 
-If the _application-security-domain_ is not set, WildFly will look for a
-security domain configured in the _security_ subsystem that matches the
-_security-domain_ configured in the _jboss-web.xml_ of your application.
-
-For enabling HTTPS using a legacy security realm, you can use the
-_security-realm_ attribute in the _https-listener_ section of the
-_undertow_ subsystem:
+For enabling HTTPS using _elytron_ you need to set the _ssl-context_ attribute.
 
 [source,options="nowrap"]
 ----
-/subsystem=undertow/server=default-server/https-listener=https:read-attribute(name=security-realm)
-{
-    "outcome" => "success",
-    "result" => "ApplicationRealm"
-}
-----
-
-For enabling HTTPS using _elytron_, you need to undefine the
-_security-realm_ attribute and set the _ssl-context_ attribute. As there
-has to be always configured either _ssl-context_ or _security-realm_ you
-have to use batch operation when changing between those:
-
-[source,options="nowrap"]
-----
-batch
-/subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
 /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context,value=httpsSSC)
-run-batch
 ----
 
 [[creating-elytron-subsystem-components]]

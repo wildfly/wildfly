@@ -6,27 +6,6 @@
 This document will guide you on how to enable JACC using Elytron
 Subsystem.
 
-[[disabling-jacc-in-legacy-security-subsystem-picketbox]]
-== Disabling JACC in Legacy Security Subsystem (PicketBox)
-
-By default, the application server uses the legacy security subsystem
-(PicketBox) to configure the JACC policy provider and factory. The
-default configuration maps to implementations from PicketBox.
-
-In order to use Elytron to manage JACC configuration (or any other
-policy you want to install to the application server) you must first
-disable JACC in legacy security subsystem. For that, please execute the
-following CLI command:
-
-[source,options="nowrap"]
-----
-/subsystem=security:write-attribute(name=initialize-jacc, value=false)
-----
-
-The command above tells the legacy security subsystem to not initialize
-any JACC related configuration, but rely on the policies defined via
-Elytron subsystem as we'll see in the next sections.
-
 [[defining-a-jacc-policy-provider]]
 == Defining a JACC Policy Provider
 
@@ -80,7 +59,7 @@ deployments by executing the following command:
 ----
 
 The command above defines a default security domain for EJBs. In case
-you already have a *application-security-domain *defined and just want
+you already have an *application-security-domain* defined and just want
 to enable JACC you can execute a command as follows:
 
 [source,options="nowrap"]
