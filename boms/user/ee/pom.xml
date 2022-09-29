@@ -422,10 +422,13 @@
                                     <groupId>org.jboss.resteasy</groupId>
                                     <artifactId>resteasy-validator-provider</artifactId>
                                 </dependency>
+								<!-- Disabled, as RESTEasy Spring is currently only available
+								     through WildFly Preview
                                 <dependency>
                                     <groupId>org.jboss.resteasy.spring</groupId>
                                     <artifactId>resteasy-spring</artifactId>
                                 </dependency>
+								-->
                                 <dependency>
                                     <groupId>com.fasterxml.jackson.datatype</groupId>
                                     <artifactId>jackson-datatype-jsr310</artifactId>
