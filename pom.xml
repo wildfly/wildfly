@@ -72,7 +72,6 @@
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
         <module>ee-security</module>
-        <module>ee-9</module>
         <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
         <module>health</module>
@@ -92,6 +91,7 @@
         <module>release</module>
         <module>sar</module>
         <module>security</module>
+        <module>source-transform</module>
         <module>system-jmx</module>
         <module>spec-api</module>
         <module>servlet-feature-pack</module>
@@ -1982,6 +1982,19 @@
 
     <!-- Profiles -->
     <profiles>
+
+        <profile>
+            <id>skip.preview</id>
+            <activation>
+            <property>
+                <name>!skip.preview</name>
+            </property>
+            </activation>
+
+            <modules>
+                <module>ee-9</module>
+            </modules>
+        </profile>
 
         <profile>
             <id>ee8.build.profile</id>

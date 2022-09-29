@@ -112,33 +112,14 @@
     </dependencies>
 
     <modules>
-        <!--
-             TODO move the source-transform module out of this part of the source tree.
-             Its use is no longer for 'preview'.
-         -->
-        <module>source-transform</module>
+        <module>build</module>
+        <module>deployment-transformer</module>
+        <module>dist</module>
+        <module>feature-pack</module>
+        <module>common</module>
+        <module>common-microprofile</module>
+        <module>galleon-content</module>
+        <module>galleon-content-microprofile</module>
     </modules>
-
-    <profiles>
-        <profile>
-            <id>skip.preview</id>
-            <activation>
-                <property>
-                    <name>!skip.preview</name>
-                </property>
-            </activation>
-
-            <modules>
-                <module>build</module>
-                <module>deployment-transformer</module>
-                <module>dist</module>
-                <module>feature-pack</module>
-                <module>common</module>
-                <module>common-microprofile</module>
-                <module>galleon-content</module>
-                <module>galleon-content-microprofile</module>
-            </modules>
-        </profile>
-    </profiles>
 
 </project>
