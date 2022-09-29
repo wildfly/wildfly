@@ -28,19 +28,17 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
  * {@link DeploymentUnitProcessor} that adds the clustering api to the deployment classpath.
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
 public class ClusteringDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier API = ModuleIdentifier.create("org.wildfly.clustering.server.api");
-    private static final ModuleIdentifier MARSHALLING_API = ModuleIdentifier.create("org.wildfly.clustering.marshalling.api");
-    private static final ModuleIdentifier SINGLETON_API = ModuleIdentifier.create("org.wildfly.clustering.singleton.api");
+    private static final String API = "org.wildfly.clustering.server.api";
+    private static final String MARSHALLING_API = "org.wildfly.clustering.marshalling.api";
+    private static final String SINGLETON_API = "org.wildfly.clustering.singleton.api";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
