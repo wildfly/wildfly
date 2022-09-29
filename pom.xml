@@ -92,6 +92,7 @@
         <module>release</module>
         <module>sar</module>
         <module>security</module>
+        <module>source-transform</module>
         <module>system-jmx</module>
         <module>spec-api</module>
         <module>servlet-feature-pack</module>

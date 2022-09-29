@@ -111,14 +111,6 @@
 
     </dependencies>
 
-    <modules>
-        <!--
-             TODO move the source-transform module out of this part of the source tree.
-             Its use is no longer for 'preview'.
-         -->
-        <module>source-transform</module>
-    </modules>
-
     <profiles>
         <profile>
             <id>skip.preview</id>
