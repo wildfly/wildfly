@@ -192,7 +192,7 @@
                                 <!-- client for usage through jndi -->
                                 <dependency>
                                     <groupId>org.wildfly</groupId>
-                                    <artifactId>wildfly-naming-client</artifactId>
+                                    <artifactId>wildfly-naming-client-jakarta</artifactId>
                                 </dependency>
                                 <!-- provides the jms client properties -->
                                 <dependency>
