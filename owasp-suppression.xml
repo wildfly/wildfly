@@ -794,4 +794,20 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-.*@.*$</packageUrl>
         <cve>CVE-2022-2053</cve>
     </suppress>
+
+    <!-- Suppression after xalan update to 2.7.1.jbossorg-6 -->
+    <suppress>
+        <notes><![CDATA[
+        file name: serializer-2.7.1.jbossorg-6.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/xalan/serializer@.*$</packageUrl>
+        <cve>CVE-2022-34169</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: xalan-2.7.1.jbossorg-6.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/xalan/xalan@.*$</packageUrl>
+        <cve>CVE-2022-34169</cve>
+    </suppress>
 </suppressions>
