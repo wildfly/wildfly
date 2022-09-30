@@ -810,4 +810,68 @@
         <packageUrl regex="true">^pkg:maven/xalan/xalan@.*$</packageUrl>
         <cve>CVE-2022-34169</cve>
     </suppress>
+
+    <!-- Suppression after commit https://github.com/PSI-Polska/wildfly/commit/f73161c76990618cf723c7f30118f12fa21af99a -->
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-core-18.1.2-1-PSI-SNAPSHOT.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-openssl-java-2.2.1.Final.jar
+        file name: wildfly-openssl-linux-s390x-2.2.0.Final.jar
+        file name: wildfly-openssl-linux-x86_64-2.2.0.SP01.jar
+        file name: wildfly-openssl-macosx-x86_64-2.2.0.Final.jar
+        file name: wildfly-openssl-windows-x86_64-2.2.0.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.openssl/wildfly\-openssl\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: artemis-wildfly-integration-1.0.6.jar
+        file name: artemis-wildfly-jakarta-integration-1.0.6.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jboss\.activemq\.artemis\.integration/artemis\-wildfly\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: transformer-5.2.10.Final.jar (shaded: org.wildfly.extras.batavia:transformer-api:1.0.12.Final)
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.extras\.batavia/transformer\-api@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: transformer-5.2.10.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.galleon\-plugins/transformer@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-galleon-plugins-5.2.10.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.galleon\-plugins/wildfly\-galleon\-plugins@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-legacy-spi-7.0.0.Final.jar
+        file name: wildfly-legacy-versions-7.0.0.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.legacy\.test/wildfly\-legacy\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-plugin-core-2.0.2.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
 </suppressions>
