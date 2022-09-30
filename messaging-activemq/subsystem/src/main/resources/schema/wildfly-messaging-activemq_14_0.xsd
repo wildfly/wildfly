@@ -458,6 +458,7 @@
                     <xs:attribute name="auto-delete-queues" type="xs:boolean" />
                     <xs:attribute name="auto-create-addresses" type="xs:boolean" />
                     <xs:attribute name="auto-delete-addresses" type="xs:boolean" />
+                    <xs:attribute name="auto-delete-created-queues" type="xs:boolean" />
                 </xs:complexType>
             </xs:element>
 

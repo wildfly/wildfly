@@ -28,7 +28,6 @@ import java.net.InetSocketAddress;
 
 import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
-import org.jgroups.stack.IpAddressUUID;
 import org.jgroups.util.UUID;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
@@ -36,7 +35,6 @@ import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.infinispan.group.AddressSerializer.IpAddressExternalizer;
-import org.wildfly.clustering.server.infinispan.group.AddressSerializer.IpAddressUUIDExternalizer;
 import org.wildfly.clustering.server.infinispan.group.AddressSerializer.UUIDExternalizer;
 
 /**
@@ -46,7 +44,7 @@ public class AddressSerializerTestCase {
 
     @Test
     public void test() throws IOException {
-        test(new ExternalizerTesterFactory(new UUIDExternalizer(), new IpAddressExternalizer(), new IpAddressUUIDExternalizer()).createTester());
+        test(new ExternalizerTesterFactory(new UUIDExternalizer(), new IpAddressExternalizer()).createTester());
         test(JBossMarshallingTesterFactory.INSTANCE.createTester());
         test(ProtoStreamTesterFactory.INSTANCE.createTester());
     }
@@ -55,10 +53,8 @@ public class AddressSerializerTestCase {
         UUID uuid = UUID.randomUUID();
         InetSocketAddress address = new InetSocketAddress(InetAddress.getLoopbackAddress(), Short.MAX_VALUE);
         IpAddress ipAddress = new IpAddress(address);
-        IpAddressUUID ipAddressUUID = new IpAddressUUID(address);
 
         tester.test(uuid);
         tester.test(ipAddress);
-        tester.test(ipAddressUUID);
     }
 }

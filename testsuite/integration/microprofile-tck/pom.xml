@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp</artifactId>
@@ -74,6 +74,15 @@
         <version.opentracing>${version.org.eclipse.microprofile.opentracing}</version.opentracing>
         <version.rest-client>${version.org.eclipse.microprofile.rest.client.api}</version.rest-client>
     </properties>
+
+    <dependencies>
+        <!-- TODO confirm if this is needed -->
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming-client-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <modules>
         <module>config</module>

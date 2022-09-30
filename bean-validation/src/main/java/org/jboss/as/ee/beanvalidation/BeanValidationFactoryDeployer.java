@@ -44,7 +44,6 @@ import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * Creates a Jakarta Bean Validation factory and adds it to the deployment and binds it to JNDI.
@@ -102,7 +101,7 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
     private void bindServices(LazyValidatorFactory factory, ServiceTarget serviceTarget, EEModuleDescription description, String componentName, ServiceName contextServiceName) {
 
         BinderService validatorFactoryBindingService = new BinderService("ValidatorFactory");
-        validatorFactoryBindingService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(factory)));
+        validatorFactoryBindingService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(factory));
         serviceTarget.addService(contextServiceName.append("ValidatorFactory"), validatorFactoryBindingService)
             .addDependency(contextServiceName, ServiceBasedNamingStore.class, validatorFactoryBindingService.getNamingStoreInjector())
             .install();

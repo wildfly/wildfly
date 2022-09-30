@@ -127,7 +127,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
         }
         AttachmentKey<io.undertow.server.session.Session> key = this.key;
         AtomicLong stampRef = new AtomicLong(stamp);
-        return new Consumer<HttpServerExchange>() {
+        return new Consumer<>() {
             @Override
             public void accept(HttpServerExchange exchange) {
                 try {

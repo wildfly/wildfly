@@ -56,7 +56,6 @@ public class ConstructorInjectionPointMarshaller<X> implements ProtoStreamMarsha
         return (Class<ConstructorInjectionPoint<X>>) (Class<?>) ConstructorInjectionPoint.class;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public ConstructorInjectionPoint<X> readFrom(ProtoStreamReader reader) throws IOException {
         BackedAnnotatedConstructor<X> constructor = null;

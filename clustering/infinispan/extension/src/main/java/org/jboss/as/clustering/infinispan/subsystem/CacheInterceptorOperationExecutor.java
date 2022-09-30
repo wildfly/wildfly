@@ -39,6 +39,7 @@ public class CacheInterceptorOperationExecutor<I extends AsyncInterceptor> exten
         this.interceptorClass = interceptorClass;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public I apply(Cache<?, ?> cache) {
         return cache.getAdvancedCache().getAsyncInterceptorChain().findInterceptorExtending(this.interceptorClass);

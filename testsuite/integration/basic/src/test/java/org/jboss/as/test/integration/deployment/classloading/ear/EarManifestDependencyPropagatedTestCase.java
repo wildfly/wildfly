@@ -48,7 +48,7 @@ public class EarManifestDependencyPropagatedTestCase {
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class,"ejbmodule.jar");
         ejbJar.addClasses(EarManifestDependencyPropagatedTestCase.class);
         ejbJar.addAsManifestResource(emptyEjbJar(), "ejb-jar.xml");
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.jandex\n"),"MANIFEST.MF");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: io.smallrye.jandex\n"),"MANIFEST.MF");
         ear.addAsModule(ejbJar);
 
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "libjar.jar");
@@ -88,10 +88,10 @@ public class EarManifestDependencyPropagatedTestCase {
     private static StringAsset emptyEjbJar() {
         return new StringAsset(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\" \n" +
+                "<ejb-jar xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" \n" +
                 "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
-                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd\"\n" +
-                "         version=\"3.0\">\n" +
+                "         xsi:schemaLocation=\"https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd\"\n" +
+                "         version=\"4.0\">\n" +
                 "   \n" +
                 "</ejb-jar>");
     }

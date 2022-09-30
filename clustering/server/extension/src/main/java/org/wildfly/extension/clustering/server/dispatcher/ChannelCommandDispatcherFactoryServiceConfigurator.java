@@ -21,7 +21,6 @@
  */
 package org.wildfly.extension.clustering.server.dispatcher;
 
-import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.List;
@@ -48,6 +47,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.JChannel;
+import org.jgroups.Message;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
@@ -75,7 +75,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * Builds a channel-based {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} service.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, ChannelCommandDispatcherFactoryConfiguration, Supplier<AutoCloseableCommandDispatcherFactory>, Function<ClassLoader, ByteBufferMarshaller>, Predicate<ByteBuffer> {
+public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, ChannelCommandDispatcherFactoryConfiguration, Supplier<AutoCloseableCommandDispatcherFactory>, Function<ClassLoader, ByteBufferMarshaller>, Predicate<Message> {
 
     enum MarshallingVersion implements Function<Map.Entry<ClassResolver, ClassLoader>, MarshallingConfiguration> {
         VERSION_1() {
@@ -166,12 +166,12 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
     }
 
     @Override
-    public Predicate<ByteBuffer> getUnknownForkPredicate() {
+    public Predicate<Message> getUnknownForkPredicate() {
         return this;
     }
 
     @Override
-    public boolean test(ByteBuffer buffer) {
-        return this.channelFactory.get().isUnknownForkResponse(buffer);
+    public boolean test(Message response) {
+        return this.channelFactory.get().isUnknownForkResponse(response);
     }
 }

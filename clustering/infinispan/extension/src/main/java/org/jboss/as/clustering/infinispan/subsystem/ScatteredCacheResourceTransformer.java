@@ -27,6 +27,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 public class ScatteredCacheResourceTransformer extends SegmentedCacheResourceTransformer {
 
     ScatteredCacheResourceTransformer(ResourceTransformationDescriptionBuilder parent) {

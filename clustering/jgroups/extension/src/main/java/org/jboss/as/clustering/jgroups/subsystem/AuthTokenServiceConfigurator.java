@@ -52,7 +52,8 @@ import org.wildfly.security.password.interfaces.ClearPassword;
  * @author Paul Ferraro
  */
 public abstract class AuthTokenServiceConfigurator<T extends AuthToken> extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Function<String, T>, Dependency {
-    private static final Function<CredentialSource, String> CREDENTIAL_SOURCE_MAPPER = new Function<CredentialSource, String>() {
+
+    private static final Function<CredentialSource, String> CREDENTIAL_SOURCE_MAPPER = new Function<>() {
         @Override
         public String apply(CredentialSource sharedSecretSource) {
             try {

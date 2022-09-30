@@ -36,6 +36,8 @@ public class LayersTestCase {
     // but not used in the test-all-layers installation.
     // This is the expected set of not provisioned modules when all layers are provisioned.
     private static final String[] NOT_USED = {
+        // test-all-layers does not contain any ha layers
+        "org.jboss.as.clustering.jgroups",
         // TODO we need to add an rts layer
         "org.wildfly.extension.rts",
         "org.jboss.narayana.rts",
@@ -88,19 +90,11 @@ public class LayersTestCase {
         "org.bouncycastle",
         // TODO WFLY-16583 -- cruft
         "javax.management.j2ee.api",
-        // TODO possible cruft? https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
-        "org.jboss.resteasy.jose-jwt",
+            // This was brought in as part an RFE, WFLY-10632 & WFLY-10636. While the module is currently marked as private,
+            // for now we should keep this module.
         "org.jboss.resteasy.resteasy-rxjava2",
         // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
         "org.wildfly.reactive.dep.jts",
-        // Optionally used by Hibernate Search but not provided by the jpa layer
-        // TODO they probably should be, see https://github.com/wildfly/wildfly/pull/15965
-        "org.hibernate.search.orm",
-        "org.hibernate.search.backend.elasticsearch",
-        "org.elasticsearch.client.rest-client",
-        "org.hibernate.search.backend.lucene",
-        "com.carrotsearch.hppc",
-        "org.apache.lucene",
         // Used by Hibernate Search but only in preview
         "org.hibernate.search.mapper.orm.coordination.outboxpolling", // Present only in preview
         "org.apache.avro", // Used by outboxpolling
@@ -110,6 +104,12 @@ public class LayersTestCase {
         "org.wildfly.security.jakarta.client.resteasy",
         "org.wildfly.security.jakarta.client.webservices",
         "org.jboss.resteasy.microprofile.config",
+        // otel?
+        "com.google.protobuf",
+        "io.grpc",
+        "io.opentelemetry.trace",
+        "org.wildfly.extension.opentelemetry",
+        "org.wildfly.extension.opentelemetry-api"
     };
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning
@@ -125,14 +125,12 @@ public class LayersTestCase {
         "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
         "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
         "io.jaegertracing",
-        "io.grpc",
         "io.smallrye.health",
         "io.smallrye.openapi",
         "io.vertx.client",
         "org.eclipse.microprofile.health.api",
         "org.eclipse.microprofile.openapi.api",
         "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
-        "com.google.protobuf",
         "org.jboss.resteasy.resteasy-client-microprofile",
         "io.netty.netty-codec-dns",
         "io.netty.netty-codec-http2",
@@ -217,7 +215,8 @@ public class LayersTestCase {
         "ibm.jdk",
         // TODO just a testsuite utility https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
         "org.jboss.ws.cxf.sts",
-        "org.wildfly.security.jakarta.security" // Dynamically added by ee-security and mp-jwt-smallrye DUPs but not referenced by subsystems.
+        "org.wildfly.security.jakarta.security", // Dynamically added by ee-security and mp-jwt-smallrye DUPs but not referenced by subsystems.
+
     };
 
     /**

@@ -41,7 +41,6 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="org.apache.xalan" services="import"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.codehaus.woodstox" services="import"/>
         <module name="org.jboss.as.server" export="true"/>

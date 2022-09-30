@@ -36,7 +36,7 @@ import org.wildfly.common.function.ExceptionFunction;
  * @author Paul Ferraro
  */
 public class SingletonMapMarshaller extends FunctionalMarshaller<Map<Object, Object>, SimpleEntry<Object, Object>> {
-    private static final ExceptionFunction<Map<Object, Object>, SimpleEntry<Object, Object>, IOException> FUNCTION = new ExceptionFunction<Map<Object, Object>, SimpleEntry<Object, Object>, IOException>() {
+    private static final ExceptionFunction<Map<Object, Object>, SimpleEntry<Object, Object>, IOException> FUNCTION = new ExceptionFunction<>() {
         @Override
         public SimpleEntry<Object, Object> apply(Map<Object, Object> map) {
             return new SimpleEntry<>(map.entrySet().iterator().next());

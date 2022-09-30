@@ -218,6 +218,11 @@ link:#gal.undertow[undertow] +
 |Support for using _git_ for configuration management.
 |
 
+|[[gal.hibernate-search]]hibernate-search
+|Support for Hibernate Search. The _link:#gal.jpa[jpa]_ dependency can be excluded and _link:#gal.jpa-distributed[jpa-distributed]_ used instead.
+|
+link:#gal.jpa[jpa] (optional) +
+
 |[[gal.h2-datasource]]h2-datasource
 |Support for an H2 datasource
 |

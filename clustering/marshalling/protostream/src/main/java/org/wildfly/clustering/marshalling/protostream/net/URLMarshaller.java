@@ -36,7 +36,7 @@ import org.wildfly.common.function.ExceptionFunction;
  */
 public class URLMarshaller extends FunctionalMarshaller<URL, URI> {
 
-    private static final ExceptionFunction<URL, URI, IOException> TO_URI = new ExceptionFunction<URL, URI, IOException>() {
+    private static final ExceptionFunction<URL, URI, IOException> TO_URI = new ExceptionFunction<>() {
         @Override
         public URI apply(URL url) throws IOException {
             try {

@@ -28,7 +28,6 @@ import java.io.IOException;
 
 import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
-import org.jgroups.stack.IpAddressUUID;
 import org.jgroups.util.UUID;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -69,14 +68,6 @@ public enum AddressSerializer implements Serializer<Address> {
         @SuppressWarnings("unchecked")
         public IpAddressExternalizer() {
             super((Class<Address>) (Class<?>) IpAddress.class, INSTANCE);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class IpAddressUUIDExternalizer extends SerializerExternalizer<Address> {
-        @SuppressWarnings("unchecked")
-        public IpAddressUUIDExternalizer() {
-            super((Class<Address>) (Class<?>) IpAddressUUID.class, INSTANCE);
         }
     }
 }

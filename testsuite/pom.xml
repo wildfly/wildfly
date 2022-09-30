@@ -58,7 +58,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -159,6 +159,13 @@
         <surefire.memory.args>-Xmx512m -XX:MetaspaceSize=128m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <as.debug.port>8787</as.debug.port>
+        <!-- The JPMS settings needed by the client side of a portion of the testsuite.
+             Defaults to ${modular.jdk.args}, i.e. the standard list of recommended
+             client side JPMS settings for users of our client-side libraries.
+             If particular tests need additional settings to support client-side behavior
+             in their test code, then this property should be overridden in as fine-grained
+             a location as is practical; no more coarse-grained than the global config of
+             the pom for the maven module that includes the test. -->
         <modular.jdk.testsuite.args>${modular.jdk.args}</modular.jdk.testsuite.args>
         <surefire.system.args>${modular.jdk.testsuite.args} -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist} ${surefire.jacoco.args} -Dmaven.repo.local=${settings.localRepository}</surefire.system.args>
         <extra.server.jvm.args />
@@ -422,6 +429,7 @@
             <activation><property><name>ts.layers</name></property></activation>
             <modules>
                 <module>integration</module>
+                <module>preview</module>
                 <module>layers</module>
             </modules>
         </profile>

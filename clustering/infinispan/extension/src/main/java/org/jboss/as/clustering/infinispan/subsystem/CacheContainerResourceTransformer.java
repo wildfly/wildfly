@@ -51,6 +51,7 @@ public class CacheContainerResourceTransformer implements Consumer<ModelVersion>
         this.builder = parent.addChildResource(CacheContainerResourceDefinition.WILDCARD_PATH);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void accept(ModelVersion version) {
         if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {

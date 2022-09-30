@@ -21,7 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,6 +29,7 @@ import java.util.stream.Stream;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.JChannel;
+import org.jgroups.Message;
 import org.jgroups.fork.ForkChannel;
 import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
@@ -76,7 +76,7 @@ public class ForkChannelFactory implements ChannelFactory {
     }
 
     @Override
-    public boolean isUnknownForkResponse(ByteBuffer response) {
+    public boolean isUnknownForkResponse(Message response) {
         return this.parentFactory.isUnknownForkResponse(response);
     }
 

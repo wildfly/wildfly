@@ -100,21 +100,32 @@ public class AbstractValidationUnitTest {
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-2_1.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-spec-2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-spec-2_1.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-spec-4_01.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-cache_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-cache_2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-container-interceptors_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-container-interceptors_2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-delivery-active_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-delivery-active_1_1.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-delivery-active_1_2.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-delivery-active_2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-clustering_1_1.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-clustering_2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-iiop_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-iiop_1_1.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-iiop_1_2.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-iiop_2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-pool_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-pool_2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-resource-adapter-binding_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-resource-adapter-binding_2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security_1_1.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security_2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security-role_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security-role_2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-timer-service_2_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-timer-service_3_0.xsd");
 
         String coreVersion = System.getProperty("version.org.wildfly.core");
         if (coreVersion != null) {

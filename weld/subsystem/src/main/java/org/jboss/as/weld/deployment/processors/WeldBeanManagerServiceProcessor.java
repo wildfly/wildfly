@@ -58,7 +58,6 @@ import org.jboss.as.weld.util.Utils;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -163,7 +162,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
             if (bm == null) {
                 return null;
             }
-            return new ValueManagedReference(new ImmediateValue<Object>(bm));
+            return new ValueManagedReference(bm);
         }
 
         @Override

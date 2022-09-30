@@ -25,8 +25,8 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.clustering.jgroups.subsystem.SocketTransportResourceDefinition.Attribute.*;
 
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.controller.OperationContext;
@@ -68,7 +68,7 @@ public class SocketTransportConfigurationServiceConfigurator<TP extends BasicTCP
     public Map<String, SocketBinding> getSocketBindings() {
         Map<String, SocketBinding> bindings = super.getSocketBindings();
         SocketBinding clientBinding = this.clientBinding.get();
-        for (String serviceName : Arrays.asList("jgroups.tcp.sock", "jgroups.nio.client")) {
+        for (String serviceName : Set.of("jgroups.tcp.sock", "jgroups.nio.client")) {
             bindings.put(serviceName, clientBinding);
         }
         return bindings;

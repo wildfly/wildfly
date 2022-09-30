@@ -22,7 +22,9 @@
 
 package org.wildfly.clustering.infinispan.client;
 
-import javax.transaction.TransactionManager;
+import java.util.concurrent.CompletionStage;
+
+import jakarta.transaction.TransactionManager;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
@@ -37,11 +39,6 @@ import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
  * @author Paul Ferraro
  */
 public interface RemoteCacheContainer extends org.infinispan.client.hotrod.RemoteCacheContainer, RemoteCacheManagerMXBean {
-
-    interface NearCacheRegistration extends AutoCloseable {
-        @Override
-        void close();
-    }
 
     /**
      * Returns the name of this remote cache container.
@@ -105,14 +102,5 @@ public interface RemoteCacheContainer extends org.infinispan.client.hotrod.Remot
      */
     RemoteCacheManagerAdmin administration();
 
-    /**
-     * Registers a factory for creating a near cache for a given cache.
-     * The returned registration can be closed once the associated cache is created.
-     * @param <K> the cache key
-     * @param <V> the cache value
-     * @param cacheName the name of a remote cache
-     * @param factory a factory for creating a near cache
-     * @return A near cache registration, which, when closed, unregisters the registered factory.
-     */
-    <K, V> NearCacheRegistration registerNearCacheFactory(String cacheName, NearCacheFactory<K, V> factory);
+    CompletionStage<Boolean> isAvailable();
 }

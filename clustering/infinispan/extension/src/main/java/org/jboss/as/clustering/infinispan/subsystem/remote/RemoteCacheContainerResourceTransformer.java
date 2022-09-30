@@ -46,12 +46,16 @@ public class RemoteCacheContainerResourceTransformer implements Consumer<ModelVe
 
     @Override
     public void accept(ModelVersion version) {
+        if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+            this.builder.getAttributeBuilder()
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getDefinition())
+                    .end();
+        }
         if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.TRANSACTION_TIMEOUT.getDefinition())
                     .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())
                     .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MARSHALLER.getDefinition().getDefaultValue()), Attribute.MARSHALLER.getDefinition())
-                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName())
                     .end();
         }
     }

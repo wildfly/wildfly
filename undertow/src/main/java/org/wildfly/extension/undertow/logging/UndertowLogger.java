@@ -439,4 +439,7 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 109, value = "The deployment is configured to use legacy security which is no longer supported.")
     StartException legacySecurityUnsupported();
 
+    @Message(id = 110, value = "The use of security realms at runtime is unsupported.")
+    OperationFailedException runtimeSecurityRealmUnsupported();
+
 }

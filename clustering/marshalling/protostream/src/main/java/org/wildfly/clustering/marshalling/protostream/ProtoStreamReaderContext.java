@@ -32,7 +32,7 @@ import java.util.Map;
  */
 interface ProtoStreamReaderContext extends ProtoStreamOperation.Context, AutoCloseable {
 
-    ThreadLocal<ProtoStreamReaderContext> INSTANCE = new ThreadLocal<ProtoStreamReaderContext>() {
+    ThreadLocal<ProtoStreamReaderContext> INSTANCE = new ThreadLocal<>() {
         @Override
         protected ProtoStreamReaderContext initialValue() {
             return new ProtoStreamReaderContext() {

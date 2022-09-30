@@ -36,7 +36,8 @@ import org.jboss.metadata.property.PropertyReplacer;
  */
 public class EJBBoundPoolParser extends AbstractEJBBoundMetaDataParser<EJBBoundPoolMetaData> {
 
-    public static final String NAMESPACE_URI = "urn:ejb-pool:1.0";
+    public static final String NAMESPACE_URI_1_0 = "urn:ejb-pool:1.0";
+    public static final String NAMESPACE_URI_2_0 = "urn:ejb-pool:2.0";
 
     private static final String ROOT_ELEMENT_POOL = "pool";
     private static final String ELEMENT_BEAN_INSTANCE_POOL_REF = "bean-instance-pool-ref";
@@ -58,7 +59,7 @@ public class EJBBoundPoolParser extends AbstractEJBBoundMetaDataParser<EJBBoundP
         final String namespaceURI = reader.getNamespaceURI();
         final String elementName = reader.getLocalName();
         // if it doesn't belong to our namespace then let the super handle this
-        if (!NAMESPACE_URI.equals(namespaceURI)) {
+        if (!NAMESPACE_URI_1_0.equals(namespaceURI) && !NAMESPACE_URI_2_0.equals(namespaceURI)) {
             super.processElement(poolMetaData, reader, propertyReplacer);
             return;
         }

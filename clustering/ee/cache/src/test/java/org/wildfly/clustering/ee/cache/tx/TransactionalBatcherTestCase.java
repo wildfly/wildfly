@@ -24,10 +24,10 @@ package org.wildfly.clustering.ee.cache.tx;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 
 import org.junit.After;
 import org.junit.Test;

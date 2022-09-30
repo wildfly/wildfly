@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-preview</artifactId>
@@ -55,6 +55,26 @@
     <dependencies>
 
         <!-- Dependencies specific to the integration tests. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
@@ -113,7 +133,7 @@
 
 
         <profile>
-        <id>basic.integration.tests.profile</id>
+        <id>basic.preview.tests.profile</id>
             <activation>
                 <property>
                     <name>!no.preview.integration.tests</name>
@@ -164,11 +184,10 @@
 
         <!-- Run all tests on -DallTests. -->
         <profile>
-            <id>ts.integ.allGroups</id>
+            <id>ts.preview.allGroups</id>
             <activation><property><name>allTests</name></property></activation>
             <modules>
                 <module>basic</module>
-                <module>source-transform</module>
                 <!--<module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
@@ -191,11 +210,10 @@
         </profile>
         <!-- Define ts.integration uber-group. -->
         <profile>
-            <id>ts.integ.allGroupsIntegration</id>
+            <id>ts.preview.allGroupsIntegration</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
                 <module>basic</module>
-                <module>source-transform</module>
                 <!--><module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
@@ -230,7 +248,7 @@
 
         <!-- -Dts.basic -->
         <profile>
-            <id>ts.integ.group.basic</id>
+            <id>ts.preview.group.basic</id>
             <activation><property><name>ts.basic</name></property></activation>
             <modules>
                 <!--<module>ws</module>-->
@@ -318,21 +336,14 @@
         </profile>
         -->
 
-        <!-- -Dts.layers
+        <!-- -Dts.layers -->
         <profile>
-            <id>ts.integ.group.layers</id>
+            <id>ts.preview.group.layers</id>
             <activation><property><name>ts.layers</name></property></activation>
             <modules>
                 <module>basic</module>
-                <module>elytron</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
-                <module>clustering</module>
-                <module>ws</module>
-                <module>elytron-oidc-client</module>
             </modules>
         </profile>
-        -->
 
         <!-- -Dts.standalone.microprofile
         <profile>

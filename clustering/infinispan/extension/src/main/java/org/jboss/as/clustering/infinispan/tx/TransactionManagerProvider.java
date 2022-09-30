@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.tx;
 
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 import org.infinispan.commons.tx.lookup.TransactionManagerLookup;
 

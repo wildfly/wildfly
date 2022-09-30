@@ -1,0 +1,13 @@
+package org.wildfly.elytron.web.undertow.server.servlet;
+
+import "org.wildfly.security.cache.proto";
+
+// IDs: 255-259
+
+/**
+ * @TypeId(255)
+ */
+message IdentityContainer {
+	optional	org.wildfly.security.cache.CachedIdentity	identity	 = 1;
+	optional	string	type	 = 2;
+}

@@ -41,7 +41,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * Utility class to install BinderService (either to bind actual objects or create alias on another binding).
@@ -62,7 +61,7 @@ public class BinderServiceUtil {
                                                  final Object obj) {
         final BindInfo bindInfo = ContextNames.bindInfoFor(name);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
-        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue(obj)));
+        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(obj));
         serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                 .install();
@@ -145,7 +144,7 @@ public class BinderServiceUtil {
         public ManagedReference getReference() {
             try {
                 final Object value = new InitialContext().lookup(name);
-                return new ValueManagedReference(new ImmediateValue<Object>(value));
+                return new ValueManagedReference(value);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

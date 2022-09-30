@@ -40,9 +40,9 @@ import java.util.function.Function;
 import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
-import org.jgroups.MembershipListener;
 import org.jgroups.MergeView;
 import org.jgroups.Message;
+import org.jgroups.Receiver;
 import org.jgroups.View;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestCorrelator;
@@ -80,7 +80,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * all of which will share the same {@link MessageDispatcher} instance.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, RequestHandler, org.wildfly.clustering.server.group.Group<Address>, MembershipListener, Runnable, Function<GroupListener, ExecutorService> {
+public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, RequestHandler, org.wildfly.clustering.server.group.Group<Address>, Receiver, Runnable, Function<GroupListener, ExecutorService> {
 
     static final Optional<Object> NO_SUCH_SERVICE = Optional.of(NoSuchService.INSTANCE);
     static final ExceptionSupplier<Object, Exception> NO_SUCH_SERVICE_SUPPLIER = Functions.constantExceptionSupplier(NoSuchService.INSTANCE);
@@ -102,11 +102,11 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
         this.timeout = config.getTimeout();
         this.marshallerFactory = config.getMarshallerFactory();
         JChannel channel = config.getChannel();
-        RequestCorrelator correlator = new RequestCorrelator(channel.getProtocolStack(), this, channel.getAddress()).setMarshaller(new CommandResponseMarshaller(config));
+        RequestCorrelator correlator = new CommandDispatcherRequestCorrelator(channel, this, config);
         this.dispatcher = new MessageDispatcher()
                 .setChannel(channel)
                 .setRequestHandler(this)
-                .setMembershipListener(this)
+                .setReceiver(this)
                 .asyncDispatching(true)
                 // Setting the request correlator starts the dispatcher
                 .correlator(correlator)
@@ -166,7 +166,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     }
 
     private ExceptionSupplier<Object, Exception> read(Message message) throws IOException {
-        ByteBuffer buffer = ByteBuffer.wrap(message.getRawBuffer(), message.getOffset(), message.getLength());
+        ByteBuffer buffer = ByteBuffer.wrap(message.getArray(), message.getOffset(), message.getLength());
         @SuppressWarnings("unchecked")
         Map.Entry<Object, MarshalledValue<Command<Object, Object>, Object>> entry = (Map.Entry<Object, MarshalledValue<Command<Object, Object>, Object>>) this.marshaller.read(buffer);
         Object clientId = entry.getKey();
@@ -317,17 +317,5 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
                 }
             }
         }
-    }
-
-    @Override
-    public void suspect(Address member) {
-    }
-
-    @Override
-    public void block() {
-    }
-
-    @Override
-    public void unblock() {
     }
 }

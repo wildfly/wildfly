@@ -61,7 +61,7 @@ import org.wildfly.clustering.singleton.service.SingletonCacheRequirement;
  * Builds a service that provides a {@link SingletonPolicy}.
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({ "removal", "deprecation" })
 public class SingletonPolicyServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, SingletonPolicy {
 
     private final ServiceValueRegistry<Singleton> registry;

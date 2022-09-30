@@ -26,14 +26,15 @@
     <resources>
         <artifact name="${org.infinispan:infinispan-hibernate-cache-spi}"/>
         <artifact name="${org.infinispan:infinispan-hibernate-cache-commons}"/>
-        <artifact name="${org.infinispan:infinispan-hibernate-cache-v53}"/>
+        <artifact name="${org.infinispan:infinispan-hibernate-cache-v60}"/>
     </resources>
 
     <dependencies>
         <module name="java.naming"/>
         <module name="java.sql"/>
+        <module name="jakarta.transaction.api"/>
+
         <module name="org.hibernate"/>
-        <module name="internal.javax.transaction.api"/>
         <module name="org.hibernate.jipijapa-hibernate6" services="import"/>
         <module name="org.infinispan" services="import"/>
         <module name="org.infinispan.commons"/>

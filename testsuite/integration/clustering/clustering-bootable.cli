@@ -42,15 +42,15 @@
 /subsystem=jgroups/stack=tcp-bridge/transport=TCP:add(socket-binding=jgroups-tcp-bridge)
 /subsystem=jgroups/stack=tcp-bridge/protocol=TCPPING:add(socket-bindings=[node-1-bridge,node-2-bridge,node-3-bridge,node-4-bridge])
 /subsystem=jgroups/stack=tcp-bridge/protocol=MERGE3:add
-/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK:add(socket-binding=jgroups-tcp-fd-bridge)
+/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK2:add(socket-binding=jgroups-tcp-fd-bridge)
 /subsystem=jgroups/stack=tcp-bridge/protocol=FD_ALL:add
-/subsystem=jgroups/stack=tcp-bridge/protocol=VERIFY_SUSPECT:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=VERIFY_SUSPECT2:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.NAKACK2:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=UNICAST3:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.STABLE:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.GMS:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=MFC:add
-/subsystem=jgroups/stack=tcp-bridge/protocol=FRAG3:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=FRAG4:add
 
 # UDP stack configuration
 /subsystem=jgroups/stack=udp:remove

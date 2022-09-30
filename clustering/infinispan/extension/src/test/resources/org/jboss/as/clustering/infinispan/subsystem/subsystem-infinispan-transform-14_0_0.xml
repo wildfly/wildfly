@@ -62,7 +62,6 @@
                 <write-behind modification-queue-size="2048"/>
                 <property name="location">${java.io.tmpdir}</property>
             </store>
-            <partition-handling enabled="false"/>
             <state-transfer timeout="0" chunk-size="10000"/>
         </replicated-cache>
         <distributed-cache name="dist" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" statistics-enabled="true">
@@ -70,7 +69,7 @@
             <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <heap-memory size="20000"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <partition-handling enabled="true"/>
+            <partition-handling when-split="DENY_READ_WRITES" merge-policy="NONE"/>
             <state-transfer timeout="60000" chunk-size="10000"/>
             <backups>
                 <backup site="NYC" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="false"/>
@@ -84,7 +83,7 @@
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <heap-memory size="20000"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <partition-handling enabled="true"/>
+            <partition-handling merge-policy="NONE"/>
             <state-transfer timeout="60000" chunk-size="10000"/>
         </scattered-cache>
         <replicated-cache name="cache-with-jdbc-store" statistics-enabled="true">

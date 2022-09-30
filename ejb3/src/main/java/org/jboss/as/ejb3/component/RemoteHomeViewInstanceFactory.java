@@ -30,7 +30,6 @@ import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * @author Stuart Douglas
@@ -52,8 +51,7 @@ public class RemoteHomeViewInstanceFactory implements ViewInstanceFactory {
     @Override
     public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) {
         Object value = EJBClient.createProxy(new EJBHomeLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName, Affinity.LOCAL));
-        return new ValueManagedReference(new ImmediateValue(value));
+        return new ValueManagedReference(value);
     }
-
 
 }

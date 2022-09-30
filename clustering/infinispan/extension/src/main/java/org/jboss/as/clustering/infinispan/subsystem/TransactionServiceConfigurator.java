@@ -23,21 +23,21 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.controller.CommonRequirement.LOCAL_TRANSACTION_PROVIDER;
+import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.COMPLETE_TIMEOUT;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.LOCKING;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.MODE;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.STOP_TIMEOUT;
-import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.COMPLETE_TIMEOUT;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.TransactionRequirement.TRANSACTION_SYNCHRONIZATION_REGISTRY;
 
 import java.util.EnumSet;
+
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.configuration.cache.TransactionConfigurationBuilder;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
-import org.jboss.as.clustering.infinispan.jakarta.TransactionManagerAdapter;
-import org.jboss.as.clustering.infinispan.jakarta.TransactionSynchronizationRegistryAdapter;
 import org.jboss.as.clustering.infinispan.tx.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.tx.TransactionSynchronizationRegistryProvider;
 import org.jboss.as.controller.OperationContext;
@@ -63,7 +63,7 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
     private volatile long transactionTimeout;
     private volatile TransactionMode mode;
     private volatile Dependency transactionDependency;
-    private volatile SupplierDependency<Object> tsrDependency;
+    private volatile SupplierDependency<TransactionSynchronizationRegistry> tsrDependency;
 
     public TransactionServiceConfigurator(PathAddress address) {
         super(CacheComponent.TRANSACTION, address);
@@ -106,13 +106,11 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
                 break;
             }
             case NON_XA: {
-                Object tsr = this.tsrDependency.get();
-                builder.transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(tsr instanceof javax.transaction.TransactionSynchronizationRegistry ? (javax.transaction.TransactionSynchronizationRegistry) tsr : new TransactionSynchronizationRegistryAdapter((jakarta.transaction.TransactionSynchronizationRegistry) tsr)));
+                builder.transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(this.tsrDependency.get()));
                 // fall through
             }
             default: {
-                Object tm = ContextTransactionManager.getInstance();
-                builder.transactionManagerLookup(new TransactionManagerProvider(tm instanceof javax.transaction.TransactionManager ? (javax.transaction.TransactionManager) tm : new TransactionManagerAdapter((jakarta.transaction.TransactionManager) tm)));
+                builder.transactionManagerLookup(new TransactionManagerProvider(ContextTransactionManager.getInstance()));
             }
         }
         return builder.create();

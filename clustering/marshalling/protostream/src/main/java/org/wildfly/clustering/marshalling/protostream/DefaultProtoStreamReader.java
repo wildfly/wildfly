@@ -23,6 +23,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.infinispan.protostream.ProtobufTagMarshaller;
@@ -180,5 +181,20 @@ public class DefaultProtoStreamReader extends DefaultProtoStreamOperation implem
     @Override
     public String readString() throws IOException {
         return this.reader.readString();
+    }
+
+    @Override
+    public byte[] fullBufferArray() throws IOException {
+        return this.reader.fullBufferArray();
+    }
+
+    @Override
+    public InputStream fullBufferInputStream() throws IOException {
+        return this.reader.fullBufferInputStream();
+    }
+
+    @Override
+    public boolean isInputStream() {
+        return this.reader.isInputStream();
     }
 }

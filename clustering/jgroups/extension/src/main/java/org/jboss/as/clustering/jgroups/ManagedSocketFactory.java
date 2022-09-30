@@ -187,9 +187,4 @@ public class ManagedSocketFactory implements SocketFactory {
             socket.close();
         }
     }
-
-    @Override
-    public Map<Object, String> getSockets() {
-        throw new UnsupportedOperationException();
-    }
 }

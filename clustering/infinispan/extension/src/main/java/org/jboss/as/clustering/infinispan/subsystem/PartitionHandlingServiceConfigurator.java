@@ -40,7 +40,8 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  */
 public class PartitionHandlingServiceConfigurator extends ComponentServiceConfigurator<PartitionHandlingConfiguration> {
 
-    private volatile boolean enabled;
+    private volatile PartitionHandling whenSplit;
+    private volatile MergePolicy mergePolicy;
 
     PartitionHandlingServiceConfigurator(PathAddress address) {
         super(CacheComponent.PARTITION_HANDLING, address);
@@ -49,14 +50,15 @@ public class PartitionHandlingServiceConfigurator extends ComponentServiceConfig
     @Override
     public PartitionHandlingConfiguration get() {
         return new ConfigurationBuilder().clustering().partitionHandling()
-                .whenSplit(this.enabled ? PartitionHandling.DENY_READ_WRITES : PartitionHandling.ALLOW_READ_WRITES)
-                .mergePolicy(MergePolicy.NONE)
+                .whenSplit(this.whenSplit)
+                .mergePolicy(this.mergePolicy)
                 .create();
     }
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.enabled = ENABLED.resolveModelAttribute(context, model).asBoolean();
+        this.whenSplit = PartitionHandling.valueOf(WHEN_SPLIT.resolveModelAttribute(context, model).asString());
+        this.mergePolicy = MergePolicy.valueOf(MERGE_POLICY.resolveModelAttribute(context, model).asString());
         return this;
     }
 }

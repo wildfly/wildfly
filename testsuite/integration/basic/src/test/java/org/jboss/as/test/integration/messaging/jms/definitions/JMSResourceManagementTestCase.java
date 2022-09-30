@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.messaging.jms.definitions;
 
 import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
-import static org.jboss.shrinkwrap.api.ArchivePaths.create;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -43,7 +42,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
@@ -72,12 +71,12 @@ public class JMSResourceManagementTestCase {
     public static JavaArchive createArchive() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "JMSResourceDefinitionsTestCase.jar")
                 .addPackage(MessagingBean.class.getPackage())
+                .addAsManifestResource(MessagingBean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
                 .addAsManifestResource(
-                        MessagingBean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
-                .addAsManifestResource(
-                        EmptyAsset.INSTANCE,
-                        create("beans.xml"));
-
+                        new StringAsset("<beans xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                                "xsi:schemaLocation=\"https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd\"\n" +
+                                "bean-discovery-mode=\"all\">\n" +
+                        "</beans>"), "beans.xml");
         return archive;
     }
 

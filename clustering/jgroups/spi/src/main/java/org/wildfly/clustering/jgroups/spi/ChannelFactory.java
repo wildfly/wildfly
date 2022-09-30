@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.jgroups.spi;
 
-import java.nio.ByteBuffer;
+import org.jgroups.Message;
 
 /**
  * Factory for creating JGroups channels.
@@ -41,5 +41,5 @@ public interface ChannelFactory extends org.wildfly.clustering.jgroups.ChannelFa
      * @param response a message response
      * @return true, if the response indicates a missing fork stack or channel.
      */
-    boolean isUnknownForkResponse(ByteBuffer response);
+    boolean isUnknownForkResponse(Message response);
 }

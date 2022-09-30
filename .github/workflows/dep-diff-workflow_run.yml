@@ -13,8 +13,12 @@ env:
   DEPS_CHANGED_LABEL_NAME: deps-changed
   # People/teams to mention in the PR comment if dependencies changed
   CHANGE_MENTIONS: '@wildfly/prod'
+permissions: {}
 jobs:
   compare:
+    permissions:
+      actions: read # to download a workflow artifact
+      pull-requests: write # for commenting on and labeling pull requests
     runs-on: ubuntu-latest
     if: >
       ${{ github.event.workflow_run.event == 'pull_request' &&

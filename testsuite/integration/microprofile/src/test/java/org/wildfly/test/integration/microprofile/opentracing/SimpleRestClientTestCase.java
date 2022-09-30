@@ -33,6 +33,7 @@ import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.List;
+import java.util.PropertyPermission;
 
 @RunWith(Arquillian.class)
 public class SimpleRestClientTestCase {
@@ -57,13 +58,16 @@ public class SimpleRestClientTestCase {
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
         war.addAsManifestResource(createPermissionsXmlAsset(
-                // Required for the ClientBuilder.newBuilder() so the ServiceLoader will work
+                // Required for the org.eclipse.microprofile.opentracing.ClientTracingRegistrar.configure() so the ServiceLoader will work
                 new FilePermission("<<ALL FILES>>", "read"),
                 // Required for com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider. During <init> there is a
                 // reflection test to check for JAXRS 2.0.
                 new RuntimePermission("accessDeclaredMembers"),
                 // Required for the client to connect
-                new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")
+                new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve"),
+                // These two permissions can be removed once RESTEASY-3229 is resolved
+                new RuntimePermission("getenv.dev.resteasy.exception.mapper"),
+                new PropertyPermission("dev.resteasy.exception.mapper", "read")
         ), "permissions.xml");
         return war;
     }

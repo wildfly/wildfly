@@ -40,7 +40,7 @@ import jakarta.el.ValueExpression;
 public class VariableMapperImplMarshallerTestCase {
 
     @Test
-    public void test() throws NoSuchMethodException, IOException {
+    public void test() throws IOException {
         Tester<VariableMapperImpl> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
         VariableMapperImpl mapper = new VariableMapperImpl();
         tester.test(mapper, Assert::assertNotSame);

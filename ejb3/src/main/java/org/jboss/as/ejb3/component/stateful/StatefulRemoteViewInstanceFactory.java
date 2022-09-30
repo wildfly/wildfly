@@ -33,7 +33,6 @@ import org.jboss.ejb.client.EJBIdentifier;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * @author Stuart Douglas
@@ -61,7 +60,7 @@ public class StatefulRemoteViewInstanceFactory implements ViewInstanceFactory {
             statefulEJBLocator = StatefulEJBLocator.create(componentView.getViewClass(), identifier, sessionID, statefulSessionComponent.getCache().getStrictAffinity());
         }
         final Object ejbProxy = EJBClient.createProxy(statefulEJBLocator);
-        return new ValueManagedReference(new ImmediateValue<Object>(ejbProxy));
+        return new ValueManagedReference(ejbProxy);
     }
 
 

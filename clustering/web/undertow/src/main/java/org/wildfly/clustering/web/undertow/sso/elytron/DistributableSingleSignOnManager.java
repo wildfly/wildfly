@@ -31,6 +31,7 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.cache.CachedIdentity;
 import org.wildfly.security.http.util.sso.SingleSignOn;
 import org.wildfly.security.http.util.sso.SingleSignOnManager;
 
@@ -39,9 +40,9 @@ import org.wildfly.security.http.util.sso.SingleSignOnManager;
  */
 public class DistributableSingleSignOnManager implements SingleSignOnManager {
 
-    private final SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch> manager;
+    private final SSOManager<CachedIdentity, String, Map.Entry<String, URI>, LocalSSOContext, Batch> manager;
 
-    public DistributableSingleSignOnManager(SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch> manager) {
+    public DistributableSingleSignOnManager(SSOManager<CachedIdentity, String, Map.Entry<String, URI>, LocalSSOContext, Batch> manager) {
         this.manager = manager;
     }
 
@@ -53,7 +54,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
         @SuppressWarnings("resource")
         Batch batch = batcher.createBatch();
         try {
-            SSO<ElytronAuthentication, String, Entry<String, URI>, LocalSSOContext> sso = this.manager.createSSO(id, new ElytronAuthentication(mechanismName, programmatic, identity.getPrincipal().getName()));
+            SSO<CachedIdentity, String, Entry<String, URI>, LocalSSOContext> sso = this.manager.createSSO(id, new CachedIdentity(mechanismName, programmatic, identity));
             sso.getLocalContext().setSecurityIdentity(identity);
             return new DistributableSingleSignOn(sso, batcher, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
@@ -70,7 +71,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
         Batch batch = batcher.createBatch();
         boolean close = true;
         try {
-            SSO<ElytronAuthentication, String, Entry<String, URI>, LocalSSOContext> sso = this.manager.findSSO(id);
+            SSO<CachedIdentity, String, Entry<String, URI>, LocalSSOContext> sso = this.manager.findSSO(id);
             if (sso == null) return null;
             close = false;
             return new DistributableSingleSignOn(sso, batcher, batcher.suspendBatch());

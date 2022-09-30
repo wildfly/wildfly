@@ -80,6 +80,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         switch (version) {
             case EAP_7_4_0:
                 return new String[] {
+                        "org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec:2.0.0.Final",
+                        "org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final",
                         formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-extension:%s", version),
                         "org.infinispan:infinispan-commons:11.0.9.Final-redhat-00001",
                         "org.infinispan:infinispan-core:11.0.9.Final-redhat-00001",
@@ -157,6 +159,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     private static ModelFixer createModelFixer(ModelVersion version) {
         return model -> {
             if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+                @SuppressWarnings("deprecation")
                 Map<String, List<PathElement>> containers = Map.ofEntries(Map.entry("minimal", List.of(DistributedCacheResourceDefinition.pathElement("dist"))),
                         Map.entry("maximal", List.of(DistributedCacheResourceDefinition.pathElement("dist"), LocalCacheResourceDefinition.pathElement("local"), ReplicatedCacheResourceDefinition.pathElement("cache-with-jdbc-store"), ScatteredCacheResourceDefinition.pathElement("scattered"))));
                 for (Map.Entry<String, List<PathElement>> entry : containers.entrySet()) {
@@ -232,6 +235,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
         PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
         List<String> rejectedRemoteContainerAttributes = new LinkedList<>();
+
+        if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.pathElement("repl"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY.getDefinition()));
+            config.addFailedAttribute(containerAddress.append(DistributedCacheResourceDefinition.pathElement("dist"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT.getDefinition()));
+        }
 
         if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(containerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(CacheContainerResourceDefinition.Attribute.MARSHALLER.getDefinition()));

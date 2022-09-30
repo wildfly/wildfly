@@ -31,11 +31,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.jgroups.Address;
+import org.jgroups.Message;
 import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RequestCorrelator;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.UnicastRequest;
-import org.jgroups.util.Buffer;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 
@@ -52,9 +52,9 @@ public class ServiceRequest<T, C> extends UnicastRequest<T> {
         this.context = context;
     }
 
-    public CompletionStage<T> send(Buffer data) throws CommandDispatcherException {
+    public CompletionStage<T> send(Message message) throws CommandDispatcherException {
         try {
-            this.sendRequest(data);
+            this.sendRequest(message);
             return this;
         } catch (Exception e) {
             throw new CommandDispatcherException(e);

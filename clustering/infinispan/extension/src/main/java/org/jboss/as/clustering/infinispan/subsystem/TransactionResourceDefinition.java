@@ -26,7 +26,7 @@ import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.transaction.LockingMode;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;

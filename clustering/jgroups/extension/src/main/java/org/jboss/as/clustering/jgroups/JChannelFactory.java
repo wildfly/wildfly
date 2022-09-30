@@ -21,15 +21,14 @@
  */
 package org.jboss.as.clustering.jgroups;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.network.SocketBinding;
+import org.jgroups.EmptyMessage;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.blocks.RequestCorrelator;
@@ -48,8 +47,6 @@ import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
  * @author Paul Ferraro
  */
 public class JChannelFactory implements ChannelFactory {
-
-    static final ByteBuffer UNKNOWN_FORK_RESPONSE = ByteBuffer.allocate(0);
 
     private final ProtocolStackConfiguration configuration;
 
@@ -83,11 +80,13 @@ public class JChannelFactory implements ChannelFactory {
                 Header header = (Header) message.getHeader(this.id);
                 // If this is a request expecting a response, don't leave the requester hanging - send an identifiable response on which it can filter
                 if ((header != null) && (header.type == Header.REQ) && header.rspExpected()) {
-                    Message response = message.makeReply().setFlag(message.getFlags()).clearFlag(Message.Flag.RSVP, Message.Flag.INTERNAL);
+                    Message response = new EmptyMessage(message.src()).setFlag(message.getFlags(), false).clearFlag(Message.Flag.RSVP);
+                    if (message.getDest() != null) {
+                        response.src(message.getDest());
+                    }
 
                     response.putHeader(FORK.ID, message.getHeader(FORK.ID));
                     response.putHeader(this.id, new Header(Header.RSP, header.req_id, header.corrId));
-                    response.setBuffer(UNKNOWN_FORK_RESPONSE.array());
 
                     fork.getProtocolStack().getChannel().down(response);
                 }
@@ -101,7 +100,7 @@ public class JChannelFactory implements ChannelFactory {
         // Add RELAY2 to the top of the stack, if defined
         List<ProtocolConfiguration<? extends Protocol>> relays = this.configuration.getRelay().isPresent() ? Collections.singletonList(this.configuration.getRelay().get()) : Collections.emptyList();
         List<Protocol> protocols = new ArrayList<>(transports.size() + this.configuration.getProtocols().size() + relays.size() + 1);
-        for (List<ProtocolConfiguration<? extends Protocol>> protocolConfigs : Arrays.asList(transports, this.configuration.getProtocols(), relays)) {
+        for (List<ProtocolConfiguration<? extends Protocol>> protocolConfigs : List.of(transports, this.configuration.getProtocols(), relays)) {
             for (ProtocolConfiguration<? extends Protocol> protocolConfig : protocolConfigs) {
                 protocols.add(protocolConfig.createProtocol(this.configuration));
                 bindings.putAll(protocolConfig.getSocketBindings());
@@ -126,7 +125,7 @@ public class JChannelFactory implements ChannelFactory {
     }
 
     @Override
-    public boolean isUnknownForkResponse(ByteBuffer response) {
-        return UNKNOWN_FORK_RESPONSE.equals(response);
+    public boolean isUnknownForkResponse(Message response) {
+        return !response.hasPayload();
     }
 }

@@ -87,7 +87,7 @@ public class SocketProtocolResourceDefinition extends ProtocolResourceDefinition
         }
     }
 
-    SocketProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), SocketProtocolConfigurationServiceConfigurator::new, parentServiceConfiguratorFactory);
+    SocketProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
     }
 }

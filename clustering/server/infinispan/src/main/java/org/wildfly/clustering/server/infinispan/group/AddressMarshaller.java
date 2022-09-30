@@ -26,7 +26,6 @@ import java.io.IOException;
 
 import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
-import org.jgroups.stack.IpAddressUUID;
 import org.jgroups.util.UUID;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
@@ -41,7 +40,6 @@ public enum AddressMarshaller implements FieldSetMarshaller<Address, Address> {
 
     private static final int UUID_ADDRESS_INDEX = 0;
     private static final int IP_ADDRESS_INDEX = 1;
-    private static final int IP_UUID_ADDRESS_INDEX = 2;
     private static final int FIELDS = 3;
 
     @Override
@@ -59,8 +57,6 @@ public enum AddressMarshaller implements FieldSetMarshaller<Address, Address> {
         switch (index) {
             case UUID_ADDRESS_INDEX:
                 return reader.readObject(UUID.class);
-            case IP_UUID_ADDRESS_INDEX:
-                return reader.readObject(IpAddressUUID.class);
             case IP_ADDRESS_INDEX:
                 return reader.readObject(IpAddress.class);
             default:
@@ -71,11 +67,7 @@ public enum AddressMarshaller implements FieldSetMarshaller<Address, Address> {
     @Override
     public void writeFields(ProtoStreamWriter writer, int startIndex, Address address) throws IOException {
         if (address instanceof IpAddress) {
-            if (address instanceof IpAddressUUID) {
-                writer.writeObject(startIndex + IP_UUID_ADDRESS_INDEX, address);
-            } else {
-                writer.writeObject(startIndex + IP_ADDRESS_INDEX, address);
-            }
+            writer.writeObject(startIndex + IP_ADDRESS_INDEX, address);
         } else {
             writer.writeObject(startIndex + UUID_ADDRESS_INDEX, address);
         }

@@ -36,7 +36,7 @@ import org.wildfly.clustering.marshalling.spi.BooleanExternalizer;
  */
 public class LinkedHashMapExternalizer extends MapExternalizer<LinkedHashMap<Object, Object>, Boolean, Map.Entry<Boolean, Integer>> {
 
-    public static final Function<Map.Entry<Boolean, Integer>, LinkedHashMap<Object, Object>> FACTORY = new Function<Map.Entry<Boolean, Integer>, LinkedHashMap<Object, Object>>() {
+    public static final Function<Map.Entry<Boolean, Integer>, LinkedHashMap<Object, Object>> FACTORY = new Function<>() {
         @Override
         public LinkedHashMap<Object, Object> apply(Map.Entry<Boolean, Integer> entry) {
             int size = entry.getValue();
@@ -45,7 +45,7 @@ public class LinkedHashMapExternalizer extends MapExternalizer<LinkedHashMap<Obj
         }
     };
 
-    public static final Function<LinkedHashMap<Object, Object>, Boolean> ACCESS_ORDER = new Function<LinkedHashMap<Object, Object>, Boolean>() {
+    public static final Function<LinkedHashMap<Object, Object>, Boolean> ACCESS_ORDER = new Function<>() {
         @Override
         public Boolean apply(LinkedHashMap<Object, Object> map) {
             Object insertOrder = new Object();

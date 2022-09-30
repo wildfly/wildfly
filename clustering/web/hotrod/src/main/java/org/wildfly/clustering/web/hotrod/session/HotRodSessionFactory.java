@@ -91,7 +91,7 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
         this.creationMetaDataCache = config.getCache();
         this.accessMetaDataCache= config.getCache();
         this.creationMetaDataCache.addClientListener(this, null, new Object[] { Boolean.TRUE });
-        this.nearCacheEnabled = this.creationMetaDataCache.getRemoteCacheManager().getConfiguration().remoteCaches().get(this.creationMetaDataCache.getName()).nearCacheMode().enabled();
+        this.nearCacheEnabled = this.creationMetaDataCache.getRemoteCacheContainer().getConfiguration().remoteCaches().get(this.creationMetaDataCache.getName()).nearCacheMode().enabled();
     }
 
     @Override
@@ -99,7 +99,7 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
         this.creationMetaDataCache.removeClientListener(this);
         WildFlySecurityManager.doUnchecked(this.executor, DefaultExecutorService.SHUTDOWN_ACTION);
         try {
-            this.executor.awaitTermination(this.creationMetaDataCache.getRemoteCacheManager().getConfiguration().transactionTimeout(), TimeUnit.MILLISECONDS);
+            this.executor.awaitTermination(this.creationMetaDataCache.getRemoteCacheContainer().getConfiguration().transactionTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -124,7 +124,7 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
                 if (value != null) {
                     buffer.get(value);
                 }
-                Marshaller marshaller = creationMetaDataCache.getRemoteCacheManager().getConfiguration().marshaller();
+                Marshaller marshaller = creationMetaDataCache.getRemoteCacheContainer().getConfiguration().marshaller();
                 String id = null;
                 try {
                     SessionCreationMetaDataKey creationKey = (SessionCreationMetaDataKey) marshaller.objectFromByteBuffer(key);

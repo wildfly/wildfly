@@ -24,8 +24,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
@@ -66,12 +64,8 @@ public class MulticastSocketProtocolConfigurationServiceConfigurator extends Pro
 
     @Override
     public Map<String, SocketBinding> getSocketBindings() {
-        Map<String, SocketBinding> bindings = new HashMap<>();
         SocketBinding binding = this.binding.get();
-        for (String serviceName : Arrays.asList("jgroups.mping.mcast_sock", "jgroups.mping.mcast-send-sock")) {
-            bindings.put(serviceName, binding);
-        }
-        return bindings;
+        return Map.of("jgroups.mping.mcast_sock", binding, "jgroups.mping.mcast-send-sock", binding);
     }
 
     @Override

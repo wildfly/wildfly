@@ -129,7 +129,7 @@ public enum UndertowSpecificationProvider implements SpecificationProvider<HttpS
 
     @Override
     public Consumer<HttpSession> prePassivateNotifier(HttpSessionActivationListener listener) {
-        return new Consumer<HttpSession>() {
+        return new Consumer<>() {
             @Override
             public void accept(HttpSession session) {
                 listener.sessionWillPassivate(new HttpSessionEvent(session));
@@ -139,7 +139,7 @@ public enum UndertowSpecificationProvider implements SpecificationProvider<HttpS
 
     @Override
     public Consumer<HttpSession> postActivateNotifier(HttpSessionActivationListener listener) {
-        return new Consumer<HttpSession>() {
+        return new Consumer<>() {
             @Override
             public void accept(HttpSession session) {
                 listener.sessionDidActivate(new HttpSessionEvent(session));

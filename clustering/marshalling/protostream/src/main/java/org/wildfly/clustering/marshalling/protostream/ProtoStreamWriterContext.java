@@ -38,7 +38,7 @@ interface ProtoStreamWriterContext extends ProtoStreamOperation.Context, AutoClo
         }
     }
 
-    ThreadLocal<Factory> FACTORY = new ThreadLocal<Factory>() {
+    ThreadLocal<Factory> FACTORY = new ThreadLocal<>() {
         @Override
         protected Factory initialValue() {
             return new DefaultFactory();

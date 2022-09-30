@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- *********************************************************************************** -->
@@ -50,6 +50,12 @@
             <artifactId>netty-all</artifactId>
             <!-- use the Netty version required by HornetQ 2.4.7.Final -->
             <version>4.0.13.Final</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- TODO confirm thi is needed -->
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming-client</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow.filters;
 
 import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
+import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 import io.undertow.Handlers;
 import io.undertow.UndertowOptions;
 import io.undertow.client.UndertowClient;
@@ -276,6 +277,9 @@ public class ModClusterService extends FilterService {
         }
         final ModelNode sslContext = ModClusterDefinition.SSL_CONTEXT.resolveModelAttribute(operationContext, model);
         final ModelNode securityRealm = ModClusterDefinition.SECURITY_REALM.resolveModelAttribute(operationContext, model);
+        if (securityRealm.isDefined()) {
+             ROOT_LOGGER.runtimeSecurityRealmUnsupported();
+        }
 
         final ModelNode packetSizeNode = ModClusterDefinition.MAX_AJP_PACKET_SIZE.resolveModelAttribute(operationContext, model);
         OptionMap.Builder builder = OptionMap.builder();
