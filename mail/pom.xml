@@ -43,7 +43,7 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -53,35 +53,30 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
-        </dependency>
-        <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <artifactId>wildfly-ee-jakarta</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-server</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-naming</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-network</artifactId>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-subsystem-test</artifactId>
-            <type>pom</type>
-            <scope>test</scope>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
@@ -90,6 +85,7 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
@@ -98,22 +94,44 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-network</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-credential-store</artifactId>
+        </dependency>
+
+        <!-- test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-credential-store</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-credential</artifactId>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem-test</artifactId>
+            <type>pom</type>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

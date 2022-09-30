@@ -48,7 +48,7 @@ interface MailLogger extends BasicLogger {
     MailLogger ROOT_LOGGER = Logger.getMessageLogger(MailLogger.class, "org.jboss.as.mail.extension");
 
     /**
-     * Logs an info message indicating a javax.mail.Session was bound into JNDI.
+     * Logs an info message indicating a jakarta.mail.Session was bound into JNDI.
      *
      * @param jndiName the JNDI name under which the session was bound.
      */
@@ -57,7 +57,7 @@ interface MailLogger extends BasicLogger {
     void boundMailSession(String jndiName);
 
     /**
-     * Logs an info message indicating a javax.mail.Session was unbound from JNDI.
+     * Logs an info message indicating a jakarta.mail.Session was unbound from JNDI.
      *
      * @param jndiName the JNDI name under which the session was bound.
      */
@@ -66,7 +66,7 @@ interface MailLogger extends BasicLogger {
     void unboundMailSession(String jndiName);
 
     /**
-     * Logs a debug message indicating a javax.mail.Session was removed.
+     * Logs a debug message indicating a jakarta.mail.Session was removed.
      *
      * @param jndiName the JNDI name under which the session had been bound.
      */

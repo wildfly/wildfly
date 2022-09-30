@@ -28,15 +28,15 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.metadata.javaee.spec.MailSessionMetaData;
 import org.jboss.metadata.javaee.spec.PropertyMetaData;
 import org.jboss.msc.service.StartException;
+
+import jakarta.mail.Authenticator;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -76,11 +76,11 @@ class SessionProviderFactory {
         /**
          * Configures mail session properties
          *
-         * @throws org.jboss.msc.service.StartException
-         *          if socket binding could not be found
-         * @see {http://javamail.kenai.com/nonav/javadocs/com/sun/mail/smtp/package-summary.html}
-         * @see {http://javamail.kenai.com/nonav/javadocs/com/sun/mail/pop3/package-summary.html}
-         * @see {http://javamail.kenai.com/nonav/javadocs/com/sun/mail/imap/package-summary.html}
+         * @throws org.jboss.msc.service.StartException if socket binding could not be found
+         *
+         * @see <a href="https://eclipse-ee4j.github.io/mail/docs/api/jakarta.mail/com/sun/mail/smtp/package-summary.html>Package SMTP documentation</a>
+         * @see <a href="https://eclipse-ee4j.github.io/mail/docs/api/jakarta.mail/com/sun/mail/pop3/package-summary.html>Package POP3 documentation</a>
+         * @see <a href="https://eclipse-ee4j.github.io/mail/docs/api/jakarta.mail/com/sun/mail/imap/package-summary.html>Package IMAP documentation</a>
          */
         private void configure() throws StartException {
             if (sessionConfig.getSmtpServer() != null) {
@@ -188,7 +188,7 @@ class SessionProviderFactory {
         }
 
         @Override
-        protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+        protected jakarta.mail.PasswordAuthentication getPasswordAuthentication() {
             String protocol = getRequestingProtocol();
             Credentials c = null;
             if (MailSubsystemModel.SMTP.equals(protocol) && config.getSmtpServer() != null) {
@@ -208,7 +208,7 @@ class SessionProviderFactory {
             }
 
             if (c != null && c.getPassword() != null) {
-                return new javax.mail.PasswordAuthentication(c.getUsername(), c.getPassword());
+                return new jakarta.mail.PasswordAuthentication(c.getUsername(), c.getPassword());
             }
             return null;
         }

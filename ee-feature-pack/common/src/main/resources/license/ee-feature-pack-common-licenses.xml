@@ -3189,7 +3189,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-mail-jakarta</artifactId>
+      <artifactId>wildfly-mail</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
