@@ -770,4 +770,19 @@
         <cve>CVE-2022-1259</cve>
     </suppress>
 
+    <!-- Suppression after undertow update to 2.2.19.Final -->
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-websockets-jsr-2.2.19.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-websockets\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1319</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-servlet-jakarta-2.2.19.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-servlet\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1319</cve>
+    </suppress>
 </suppressions>
