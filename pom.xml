@@ -425,7 +425,7 @@
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>2.0.0</version.jboss.jaxbintros>
-        <version.joda-time>2.11.0</version.joda-time>
+        <version.joda-time>2.11.2</version.joda-time>
         <version.jsoup>1.15.3</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>8.0.0</version.net.shibboleth.utilities.java-support>
