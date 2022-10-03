@@ -22,6 +22,7 @@
 
 package org.jboss.as.naming.subsystem;
 
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -33,6 +34,8 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -95,8 +98,18 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
+    static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("name", ModelType.STRING, true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = {BINDING_TYPE, VALUE, TYPE, CLASS, MODULE, LOOKUP, ENVIRONMENT, CACHE};
+    static final ObjectTypeAttributeDefinition PROPERTY = new ObjectTypeAttributeDefinition.Builder(NamingSubsystemModel.PROPERTY, NAME, VALUE, TYPE)
+            .build();
+
+    static final ObjectListAttributeDefinition PROPERTIES = new ObjectListAttributeDefinition.Builder(NamingSubsystemModel.PROPERTIES, PROPERTY)
+            .setRequired(false)
+            .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = {BINDING_TYPE, VALUE, TYPE, CLASS, MODULE, LOOKUP, ENVIRONMENT, CACHE, PROPERTIES};
 
 
     private static final List<AccessConstraintDefinition> ACCESS_CONSTRAINTS;
@@ -136,7 +149,8 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
                 .addParameter(CLASS)
                 .addParameter(MODULE)
                 .addParameter(LOOKUP)
-                .addParameter(ENVIRONMENT);
+                .addParameter(ENVIRONMENT)
+                .addParameter(PROPERTIES);
         resourceRegistration.registerOperationHandler(builder.build(), new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -221,6 +235,14 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
         } else if (type == BindingType.LOOKUP) {
             if(!modelNode.hasDefined(NamingBindingResourceDefinition.LOOKUP.getName())) {
                 throw NamingLogger.ROOT_LOGGER.bindingTypeRequiresAttributeDefined(type, NamingBindingResourceDefinition.LOOKUP.getName());
+            }
+            if (modelNode.hasDefined(NamingBindingResourceDefinition.CACHE.getName())
+                    && modelNode.get(NamingBindingResourceDefinition.CACHE.getName()).asBoolean()) {
+                throw NamingLogger.ROOT_LOGGER.cacheNotValidForBindingType(type);
+            }
+        } else if (type == BindingType.PROPERTIES) {
+            if (!modelNode.hasDefined(NamingBindingResourceDefinition.PROPERTIES.getName())) {
+                throw NamingLogger.ROOT_LOGGER.bindingTypeRequiresAttributeDefined(type, NamingBindingResourceDefinition.PROPERTIES.getName());
             }
             if (modelNode.hasDefined(NamingBindingResourceDefinition.CACHE.getName())
                     && modelNode.get(NamingBindingResourceDefinition.CACHE.getName()).asBoolean()) {

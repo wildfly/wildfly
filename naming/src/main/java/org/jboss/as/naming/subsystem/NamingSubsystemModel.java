@@ -44,6 +44,8 @@ public interface NamingSubsystemModel {
 
     String MODULE = "module";
 
+    String NAME = "name";
+
     String REBIND = "rebind";
     String REMOTE_NAMING = "remote-naming";
 
@@ -53,6 +55,10 @@ public interface NamingSubsystemModel {
     String TYPE = "type";
 
     String VALUE = "value";
+
+    String PROPERTIES = "properties";
+
+    String PROPERTY = "property";
 
     PathElement BINDING_PATH = PathElement.pathElement(BINDING);
     PathElement REMOTE_NAMING_PATH = PathElement.pathElement(SERVICE, REMOTE_NAMING);

@@ -19,7 +19,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<subsystem xmlns="urn:jboss:domain:naming:2.0">
+<subsystem xmlns="urn:jboss:domain:naming:3.0">
     <bindings>
         <simple name="java:global/a" value="${simple.value:100}" type="${simple.type:int}"/>
         <object-factory name="${object.name:java:global/b}" module="${object.module:org.jboss.as.naming}"
@@ -28,6 +28,7 @@
                 <property name="${prop.key:key}" value="${prop.value:value}"/>
             </environment>
         </object-factory>
+
         <lookup name="${lookup.name:java:global/c}" lookup="${lookup.name:java:global/b}"/>
         <external-context name="${object.name:java:global/external}" module="${object.module:org.jboss.as.naming}"
                           class="${object.name:javax.naming.InitialContext}" cache="true">
@@ -35,6 +36,10 @@
                 <property name="${prop.key:key}" value="${prop.value:value}"/>
             </environment>
         </external-context>
+        <properties name="java:global/d">
+            <property name="newBinding1" value="${simple.value:100}" type="${simple.type:int}"></property>
+            <property name="newBinding2" value="${simple.value:newValue}" type="${simple.type:String}"></property>
+        </properties>
     </bindings>
     <remote-naming/>
 </subsystem>
