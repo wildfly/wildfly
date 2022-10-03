@@ -169,6 +169,7 @@
             for the maven module that includes the test.
          -->
         <modular.jdk.args>
+            --enable-preview
             --add-exports=java.desktop/sun.awt=ALL-UNNAMED
             --add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED
             --add-exports=java.naming/com.sun.jndi.url.ldap=ALL-UNNAMED
