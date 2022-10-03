@@ -563,9 +563,9 @@
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>2.0.0.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>
         <legacy.version.org.jboss.weld.weld>3.1.9.Final</legacy.version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld>5.0.1.Final</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld>5.1.0.Final</version.org.jboss.weld.weld>
         <legacy.version.org.jboss.weld.weld-api>3.1.SP4</legacy.version.org.jboss.weld.weld-api>
-        <version.org.jboss.weld.weld-api>5.0.SP2</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld-api>5.0.SP3</version.org.jboss.weld.weld-api>
         <legacy.version.org.jboss.ws.api>1.1.2.Final</legacy.version.org.jboss.ws.api>
         <version.org.jboss.ws.api>2.0.0.Final</version.org.jboss.ws.api>
         <legacy.version.org.jboss.ws.common>3.3.3.Final</legacy.version.org.jboss.ws.common>
