@@ -908,7 +908,7 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+      <artifactId>wildfly-http-ejb-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>

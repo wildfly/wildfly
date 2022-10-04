@@ -1467,7 +1467,7 @@
 
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-client-common-jakarta</artifactId>
+            <artifactId>wildfly-http-client-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1478,7 +1478,7 @@
 
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+            <artifactId>wildfly-http-ejb-client</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1489,7 +1489,7 @@
 
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-http-transaction-client</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

@@ -810,11 +810,11 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-client-common-jakarta</artifactId>
+            <artifactId>wildfly-http-client-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+            <artifactId>wildfly-http-ejb-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
@@ -822,7 +822,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-http-transaction-client</artifactId>
         </dependency>
         <dependency>
             <groupId>xom</groupId>
