@@ -35,7 +35,6 @@
     <dependencies>
         <module name="javax.json.bind.api"/>
         <module name="org.apache.commons.io"/>
-        <module name="org.eclipse.yasson" services="import"/>
         <module name="javax.annotation.api"/>
         <module name="javax.json.api"/>
         <module name="javax.enterprise.api"/>
