@@ -2053,7 +2053,7 @@
             <dependency>
                 <groupId>org.wildfly.transaction</groupId>
                 <artifactId>wildfly-transaction-client</artifactId>
-                <version>${version.org.wildfly.transaction.client}</version>
+                <version>${legacy.version.org.wildfly.transaction.client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
