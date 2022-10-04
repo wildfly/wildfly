@@ -705,7 +705,7 @@ not already set in persistence unit definition):
 |=======================================================================
 |Property |Purpose
 
-|hibernate.id.new_generator_mappings can no longer be set to false by applications as per Hibernate 6 change to only support hibernate.id.new_generator_mappings=true.
+|hibernate.id.new_generator_mappings| Can no longer be set to false by applications as per the Hibernate 6 change to only support hibernate.id.new_generator_mappings=true.
 
 |hibernate.transaction.jta.platform= instance of
 org.hibernate.service.jta.platform.spi.JtaPlatform interface |The
@@ -734,7 +734,7 @@ This replaces the `hibernate.ejb.entitymanager_factory_name` property which is n
 
 |hibernate.model.generator_name_as_sequence_name=true |
 
-|hibernate.jpa.compliance=true | sets all of the various hibernate.jpa.* properties to true (hibernate.jpa.compliance.transaction, hibernate.jpa.compliance.closed,hibernate.jpa.compliance.query, hibernate.jpa.compliance.list, hibernate.jpa.compliance.caching, hibernate.jpa.compliance.proxy
+|hibernate.jpa.compliance=true | Sets all of the various hibernate.jpa.* properties to true (hibernate.jpa.compliance.transaction, hibernate.jpa.compliance.closed,hibernate.jpa.compliance.query, hibernate.jpa.compliance.list, hibernate.jpa.compliance.caching, hibernate.jpa.compliance.proxy
 
 |hibernate.enable_lazy_load_no_trans=false |
 
