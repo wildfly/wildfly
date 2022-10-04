@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -82,6 +83,7 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setDefaultValue(ModelNode.FALSE)
             .setRestartAllServices()
+            .setDeprecated(ModelVersion.create(5, 0))
             .build();
 
     static final SimpleAttributeDefinition THREAD_POOL_SIZE_ATTRIBUTE =
@@ -114,8 +116,6 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
                     RuntimePackageDependency.passive("org.jboss.as.weld.beanvalidation"),
                     RuntimePackageDependency.passive("org.jboss.as.weld.webservices"),
                     RuntimePackageDependency.passive("org.jboss.as.weld.transactions"),
-                    // Warning, large file system content.
-                    RuntimePackageDependency.optional("org.jboss.weld.probe"),
                     RuntimePackageDependency.required("javax.inject.api"),
                     RuntimePackageDependency.required("javax.persistence.api"),
                     RuntimePackageDependency.required("org.hibernate.validator.cdi"));
