@@ -843,7 +843,7 @@
             <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-ejb-client</artifactId>
-                <version>${version.org.jboss.ejb-client}</version>
+                <version>${legacy.version.org.jboss.ejb-client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
