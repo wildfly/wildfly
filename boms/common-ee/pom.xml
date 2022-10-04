@@ -1976,9 +1976,8 @@
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cdi-common</artifactId>
-                <version>${version.org.infinispan.cdi}</version>
-                <classifier>jakarta</classifier>
+                <artifactId>infinispan-cdi-common-jakarta</artifactId>
+                <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1988,9 +1987,8 @@
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cdi-embedded</artifactId>
-                <version>${version.org.infinispan.cdi}</version>
-                <classifier>jakarta</classifier>
+                <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
+                <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2000,9 +1998,8 @@
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cdi-remote</artifactId>
-                <version>${version.org.infinispan.cdi}</version>
-                <classifier>jakarta</classifier>
+                <artifactId>infinispan-cdi-remote-jakarta</artifactId>
+                <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

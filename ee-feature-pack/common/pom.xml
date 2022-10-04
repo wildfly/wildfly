@@ -3101,8 +3101,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-common</artifactId>
-            <classifier>jakarta</classifier>
+            <artifactId>infinispan-cdi-common-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -3112,8 +3111,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-embedded</artifactId>
-            <classifier>jakarta</classifier>
+            <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -3123,8 +3121,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-remote</artifactId>
-            <classifier>jakarta</classifier>
+            <artifactId>infinispan-cdi-remote-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

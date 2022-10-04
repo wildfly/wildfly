@@ -355,20 +355,17 @@
         <!-- Infinispan modules tests -->
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-common</artifactId>
-            <classifier>jakarta</classifier>
+            <artifactId>infinispan-cdi-common-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-embedded</artifactId>
-            <classifier>jakarta</classifier>
+            <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-remote</artifactId>
-            <classifier>jakarta</classifier>
+            <artifactId>infinispan-cdi-remote-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
