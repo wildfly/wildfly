@@ -122,7 +122,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client-jakarta</artifactId>
+            <artifactId>wildfly-naming-client</artifactId>
         </dependency>
 
         <dependency>

@@ -3031,7 +3031,7 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-naming-client-jakarta</artifactId>
+                <artifactId>wildfly-naming-client</artifactId>
                 <version>${version.org.wildfly.naming-client}</version>
                 <exclusions>
                     <exclusion>

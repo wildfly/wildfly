@@ -599,7 +599,8 @@
         <version.org.wildfly.core>19.0.0.Beta18</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.14.Final</version.org.wildfly.http-client>
-        <version.org.wildfly.naming-client>1.0.16.Final</version.org.wildfly.naming-client>
+        <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
+        <version.org.wildfly.naming-client>2.0.0.Final</version.org.wildfly.naming-client>
         <legacy.version.org.wildfly.security.elytron>1.20.2.Final</legacy.version.org.wildfly.security.elytron>
         <legacy.version.org.wildfly.security.elytron-mp>1.20.2.Final</legacy.version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>

@@ -2065,7 +2065,7 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-naming-client</artifactId>
-                <version>${version.org.wildfly.naming-client}</version>
+                <version>${legacy.version.org.wildfly.naming-client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.remoting3</groupId>
