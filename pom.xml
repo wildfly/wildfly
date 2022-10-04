@@ -488,7 +488,6 @@
         <legacy.version.org.glassfish.jakarta.el>3.0.3.jbossorg-4</legacy.version.org.glassfish.jakarta.el>
         <legacy.version.org.glassfish.jakarta.enterprise.concurrent>1.1.1</legacy.version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.enterprise.concurrent>3.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
-        <legacy.version.org.glassfish.jakarta.json>1.1.6</legacy.version.org.glassfish.jakarta.json>
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF. Use the version expression from the root
          pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
         <version.org.glassfish.jaxb>4.0.1</version.org.glassfish.jaxb>
@@ -1128,17 +1127,6 @@
                         <artifactId>servlet-api</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <!--
-            TODO used both in testsuite/integration/microprofile-tck, ee-9/source-transform/messaging-activemq/subsystem and in legacy code.
-            Once the legacy use is removed, this can become a <scope>test</scope> dependency.
-            TODO double-check that the testsuite use is really needed
-            -->
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.json</artifactId>
-                <version>${legacy.version.org.glassfish.jakarta.json}</version>
             </dependency>
 
             <dependency>
