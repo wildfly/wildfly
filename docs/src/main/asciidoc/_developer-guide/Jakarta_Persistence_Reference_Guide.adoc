@@ -698,32 +698,19 @@ Updated `jboss-deployment-structure.xml`:
 [[hibernate-properties]]
 == Hibernate properties
 
-WildFly automatically sets the following Hibernate properties (if
+WildFly automatically sets or checks the following Hibernate properties (if
 not already set in persistence unit definition):
 
 [cols=",",options="header"]
 |=======================================================================
 |Property |Purpose
 
-|hibernate.id.new_generator_mappings =true |New applications should let
-this default to true, older applications with existing data might need
-to set to false (see note below). It really depends on whether your
-application uses the @GeneratedValue(AUTO) which will generates new key
-values for newly created entities. The application can override this
-value (in the persistence.xml).
+|hibernate.id.new_generator_mappings| Can no longer be set to false by applications as per the Hibernate 6 change to only support hibernate.id.new_generator_mappings=true.
 
 |hibernate.transaction.jta.platform= instance of
 org.hibernate.service.jta.platform.spi.JtaPlatform interface |The
 transaction manager, user transaction and transaction synchronization
 registry is passed into Hibernate via this class.
-
-|hibernate.ejb.resource_scanner = instance of
-org.hibernate.ejb.packaging.Scanner interface |Instance of entity
-scanning class is passed in that knows how to use the AS annotation
-indexer (for faster deployment).
-
-|hibernate.transaction.manager_lookup_class |This property is removed if
-found in the persistence.xml (could conflict with JtaPlatform)
 
 |hibernate.session_factory_name = qualified persistence unit name |Is
 set to the application name + persistence unit name (application can
@@ -733,10 +720,11 @@ application deployments on the AS instance).
 |hibernate.session_factory_name_is_jndi = false |only set if the
 application didn't specify a value for hibernate.session_factory_name.
 
-|hibernate.ejb.entitymanager_factory_name = qualified persistence unit
+|hibernate.entitymanager_factory_name = qualified persistence unit
 name |Is set to the application name + persistence unit name
 (application can specify a different value but it needs to be unique
-across all application deployments on the AS instance).
+across all application deployments on the AS instance).  
+This replaces the `hibernate.ejb.entitymanager_factory_name` property which is no longer supported.
 
 |hibernate.query.jpaql_strict_compliance=true | 
 
@@ -746,39 +734,12 @@ across all application deployments on the AS instance).
 
 |hibernate.model.generator_name_as_sequence_name=true |
 
-|hibernate.jpa.compliance.transaction=true |
-
-|hibernate.jpa.compliance.closed=true |
-
-|hibernate.jpa.compliance.query=true |
-
-|hibernate.jpa.compliance.list=true |
-
-|hibernate.jpa.compliance.caching=true |
-
-|hibernate.jpa.compliance.proxy=true |
+|hibernate.jpa.compliance=true | Sets all of the various hibernate.jpa.* properties to true (hibernate.jpa.compliance.transaction, hibernate.jpa.compliance.closed,hibernate.jpa.compliance.query, hibernate.jpa.compliance.list, hibernate.jpa.compliance.caching, hibernate.jpa.compliance.proxy
 
 |hibernate.enable_lazy_load_no_trans=false |
 
-|hibernate.jpa.compliance.global_id_generators=true |
 
 |=======================================================================
-
-if *hibernate.id.new_generator_mappings* is *true*:
-
-* @GeneratedValue(AUTO) maps to
-org.hibernate.id.enhanced.SequenceStyleGenerator
-* @GeneratedValue(TABLE) maps to
-org.hibernate.id.enhanced.TableGenerator
-* @GeneratedValue(SEQUENCE) maps to
-org.hibernate.id.enhanced.SequenceStyleGenerator
-
-if *hibernate.id.new_generator_mappings* is *false*:
-
-* @GeneratedValue(AUTO) maps to Hibernate "native"
-* @GeneratedValue(TABLE) maps to
-org.hibernate.id.MultipleHiLoPerTableGenerator
-* @GeneratedValue(SEQUENCE) to Hibernate "seqhilo"
 
 [[persistence-unit-properties]]
 == Persistence unit properties
