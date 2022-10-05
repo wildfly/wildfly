@@ -677,7 +677,7 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>eclipselink</artifactId>
-                <version>${legacy.version.org.eclipselink.version}</version>
+                <version>${legacy.version.org.eclipse.persistence.eclipselink}</version>
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
