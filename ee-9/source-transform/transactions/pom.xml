@@ -69,7 +69,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-transaction-client</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -135,7 +135,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-http-transaction-client</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

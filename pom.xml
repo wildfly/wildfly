@@ -515,7 +515,8 @@
         <version.org.jboss.activemq.artemis.integration>1.0.6</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.arquillian.core>1.7.0.Alpha12</version.org.jboss.arquillian.core>
         <version.org.jboss.common.jboss-common-beans>2.0.1.Final</version.org.jboss.common.jboss-common-beans>
-        <version.org.jboss.ejb-client>4.0.47.Final</version.org.jboss.ejb-client>
+        <legacy.version.org.jboss.ejb-client>4.0.48.Final</legacy.version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client>5.0.0.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
@@ -598,13 +599,16 @@
         <version.org.wildfly.arquillian>5.0.0.Alpha5</version.org.wildfly.arquillian>
         <version.org.wildfly.core>19.0.0.Beta18</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
-        <version.org.wildfly.http-client>1.1.14.Final</version.org.wildfly.http-client>
-        <version.org.wildfly.naming-client>1.0.16.Final</version.org.wildfly.naming-client>
+        <legacy.version.org.wildfly.http-client>1.1.15.Final</legacy.version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>2.0.0.Final</version.org.wildfly.http-client>
+        <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
+        <version.org.wildfly.naming-client>2.0.0.Final</version.org.wildfly.naming-client>
         <legacy.version.org.wildfly.security.elytron>1.20.2.Final</legacy.version.org.wildfly.security.elytron>
         <legacy.version.org.wildfly.security.elytron-mp>1.20.2.Final</legacy.version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <legacy.version.org.wildfly.security.elytron-web>1.10.2.Final</legacy.version.org.wildfly.security.elytron-web>
-        <version.org.wildfly.transaction.client>2.0.1.Final</version.org.wildfly.transaction.client>
+        <legacy.version.org.wildfly.transaction.client>2.0.2.Final</legacy.version.org.wildfly.transaction.client>
+        <version.org.wildfly.transaction.client>3.0.0.Final</version.org.wildfly.transaction.client>
         <version.sun.jaxb>${version.org.glassfish.jaxb}</version.sun.jaxb>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver>

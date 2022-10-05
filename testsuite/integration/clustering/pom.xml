@@ -241,7 +241,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client-jakarta</artifactId>
+            <artifactId>jboss-ejb-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -313,22 +313,22 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client-jakarta</artifactId>
+            <artifactId>wildfly-naming-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-transaction-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-client-common-jakarta</artifactId>
+            <artifactId>wildfly-http-client-common</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+            <artifactId>wildfly-http-ejb-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -338,7 +338,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-http-transaction-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

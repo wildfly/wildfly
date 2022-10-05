@@ -29,7 +29,7 @@
 </exports>
 
 <resources>
-    <artifact name="${org.wildfly.transaction:wildfly-transaction-client-jakarta}"/>
+    <artifact name="${org.wildfly.transaction:wildfly-transaction-client}"/>
 </resources>
 
 <dependencies>

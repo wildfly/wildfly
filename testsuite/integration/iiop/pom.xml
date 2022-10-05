@@ -54,7 +54,7 @@
 
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client-jakarta</artifactId>
+            <artifactId>jboss-ejb-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -94,7 +94,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-transaction-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -106,7 +106,7 @@
         <!-- TODO confirm if this is needed -->
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client-jakarta</artifactId>
+            <artifactId>wildfly-naming-client</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

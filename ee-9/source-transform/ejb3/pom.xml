@@ -230,17 +230,17 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-transaction-client</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-client-common-jakarta</artifactId>
+            <artifactId>wildfly-http-client-common</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+            <artifactId>wildfly-http-ejb-client</artifactId>
         </dependency>
 
         <dependency>
@@ -266,7 +266,7 @@
 
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client-jakarta</artifactId>
+            <artifactId>jboss-ejb-client</artifactId>
         </dependency>
 
         <dependency>

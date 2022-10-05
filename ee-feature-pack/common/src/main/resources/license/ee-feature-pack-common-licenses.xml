@@ -2386,7 +2386,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss</groupId>
-      <artifactId>jboss-ejb-client-jakarta</artifactId>
+      <artifactId>jboss-ejb-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -4566,7 +4566,7 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-client-common-jakarta</artifactId>
+      <artifactId>wildfly-http-client-common</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -4577,7 +4577,7 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+      <artifactId>wildfly-http-ejb-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -4588,7 +4588,7 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-naming-client-jakarta</artifactId>
+      <artifactId>wildfly-http-naming-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -4599,7 +4599,7 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
+      <artifactId>wildfly-http-transaction-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
