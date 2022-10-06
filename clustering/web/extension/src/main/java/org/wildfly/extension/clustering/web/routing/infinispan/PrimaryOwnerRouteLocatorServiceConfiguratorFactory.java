@@ -25,7 +25,7 @@ package org.wildfly.extension.clustering.web.routing.infinispan;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.wildfly.clustering.ee.infinispan.InfinispanCacheConfiguration;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.service.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * Factory for creating a service configurator for a primary owner route locator.

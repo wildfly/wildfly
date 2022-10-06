@@ -24,6 +24,7 @@ package org.wildfly.extension.clustering.web.routing;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
+import org.wildfly.clustering.web.service.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * Factory for creating a service configurator for a null route locator.

@@ -26,9 +26,9 @@ import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
+import org.wildfly.clustering.web.service.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
-import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * An Infinispan cache-based {@link DistributableSessionManagementProvider}.

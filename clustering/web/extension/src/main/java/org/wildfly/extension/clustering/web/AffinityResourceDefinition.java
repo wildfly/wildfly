@@ -24,6 +24,7 @@ package org.wildfly.extension.clustering.web;
 
 import java.util.function.UnaryOperator;
 
+import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
@@ -42,11 +43,13 @@ public class AffinityResourceDefinition extends ChildResourceDefinition<Manageme
         return PathElement.pathElement("affinity", value);
     }
 
+    private final Iterable<? extends Capability> capabilities;
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceConfiguratorFactory factory;
 
-    AffinityResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory factory) {
+    AffinityResourceDefinition(PathElement path, Iterable<? extends Capability> capabilities, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory factory) {
         super(path, DistributableWebExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, pathElement(PathElement.WILDCARD_VALUE)));
+        this.capabilities = capabilities;
         this.configurator = configurator;
         this.factory = factory;
     }
@@ -54,7 +57,7 @@ public class AffinityResourceDefinition extends ChildResourceDefinition<Manageme
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
-        ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()));
+        ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver())).addCapabilities(this.capabilities);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.factory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
         return registration;

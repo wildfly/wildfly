@@ -44,10 +44,10 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRe
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
+import org.wildfly.clustering.web.service.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.service.session.LegacySessionManagementProviderFactory;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
-import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRouteLocatorServiceConfigurator;
 
 /**
