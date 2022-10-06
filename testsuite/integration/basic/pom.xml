@@ -3800,10 +3800,6 @@
                                         <!-- Requires the Arquillian Servlet 3.0 protocol to be overridden to Servlet 5.0 -->
                                         <exclude>org/jboss/as/test/integration/logging/config/LoggingProfileSharedTestCase.java</exclude>
 
-                                        <!-- Differences in the API changes for EE 8/9 and EE 10. -->
-                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingPropertiesTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingServicesTestCase.java</exclude>
-
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -3884,9 +3880,6 @@
                                              adapted to rely on Hibernate Search 6 APIs,
                                              so we still test Hibernate Search with EE9. -->
                                         <exclude>org/jboss/as/test/integration/hibernate/search/**</exclude>
-                                        <!-- Differences in the API changes for EE 8/9 and EE 10. -->
-                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingPropertiesTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingServicesTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
