@@ -31,5 +31,5 @@ import org.wildfly.clustering.web.session.DistributableSessionManagementConfigur
  */
 @Deprecated
 public interface LegacySessionManagementProviderFactory<C extends DistributableSessionManagementConfiguration<DeploymentUnit>> {
-    DistributableSessionManagementProvider<C> createSessionManagerProvider(ReplicationConfig config);
+    DistributableSessionManagementProvider<C> createSessionManagerProvider(DeploymentUnit unit, ReplicationConfig config);
 }
