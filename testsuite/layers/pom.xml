@@ -135,6 +135,10 @@
                                 <jboss-maven-provisioning-repo>${maven.repo.local}</jboss-maven-provisioning-repo>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                 <optional-packages>passive+</optional-packages>
+                                <!-- What std WF and WFP provision can differ, and we may exclude some
+                                     layers for one which don't exist in the other.
+                                     So tell Galleon to ignore this. -->
+                                <ignore-not-excluded-layers>true</ignore-not-excluded-layers>
                             </plugin-options>
                         </configuration>
                         <!--
@@ -2264,6 +2268,9 @@
                                                 <layer>undertow-https</layer>
                                                 <layer>web-passivation</layer>
                                             </layers>
+                                            <excluded-layers>
+                                                <layer>micrometer</layer>
+                                            </excluded-layers>
                                         </config>
                                     </configurations>
                                 </configuration>
@@ -2301,6 +2308,7 @@
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>
+                                                <layer>micrometer</layer>
                                             </excluded-layers>
                                         </config>
                                     </configurations>

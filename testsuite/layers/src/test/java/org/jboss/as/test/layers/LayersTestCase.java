@@ -38,21 +38,27 @@ public class LayersTestCase {
     // but not used in the test-all-layers installation.
     // This is the expected set of not provisioned modules when all layers are provisioned.
     private static final String[] NOT_USED_COMMON = {
+            // test-all-layers installation is non-ha and does not include layers that provide jgroups
             "org.jboss.as.clustering.jgroups",
             // TODO we need to add an agroal layer
             "org.wildfly.extension.datasources-agroal",
             "io.agroal",
+            // Legacy subsystems for which we will not provide layers
             "org.wildfly.extension.picketlink",
             "org.jboss.as.jacorb",
             "org.jboss.as.jsr77",
             "org.jboss.as.messaging",
             "org.jboss.as.web",
             "org.keycloak.keycloak-adapter-subsystem",
+            "org.jboss.as.security",
+            // end legacy subsystems ^^^
             // TODO nothing references this
             "org.wildfly.security.http.sfbasic",
             // TODO Legacy Seam integration. Does it even work with EE 10?
             "org.jboss.integration.ext-content",
+            // TODO move eclipse link support to an external feature pack
             "org.eclipse.persistence",
+            // RA not associated with any layer
             "org.jboss.genericjms",
             // Appclient support is not provided by a layer
             "org.jboss.as.appclient",
@@ -68,27 +74,36 @@ public class LayersTestCase {
             "org.wildfly.security.jakarta.client.resteasy",
             "org.wildfly.security.jakarta.client.webservices",
             "org.jboss.resteasy.microprofile.config",
-            // otel?
-            "com.google.protobuf",
+            // Temporarily provided to not break the wildfly-extras gRPC feature pack
+            // until it provides it itself.
             "io.grpc",
-            "io.opentelemetry.trace",
-            "org.wildfly.extension.opentelemetry",
-            "org.wildfly.extension.opentelemetry-api",
+            "com.google.protobuf",
+            // Alternative messaging protocols besides the std Artemis core protocol
+            // Use of these depends on an attribute value setting
             "org.apache.activemq.artemis.protocol.amqp",
+            "org.apache.qpid.proton",
             "org.apache.activemq.artemis.protocol.hornetq",
             "org.apache.activemq.artemis.protocol.stomp",
-            "org.apache.qpid.proton",
+            // Legacy client not associated with any layer
             "org.hornetq.client",
-            "org.jboss.as.security", // Legacy subsystem modules are not available via layers
-            "org.wildfly.extension.rts", // TODO we need to add an rts layer
+            // TODO we need to add an rts layer
+            "org.wildfly.extension.rts",
             "org.jboss.narayana.rts",
-            "org.jboss.as.xts", // TODO we need to add an xts layer
-            "org.wildfly.extension.elytron-oidc-client", // TODO we need to add an elytron-oidc-client layer
+            // TODO we need to add an xts layer
+            "org.jboss.as.xts",
+            // TODO we need to add the elytron-oidc-client layer to the config
+            "org.wildfly.extension.elytron-oidc-client",
             "org.wildfly.security.elytron-http-oidc",
             "org.wildfly.security.elytron-jose-jwk",
             "org.wildfly.security.elytron-jose-util",
-            "org.wildfly.reactive.dep.jts", // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
-            "org.wildfly.event.logger", // TODO should an undertow layer specify this?
+            // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
+            "org.wildfly.reactive.dep.jts",
+            // TODO should an undertow layer specify this?
+            "org.wildfly.event.logger",
+            // TODO test-all-layers uses microprofile-opentracing instead of opentelemetry
+            "org.wildfly.extension.opentelemetry",
+            "org.wildfly.extension.opentelemetry-api",
+            "io.opentelemetry.trace",
     };
     private static final String[] NOT_USED;
     // Packages that are not referenced from the module graph but needed.
@@ -97,13 +112,6 @@ public class LayersTestCase {
     private static final String[] NOT_REFERENCED_COMMON = {
             // May be needed by deployments if running on IBM JDK.
             "ibm.jdk",
-            "gnu.getopt",
-            "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
-            "io.smallrye.health",
-            "io.smallrye.openapi",
-            "io.vertx.client",
-            "org.eclipse.microprofile.health.api",
-            "org.eclipse.microprofile.openapi.api",
             // injected by ee
             "org.eclipse.yasson",
             // injected by ee
@@ -125,20 +133,34 @@ public class LayersTestCase {
             // injected by logging
             "org.jboss.logging.jul-to-slf4j-stub",
             "org.jboss.resteasy.resteasy-client-microprofile",
+            // Webservices tooling
             "org.jboss.ws.tools.common",
             "org.jboss.ws.tools.wsconsume",
             "org.jboss.ws.tools.wsprovide",
-            "org.jboss.weld.probe",
+            "gnu.getopt",
+            // Elytron tooling
+            "org.wildfly.security.elytron-tool",
             // bootable jar runtime
             "org.wildfly.bootable-jar",
+            // Extension not included in the default config
             "org.wildfly.extension.clustering.singleton",
+            // Extension not included in the default config
             "org.wildfly.extension.microprofile.health-smallrye",
+            "org.eclipse.microprofile.health.api",
+            "io.smallrye.health",
+            // Extension not included in the default config
             "org.wildfly.extension.microprofile.openapi-smallrye",
+            "org.eclipse.microprofile.openapi.api",
+            "io.smallrye.openapi",
+            "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
+            // Extension not included in the default config
             "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
+            // Extension not included in the default config
             "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
             "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
-            "org.wildfly.security.elytron-tool",
-            "org.wildfly.security.jakarta.security", // Dynamically added by ee-security and mp-jwt-smallrye DUPs but not referenced by subsystems.
+            "io.vertx.client",
+            // Dynamically added by ee-security and mp-jwt-smallrye DUPs but not referenced by subsystems.
+            "org.wildfly.security.jakarta.security",
             // injected by sar
             "org.jboss.as.system-jmx",
             // Loaded reflectively by the jboss fork impl of jakarta.xml.soap.FactoryFinder
@@ -164,7 +186,7 @@ public class LayersTestCase {
         if (AssumeTestGroupUtil.isWildFlyPreview()) {
             NOT_USED = ArrayUtils.addAll(
                     NOT_USED_COMMON,
-                    // WFP standard config uses Micrometer
+                    // WFP standard config uses Micrometer instead of WF Metrics
                     "io.smallrye.metrics",
                     "org.wildfly.extension.metrics",
                     "org.wildfly.extension.microprofile.metrics-smallrye",
@@ -173,28 +195,34 @@ public class LayersTestCase {
                     "org.eclipse.microprofile.fault-tolerance.api",
                     "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
                     "org.wildfly.microprofile.fault-tolerance-smallrye.executor",
-                    // Used by Hibernate Search but only in preview
-                    "org.hibernate.search.mapper.orm.coordination.outboxpolling" // Present only in preview
+                    // Used by Hibernate Search but only in preview TODO this doesn't seem right; NOT_REFERENCED should suffice
+                    "org.hibernate.search.mapper.orm.coordination.outboxpolling"
             );
 
             NOT_REFERENCED = ArrayUtils.addAll(
                     NOT_REFERENCED_COMMON,
                     "org.wildfly.extension.metrics",
-                    "org.hibernate.search.mapper.orm.coordination.outboxpolling" // Present only in preview
+                    // Used by the hibernate search that's injected by jpa
+                    "org.hibernate.search.mapper.orm.coordination.outboxpolling"
             );
         } else {
             NOT_USED = ArrayUtils.addAll(
                     NOT_USED_COMMON,
-                    "org.jboss.xnio.netty.netty-xnio-transport", // Messaging broker not included in the messaging-activemq layer
-                    "org.jboss.as.patching", // No patching modules in layers
+                    // Messaging broker not included in the messaging-activemq layer
+                    "org.jboss.xnio.netty.netty-xnio-transport",
+                    // No patching modules in layers
+                    "org.jboss.as.patching",
                     "org.jboss.as.patching.cli",
-                    "org.jboss.as.jpa.hibernate:4", // Misc alternative variants of things that we don't provide via layers
+                    // Misc alternative variants of JPA things that we don't provide via layers
+                    "org.jboss.as.jpa.hibernate:4",
                     "org.hibernate:5.0",
                     "org.hibernate.jipijapa-hibernate5",
                     "org.jboss.as.jpa.openjpa",
                     "org.apache.openjpa",
-                    "javax.management.j2ee.api", // TODO WFLY-16583 -- cruft
-                    "org.apache.avro" // Used by outboxpolling
+                    // TODO WFLY-16583 -- cruft
+                    "javax.management.j2ee.api",
+                    // Used by outboxpolling TODO this doesn't seem right
+                    "org.apache.avro"
             );
             NOT_REFERENCED = ArrayUtils.addAll(
                     NOT_REFERENCED_COMMON,
@@ -225,15 +253,11 @@ public class LayersTestCase {
                     "org.wildfly.reactive.messaging.common",
                     "org.wildfly.reactive.messaging.config",
                     "org.wildfly.reactive.messaging.kafka",
-                    // Opentelemetry is not included in the default config
-                    "org.wildfly.extension.opentelemetry",
-                    "org.wildfly.extension.opentelemetry-api",
-                    "io.opentelemetry.trace",
                     // injected by logging
                     "org.apache.logging.log4j.api",
                     // injected by logging
                     "org.jboss.logmanager.log4j2",
-                    "org.jboss.as.product:wildfly-web",
+//                    "org.jboss.as.product:wildfly-web",
                     // injected by ee
                     "javax.json.bind.api",
                     // injected by jpa
