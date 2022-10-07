@@ -764,9 +764,16 @@
     </suppress>
     <suppress>
         <notes><![CDATA[
-   file name: undertow-servlet-2.2.19.Final.jar
+   file name: undertow-servlet-jakarta-2.2.19.Final.jar
    ]]></notes>
-        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-servlet@.*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-servlet\-jakarta@.*$</packageUrl>
+        <cve>CVE-2022-1259</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-websockets-jsr-jakarta-2.2.19.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-websockets\-jsr\-jakarta@.*$</packageUrl>
         <cve>CVE-2022-1259</cve>
     </suppress>
 
