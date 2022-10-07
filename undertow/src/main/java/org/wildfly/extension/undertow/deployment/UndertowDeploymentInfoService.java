@@ -63,6 +63,7 @@ import io.undertow.servlet.handlers.ServletPathMatches;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 import io.undertow.websockets.extensions.PerMessageDeflateHandshake;
 import io.undertow.websockets.jsr.ServerWebSocketContainer;
+import io.undertow.websockets.jsr.UndertowContainerProvider;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 
 import org.apache.jasper.deploy.JspPropertyGroup;
@@ -132,14 +133,14 @@ import org.xnio.IoUtils;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpServletRequest;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -182,6 +183,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private DeploymentInfo deploymentInfo;
     private Registration registration;
 
+    private final AtomicReference<ServerActivity> serverActivity = new AtomicReference<>();
     private final JBossWebMetaData mergedMetaData;
     private final String deploymentName;
     private final Module module;
@@ -427,6 +429,22 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     @Override
     public synchronized void stop(final StopContext stopContext) {
+        // Remove the server activity
+        final ServerActivity activity = serverActivity.get();
+        if(activity != null) {
+            suspendController.get().unRegisterActivity(activity);
+        }
+        if (System.getSecurityManager() == null) {
+            UndertowContainerProvider.removeContainer(module.getClassLoader());
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    UndertowContainerProvider.removeContainer(module.getClassLoader());
+                    return null;
+                }
+            });
+        }
         deploymentInfoConsumer.accept(null);
         IoUtils.safeClose(this.deploymentInfo.getResourceManager());
         this.deploymentInfo.setConfidentialPortManager(null);
@@ -915,7 +933,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     webSocketDeploymentInfo.addExtension(perMessageDeflate);
                 }
 
-                final AtomicReference<ServerActivity> serverActivity = new AtomicReference<>();
                 webSocketDeploymentInfo.addListener(wsc -> {
                     serverActivity.set(new ServerActivity() {
                         @Override
@@ -949,19 +966,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     });
                     suspendController.get().registerActivity(serverActivity.get());
                 });
-                ServletContextListener sl = new ServletContextListener() {
-                    @Override
-                    public void contextInitialized(ServletContextEvent sce) {}
-
-                    @Override
-                    public void contextDestroyed(ServletContextEvent sce) {
-                        final ServerActivity activity = serverActivity.get();
-                        if(activity != null) {
-                            suspendController.get().unRegisterActivity(activity);
-                        }
-                    }
-                };
-                d.addListener(new ListenerInfo(sl.getClass(), new ImmediateInstanceFactory<EventListener>(sl)));
 
                 d.addServletContextAttribute(WebSocketDeploymentInfo.ATTRIBUTE_NAME, webSocketDeploymentInfo);
 

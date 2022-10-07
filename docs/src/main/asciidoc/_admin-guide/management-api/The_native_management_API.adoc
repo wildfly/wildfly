@@ -7,7 +7,7 @@ management requests using its "native management interface":
 
 [source,xml,options="nowrap"]
 ----
-<native-interface interface="management" port="9999" security-realm="ManagementRealm"/>
+<native-interface interface="management" port="9999" sasl-authentication-factory="management-sasl-authentication"/>
 ----
 
 ~(See standalone/configuration/standalone.xml or

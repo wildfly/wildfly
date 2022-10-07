@@ -1756,7 +1756,7 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>eclipselink</artifactId>
-                <version>${version.org.eclipselink.version}</version>
+                <version>${version.org.eclipse.persistence.eclipselink}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2161,7 +2161,7 @@
 
             <dependency>
                 <groupId>org.jboss</groupId>
-                <artifactId>jboss-ejb-client-jakarta</artifactId>
+                <artifactId>jboss-ejb-client</artifactId>
                 <version>${version.org.jboss.ejb-client}</version>
                 <exclusions>
                     <exclusion>
@@ -2772,18 +2772,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.weld.probe</groupId>
-                <artifactId>weld-probe-core</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-api</artifactId>
                 <version>${version.org.jboss.ws.api}</version>
@@ -3019,7 +3007,7 @@
 
             <dependency>
                 <groupId>org.wildfly.transaction</groupId>
-                <artifactId>wildfly-transaction-client-jakarta</artifactId>
+                <artifactId>wildfly-transaction-client</artifactId>
                 <version>${version.org.wildfly.transaction.client}</version>
                 <exclusions>
                     <exclusion>
@@ -3031,7 +3019,7 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-naming-client-jakarta</artifactId>
+                <artifactId>wildfly-naming-client</artifactId>
                 <version>${version.org.wildfly.naming-client}</version>
                 <exclusions>
                     <exclusion>
@@ -3043,7 +3031,7 @@
 
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
-                <artifactId>wildfly-http-client-common-jakarta</artifactId>
+                <artifactId>wildfly-http-client-common</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
                 <exclusions>
                     <exclusion>
@@ -3055,7 +3043,7 @@
 
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
-                <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+                <artifactId>wildfly-http-ejb-client</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
                 <exclusions>
                     <exclusion>
@@ -3067,7 +3055,7 @@
 
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
-                <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
+                <artifactId>wildfly-http-transaction-client</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
                 <exclusions>
                     <exclusion>

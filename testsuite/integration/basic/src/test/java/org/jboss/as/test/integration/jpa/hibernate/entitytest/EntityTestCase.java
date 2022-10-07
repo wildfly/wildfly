@@ -40,7 +40,6 @@ import org.jboss.as.test.integration.jpa.hibernate.entity.Company;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Customer;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Flight;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Ticket;
-import org.jboss.as.test.shared.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -76,9 +75,6 @@ public class EntityTestCase {
     // This test needs to be recompiled against Hibernate ORM 6 (WFLY-16178) in order to pass.
     @BeforeClass
     public static void beforeClass() {
-
-        // TODO WFLY-16974
-        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
 
         assumeTrue(System.getProperty("ts.ee9") == null && System.getProperty("ts.bootable.ee9") == null);
     }

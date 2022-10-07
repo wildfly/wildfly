@@ -472,7 +472,7 @@
 
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client-jakarta</artifactId>
+            <artifactId>jboss-ejb-client</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -771,17 +771,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.weld.probe</groupId>
-            <artifactId>weld-probe-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.jvnet.staxex</groupId>
             <artifactId>stax-ex</artifactId>
             <exclusions>
@@ -949,7 +938,7 @@
 
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-transaction-client</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1467,7 +1456,7 @@
 
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-client-common-jakarta</artifactId>
+            <artifactId>wildfly-http-client-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1478,7 +1467,7 @@
 
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+            <artifactId>wildfly-http-ejb-client</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1489,7 +1478,7 @@
 
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-http-transaction-client</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -3686,7 +3675,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client-jakarta</artifactId>
+            <artifactId>wildfly-naming-client</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

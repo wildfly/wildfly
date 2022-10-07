@@ -67,7 +67,7 @@
         <!-- External dependencies -->
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client-jakarta</artifactId>
+            <artifactId>jboss-ejb-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.modules</groupId>

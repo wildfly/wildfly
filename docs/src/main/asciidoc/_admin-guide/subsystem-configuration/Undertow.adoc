@@ -142,55 +142,158 @@ The following settings are common to all connectors:
 |=======================================================================
 |Attribute |Description
 
-|socket-binding |The socket binding to use. This determines the address
-and port the listener listens on.
+|allow-encoded-slash
+|If a request comes in with encoded / characters (i.e. %2F), will these be decoded.
 
-|worker |A reference to an XNIO worker, as defined in the IO subsystem.
-The worker that is in use controls the IO and blocking thread pool.
+|allow-equals-in-cookie-value
+|If this is true then Undertow will allow non-escaped equals characters in unquoted cookie values.
+Unquoted cookie values may not contain equals characters. If present the value ends before the
+equals sign. The remainder of the cookie value will be dropped.
 
-|buffer-pool |A reference to a buffer pool as defined in the IO
-subsystem. These buffers are used internally to read and write requests.
-In general these should be at least 8k, unless you are in a memory
-constrained environment.
+|allow-unescaped-characters-in-url
+|If this is true Undertow will accept non-encoded characters that are disallowed by the URI specification.
+This defaults to false, and in general should not be needed as most clients correctly encode characters.
+Note that setting this to true can be considered a security risk, as allowing non-standard characters can 
+allow request smuggling attacks in some circumstances.
 
-|enabled |If the connector is enabled.
+|always-set-keep-alive
+|If this is true then a Connection: keep-alive header will be added to responses, even when it is not
+strictly required by the specification.
 
-|max-post-size |The maximum size of incoming post requests that is
-allowed.
+|buffer-pipelined-data
+|If we should buffer pipelined requests.
 
-|buffer-pipelined-data |If responses to HTTP pipelined requests should
-be buffered, and send out in a single write. This can improve
-performance if HTTP pipe lining is in use and responses are small.
+|buffer-pool
+|The listeners buffer pool
 
-|max-header-size |The maximum size of a HTTP header block that is
-allowed. Responses with to much data in their header block will have the
-request terminated and a bad request response send.
+|certificate-forwarding
+|If certificate forwarding should be enabled. If this is enabled then the listener will take the certificate
+from the SSL_CLIENT_CERT attribute. This should only be enabled if behind a proxy, and the proxy is
+configured to always set these headers.
 
-|max-parameters |The maximum number of query or path parameters that are
-allowed. This limit exists to prevent hash collision based DOS attacks.
+|decode-url
+|If this is true then the parser will decode the URL and query parameters using the selected character
+encoding (UTF-8 by default). If this is false they will not be decoded. This will allow a later handler to
+decode them into whatever charset is desired.
 
-|max-headers |The maximum number of headers that are allowed. This limit
-exists to prevent hash collision based DOS attacks.
+|disallowed-methods
+|A comma separated list of HTTP methods that are not allowed
 
-|max-cookies |The maximum number of cookies that are allowed. This limit
-exists to prevent hash collision based DOS attacks.
+|enable-http2
+|Enables HTTP2 support for this listener
 
-|allow-encoded-slash |Set this to true if you want the server to decode
-percent encoded slash characters. This is probably a bad idea, as it can
-have security implications, due to different servers interpreting the
-slash differently. Only enable this if you have a legacy application
-that requires it.
+|enabled (Deprecated)
+|If the listener is enabled
 
-|decode-url |If the URL should be decoded. If this is not set to true
-then percent encoded characters in the URL will be left as is.
+|http2-enable-push
+|If server push is enabled for this connection
 
-|url-charset |The charset to decode the URL to.
+|http2-header-table-size
+|The size of the header table used for HPACK compression, in bytes. This amount of memory will be allocated
+per connection for compression. Larger values use more memory but may give better compression.
 
-|always-set-keep-alive |If the 'Connection: keep-alive' header should be
-added to all responses, even if not required by spec.
+|http2-initial-window-size
+|The flow control window size that controls how quickly the client can send data to the server
 
-|disallowed-methods |A comma separated list of HTTP methods that are not
-allowed. HTTP TRACE is disabled by default.
+|http2-max-concurrent-streams
+|The maximum number of HTTP/2 streams that can be active at any time on a single connection
+
+|http2-max-frame-size
+|The max HTTP/2 frame size
+
+|http2-max-header-list-size
+|The maximum size of request headers the server is prepared to accept
+
+|max-buffered-request-size
+|Maximum size of a buffered request, in bytes. Requests are not usually buffered, the most common case is 
+when performing SSL renegotiation for a POST request, and the post data must be fully buffered in order 
+to perform the renegotiation.
+
+|max-connections
+|The maximum number of concurrent connections. Only values greater than 0 are allowed. For unlimited
+connections simply undefine this attribute value.
+
+|max-cookies
+|The maximum number of cookies that will be parsed. This is used to protect against hash vulnerabilities.
+
+|max-header-size
+|The maximum size of a http request header, in bytes.
+
+|max-headers
+|The maximum number of headers that will be parsed. This is used to protect against hash vulnerabilities.
+
+|max-parameters
+|The maximum number of parameters that will be parsed. This is used to protect against hash vulnerabilities.
+This applies to both query parameters, and to POST data, but is not cumulative (i.e. you can potentially
+have max parameters * 2 total parameters).
+
+|max-post-size
+|The maximum size of a post that will be accepted, in bytes.
+
+|no-request-timeout
+|The length of time in milliseconds that the connection can be idle before it is closed by the container.
+
+|proxy-address-forwarding
+|Enables  handling of x-forwarded-host header (and other x-forwarded-* headers) and use this header information
+to set the remote address. This should only be used behind a trusted proxy that sets these headers otherwise
+a remote user can spoof their IP address.
+
+|proxy-protocol
+|If this is true then the listener will use the proxy protocol v1, as defined by 
+https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt. This option MUST only be enabled for listeners 
+that are behind a load balancer that supports the same protocol.
+
+|read-timeout
+|Configure a read timeout for a socket, in milliseconds.  If the given amount of time elapses without a 
+successful read taking place, the socket's next read will throw a {@link ReadTimeoutException}.
+
+|receive-buffer
+|The receive buffer size, in bytes.
+
+|record-request-start-time
+|If this is true then Undertow will record the request start time, to allow for request time to be logged.
+This has a small but measurable performance impact
+
+|request-parse-timeout
+|The maximum amount of time (in milliseconds) that can be spent parsing the request
+
+|require-host-http11
+|Require that all HTTP/1.1 requests have a 'Host' header, as per the RFC. IF the request does not include
+this header it will be rejected with a 403.
+
+|resolve-peer-address
+|Enables host dns lookup
+
+|rfc6265-cookie-validation
+|If cookies should be validated to ensure they comply with RFC6265.
+
+|secure
+|If this is true then requests that originate from this listener are marked as secure, even if the request
+is not using HTTPS.
+
+|send-buffer
+|The send buffer size, in bytes.
+
+|socket-binding
+|The listener socket binding
+
+|tcp-backlog
+|Configure a server with the specified backlog.
+
+|tcp-keep-alive
+|Configure a channel to send TCP keep-alive messages in an implementation-dependent manner.
+
+|url-charset
+|URL charset
+
+|worker
+|The listeners XNIO worker
+
+|write-timeout
+|Configure a write timeout for a socket, in milliseconds.  If the given amount of time 
+elapses without a successful write taking place, the socket's next write will throw
+a {@link WriteTimeoutException}.
+
 |=======================================================================
 
 [[http-connector]]
@@ -205,44 +308,55 @@ allowed. HTTP TRACE is disabled by default.
 |=======================================================================
 |Attribute |Description
 
-|certificate-forwarding |If this is set to true then the HTTP listener
-will read a client certificate from the SSL_CLIENT_CERT header. This
-allows client cert authentication to be used, even if the server does
-not have a direct SSL connection to the end user. This should only be
-enabled for servers behind a proxy that has been configured to always
-set these headers.
+|redirect-socket
+|If this listener is supporting non-SSL requests, and a request is received for which a matching 
+<security-constraint> requires SSL transport, undertow will automatically redirect the request to the 
+socket binding port specified here.
 
-|redirect-socket |The socket binding to redirect requests that require
-security too.
-
-|proxy-address-forwarding |If this is enabled then the X-Forwarded-For
-and X-Forwarded-Proto headers will be used to determine the peer
-address. This allows applications that are behind a proxy to see the
-real address of the client, rather than the address of the proxy.
 |=======================================================================
 
 [[https-listener]]
 ==== HTTPS listener
 
 Https listener provides secure access to the server. The most important
-configuration option is security realm which defines SSL secure context.
+configuration option is ssl-context which cross references a pre-configured
+SSL Context instance.
 
 [source,xml,options="nowrap"]
 ----
-<https-listener name="default" socket-binding="https" security-realm="ssl-realm" />
+<https-listener name="https" socket-binding="https" ssl-context="applicationSSC" enable-http2="true"/>
 ----
 
 [cols=",",options="header"]
 |=======================================================================
 |Attribute |Description
 
-|security-realm |The security realm to use for the SSL configuration.
-See Security realm examples for how to configure it: Examples
+|enable-spdy (Deprecated) 
+|Enables SPDY support for this listener. This has been deprecated and has no effect, HTTP/2 should be used instead
 
-|verify-client |One of either NOT_REQUESTED, REQUESTED or REQUIRED. If
-client cert auth is in use this should be either REQUESTED or REQUIRED.
+|enabled-cipher-suites (Deprecated)
+|Where an SSLContext is referenced it should be configured with the cipher suites to be supported.
 
-|enabled-cipher-suites |A list of cypher suit names that are allowed.
+|enabled-protocols (Deprecated)
+|Configures SSL protocols
+
+|security-realm (Deprecated)
+|The listeners security realm
+
+|ssl-context
+|Reference to the SSLContext to be used by this listener.
+
+|ssl-session-cache-size (Deprecated)
+|The maximum number of active SSL sessions
+
+|ssl-session-timeout (Deprecated)
+|The timeout for SSL sessions, in seconds
+
+|verify-client (Deprecated)
+|The desired SSL client authentication mode for SSL channels
+
+
+
 |=======================================================================
 
 [[ajp-listener]]

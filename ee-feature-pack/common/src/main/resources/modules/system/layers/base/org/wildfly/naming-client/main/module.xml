@@ -25,7 +25,7 @@
 <module xmlns="urn:jboss:module:1.9" name="org.wildfly.naming-client">
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-naming-client-jakarta}"/>
+        <artifact name="${org.wildfly:wildfly-naming-client}"/>
     </resources>
 
     <dependencies>

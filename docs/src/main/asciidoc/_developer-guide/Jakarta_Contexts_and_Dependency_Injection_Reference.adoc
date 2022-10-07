@@ -110,49 +110,6 @@ WildFly instance by executing the following command:
 /subsystem=weld:write-attribute(name=require-bean-descriptor,value=true)
 ----
 
-[[development-mode]]
-== Development mode
-
-WildFly 10 introduces a special mode for application development which
-allows you to inspect and monitor your CDI deployments. This mode is
-turned off by default and note that some features of the *development
-mode may have negative impact on the performance and/or functionality of
-the application*.
-
-[[per-deployment-configuration-1]]
-=== Per-deployment configuration
-
-You can enable it locally in your application `web.xml` by setting the
-Servlet initialization parameter `org.jboss.weld.development` to `true:`
-
-[source,xml,options="nowrap"]
-----
- <context-param>
-   <param-name>org.jboss.weld.development</param-name>
-   <param-value>true</param-value>
- </context-param>
-----
-
-[[global-configuration-1]]
-=== Global configuration
-
-Alternatively, you can enable it globally in Weld subsystem by setting
-`development-mode` attribute to `true:`
-
-[source,options="nowrap"]
-----
-/subsystem=weld:write-attribute(name=development-mode,value=true)
-----
-
-For more details and example you can check
-http://docs.jboss.org/weld/reference/latest/en-US/html_single/#devmode[Weld
-development mode].
-
-Once the development mode is enabled you can check your applications CDI
-information using Weld Probe -
-http://docs.jboss.org/weld/reference/latest/en-US/html_single/#probe[Weld
-Probe].
-
 [[non-portable-mode]]
 == Non-portable mode
 
