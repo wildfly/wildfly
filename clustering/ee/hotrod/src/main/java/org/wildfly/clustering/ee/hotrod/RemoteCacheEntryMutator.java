@@ -63,11 +63,15 @@ public class RemoteCacheEntryMutator<K, V> implements Mutator {
     @Override
     public void mutate() {
         Duration maxIdleDuration = (this.maxIdle != null) ? this.maxIdle.apply(this.value) : Duration.ZERO;
-        long seconds = maxIdleDuration.getSeconds();
-        int nanos = maxIdleDuration.getNano();
-        if (nanos > 0) {
-            seconds += 1;
+        if (!maxIdleDuration.isZero()) {
+            long seconds = maxIdleDuration.getSeconds();
+            int nanos = maxIdleDuration.getNano();
+            if (nanos > 0) {
+                seconds += 1;
+            }
+            this.cache.put(this.id, this.value, 0, TimeUnit.SECONDS, seconds, TimeUnit.SECONDS);
+        } else {
+            this.cache.put(this.id, this.value);
         }
-        this.cache.put(this.id, this.value, 0, TimeUnit.SECONDS, seconds, TimeUnit.SECONDS);
     }
 }
