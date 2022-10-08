@@ -386,7 +386,7 @@
         <version.io.smallrye.smallrye-mutiny-vertx>2.26.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-opentracing>3.0.0</version.io.smallrye.smallrye-opentracing>
         <version.io.smallrye.smallrye-reactive-messaging>4.0.0.RC3</version.io.smallrye.smallrye-reactive-messaging>
-        <legacy.version.io.undertow>2.2.19.Final</legacy.version.io.undertow>
+        <legacy.version.io.undertow>2.2.20.Final</legacy.version.io.undertow>
         <legacy.version.io.undertow.jastow>2.0.11.Final</legacy.version.io.undertow.jastow>
         <version.io.undertow.jastow>2.2.3.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.3.3</version.io.vertx.vertx>
