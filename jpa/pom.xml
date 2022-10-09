@@ -54,14 +54,8 @@
                 <module>subsystem</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>spi</module>
-                <!-- TODO remove-->
-                <module>hibernate5</module>
-                <!-- TODO remove-->
-                <module>hibernate5_3</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>eclipselink</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>openjpa</module>
             </modules>
         </profile>
     </profiles>

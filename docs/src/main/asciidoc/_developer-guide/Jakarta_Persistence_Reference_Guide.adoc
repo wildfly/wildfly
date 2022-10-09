@@ -527,46 +527,10 @@ version="1.0"> +
 </persistence>
 ----
 
-[[migrating-from-openjpa]]
-== Migrating from OpenJPA
-
-You need to copy the OpenJPA jar (e.g. openjpa-all.jar) into
-the WildFly modules/org/apache/openjpa/main folder and update
-modules/org/apache/openjpa/main/module.xml to include the same jar file
-name that you copied in. This will help you get your application that
-depends on OpenJPA, to deploy on WildFly.
-
-[source,java,options="nowrap"]
-----
- <module xmlns="urn:jboss:module:1.9" name="org.apache.openjpa">
-    <resources>
-        <resource-root path="jipijapa-openjpa-1.0.1.Final.jar"/>
-        <resource-root path="openjpa-all.jar">
-           <filter>
-              <exclude path="javax/**" />
-           </filter>
-        </resource-root>
-    </resources>
- 
-    <dependencies>
-        <module name="javax.annotation.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.persistence.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="javax.validation.api"/>
-        <module name="javax.xml.bind.api"/>
-        <module name="org.jboss.as.jpa.spi"/>
-        <module name="org.jboss.logging"/>
-        <module name="io.smallrye.jandex"/>
-    </dependencies>
-</module>
-----
-
 [[migrating-from-eclipselink]]
 == Migrating from EclipseLink
 
-You need to copy the EclipseLink jar (e.g. eclipselink-2.6.0.jar or
-eclipselink.jar as in the example below) into the WildFly
+You need to copy the EclipseLink (3.0 or newer) jar into the WildFly
 modules/org/eclipse/persistence/main folder and update
 modules/org/eclipse/persistence/main/module.xml to include the
 EclipseLink jar (take care to use the jar name that you copied in). If
