@@ -338,7 +338,7 @@ customizations.
 === Deployment descriptor properties
 
 The `jboss-webservices.xml` descriptor can be used to
-<<JAX_WS_Advanced_User_Guide,provide property values>>.
+<<Jakarta_XML_Web_Services_Advanced_User_Guide,provide property values>>.
 
 [source,xml,options="nowrap"]
 ----

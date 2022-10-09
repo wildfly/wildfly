@@ -80,7 +80,7 @@ standalone client to use. Below is a simple example specifying plaintext
 username / password and the remote server connection (host/port).
 The wildfly-config.xml goes in the META-INF directory.
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <configuration>
   <authentication-client xmlns="urn:elytron:1.0.1">

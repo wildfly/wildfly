@@ -27,8 +27,7 @@ Utilities Configuration]. Additionally, the EE subsystem configuration
 also includes the configuration of which instance should be considered
 the default instance mandated by the Jakarta EE specification, and such
 configuration is covered by
-link:Default_EE_Bindings_Configuration.html[Default EE Bindings
-Configuration].
+link:Admin_Guide{outfilesuffix}#EE_Default_Bindings_Configuration[Default EE Bindings Configuration].
 
 [[context-service]]
 == Context Service
