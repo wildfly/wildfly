@@ -48,15 +48,15 @@ import org.junit.Test;
  * @author <a href="sguilhen@jboss.com">Stefan Guilhen</a>
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class IIOPSubsystem2_1TestCase extends AbstractSubsystemBaseTest {
 
-    public IIOPSubsystemTestCase() {
+    public IIOPSubsystem2_1TestCase() {
         super(IIOPExtension.SUBSYSTEM_NAME, new IIOPExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-3.0.xml");
+        return readResource("subsystem-2.1.xml");
     }
 
 
@@ -67,7 +67,7 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-iiop-openjdk_3_0.xsd";
+        return "schema/wildfly-iiop-openjdk_2_1.xsd";
     }
 
     @Test
@@ -132,6 +132,11 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testSubsystem_1_0() throws Exception {
         super.standardSubsystemTest("subsystem-1.0.xml", false);
+    }
+
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        //
     }
 
     /**
