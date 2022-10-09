@@ -60,7 +60,7 @@ public class LegacyFailureDetectionProtocolConfigurationServiceConfigurator exte
     public void accept(FD_SOCK protocol) {
         // If binding is undefined, protocol will use bind address of transport and a random ephemeral port
         SocketBinding binding = this.getSocketBinding();
-        protocol.setStartPort((binding != null) ? binding.getPort() : 0);
+        protocol.setStartPort((binding != null) ? binding.getAbsolutePort() : 0);
 
         if (binding != null) {
             protocol.setBindAddress(binding.getAddress());
