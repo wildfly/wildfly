@@ -1,12 +1,17 @@
 [[Jakarta_RESTful_Web_Services_Reference_Guide]]
 = Jakarta RESTful Web Services Reference Guide
 
-This page outlines the three options you have for deploying Jakarta RESTful Web Services
+RESTEasy is the Jakarta RESTful Web Services implementation used in {appservername}. For detailed documentation see the
+https://resteasy.dev/docs[RESTEasy {resteasyversion} documentation].
+
+== Jakarta RESTful Web Services Activation
+
+This section outlines the three options you have for deploying Jakarta RESTful Web Services
 applications in WildFly {wildflyVersion}. These three methods are specified in the
-JAX-RS 3.1 specification in section 2.3.2.
+Jakarta RESTful Web Services 3.1 specification in section 2.3.2.
 
 [[subclassing-jakarta.ws.rs.core.application-and-using-applicationpath]]
-== Subclassing jakarta.ws.rs.core.Application and using @ApplicationPath
+=== Subclassing jakarta.ws.rs.core.Application and using @ApplicationPath
 
 This is the easiest way and does not require any xml configuration.
 Simply include a subclass of `jakarta.ws.rs.core.Application` in your
@@ -28,7 +33,7 @@ This will make your Jakarta RESTful Web Services resources available under `/`
 Note that that the path is `/mypath` not `/mypath/*`
 
 [[subclassing-jakarta.ws.rs.core.application-and-using-web.xml]]
-== Subclassing jakarta.ws.rs.core.Application and using web.xml
+=== Subclassing jakarta.ws.rs.core.Application and using web.xml
 
 If you do not wish to use `@ApplicationPath` but still need to subclass
 `Application` you can set up the Jakarta RESTful Web Services mapping in web.xml:
@@ -56,7 +61,7 @@ You can also use this approach to override an application path set with
 the `@ApplicationPath` annotation.
 
 [[using-web.xml]]
-== Using web.xml
+=== Using web.xml
 
 If you don't wan't to subclass `Application` you can set the Jakarta RESTful Web Services
 mapping in web.xml as follows:
@@ -77,5 +82,74 @@ This will make your Jakarta RESTful Web Services resources available under `/`
 Note that you only have to add the mapping, not the corresponding
 servlet. The server is responsible for adding the corresponding servlet
 automatically.
+
+== Using Jackson for serialization
+
+By default, for JSON processing the Jakarta JSON Processing API is used. However, you can use Jackson instead. This can
+be achieved by setting the `resteasy.preferJacksonOverJsonB` property as a system property or as a
+context property in the deployment's `web.xml`. There is also a subsystem attribute, `resteasy-prefer-jackson-over-jsonb`,
+which can be set to `true`. Finally, if no value is set for the context and system properties, the subsystem scans Jakarta
+RESTful Web Services deployments for Jackson annotations and sets the property to true if any of those annotations are
+found.
+
+=== Custom `ObjectMapper`
+
+In some cases you may want to or need to create a custom `ObjectMapper`. This can be achieved by creating a
+`jakarta.ws.rs.ext.ContextResolver` which creates the `ObjectMapper`. The following example creates an `ObjectMapper`
+which allows JSR-310 date/times.
+
+[source,java]
+----
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.ext.ContextResolver;
+import jakarta.ws.rs.ext.Provider;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+
+@Provider
+@Produces(MediaType.APPLICATION_JSON)
+public class JacksonDatatypeJacksonProducer implements ContextResolver<ObjectMapper> {
+
+    private final ObjectMapper json;
+
+    public JacksonDatatypeJacksonProducer() {
+        this.json = JsonMapper.builder()
+                .findAndAddModules()
+                .build();
+    }
+
+    @Override
+    public ObjectMapper getContext(Class<?> objectType) {
+        return json;
+    }
+}
+----
+
+As of WildFly 27 and RESTEasy 6.2 to get the Jakarta XML Binding annotations to work with Jackson for JSON serialization
+you need to use a custom `ObjectMapper`. An example of this `ObjectMapper` would look like:
+
+[source,java]
+----
+import jakarta.ws.rs.ext.ContextResolver;
+import jakarta.ws.rs.ext.Provider;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
+
+@Provider
+public class JaxbJsonObjectMapperProvider implements ContextResolver<ObjectMapper> {
+    private static final JsonMapper MAPPER = JsonMapper.builder()
+            .addModule(new JakartaXmlBindAnnotationModule())
+            .build();
+
+    @Override
+    public ObjectMapper getContext(final Class<?> type) {
+        return MAPPER;
+    }
+}
+----
 
 NOTE: References in this document to Java API for RESTful Web Services(JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.

@@ -66,6 +66,7 @@
                         <appservername>${full.dist.product.release.name}</appservername>
                         <javaee_version>8</javaee_version>
                         <oracle-javadoc>https://docs.oracle.com/en/java/javase/11/docs/api</oracle-javadoc>
+                        <resteasyversion>${version.org.jboss.resteasy}</resteasyversion>
                         <wildflyversion>${product.docs.server.version}</wildflyversion>
 
                         <!-- Default asciidoc setting attributes -->
