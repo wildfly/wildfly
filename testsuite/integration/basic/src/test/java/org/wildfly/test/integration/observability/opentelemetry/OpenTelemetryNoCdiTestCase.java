@@ -7,7 +7,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.SecurityPermission;
-import java.util.PropertyPermission;
 
 import javax.management.MBeanPermission;
 import javax.management.MBeanServerPermission;
@@ -44,9 +43,6 @@ public class OpenTelemetryNoCdiTestCase {
                 .addClasses(OpenTelemetrySetupTask.class, ServerSetupTask.class)
                 .addPackage(NoCdiClient.class.getPackage())
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        // Required for com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider. During <init> there is a
-                        // reflection test to check for JAXRS 2.0.
-                        new RuntimePermission("accessDeclaredMembers"),
                         // Required for the client to connect
                         new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" +
                                 TestSuiteEnvironment.getHttpPort(), "connect,resolve"),
@@ -55,10 +51,7 @@ public class OpenTelemetryNoCdiTestCase {
                         new MBeanPermission("*", "registerMBean, unregisterMBean, invoke"),
                         new RuntimePermission("getClassLoader"),
                         new RuntimePermission("modifyThread"),
-                        new RuntimePermission("setContextClassLoader"),
-                        // These two permissions can be removed once RESTEASY-3229 is resolved
-                        new RuntimePermission("getenv.dev.resteasy.exception.mapper"),
-                        new PropertyPermission("dev.resteasy.exception.mapper", "read")
+                        new RuntimePermission("setContextClassLoader")
                 ), "permissions.xml");
     }
 

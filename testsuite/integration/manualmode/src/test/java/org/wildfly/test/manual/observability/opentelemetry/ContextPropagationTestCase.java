@@ -27,7 +27,6 @@ import java.net.NetPermission;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.Map;
-import java.util.PropertyPermission;
 
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
@@ -116,18 +115,12 @@ public class ContextPropagationTestCase {
                 .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        // Required for com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider. During <init> there is a
-                        // reflection test to check for JAXRS 2.0.
-                        new RuntimePermission("accessDeclaredMembers"),
                         new NetPermission("getProxySelector"),
                         // Required for the client to connect
                         new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":14250", "connect,resolve"),
                         new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":16686", "connect,resolve"),
                         new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" +
-                                TestSuiteEnvironment.getHttpPort(), "connect,resolve"),
-                        // These two permissions can be removed once RESTEASY-3229 is resolved
-                        new RuntimePermission("getenv.dev.resteasy.exception.mapper"),
-                        new PropertyPermission("dev.resteasy.exception.mapper", "read")
+                                TestSuiteEnvironment.getHttpPort(), "connect,resolve")
                 ), "permissions.xml");
     }
 
