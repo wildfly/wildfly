@@ -425,4 +425,7 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 119, value = "The use of security realms at runtime is unsupported.")
     OperationFailedException runtimeSecurityRealmUnsupported();
 
+    @Message(id = 120, value = "The use of security domains at runtime is unsupported.")
+    OperationFailedException runtimeSecurityDomainUnsupported();
+
 }

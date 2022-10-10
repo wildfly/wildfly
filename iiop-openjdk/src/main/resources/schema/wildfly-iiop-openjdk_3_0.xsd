@@ -146,20 +146,19 @@
                 <![CDATA[
                 The securityConfigType specifies the attributes used to configure the ORB security features.
 
-                * support-ssl: indicates whether SSL is to be supported (true) or not (false). If set to true, then either
-                        the security-domain attribute must be set or the server-ssl-context and client-ssl-context pair
-                        must be set. The former tells the subsystem to use a legacy JSSE domain to build SSL contexts
-                        while the other two tell the subsystem to use the org.wildfly.security.ssl-context capability
-                        to obtain the server and client side SSL contexts.
+                * support-ssl: indicates whether SSL is to be supported (true) or not (false). If set to true, then
+                        server-ssl-context and client-ssl-context pair must be set. The two tell the subsystem to use
+                        the org.wildfly.security.ssl-context capability to obtain the server and client side SSL
+                        contexts.
                 * security-domain: the name of the legacy JSSE domain that holds the key and trust stores that will
                         be used to create the SSL context when establishing SSL connections. if defined , then the
-                        server-ssl-context and client-ssl-contexts attributes must not be set.
+                        server-ssl-context and client-ssl-contexts attributes must not be set. Deprecated.
                 * server-ssl-context: the dynamic name of the capability that provides the SSL context that will be used
-                        to create server side SSL sockets. If the defined, the client-ssl-context attribute must also be
-                        defined and the security-domain attribute must not be set.
+                        to create server side SSL sockets. If defined, the client-ssl-context attribute must also be
+-                        defined.
                 * client-ssl-context: the dynamic name of the capability that provides the SSL context that will be used
-                        to create client side SSL sockets. If the defined, the server-ssl-context attribute must also be
-                        defined and the security-domain attribute must not be set.
+                        to create client side SSL sockets. If defined, the server-ssl-context attribute must also be
+-                        defined.
                 * add-component-via-interceptor: indicates whether SSL components should be added by an IOR interceptor
                         (true) or not (false).
                 * server-requires-ssl: indicates wheter IIOP connections to the server require SSL
@@ -168,7 +167,13 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="support-ssl" type="trueFalseType" use="optional" default="false"/>
-        <xs:attribute name="security-domain" type="xs:string" use="optional"/>
+        <xs:attribute name="security-domain" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Deprecated: References to security-domain should be updated to reference ssl-context resources as appropriate.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="server-ssl-context" type="xs:string" use="optional"/>
         <xs:attribute name="client-ssl-context" type="xs:string" use="optional"/>
         <xs:attribute name="add-component-via-interceptor" type="trueFalseType" use="optional" default="true"/>
@@ -285,8 +290,8 @@
         <xs:attribute name="realm" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                    Deprecated: References to security-realms should be updated to reference security-domain
-                    and ssl-context resources as appropriate.
+                    Deprecated: References to security-realms should be updated to reference ssl-context resources
+                    as appropriate.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
