@@ -26,7 +26,7 @@ This adds the following configuration entry:
 By default the `jaxrs` subsystem is empty which results in default configuration values being used.
 
 This can be changed with a management client such as the CLI or the web console. You can get detailed information about the
-"Configuration switches" in section 3.5 of the https://resteasy.github.io/docs[RESTEasy User Guide].
+"Configuration switches" in section 3.5 of the https://resteasy.dev/docs[RESTEasy User Guide].
 
 An example configuring the subsystem with the CLI:
 
@@ -96,9 +96,9 @@ or disable RESTEasy providers. Note that they can be used in conjunction with
 IMPORTANT: Another important fact is that once parameters are changed via some management interface the changes require
            a redeployment of any applications previously deployed.
 
-IMPORTANT: RESTEasy has introduced a new treatment of `javax.ws.rs.WebApplicationException`&apos;s thrown by a
+IMPORTANT: RESTEasy has introduced a new treatment of `jakarta.ws.rs.WebApplicationException`&apos;s thrown by a
 Jakarta REST client or MicroProfile REST Client running inside a RESTful resource, in which the embedded
-`javax.ws.rs.core.Response` is "sanitized" before being returned to prevent the risk of information leaking from a
+`jakarta.ws.rs.core.Response` is "sanitized" before being returned to prevent the risk of information leaking from a
 third party. The original behavior can be restored by setting the parameter
-"resteasy.original.webapplicationexception.behavior" to "true". See the https://resteasy.github.io/docs[RESTEasy User Guide]
+"resteasy.original.webapplicationexception.behavior" to "true". See the https://resteasy.dev/docs[RESTEasy User Guide]
 chapter "Resteasy WebApplicationExceptions" for more information.
