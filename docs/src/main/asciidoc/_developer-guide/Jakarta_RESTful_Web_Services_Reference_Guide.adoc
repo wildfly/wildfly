@@ -3,13 +3,13 @@
 
 This page outlines the three options you have for deploying Jakarta RESTful Web Services
 applications in WildFly {wildflyVersion}. These three methods are specified in the
-JAX-RS 2.0 specification in section 2.3.2.
+JAX-RS 3.1 specification in section 2.3.2.
 
-[[subclassing-javax.ws.rs.core.application-and-using-applicationpath]]
-== Subclassing javax.ws.rs.core.Application and using @ApplicationPath
+[[subclassing-jakarta.ws.rs.core.application-and-using-applicationpath]]
+== Subclassing jakarta.ws.rs.core.Application and using @ApplicationPath
 
 This is the easiest way and does not require any xml configuration.
-Simply include a subclass of `javax.ws.rs.core.Application` in your
+Simply include a subclass of `jakarta.ws.rs.core.Application` in your
 application, and annotate it with the path that you want your JAX-RS
 classes to be available. For example:
 
@@ -27,8 +27,8 @@ This will make your Jakarta RESTful Web Services resources available under `/`
 
 Note that that the path is `/mypath` not `/mypath/*`
 
-[[subclassing-javax.ws.rs.core.application-and-using-web.xml]]
-== Subclassing javax.ws.rs.core.Application and using web.xml
+[[subclassing-jakarta.ws.rs.core.application-and-using-web.xml]]
+== Subclassing jakarta.ws.rs.core.Application and using web.xml
 
 If you do not wish to use `@ApplicationPath` but still need to subclass
 `Application` you can set up the Jakarta RESTful Web Services mapping in web.xml:
@@ -64,7 +64,7 @@ mapping in web.xml as follows:
 [source,xml,options="nowrap"]
 ----
 <servlet-mapping>
-   <servlet-name>javax.ws.rs.core.Application</servlet-name>
+   <servlet-name>jakarta.ws.rs.core.Application</servlet-name>
    <url-pattern>/hello/*</url-pattern>
 </servlet-mapping>
 ----
