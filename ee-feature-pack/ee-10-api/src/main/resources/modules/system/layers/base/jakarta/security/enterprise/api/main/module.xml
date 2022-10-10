@@ -41,5 +41,11 @@
         <module name="javax.annotation.api" />
         <module name="javax.inject.api" />
         <module name="javax.json.api" />
+        <!--TODO remove the WELD dependencies from this module, see comments on https://github.com/wildfly/wildfly/pull/16155 for more details
+        soteria overrides the beanClass in CDIExtension, which makes weld not load them from appropriate module
+         -->
+        <module name="org.jboss.weld.api"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
     </dependencies>
 </module>
