@@ -509,7 +509,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-ejb-jakarta</artifactId>
+                <artifactId>wildfly-weld-ejb</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>

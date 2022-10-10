@@ -66,7 +66,6 @@
         <module>webservices</module>
         <module>weld/bean-validation</module>
         <module>weld/common</module>
-        <module>weld/ejb</module>
         <module>weld/jpa</module>
         <module>weld/spi</module>
         <module>weld/subsystem</module>

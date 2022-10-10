@@ -79,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-ejb-jakarta</artifactId>
+            <artifactId>wildfly-weld-ejb</artifactId>
         </dependency>
 
         <!-- External dependencies -->
