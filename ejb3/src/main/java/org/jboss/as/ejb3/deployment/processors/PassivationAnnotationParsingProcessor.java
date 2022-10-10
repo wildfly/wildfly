@@ -24,9 +24,9 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import java.util.List;
 
-import javax.ejb.PostActivate;
-import javax.ejb.PrePassivate;
-import javax.interceptor.InvocationContext;
+import jakarta.ejb.PostActivate;
+import jakarta.ejb.PrePassivate;
+import jakarta.interceptor.InvocationContext;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;

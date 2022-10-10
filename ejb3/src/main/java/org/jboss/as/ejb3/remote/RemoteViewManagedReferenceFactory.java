@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.remote;
 
 import java.util.function.Supplier;
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
-import javax.ejb.Schedule;
-import javax.ejb.Schedules;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Schedules;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -86,7 +86,7 @@ public class ScheduleAnnotationInformationFactory extends ClassAnnotationInforma
     }
 
     /**
-     * Attribute names of {@code javax.ejb.Schedule} annotation.
+     * Attribute names of {@code jakarta.ejb.Schedule} annotation.
      * Enum instance names must match {@code Schedule} annotation field names.
      */
     private enum ScheduleValues {

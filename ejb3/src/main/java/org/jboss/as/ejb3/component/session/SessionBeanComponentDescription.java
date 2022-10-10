@@ -31,9 +31,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.LockType;
-import javax.ejb.TransactionManagementType;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.LockType;
+import jakarta.ejb.TransactionManagementType;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -73,7 +73,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private boolean noInterfaceViewPresent;
 
     /**
-     * The {@link javax.ejb.ConcurrencyManagementType} for this bean
+     * The {@link jakarta.ejb.ConcurrencyManagementType} for this bean
      */
     private ConcurrencyManagementType concurrencyManagementType;
 
@@ -93,7 +93,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private final Map<MethodIdentifier, LockType> methodLockTypes = new HashMap<MethodIdentifier, LockType>();
 
     /**
-     * The {@link javax.ejb.AccessTimeout} applicable for a specific bean methods.
+     * The {@link jakarta.ejb.AccessTimeout} applicable for a specific bean methods.
      */
     private final Map<MethodIdentifier, AccessTimeoutDetails> methodAccessTimeouts = new HashMap<MethodIdentifier, AccessTimeoutDetails>();
 
@@ -196,7 +196,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
-     * Sets the {@link javax.ejb.LockType} applicable for the bean.
+     * Sets the {@link jakarta.ejb.LockType} applicable for the bean.
      *
      * @param className The class that has the annotation
      * @param locktype  The lock type applicable for the bean
@@ -229,7 +229,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
-     * Returns the {@link javax.ejb.AccessTimeout} applicable for the bean.
+     * Returns the {@link jakarta.ejb.AccessTimeout} applicable for the bean.
      *
      * @return
      */
@@ -238,7 +238,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
-     * Sets the {@link javax.ejb.AccessTimeout} applicable for the bean.
+     * Sets the {@link jakarta.ejb.AccessTimeout} applicable for the bean.
      *
      * @param accessTimeout The access timeout applicable for the class
      */
@@ -247,7 +247,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
-     * Sets the {@link javax.ejb.AccessTimeout} for the specific bean method
+     * Sets the {@link jakarta.ejb.AccessTimeout} for the specific bean method
      *
      * @param accessTimeout The applicable access timeout for the method
      * @param method        The method

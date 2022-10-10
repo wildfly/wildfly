@@ -24,9 +24,9 @@ package org.jboss.as.ejb3.timerservice;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.concurrent.Semaphore;
-import javax.ejb.EJBException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.TimerHandle;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.TimerHandle;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
@@ -53,7 +53,7 @@ public class TimerImpl implements ManagedTimer {
     protected volatile TimerState timerState;
 
     /**
-     * The {@link javax.ejb.TimerService} through which this timer was created
+     * The {@link jakarta.ejb.TimerService} through which this timer was created
      */
     protected final TimerServiceImpl timerService;
 
@@ -209,8 +209,8 @@ public class TimerImpl implements ManagedTimer {
 
     /**
      * This method is similar to {@link #getInfo()}, except that this method does <i>not</i> check the timer state
-     * and hence does <i>not</i> throw either {@link IllegalStateException} or {@link javax.ejb.NoSuchObjectLocalException}
-     * or {@link javax.ejb.EJBException}.
+     * and hence does <i>not</i> throw either {@link IllegalStateException} or {@link jakarta.ejb.NoSuchObjectLocalException}
+     * or {@link jakarta.ejb.EJBException}.
      *
      * @return the timer info; if not available in-memory, retrieve it from persistence
      */
@@ -258,8 +258,8 @@ public class TimerImpl implements ManagedTimer {
 
     /**
      * This method is similar to {@link #getNextTimeout()}, except that this method does <i>not</i> check the timer state
-     * and hence does <i>not</i> throw either {@link IllegalStateException} or {@link javax.ejb.NoSuchObjectLocalException}
-     * or {@link javax.ejb.EJBException}.
+     * and hence does <i>not</i> throw either {@link IllegalStateException} or {@link jakarta.ejb.NoSuchObjectLocalException}
+     * or {@link jakarta.ejb.EJBException}.
      *
      * @return
      */

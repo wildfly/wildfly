@@ -28,11 +28,11 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import javax.ejb.TransactionAttributeType;
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.TransactionManager;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.endpoint.MessageEndpointFactory;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.tx.util;
 
-import javax.transaction.Status;
+import jakarta.transaction.Status;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
@@ -49,7 +49,7 @@ public class StatusHelper {
      *
      * @param status the Status index
      * @return status as String or "STATUS_INVALID(value)"
-     * @see javax.transaction.Status
+     * @see jakarta.transaction.Status
      */
     public static String statusAsString(int status) {
         if (status >= Status.STATUS_ACTIVE && status <= Status.STATUS_ROLLING_BACK) {

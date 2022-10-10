@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
-import javax.ejb.TimerHandle;
+import jakarta.ejb.TimerHandle;
 
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -64,7 +64,7 @@ public class TimerHandleImpl implements TimerHandle {
 
     @SuppressWarnings("deprecation")
     @Override
-    public synchronized javax.ejb.Timer getTimer() {
+    public synchronized jakarta.ejb.Timer getTimer() {
         if (this.component == null) {
             ServiceName serviceName = ServiceName.parse(this.serviceName);
             // Is this a legacy timer handle?

@@ -27,10 +27,10 @@ import static org.jboss.as.ejb3.deployment.processors.AnnotatedEJBComponentDescr
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import javax.ejb.SessionBean;
-import javax.ejb.Singleton;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
+import jakarta.ejb.SessionBean;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.Stateless;
 
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;

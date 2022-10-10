@@ -26,11 +26,11 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
- * Processes the {@link javax.ejb.TransactionAttribute} annotation on a session bean
+ * Processes the {@link jakarta.ejb.TransactionAttribute} annotation on a session bean
  * @author Stuart Douglas
  */
 public class TransactionAttributeAnnotationInformationFactory extends ClassAnnotationInformationFactory<TransactionAttribute, TransactionAttributeType> {

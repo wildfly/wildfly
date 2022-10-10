@@ -103,7 +103,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
      * Enterprise Beans 3.1 spec, section 4.9.8 states the rules for an implicit no-interface view on a bean class.
      * If the "implements" clause of the bean class is empty then the bean is considered to be exposing a no-interface view.
      * During this implements clause check, the {@link java.io.Serializable} or {@link java.io.Externalizable} or
-     * any class from javax.ejb.* packages are excluded.
+     * any class from jakarta.ejb.* packages are excluded.
      *
      * @param beanClass The bean class.
      * @return
@@ -164,7 +164,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
         for (Class<?> intf : interfaces) {
             if (intf.equals(java.io.Serializable.class)
                     || intf.equals(java.io.Externalizable.class)
-                    || intf.getName().startsWith("javax.ejb.")) {
+                    || intf.getName().startsWith("jakarta.ejb.")) {
                 continue;
             }
             filteredInterfaces.add(intf);

@@ -27,11 +27,11 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.ejb.AccessTimeout;
+import jakarta.ejb.AccessTimeout;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Processes the {@link javax.ejb.AccessTimeout} annotation on a session bean
+ * Processes the {@link jakarta.ejb.AccessTimeout} annotation on a session bean
  *
  * @author Stuart Douglas
  */

@@ -25,7 +25,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
 /**
- * Represents the value of a second constructed out of a {@link javax.ejb.ScheduleExpression#getSecond()}
+ * Represents the value of a second constructed out of a {@link jakarta.ejb.ScheduleExpression#getSecond()}
  * <p/>
  * <p>
  * A {@link Second} can hold only {@link Integer} as its value. The only exception to this being the wildcard (*)

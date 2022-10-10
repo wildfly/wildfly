@@ -24,8 +24,8 @@ package org.jboss.as.ejb3.timerservice.distributable;
 
 import java.util.function.Consumer;
 
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
 
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;

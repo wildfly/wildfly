@@ -26,11 +26,11 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.ejb.Lock;
-import javax.ejb.LockType;
+import jakarta.ejb.Lock;
+import jakarta.ejb.LockType;
 
 /**
- * Processes the {@link javax.ejb.Lock} annotation on a session bean, which allows concurrent access (like @Singleton and @Stateful beans),
+ * Processes the {@link jakarta.ejb.Lock} annotation on a session bean, which allows concurrent access (like @Singleton and @Stateful beans),
  * and its methods and updates the {@link org.jboss.as.ejb3.component.session.SessionBeanComponentDescription} accordingly.
  *
  * @author Stuart Douglas

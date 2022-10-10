@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.component.interceptors;
 
-import javax.ejb.Handle;
+import jakarta.ejb.Handle;
 
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;

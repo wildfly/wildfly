@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentIsStoppedException;

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.RunAs;
 import java.util.List;
 
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -40,7 +40,7 @@ import org.jboss.metadata.ejb.spec.SecurityIdentityMetaData;
 import org.jboss.metadata.javaee.spec.RunAsMetaData;
 
 /**
- * Handles the {@link javax.annotation.security.RunAs} annotation merging
+ * Handles the {@link jakarta.annotation.security.RunAs} annotation merging
  *
  * @author Stuart Douglas
  */

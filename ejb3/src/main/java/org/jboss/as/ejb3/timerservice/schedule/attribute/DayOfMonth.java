@@ -37,7 +37,7 @@ import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.SingleValue;
 
 /**
- * Represents the value of a day in a month, constructed out of a {@link javax.ejb.ScheduleExpression#getDayOfMonth()}
+ * Represents the value of a day in a month, constructed out of a {@link jakarta.ejb.ScheduleExpression#getDayOfMonth()}
  * <p/>
  * <p>
  * A {@link DayOfMonth} can hold an {@link Integer} or a {@link String} as its value.

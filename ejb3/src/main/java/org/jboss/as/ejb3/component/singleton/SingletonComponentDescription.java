@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.TransactionManagementType;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.TransactionManagementType;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;

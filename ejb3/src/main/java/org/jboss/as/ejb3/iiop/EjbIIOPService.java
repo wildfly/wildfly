@@ -30,10 +30,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.EJBHome;
-import javax.ejb.EJBMetaData;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBMetaData;
 import javax.rmi.PortableRemoteObject;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;

@@ -35,9 +35,9 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
 /**
- * An interceptor which handles an invocation on a {@link javax.ejb.Remove} method of a stateful session bean. This interceptor
+ * An interceptor which handles an invocation on a {@link jakarta.ejb.Remove} method of a stateful session bean. This interceptor
  * removes the stateful session once the method completes (either successfully or with an exception). If the remove method
- * was marked with "retainIfException" to true and if the remove method threw a {@link javax.ejb.ApplicationException} then
+ * was marked with "retainIfException" to true and if the remove method threw a {@link jakarta.ejb.ApplicationException} then
  * this interceptor does *not* remove the stateful session.
  * <p/>
  * User: Jaikiran Pai

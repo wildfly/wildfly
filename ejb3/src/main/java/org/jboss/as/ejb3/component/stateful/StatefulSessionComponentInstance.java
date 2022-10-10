@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.ejb.EJBException;
-import javax.transaction.Transaction;
+import jakarta.ejb.EJBException;
+import jakarta.transaction.Transaction;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;

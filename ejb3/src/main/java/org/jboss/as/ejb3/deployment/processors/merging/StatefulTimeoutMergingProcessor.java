@@ -33,11 +33,11 @@ import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.StatefulTimeoutMetaData;
 
-import javax.ejb.StatefulTimeout;
+import jakarta.ejb.StatefulTimeout;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Handles the {@link javax.annotation.security.RunAs} annotation merging
+ * Handles the {@link jakarta.annotation.security.RunAs} annotation merging
  *
  * @author Stuart DouglasrunAs
  */

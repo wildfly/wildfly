@@ -23,8 +23,8 @@ package org.jboss.as.ejb3.component.pool;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.ConcurrentAccessException;
-import javax.ejb.ConcurrentAccessTimeoutException;
+import jakarta.ejb.ConcurrentAccessException;
+import jakarta.ejb.ConcurrentAccessTimeoutException;
 
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;

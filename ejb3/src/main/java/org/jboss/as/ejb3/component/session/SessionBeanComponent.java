@@ -26,9 +26,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJBLocalObject;
+import jakarta.ejb.EJBObject;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;

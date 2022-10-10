@@ -54,7 +54,7 @@ public class MessageDrivenComponentInstance extends EjbComponentInstance {
     }
 
     /**
-     * Returns a {@link javax.ejb.MessageDrivenContext}
+     * Returns a {@link jakarta.ejb.MessageDrivenContext}
      * @return
      */
     @Override

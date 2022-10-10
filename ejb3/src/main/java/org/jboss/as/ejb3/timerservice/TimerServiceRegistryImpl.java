@@ -30,15 +30,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
 
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
 
 /**
- * A registry to which individual {@link javax.ejb.TimerService timer services} can register to (and un-register from). The main purpose
+ * A registry to which individual {@link jakarta.ejb.TimerService timer services} can register to (and un-register from). The main purpose
  * of this registry is to provide an implementation of {@link #getAllActiveTimers()} which returns all
- * {@link javax.ejb.TimerService#getTimers() active timers} after querying each of the {@link javax.ejb.TimerService timer services} registered
+ * {@link jakarta.ejb.TimerService#getTimers() active timers} after querying each of the {@link jakarta.ejb.TimerService timer services} registered
  * with this {@link TimerServiceRegistry registry}.
  * <p/>
  * Typical use of this registry is to maintain one instance of this registry, per deployment unit (also known as Jakarta Enterprise Beans module) and register the timer

@@ -95,7 +95,10 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ejb3-legacy-namespace</artifactId>
+            <artifactId>wildfly-ejb3</artifactId>
+            <!-- TODO remove this version element when converting jpa subsystem to jakarta namespace -->
+            <!-- This artifact should already be declared in wildfly-standard-ee-bom -->
+            <version>27.0.0.Beta1</version>
         </dependency>
 
         <dependency>

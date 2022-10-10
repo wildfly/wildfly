@@ -22,14 +22,14 @@
 
 package org.jboss.as.ejb3.timerservice.spi;
 
-import javax.ejb.Timer;
+import jakarta.ejb.Timer;
 
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.logging.EjbLogger;
 
 /**
- * Interface for managed {@link javax.ejb.Timer} implementations.
+ * Interface for managed {@link jakarta.ejb.Timer} implementations.
  * @author Paul Ferraro
  */
 public interface ManagedTimer extends Timer {

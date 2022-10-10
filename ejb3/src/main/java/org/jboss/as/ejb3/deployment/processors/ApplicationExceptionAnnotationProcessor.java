@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import java.util.List;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.logging.EjbLogger;

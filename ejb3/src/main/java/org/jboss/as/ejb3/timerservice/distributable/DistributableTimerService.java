@@ -41,13 +41,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.ejb.EJBException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.TimerConfig;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.TimerConfig;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
@@ -69,7 +69,7 @@ import org.wildfly.clustering.ejb.timer.TimerManager;
  * EJB specification facade for a distributable EJB timer manager.
  * @author Paul Ferraro
  */
-public class DistributableTimerService<I> implements ManagedTimerService, Function<I, javax.ejb.Timer> {
+public class DistributableTimerService<I> implements ManagedTimerService, Function<I, jakarta.ejb.Timer> {
 
     private final TimerServiceRegistry registry;
     private final TimedObjectInvoker invoker;
@@ -144,21 +144,21 @@ public class DistributableTimerService<I> implements ManagedTimerService, Functi
     }
 
     @Override
-    public javax.ejb.Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig config) {
+    public jakarta.ejb.Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig config) {
         return this.createEJBTimer(new ScheduleTimerFactory<>(schedule, config.getInfo()));
     }
 
     @Override
-    public javax.ejb.Timer createIntervalTimer(Date initialExpiration, long intervalDuration, TimerConfig config) {
+    public jakarta.ejb.Timer createIntervalTimer(Date initialExpiration, long intervalDuration, TimerConfig config) {
         return this.createEJBTimer(new IntervalTimerFactory<>(initialExpiration.toInstant(), Duration.ofMillis(intervalDuration), config.getInfo()));
     }
 
     @Override
-    public javax.ejb.Timer createSingleActionTimer(Date expiration, TimerConfig config) {
+    public jakarta.ejb.Timer createSingleActionTimer(Date expiration, TimerConfig config) {
         return this.createEJBTimer(new IntervalTimerFactory<>(expiration.toInstant(), null, config.getInfo()));
     }
 
-    private javax.ejb.Timer createEJBTimer(BiFunction<TimerManager<I, Batch>, I, Timer<I>> factory) {
+    private jakarta.ejb.Timer createEJBTimer(BiFunction<TimerManager<I, Batch>, I, Timer<I>> factory) {
         Timer<I> timer = this.createTimer(factory);
         return new OOBTimer<>(this.manager, timer.getId(), this.invoker, this.synchronizationFactory);
     }
@@ -211,7 +211,7 @@ public class DistributableTimerService<I> implements ManagedTimerService, Functi
     }
 
     @Override
-    public Collection<javax.ejb.Timer> getTimers() throws EJBException {
+    public Collection<jakarta.ejb.Timer> getTimers() throws EJBException {
         this.validateInvocationContext();
 
         @SuppressWarnings("unchecked")
@@ -223,12 +223,12 @@ public class DistributableTimerService<I> implements ManagedTimerService, Functi
     }
 
     @Override
-    public javax.ejb.Timer apply(I id) {
+    public jakarta.ejb.Timer apply(I id) {
         return new OOBTimer<>(this.manager, id, this.invoker, this.synchronizationFactory);
     }
 
     @Override
-    public Collection<javax.ejb.Timer> getAllTimers() throws EJBException {
+    public Collection<jakarta.ejb.Timer> getAllTimers() throws EJBException {
         this.validateInvocationContext();
         return this.registry.getAllTimers();
     }

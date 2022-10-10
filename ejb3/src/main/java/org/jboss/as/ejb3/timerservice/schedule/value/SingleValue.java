@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.timerservice.schedule.value;
 
 /**
- * Represents a value for a {@link javax.ejb.ScheduleExpression} which is expressed as a single value
+ * Represents a value for a {@link jakarta.ejb.ScheduleExpression} which is expressed as a single value
  *
  * @author Jaikiran Pai
  * @version $Revision: $

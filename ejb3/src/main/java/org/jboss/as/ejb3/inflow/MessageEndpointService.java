@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.inflow;
 
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 

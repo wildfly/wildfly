@@ -26,10 +26,10 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.ejb.Remove;
+import jakarta.ejb.Remove;
 
 /**
- * Processes the {@link javax.ejb.Remove}
+ * Processes the {@link jakarta.ejb.Remove}
  *
  * @author Stuart Douglas
  */

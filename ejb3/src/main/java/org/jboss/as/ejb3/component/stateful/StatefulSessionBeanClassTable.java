@@ -25,16 +25,16 @@ package org.jboss.as.ejb3.component.stateful;
 import java.io.Serializable;
 import java.util.UUID;
 
-import javax.ejb.EJBHome;
-import javax.ejb.EJBMetaData;
-import javax.ejb.EJBObject;
-import javax.ejb.Handle;
-import javax.ejb.HomeHandle;
-import javax.ejb.SessionContext;
-import javax.ejb.Timer;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.transaction.UserTransaction;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBMetaData;
+import jakarta.ejb.EJBObject;
+import jakarta.ejb.Handle;
+import jakarta.ejb.HomeHandle;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Timer;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EjbComponentInstance;

@@ -22,9 +22,9 @@
 
 package org.jboss.as.ejb3.validator;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>

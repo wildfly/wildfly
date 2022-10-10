@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
-import javax.ejb.Init;
+import jakarta.ejb.Init;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;

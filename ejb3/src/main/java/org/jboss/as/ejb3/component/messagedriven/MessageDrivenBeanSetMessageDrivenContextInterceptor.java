@@ -22,15 +22,15 @@
 
 package org.jboss.as.ejb3.component.messagedriven;
 
-import javax.ejb.MessageDrivenBean;
-import javax.ejb.MessageDrivenContext;
+import jakarta.ejb.MessageDrivenBean;
+import jakarta.ejb.MessageDrivenContext;
 
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
 /**
- * An interceptor for MDBs, which will invoke the {@link MessageDrivenBean#setMessageDrivenContext(javax.ejb.MessageDrivenContext)}
+ * An interceptor for MDBs, which will invoke the {@link MessageDrivenBean#setMessageDrivenContext(jakarta.ejb.MessageDrivenContext)}
  * method.
  *
  * @author Jaikiran Pai

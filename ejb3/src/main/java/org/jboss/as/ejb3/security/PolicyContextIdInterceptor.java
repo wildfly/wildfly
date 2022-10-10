@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.security;
 
-import javax.security.jacc.PolicyContext;
+import jakarta.security.jacc.PolicyContext;
 
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;

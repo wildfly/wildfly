@@ -21,18 +21,18 @@
  */
 package org.jboss.as.ejb3.inflow;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ApplicationServerInternalException;
-import javax.resource.spi.LocalTransactionException;
-import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.InvalidTransactionException;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ApplicationServerInternalException;
+import jakarta.resource.spi.LocalTransactionException;
+import jakarta.resource.spi.endpoint.MessageEndpoint;
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.InvalidTransactionException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

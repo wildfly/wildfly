@@ -28,7 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.function.UnaryOperator;
 
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 
 import org.junit.Assert;
 import org.junit.Test;

@@ -35,7 +35,7 @@ import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.SingleValue;
 
 /**
- * Represents a {@link Integer} type value in a {@link javax.ejb.ScheduleExpression}.
+ * Represents a {@link Integer} type value in a {@link jakarta.ejb.ScheduleExpression}.
  * <p/>
  * <p>
  * Examples for {@link IntegerBasedExpression} are the value of seconds, years, months etc...

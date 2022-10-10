@@ -24,9 +24,9 @@ package org.jboss.as.ejb3.iiop.handle;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import javax.ejb.EJBHome;
-import javax.ejb.EJBObject;
-import javax.ejb.spi.HandleDelegate;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBObject;
+import jakarta.ejb.spi.HandleDelegate;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.CORBA.Stub;
@@ -38,11 +38,11 @@ import org.omg.CORBA.ORB;
 import org.omg.CORBA.portable.ObjectImpl;
 
 /**
- * <P>Implementation of the javax.ejb.spi.HandleDelegate interface</P>
+ * <P>Implementation of the jakarta.ejb.spi.HandleDelegate interface</P>
  * <p/>
  * <P>The HandleDelegate interface is implemented by the Jakarta Enterprise Beans container.
- * It is used by portable implementations of javax.ejb.Handle and
- * javax.ejb.HomeHandle. It is not used by Jakarta Enterprise Beans components or by client components.
+ * It is used by portable implementations of jakarta.ejb.Handle and
+ * jakarta.ejb.HomeHandle. It is not used by Jakarta Enterprise Beans components or by client components.
  * It provides methods to serialize and deserialize Jakarta Enterprise Beans Object and Jakarta Enterprise Beans Home
  * references to streams.</P>
  * <p/>

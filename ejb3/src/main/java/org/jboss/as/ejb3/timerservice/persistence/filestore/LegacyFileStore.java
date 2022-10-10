@@ -32,7 +32,7 @@ import java.nio.file.Files;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.TimerImpl;

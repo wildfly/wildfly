@@ -61,7 +61,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.parsing.ParseUtils;

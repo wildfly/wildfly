@@ -35,7 +35,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Service which installs the {@link javax.transaction.UserTransaction} access control into the transaction subsystem.
+ * Service which installs the {@link jakarta.transaction.UserTransaction} access control into the transaction subsystem.
  *
  * @author Eduardo Martins
  */

@@ -22,8 +22,8 @@
 
 package org.jboss.as.ejb3.iiop;
 
-import javax.ejb.TransactionAttributeType;
-import javax.transaction.Transaction;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.transaction.Transaction;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;

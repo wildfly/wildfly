@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.ejb.Timeout;
+import jakarta.ejb.Timeout;
 
 import org.jboss.as.ee.component.deployers.BooleanAnnotationInformationFactory;
 import org.jboss.as.ee.metadata.AbstractEEAnnotationProcessor;

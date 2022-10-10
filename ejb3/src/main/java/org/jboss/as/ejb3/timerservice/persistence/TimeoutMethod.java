@@ -35,21 +35,21 @@ public class TimeoutMethod implements Serializable {
     private static final long serialVersionUID = 3306711742026221772L;
 
     /**
-     * Constant string value to indicate that the timeout method has 1 parameter, which must be javax.ejb.Timer
+     * Constant string value to indicate that the timeout method has 1 parameter, which must be jakarta.ejb.Timer
      */
     public static final String TIMER_PARAM_1 = "1";
 
     /**
      * Constant string array value to indicate that the timeout method has 1
-     * parameter, which must be javax.ejb.Timer
+     * parameter, which must be jakarta.ejb.Timer
      */
     public static final String[] TIMER_PARAM_1_ARRAY = new String[]{TIMER_PARAM_1};
 
     /**
      * Internal immutable string list to indicate that the timeout method has 1
-     * parameter, which must be javax.ejb.Timer
+     * parameter, which must be jakarta.ejb.Timer
      */
-    private static final List<String> TIMER_PARAM_1_LIST = Collections.singletonList("javax.ejb.Timer");
+    private static final List<String> TIMER_PARAM_1_LIST = Collections.singletonList("jakarta.ejb.Timer");
 
     private String declaringClass;
 

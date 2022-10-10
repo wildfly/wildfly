@@ -26,10 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.Schedule;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.TimedObject;
-import javax.ejb.Timeout;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.TimedObject;
+import jakarta.ejb.Timeout;
 
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
@@ -106,7 +106,7 @@ public class TimerMethodMergingProcessor extends AbstractMergingProcessor<EJBCom
             while (c != null && c != Object.class) {
                 final ClassReflectionIndex index = deploymentReflectionIndex.getClassIndex(c);
                 //TimedObject takes precedence
-                Method method = index.getMethod(Void.TYPE, "ejbTimeout", javax.ejb.Timer.class);
+                Method method = index.getMethod(Void.TYPE, "ejbTimeout", jakarta.ejb.Timer.class);
                 if (method != null) {
 
                     final Method otherMethod = description.getTimeoutMethod();
