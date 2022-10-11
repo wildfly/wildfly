@@ -97,7 +97,7 @@ questions/output as follows:
 
 .add-user
 
-[source,java,options="nowrap"]
+[source,shell,options="nowrap"]
 ----
 jpai@jpai-laptop:bin$ ./add-user.sh
  
@@ -200,7 +200,7 @@ the "Destination Server". We have copied the entire server installation
 to a different folder and while starting the "Client Server" we'll use a
 port-offset (of 100 in this example) to avoid port conflicts:
 
-[source,options="nowrap"]
+[source,shell,options="nowrap"]
 ----
 ./standalone.sh -server-config=standalone-full.xml -Djboss.socket.binding.port-offset=100
 ----

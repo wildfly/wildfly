@@ -41,7 +41,7 @@ On WildFly, the system property is easily set by adding what follows to
 the standalone / domain server configuration just after the extensions
 section:
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <system-properties>
   <property name="org.apache.cxf.logging.enabled" value="true"/>
@@ -154,7 +154,7 @@ Jakarta Enterprise Beans webservice endpoints bundled in `war` archives
 The structure of file is the following (schemas are available
 http://anonsvn.jboss.org/repos/jbossws/spi/trunk/src/main/resources/schema/[here]):
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <webservices>
   <context-root/>?
@@ -185,7 +185,7 @@ http://anonsvn.jboss.org/repos/jbossws/spi/trunk/src/main/resources/schema/[here
 Element `<context-root>` can be used to customize context root of
 webservices deployment.
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <webservices>
   <context-root>foo</context-root>
@@ -204,7 +204,7 @@ configurations and their management in the domain model, please see the
 related
 https://docs.jboss.org/author/display/WFLY8/Web+services+configuration[documentation].
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <webservices>
   <config-name>Standard WSSecurity Endpoint</config-name>
@@ -219,7 +219,7 @@ https://docs.jboss.org/author/display/WFLY8/Web+services+configuration[documenta
 configure the ws stack behavior. Allowed property names and values are
 mentioned in the guide under related topics.
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <property>
   <name>prop.name</name>
@@ -233,7 +233,7 @@ mentioned in the guide under related topics.
 Element `<port-component>` can be used to customize Jakarta Enterprise Beans endpoint target
 URI or to configure security related properties.
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <webservices>
   <port-component>
@@ -253,7 +253,7 @@ URI or to configure security related properties.
 Element `<webservice-description>` can be used to customize (override)
 webservice WSDL publish location.
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <webservices>
   <webservice-description>

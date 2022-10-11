@@ -11,7 +11,7 @@ Consequently, this solution generally provides better performance and scalabilit
 This feature can also be used to provide file, database, or remote Infinispan cluster persistence of timer metadata for single server architectures, effectively replacing the existing file-store and database-store TimerService facilities.
 Additionally, this feature can also provide passivation support for non-persistent timers to allow the creation of large number of transient timers without the risk of running out of memory.
 
-[[setup]]
+[[jebdt_setup]]
 == Setup
 
 Distributed timer behavior is configured via the distributable-ejb subsystem, and can be configured globally via the ejb3 subsystem or customized per EJB via the `timer-service` EJB deployment descriptor namespace.

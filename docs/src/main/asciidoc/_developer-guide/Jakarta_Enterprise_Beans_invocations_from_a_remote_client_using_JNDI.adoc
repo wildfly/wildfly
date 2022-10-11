@@ -313,14 +313,14 @@ the following syntax:
 
 *For stateless beans:*
 
-[source,java,options="nowrap"]
+[source,options="nowrap"]
 ----
 ejb:<app-name>/<module-name>/<distinct-name>/<bean-name>!<fully-qualified-classname-of-the-remote-interface>
 ----
 
 *For stateful beans:*
 
-[source,java,options="nowrap"]
+[source,options="nowrap"]
 ----
 ejb:<app-name>/<module-name>/<distinct-name>/<bean-name>!<fully-qualified-classname-of-the-remote-interface>?stateful
 ----

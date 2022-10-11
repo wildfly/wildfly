@@ -41,7 +41,7 @@ example the following `web.xml` binds the string `"Hello World"` to
 `java:comp/env/hello` (any non absolute JNDI name is relative to
 `java:comp/env` context).
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -134,7 +134,7 @@ up it will lookup the target and return the result.
 
 An example standalone.xml might look like:
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:naming:2.0" >
   <bindings>

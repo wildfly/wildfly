@@ -135,7 +135,7 @@ if(logger.isLoggable(Level.TRACE)) {
 }
 ----
 
-In addition to the code changes made to use the new AS7 JBoss log
+In addition to the code changes made to use the WildFly log
 manager module, you must add this dependency to the `MANIFEST.MF` file
 as follows:
 

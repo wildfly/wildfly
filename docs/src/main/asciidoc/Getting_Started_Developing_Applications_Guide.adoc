@@ -20,7 +20,7 @@ ifdef::basebackend-html[toc::[]]
 
 
 This guide has moved to
-https://github.com/wildfly/quickstart/blob/11.x/guide/
+https://github.com/wildfly/quickstart/blob/{wildflyversion}.x/guide/
 
 
 
@@ -29,19 +29,19 @@ include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/guide.a
 ////
 
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/Introduction.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/Introduction.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/GettingStarted.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/GettingStarted.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/HelloworldQuickstart.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/HelloworldQuickstart.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/NumberguessQuickstart.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/NumberguessQuickstart.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/GreeterQuickstart.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/GreeterQuickstart.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/KitchensinkQuickstart.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/KitchensinkQuickstart.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/Archetype.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/Archetype.asciidoc[]
 
 
 = More Resources
@@ -52,10 +52,6 @@ include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/Archety
 server layout (what you can configure where), data source definition,
 and using the web management interface.
 
-| link:http://torquebox.org/[Torquebox] |Torque Box allows you to use all the familiar services from
-JBoss AS 7, but with Ruby.
-
-| link:https://developer.jboss.org/wiki/JBossAS7FAQ[JBoss AS 7 FAQ] |Frequently Asked Questions for JBoss AS 7
 |=======================================================================
 
 :leveloffset: +1

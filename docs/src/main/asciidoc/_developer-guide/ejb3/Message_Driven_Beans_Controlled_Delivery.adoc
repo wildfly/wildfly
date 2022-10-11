@@ -396,28 +396,28 @@ In other words, when more than one delivery control mechanism is used in
 conjunction, they act as a set of restrictions that need all to be true
 in order for the MDB to receive messages:
 
-* * MDB belongs to one delivery-group + stop-delivery was invoked*: the delivery group
+* *MDB belongs to one delivery-group + stop-delivery was invoked*: the delivery group
 needs to be active and the delivery needs to be restarted (via start-delivery) in order
 for that MDB to start receiving messages;
 
-* * MDB belongs to one delivery-group + MDB is clustered singleton*: the delivery group
+* *MDB belongs to one delivery-group + MDB is clustered singleton*: the delivery group
 needs to be active and the current node needs to be the primary singleton provider
 node in order for that MDB to start receiving messages;
 
-* * MDB belongs to one delivery-group + MDB is clustered singleton + stop-delivery was invoked*:
+* *MDB belongs to one delivery-group + MDB is clustered singleton + stop-delivery was invoked*:
 as above, the delivery-group has to be active, the current cluster node must be the
 primary singleton provider node, plus, start-delivery needs to be invoked on that MDB,
 only with these three factors being true the MDB will start receiving messages.
 
-* * MDB belongs to multiple delivery-groups + stop-delivery was invoked*: all the delivery
+* *MDB belongs to multiple delivery-groups + stop-delivery was invoked*: all the delivery
 groups need to be active and the delivery needs to be restarted (via start-delivery) in
 order for that MDB to start receiving messages;
 
-* * MDB belongs to multiple delivery-groups + MDB is clustered singleton*: all the delivery
+* *MDB belongs to multiple delivery-groups + MDB is clustered singleton*: all the delivery
 groups need to be active and the current node needs to be the primary singleton
 provider node in order for that MDB to start receiving messages;
 
-* * MDB belongs to multiple delivery-groups + MDB is clustered singleton + stop-delivery was
+* *MDB belongs to multiple delivery-groups + MDB is clustered singleton + stop-delivery was
 invoked*: as above, all delivery-groups must be active, and current cluster node has to be the
 primary singleton provider node, plus, start-delivery needs to be invoked on that MDB, only
 with these three factors being true the MDB will start receiving messages.

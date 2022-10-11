@@ -674,6 +674,6 @@ Turn on debugging for a specific category with the CLI:
 In the example above the `org.jboss.as` log category was configured. Use a different value
 for the `logger` key to configure a different log category.
 
-By default the `server.log` is configured to include all levels in its
+By default, the `server.log` is configured to include all levels in its
 log output. In the above example we changed the console to also display
 debug messages.

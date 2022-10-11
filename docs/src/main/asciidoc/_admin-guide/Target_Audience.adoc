@@ -9,7 +9,7 @@ of WildFly.
 
 Before continuing, you should know how to download, install and run
 WildFly. For more information on these steps, refer here:
-link:Getting_Started_Guide.html[Getting Started Guide].
+link:Getting_Started_Guide{outfilesuffix}[Getting Started Guide].
 
 [[examples-in-this-guide]]
 == Examples in this guide
