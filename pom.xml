@@ -465,7 +465,7 @@
         <version.org.eclipse.microprofile>4.1</version.org.eclipse.microprofile>
         <legacy.version.org.eclipse.microprofile.config.api>2.0</legacy.version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.config.api>3.0.1</version.org.eclipse.microprofile.config.api>
-        <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
+        <version.org.eclipse.microprofile.fault-tolerance.api>4.0.2</version.org.eclipse.microprofile.fault-tolerance.api>
         <legacy.version.org.eclipse.microprofile.health.api>3.1</legacy.version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.health.api>4.0</version.org.eclipse.microprofile.health.api>
         <legacy.version.org.eclipse.microprofile.jwt.api>1.2.1</legacy.version.org.eclipse.microprofile.jwt.api>
