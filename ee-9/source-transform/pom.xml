@@ -53,9 +53,6 @@
         <module>iiop-openjdk</module>
         <module>transactions</module>
         <module>rts</module>
-        <module>jpa/spi</module>
-        <module>jpa/eclipselink</module>
-        <module>jpa/subsystem</module>
         <module>jsf</module>
         <module>microprofile</module>
         <module>shared</module>

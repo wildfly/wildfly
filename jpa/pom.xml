@@ -22,7 +22,7 @@
 
     <properties>
         <!-- Default to the legacy WildFly dependency set until most child modules use standard WildFly dependencies -->
-        <dependency.management.pom.artifactId>wildfly-legacy-ee-bom</dependency.management.pom.artifactId>
+        <dependency.management.pom.artifactId>wildfly-standard-ee-bom</dependency.management.pom.artifactId>
     </properties>
 
     <dependencyManagement>
@@ -39,25 +39,12 @@
 
     <modules>
         <module>hibernate6</module>
+        <module>subsystem</module>
+        <module>spi</module>
+<!-- TODO enable eclipselink module after resolving 
+  
+        <module>eclipselink</module>
+-->
+
     </modules>
-
-    <profiles>
-        <profile>
-            <id>ee8.build.profile</id>
-            <activation>
-                <property>
-                    <name>!skip.ee8</name>
-                </property>
-            </activation>
-            <modules>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>subsystem</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>spi</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>eclipselink</module>
-            </modules>
-        </profile>
-    </profiles>
-
 </project>

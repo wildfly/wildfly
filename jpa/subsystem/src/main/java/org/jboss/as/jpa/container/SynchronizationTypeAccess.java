@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.container;
 
-import javax.persistence.SynchronizationType;
+import jakarta.persistence.SynchronizationType;
 
 /**
  * SynchronizationTypeAccess provides access to the SynchronizationType for an EntityManager.

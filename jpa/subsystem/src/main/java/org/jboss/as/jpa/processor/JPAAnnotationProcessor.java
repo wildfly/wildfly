@@ -27,13 +27,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
-import javax.persistence.PersistenceContexts;
-import javax.persistence.PersistenceUnit;
-import javax.persistence.PersistenceUnits;
-import javax.persistence.SynchronizationType;
-import javax.persistence.spi.PersistenceUnitTransactionType;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContextType;
+import jakarta.persistence.PersistenceContexts;
+import jakarta.persistence.PersistenceUnit;
+import jakarta.persistence.PersistenceUnits;
+import jakarta.persistence.SynchronizationType;
+import jakarta.persistence.spi.PersistenceUnitTransactionType;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
@@ -85,8 +85,8 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
     private static final DotName PERSISTENCE_UNIT_ANNOTATION_NAME = DotName.createSimple(PersistenceUnit.class.getName());
     private static final DotName PERSISTENCE_UNITS_ANNOTATION_NAME = DotName.createSimple(PersistenceUnits.class.getName());
 
-    private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
-    private static final String ENTITY_MANAGERFACTORY_CLASS = "javax.persistence.EntityManagerFactory";
+    private static final String ENTITY_MANAGER_CLASS = "jakarta.persistence.EntityManager";
+    private static final String ENTITY_MANAGERFACTORY_CLASS = "jakarta.persistence.EntityManagerFactory";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

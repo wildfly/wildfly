@@ -62,7 +62,7 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  */
 public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier JAVAX_PERSISTENCE_API_ID = ModuleIdentifier.create("javax.persistence.api");
+    private static final ModuleIdentifier JAVAX_PERSISTENCE_API_ID = ModuleIdentifier.create("jakarta.persistence.api");
     private static final ModuleIdentifier JBOSS_AS_JPA_ID = ModuleIdentifier.create("org.jboss.as.jpa");
     private static final ModuleIdentifier JBOSS_AS_JPA_SPI_ID = ModuleIdentifier.create("org.jboss.as.jpa.spi");
     private static final String JAR_FILE_EXTENSION = ".jar";
@@ -76,7 +76,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
-        // all applications get the javax.persistence module added to their deplyoment by default
+        // all applications get the jakarta.persistence module added to their deplyoment by default
         addDependency(moduleSpecification, moduleLoader, deploymentUnit, JAVAX_PERSISTENCE_API_ID);
 
         if (!JPADeploymentMarker.isJPADeployment(deploymentUnit)) {

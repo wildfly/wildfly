@@ -22,8 +22,8 @@
 
 package org.jipijapa.plugin.spi;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 /**
  * Provides access to TSR + TM
