@@ -392,6 +392,13 @@
             <artifactId>${wildfly-testsuite-shared.artifactId}</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>failureaccess</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
