@@ -39,7 +39,6 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.extension.micrometer.deployment.MicrometerSubsystemDeploymentProcessor;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
 
 public class MicrometerSubsystemAdd extends AbstractBoottimeAddStepHandler {

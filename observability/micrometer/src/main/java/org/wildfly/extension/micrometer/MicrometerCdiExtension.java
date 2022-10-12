@@ -18,34 +18,21 @@
  */
 package org.wildfly.extension.micrometer;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
-
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
-import jakarta.enterprise.inject.spi.BeanManager;
-import jakarta.enterprise.inject.spi.BeforeShutdown;
 import jakarta.enterprise.inject.spi.Extension;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 public class MicrometerCdiExtension implements Extension {
-    private static final Map<ClassLoader, MeterRegistry> REGISTRY_INSTANCES = Collections.synchronizedMap(new WeakHashMap<>());
+    private final MeterRegistry registry;
 
-    public static MeterRegistry registerApplicationRegistry(ClassLoader classLoader, MeterRegistry registry) {
-        REGISTRY_INSTANCES.put(classLoader, registry);
-
-        return registry;
+    public MicrometerCdiExtension(MeterRegistry meterRegistry) {
+        registry = meterRegistry;
     }
 
-    public void registerMicrometerBeans(@Observes AfterBeanDiscovery abd, BeanManager beanManager) {
-        abd.addBean()
-                .addTransitiveTypeClosure(MeterRegistry.class)
-                .produceWith(i -> REGISTRY_INSTANCES.get(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged()));
+
+    public void registerMicrometerBeans(@Observes AfterBeanDiscovery abd) {
+        abd.addBean().addTransitiveTypeClosure(MeterRegistry.class).produceWith(i -> registry);
     }
 
-    public void beforeShutdown(@Observes final BeforeShutdown bs) {
-        REGISTRY_INSTANCES.remove(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
-    }
 }

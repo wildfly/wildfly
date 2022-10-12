@@ -24,14 +24,14 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.msc.Service;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.micrometer.jmx.JmxMicrometerCollector;
 import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
 
-class MicrometerRegistryService implements Service {
+class MicrometerRegistryService implements Service<WildFlyRegistry> {
     private final Consumer<WildFlyRegistry> registriesConsumer;
     private WildFlyRegistry registry;
 
@@ -65,5 +65,10 @@ class MicrometerRegistryService implements Service {
     @Override
     public void stop(StopContext context) {
         // Clear registries?
+    }
+
+    @Override
+    public WildFlyRegistry getValue() {
+        return registry;
     }
 }
