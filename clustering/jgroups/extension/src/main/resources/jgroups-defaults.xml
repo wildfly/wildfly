@@ -31,7 +31,6 @@
         ucast_send_buf_size="1m"
         port_range="0"
         bundler_type="transfer-queue"
-        bundler.max_size="64k"
     />
     <TCP
         send_buf_size="640k"
