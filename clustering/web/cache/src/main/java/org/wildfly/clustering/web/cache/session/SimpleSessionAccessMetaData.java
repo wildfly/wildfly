@@ -23,6 +23,7 @@
 package org.wildfly.clustering.web.cache.session;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 /**
  * @author Paul Ferraro
@@ -44,11 +45,14 @@ public class SimpleSessionAccessMetaData implements SessionAccessMetaData {
 
     @Override
     public void setLastAccessDuration(Duration sinceCreation, Duration lastAccess) {
-        int nano = sinceCreation.getNano();
-        // Only retain millisecond precision
-        this.sinceCreation = (nano % 1_000_000) > 0 ? sinceCreation.withNanos((nano / 1_000_000) + 1) : sinceCreation;
-        // Only retain second precision
-        this.lastAccess = (lastAccess.getNano() > 0) ? Duration.ofSeconds(lastAccess.getSeconds() + 1) : lastAccess;
+        this.sinceCreation = normalize(sinceCreation);
+        this.lastAccess = normalize(lastAccess);
+    }
+
+    private static Duration normalize(Duration duration) {
+        // Only retain millisecond precision, rounding up to nearest millisecond
+        Duration truncatedDuration = duration.truncatedTo(ChronoUnit.MILLIS);
+        return !duration.equals(truncatedDuration) ? truncatedDuration.plusMillis(1) : duration;
     }
 
     @Override
