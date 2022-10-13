@@ -173,6 +173,7 @@
             --add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED
             --add-exports=java.naming/com.sun.jndi.url.ldap=ALL-UNNAMED
             --add-exports=java.naming/com.sun.jndi.url.ldaps=ALL-UNNAMED
+            --add-exports=jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED
             --add-opens=java.base/java.io=ALL-UNNAMED
             --add-opens=java.base/java.lang=ALL-UNNAMED
             --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
