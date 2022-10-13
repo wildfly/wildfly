@@ -568,7 +568,7 @@ must implement the `org.jboss.msc.Service` interface.
 
 [source,java,options="nowrap"]
 ----
-public class TrackerService implements Service<TrackerService>{
+public class TrackerService implements Service {
 ----
 
 We then have some fields to keep the tick count and a thread which when
