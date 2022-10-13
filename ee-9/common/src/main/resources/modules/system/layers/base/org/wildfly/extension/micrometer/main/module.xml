@@ -32,6 +32,7 @@
         <module name="io.micrometer"/>
         <module name="io.prometheus"/>
         <module name="io.undertow.core"/>
+        <module name="org.wildfly.extension.micrometer-api"/>
 
         <module name="java.logging"/>
         <module name="java.desktop"/>

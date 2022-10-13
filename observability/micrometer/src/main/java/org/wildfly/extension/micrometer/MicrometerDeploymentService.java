@@ -71,7 +71,6 @@ public class MicrometerDeploymentService implements Service {
             return;
         }
 
-
         PathAddress deploymentAddress = createDeploymentAddressPrefix(deploymentUnit);
 
         ServiceBuilder<?> sb = serviceTarget.addService(deploymentUnit.getServiceName().append(".micrometer-metrics"));
@@ -129,24 +128,9 @@ public class MicrometerDeploymentService implements Service {
                         address -> deploymentAddress.append(address),
                         exposeAnySubsystem,
                         exposedSubsystems);
-
-//        setupMicrometerCdiBeans();
     }
 
     @Override
     public void stop(StopContext context) {
     }
-
-//    private void setupMicrometerCdiBeans() {
-//        final ClassLoader initialCl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-//
-//        try {
-//            final ModuleClassLoader moduleCL = deploymentUnit.getAttachment(Attachments.MODULE).getClassLoader();
-//            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(moduleCL);
-//            MicrometerCdiExtension.registerApplicationRegistry(moduleCL, registrySupplier.get());
-//        } finally {
-//            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(initialCl);
-//        }
-//    }
-
 }

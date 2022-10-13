@@ -26,7 +26,6 @@ import static org.wildfly.extension.micrometer.MicrometerSubsystemExtension.WELD
 import java.util.List;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -34,13 +33,12 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldCapability;
+import org.wildfly.extension.micrometer.api.MicrometerCdiExtension;
 import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
 
 public class MicrometerSubsystemDeploymentProcessor implements DeploymentUnitProcessor {
     private final boolean exposeAnySubsystem;
     private final List<String> exposedSubsystems;
-
-    private ManagementResourceRegistration managementResourceRegistration;
 
     public MicrometerSubsystemDeploymentProcessor(boolean exposeAnySubsystem, List<String> exposedSubsystems) {
         this.exposeAnySubsystem = exposeAnySubsystem;

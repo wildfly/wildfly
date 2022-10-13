@@ -36,8 +36,9 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
 import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
 
-public class MicrometerSubsystemDefinition extends PersistentResourceDefinition {
-    public static final String MICROMETER_MODULE = "org.wildfly.extension.micrometer";
+class MicrometerSubsystemDefinition extends PersistentResourceDefinition {
+    private static final String MICROMETER_MODULE = "org.wildfly.extension.micrometer";
+    private static final String MICROMETER_API_MODULE = "org.wildfly.extension.micrometer-api";
     static final String CLIENT_FACTORY_CAPABILITY = "org.wildfly.management.model-controller-client-factory";
     static final String HTTP_EXTENSIBILITY_CAPABILITY = "org.wildfly.management.http.extensible";
     static final String MANAGEMENT_EXECUTOR = "org.wildfly.management.executor";
@@ -55,15 +56,15 @@ public class MicrometerSubsystemDefinition extends PersistentResourceDefinition 
                     .build();
     static final RuntimeCapability METRICS_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.management.http-context.metrics").build();
-    public static final ServiceName MICROMETER_COLLECTOR = MICROMETER_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName();
+    static final ServiceName MICROMETER_COLLECTOR = MICROMETER_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName();
 
-    public static final String[] MODULES = {
-            "io.micrometer",
+    static final String[] MODULES = {
             "io.prometheus",
             "org.latencyutils"
     };
 
-    public static final String[] EXPORTED_MODULES = {
+    static final String[] EXPORTED_MODULES = {
+            MICROMETER_API_MODULE,
             "io.micrometer"
     };
 
