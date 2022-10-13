@@ -22,7 +22,7 @@
 
 package org.jboss.as.weld._private;
 
-import javax.ejb.NoSuchEJBException;
+import jakarta.ejb.NoSuchEJBException;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;

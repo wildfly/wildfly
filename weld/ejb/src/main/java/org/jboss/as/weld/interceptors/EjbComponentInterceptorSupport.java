@@ -23,9 +23,9 @@ package org.jboss.as.weld.interceptors;
 
 import java.util.List;
 
-import javax.enterprise.inject.spi.InterceptionType;
-import javax.enterprise.inject.spi.Interceptor;
-import javax.interceptor.InvocationContext;
+import jakarta.enterprise.inject.spi.InterceptionType;
+import jakarta.enterprise.inject.spi.Interceptor;
+import jakarta.interceptor.InvocationContext;
 
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.stateful.SerializedCdiInterceptorsKey;

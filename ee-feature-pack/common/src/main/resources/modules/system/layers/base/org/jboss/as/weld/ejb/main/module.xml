@@ -33,7 +33,7 @@
     </exports>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-weld-ejb@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-weld-ejb}"/>
     </resources>
 
     <dependencies>
@@ -49,8 +49,8 @@
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.ejb.api" />
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.ejb.api" />
         <module name="org.jboss.as.ejb3"/>
         <module name="org.jboss.ejb3"/>
         <module name="org.jboss.ejb-client"/>

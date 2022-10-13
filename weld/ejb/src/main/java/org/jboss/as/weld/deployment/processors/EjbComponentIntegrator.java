@@ -25,7 +25,7 @@ import static org.jboss.as.weld.interceptors.Jsr299BindingsInterceptor.factory;
 
 import java.util.function.Supplier;
 
-import javax.enterprise.inject.spi.InterceptionType;
+import jakarta.enterprise.inject.spi.InterceptionType;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;

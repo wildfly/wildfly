@@ -42,6 +42,7 @@
     <name>WildFly: Weld</name>
 
     <modules>
+        <module>ejb</module>
     </modules>
 
     <dependencyManagement>
@@ -68,8 +69,6 @@
                 <module>spi</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>common</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>ejb</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>jpa</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->

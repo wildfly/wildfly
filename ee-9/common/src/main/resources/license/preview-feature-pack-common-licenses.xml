@@ -809,7 +809,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-ejb-jakarta</artifactId>
+      <artifactId>wildfly-weld-ejb</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
