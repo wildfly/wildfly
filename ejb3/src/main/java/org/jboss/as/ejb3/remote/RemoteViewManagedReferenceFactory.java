@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import java.util.function.Supplier;
 import javax.ejb.EJBHome;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -34,7 +35,6 @@ import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EJBIdentifier;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
-import org.jboss.msc.value.Value;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -48,14 +48,14 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
     private final EJBIdentifier identifier;
     private final String viewClass;
     private final boolean stateful;
-    private final Value<ClassLoader> viewClassLoader;
+    private final Supplier<ClassLoader> viewClassLoader;
     private final boolean appclient;
 
-    public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader, boolean appclient) {
+    public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Supplier<ClassLoader> viewClassLoader, boolean appclient) {
         this(new EJBIdentifier(appName == null ? "" : appName, moduleName, beanName, distinctName), viewClass, stateful, viewClassLoader, appclient);
     }
 
-    public RemoteViewManagedReferenceFactory(final EJBIdentifier identifier, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader, boolean appclient) {
+    public RemoteViewManagedReferenceFactory(final EJBIdentifier identifier, final String viewClass, final boolean stateful, final Supplier<ClassLoader> viewClassLoader, boolean appclient) {
         this.identifier = identifier;
         this.viewClass = viewClass;
         this.stateful = stateful;
@@ -80,11 +80,11 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
         try {
             viewClass = Class.forName(this.viewClass, false, WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
         } catch (ClassNotFoundException e) {
-            if(viewClassLoader == null || viewClassLoader.getValue() == null) {
+            if(viewClassLoader == null || viewClassLoader.get() == null) {
                 throw EjbLogger.ROOT_LOGGER.failToLoadViewClassEjb(identifier.toString(), e);
             }
             try {
-                viewClass = Class.forName(this.viewClass, false, viewClassLoader.getValue());
+                viewClass = Class.forName(this.viewClass, false, viewClassLoader.get());
             } catch (ClassNotFoundException ce) {
                 throw EjbLogger.ROOT_LOGGER.failToLoadViewClassEjb(identifier.toString(), ce);
             }

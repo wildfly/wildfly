@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component;
 
+import java.util.function.Supplier;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -36,7 +38,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.Value;
 
 /**
  * Jakarta Enterprise Beans specific view description.
@@ -102,7 +103,7 @@ public class EJBViewDescription extends ViewDescription {
     }
 
     @Override
-    protected InjectionSource createInjectionSource(final ServiceName serviceName, Value<ClassLoader> viewClassLoader, boolean appclient) {
+    protected InjectionSource createInjectionSource(final ServiceName serviceName, Supplier<ClassLoader> viewClassLoader, boolean appclient) {
         if(methodIntf != MethodInterfaceType.Remote && methodIntf != MethodInterfaceType.Home) {
             return super.createInjectionSource(serviceName, viewClassLoader, appclient);
         } else {
