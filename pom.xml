@@ -67,6 +67,7 @@
         <module>client/properties</module>
         <module>client/shade</module>
         <module>clustering</module>
+        <module>datasources-agroal</module>
         <module>dist</module>
         <module>ee-build</module>
         <module>ee-dist</module>
@@ -351,7 +352,6 @@
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.groovy-all>4.0.4</version.groovy-all>
         <version.httpunit>1.7.2</version.httpunit>
-        <legacy.version.io.agroal>1.16</legacy.version.io.agroal>
         <version.io.agroal>2.0</version.io.agroal>
         <version.io.grpc>1.38.1</version.io.grpc>
         <version.io.jaegertracing>1.6.0</version.io.jaegertracing>
@@ -1985,8 +1985,6 @@
                 <module>bean-validation</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>connector</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>datasources-agroal</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>ee</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
