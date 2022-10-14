@@ -1972,12 +1972,32 @@
 
     <!-- Profiles -->
     <profiles>
+        <profile>
+            <id>quick-build</id>
+            <activation>
+                <property>
+                    <name>quickly</name>
+                </property>
+            </activation>
+            <properties>
+                <skipTests>true</skipTests>
+                <skipITs>true</skipITs>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+                <checkstyle.skip>true</checkstyle.skip>
+                <enforcer.skip>true</enforcer.skip>
+                <license.skip>true</license.skip>
+                <maven.test.skip>true</maven.test.skip>
+            </properties>
+            <build>
+                <defaultGoal>clean install</defaultGoal>
+            </build>
+        </profile>
 
         <profile>
             <id>ee8.build.profile</id>
             <activation>
                 <property>
-                    <name>!skip.ee8</name>
+                    <name>!quickly</name>
                 </property>
             </activation>
             <modules>

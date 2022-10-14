@@ -124,7 +124,7 @@
             <id>skip.preview</id>
             <activation>
                 <property>
-                    <name>!skip.preview</name>
+                    <name>!quickly</name>
                 </property>
             </activation>
 
