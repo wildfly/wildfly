@@ -721,7 +721,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-webservices-server-integration-jakarta</artifactId>
+      <artifactId>wildfly-webservices-server-integration</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
