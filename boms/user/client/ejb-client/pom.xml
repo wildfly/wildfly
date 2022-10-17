@@ -91,7 +91,7 @@
                                 <!-- ejb client, the main artifact -->
                                 <dependency>
                                     <groupId>org.jboss</groupId>
-                                    <artifactId>jboss-ejb-client-jakarta</artifactId>
+                                    <artifactId>jboss-ejb-client</artifactId>
                                 </dependency>
                                 <!-- replaces org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec -->
                                 <dependency>
@@ -101,7 +101,7 @@
                                 <!-- http ejb client, extension of main artifact -->
                                 <dependency>
                                     <groupId>org.wildfly.wildfly-http-client</groupId>
-                                    <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+                                    <artifactId>wildfly-http-ejb-client</artifactId>
                                 </dependency>
                                 <!-- TODO review removal, artifact for server side ejb apps and already included by EE BOM -->
                                 <dependency>
