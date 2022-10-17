@@ -33,7 +33,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,7 +48,6 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
  * @author emmartins
  */
 @RunWith(Arquillian.class)
-@Ignore
 public class ApplicationContextLifecycleTestCase {
 
     private static final String TEST_BEANS_LIB_JAR = "TEST_BEANS_LIB_JAR";
