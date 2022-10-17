@@ -37,8 +37,8 @@ import org.wildfly.extension.datasources.agroal.logging.AgroalLogger;
 import org.wildfly.extension.datasources.agroal.logging.LoggingDataSourceListener;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 import java.sql.SQLException;
 import java.util.function.Supplier;
 

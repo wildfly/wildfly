@@ -49,7 +49,6 @@
     <modules>
         <module>bean-validation</module>
         <module>connector</module>
-        <module>datasources-agroal</module>
         <module>ee</module>
         <module>ejb3</module>
         <module>iiop-openjdk</module>

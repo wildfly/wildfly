@@ -3046,7 +3046,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-datasources-agroal-jakarta</artifactId>
+      <artifactId>wildfly-datasources-agroal</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>

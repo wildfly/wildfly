@@ -1154,7 +1154,7 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-datasources-agroal-jakarta</artifactId>
+            <artifactId>wildfly-datasources-agroal</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

@@ -119,11 +119,6 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-datasources-agroal</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee</artifactId>
                 <version>${ee.maven.version}</version>
                 <!-- TODO eliminate uses of transitive deps from this artifact -->
@@ -340,35 +335,7 @@
                 </exclusions>
             </dependency>
 
-            <dependency>
-                <groupId>io.agroal</groupId>
-                <artifactId>agroal-api</artifactId>
-                <version>${legacy.version.io.agroal}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.agroal</groupId>
-                <artifactId>agroal-narayana</artifactId>
-                <version>${legacy.version.io.agroal}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-transaction-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-transaction-spi-jakarta</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>io.agroal</groupId>
-                <artifactId>agroal-pool</artifactId>
-                <version>${legacy.version.io.agroal}</version>
-            </dependency>
-
-            <dependency>
+                <dependency>
                 <groupId>io.undertow</groupId>
                 <artifactId>undertow-core</artifactId>
                 <version>${legacy.version.io.undertow}</version>

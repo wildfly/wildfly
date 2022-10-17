@@ -28,8 +28,8 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.annotation.sql.DataSourceDefinition;
-import javax.annotation.sql.DataSourceDefinitions;
+import jakarta.annotation.sql.DataSourceDefinition;
+import jakarta.annotation.sql.DataSourceDefinitions;
 
 import static org.jboss.as.ee.resource.definition.ResourceDefinitionAnnotationProcessor.AnnotationElement.*;
 
