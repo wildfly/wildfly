@@ -13,7 +13,7 @@
        <version>27.0.0.Final-SNAPSHOT</version>
    </parent>
 
-   <artifactId>wildfly-weld-bean-validation</artifactId>
+   <artifactId>wildfly-weld-bean-validation-legacy-namespace</artifactId>
    <name>WildFly: Weld Bean Validation</name>
 
    <dependencies>
@@ -64,7 +64,7 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-weld-spi</artifactId>
+         <artifactId>wildfly-weld-spi-legacy-namespace</artifactId>
          <exclusions>
              <exclusion>
                  <groupId>*</groupId>
@@ -75,7 +75,7 @@
 
      <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-weld-common</artifactId>
+         <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
          <exclusions>
              <exclusion>
                  <groupId>*</groupId>
@@ -86,7 +86,7 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-bean-validation</artifactId>
+         <artifactId>wildfly-bean-validation-legacy-namespace</artifactId>
           <exclusions>
               <exclusion>
                   <groupId>*</groupId>

@@ -35,7 +35,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-undertow</artifactId>
+    <artifactId>wildfly-undertow-legacy-namespace</artifactId>
 
     <name>WildFly: Undertow</name>
 
@@ -88,7 +88,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <artifactId>wildfly-ee-legacy-namespace</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -108,7 +108,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common</artifactId>
+            <artifactId>wildfly-web-common-legacy-namespace</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security.elytron-web</groupId>

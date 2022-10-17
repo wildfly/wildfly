@@ -53,7 +53,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-jakarta</artifactId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <dependency>
@@ -63,7 +63,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-transactions-jakarta</artifactId>
+            <artifactId>wildfly-transactions</artifactId>
         </dependency>
 
         <dependency>

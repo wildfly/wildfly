@@ -39,7 +39,7 @@ vi:ts=4:sw=4:expandtab
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-ejb3</artifactId>
+    <artifactId>wildfly-ejb3-legacy-namespace</artifactId>
 
     <name>WildFly: EJB Subsystem</name>
 
@@ -66,7 +66,7 @@ vi:ts=4:sw=4:expandtab
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-connector</artifactId>
+            <artifactId>wildfly-connector-legacy-namespace</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -130,12 +130,12 @@ vi:ts=4:sw=4:expandtab
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <artifactId>wildfly-ee-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-iiop-openjdk</artifactId>
+            <artifactId>wildfly-iiop-openjdk-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
@@ -190,7 +190,7 @@ vi:ts=4:sw=4:expandtab
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-transactions</artifactId>
+            <artifactId>wildfly-transactions-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
@@ -309,7 +309,7 @@ projects that depend on this project.-->
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common</artifactId>
+            <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>

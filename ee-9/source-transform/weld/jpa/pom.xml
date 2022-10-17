@@ -14,8 +14,8 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-weld-jpa-jakarta</artifactId>
-    <name>WildFly: Weld JPA (Jakarta Namespace)</name>
+    <artifactId>wildfly-weld-jpa</artifactId>
+    <name>WildFly: Weld JPA</name>
 
     <packaging>jar</packaging>
 
@@ -43,22 +43,22 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-spi-jakarta</artifactId>
+            <artifactId>wildfly-weld-spi</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common-jakarta</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-jpa-jakarta</artifactId>
+            <artifactId>wildfly-jpa</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jipijapa-spi-jakarta</artifactId>
+            <artifactId>jipijapa-spi</artifactId>
         </dependency>
 
         <dependency>
@@ -68,7 +68,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-jakarta</artifactId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <dependency>

@@ -35,9 +35,9 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-weld-bean-validation-jakarta</artifactId>
+    <artifactId>wildfly-weld-bean-validation</artifactId>
 
-    <name>WildFly: Weld Bean Validation (Jakarta Namespace)</name>
+    <name>WildFly: Weld Bean Validation</name>
 
     <packaging>jar</packaging>
 
@@ -61,17 +61,17 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common-jakarta</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-spi-jakarta</artifactId>
+            <artifactId>wildfly-weld-spi</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-bean-validation-jakarta</artifactId>
+            <artifactId>wildfly-bean-validation</artifactId>
         </dependency>
 
         <dependency>

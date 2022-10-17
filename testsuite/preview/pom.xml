@@ -92,7 +92,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-testsuite-shared-jakarta</artifactId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

@@ -67,7 +67,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-undertow-jakarta</artifactId>
+            <artifactId>wildfly-undertow</artifactId>
         </dependency>
 
         <!-- External dependencies -->

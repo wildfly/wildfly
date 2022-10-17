@@ -925,14 +925,14 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-testsuite-shared</artifactId>
+                <artifactId>wildfly-testsuite-shared-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-testsuite-shared-jakarta</artifactId>
+                <artifactId>wildfly-testsuite-shared</artifactId>
                 <version>${ee.maven.version}</version>
                 <scope>test</scope>
                 <exclusions>

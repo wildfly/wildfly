@@ -36,8 +36,8 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-rts-jakarta</artifactId>
-    <name>WildFly: RTS Subsystem (Jakarta Namespace)</name>
+    <artifactId>wildfly-rts</artifactId>
+    <name>WildFly: RTS Subsystem</name>
 
     <properties>
         <transformer-input-dir>${project.basedir}/../../../rts</transformer-input-dir>
@@ -108,7 +108,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-undertow-jakarta</artifactId>
+            <artifactId>wildfly-undertow</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.ws.rs</groupId>

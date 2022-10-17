@@ -37,7 +37,7 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-jpa</artifactId>
+    <artifactId>wildfly-jpa-legacy-namespace</artifactId>
     <name>WildFly: JPA Subsystem</name>
 
     <dependencies>
@@ -70,7 +70,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-bean-validation</artifactId>
+            <artifactId>wildfly-bean-validation-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
@@ -95,12 +95,12 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ejb3</artifactId>
+            <artifactId>wildfly-ejb3-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jipijapa-spi</artifactId>
+            <artifactId>jipijapa-spi-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
@@ -132,7 +132,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common</artifactId>
+            <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>

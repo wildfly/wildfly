@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-opentelemetry@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-opentelemetry}"/>
     </resources>
 
     <dependencies>

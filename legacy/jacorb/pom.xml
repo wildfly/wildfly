@@ -91,7 +91,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-iiop-openjdk-jakarta</artifactId>
+            <artifactId>wildfly-iiop-openjdk</artifactId>
         </dependency>
 
         <dependency>

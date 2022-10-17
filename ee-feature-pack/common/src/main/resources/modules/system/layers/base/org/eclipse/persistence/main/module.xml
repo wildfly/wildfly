@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.wildfly:jipijapa-eclipselink@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:jipijapa-eclipselink}"/>
     </resources>
 
     <dependencies>

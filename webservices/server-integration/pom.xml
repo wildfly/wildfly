@@ -166,17 +166,17 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-jakarta</artifactId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ejb3-jakarta</artifactId>
+            <artifactId>wildfly-ejb3</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-transactions-jakarta</artifactId>
+            <artifactId>wildfly-transactions</artifactId>
         </dependency>
 
         <dependency>
@@ -186,17 +186,17 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-undertow-jakarta</artifactId>
+            <artifactId>wildfly-undertow</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common-jakarta</artifactId>
+            <artifactId>wildfly-web-common</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common-jakarta</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
 
 

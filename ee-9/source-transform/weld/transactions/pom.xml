@@ -35,9 +35,9 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-weld-transactions-jakarta</artifactId>
+    <artifactId>wildfly-weld-transactions</artifactId>
 
-    <name>WildFly: Weld Transactions (Jakarta Namespace)</name>
+    <name>WildFly: Weld Transactions</name>
 
     <packaging>jar</packaging>
 
@@ -67,12 +67,12 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common-jakarta</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-spi-jakarta</artifactId>
+            <artifactId>wildfly-weld-spi</artifactId>
         </dependency>
 
         <dependency>

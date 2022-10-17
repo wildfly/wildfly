@@ -35,9 +35,9 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>jipijapa-spi-jakarta</artifactId>
+    <artifactId>jipijapa-spi</artifactId>
 
-    <name>WildFly: Jipijapa SPI (Jakarta Namespace)</name>
+    <name>WildFly: Jipijapa SPI</name>
 
     <packaging>jar</packaging>
 

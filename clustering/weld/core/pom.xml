@@ -81,7 +81,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-spi-jakarta</artifactId>
+            <artifactId>wildfly-weld-spi</artifactId>
         </dependency>
 
         <!-- External dependencies -->

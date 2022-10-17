@@ -35,9 +35,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-bean-validation-jakarta</artifactId>
+    <artifactId>wildfly-bean-validation</artifactId>
 
-    <name>WildFly: Bean Validation subsystem (Jakarta Namespace)</name>
+    <name>WildFly: Bean Validation subsystem</name>
 
     <packaging>jar</packaging>
 
@@ -77,7 +77,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-jakarta</artifactId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <!-- Other deps consistent with the javax.* mail module -->
@@ -144,7 +144,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common-jakarta</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>

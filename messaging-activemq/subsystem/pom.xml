@@ -36,14 +36,14 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
+    <artifactId>wildfly-messaging-activemq-subsystem-legacy-namespace</artifactId>
 
     <name>WildFly: Messaging Subsystem With ActiveMQ Artemis</name>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq-injection</artifactId>
+            <artifactId>wildfly-messaging-activemq-injection-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
@@ -181,7 +181,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-connector</artifactId>
+            <artifactId>wildfly-connector-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
@@ -196,7 +196,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-transactions</artifactId>
+            <artifactId>wildfly-transactions-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
@@ -215,12 +215,12 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common</artifactId>
+            <artifactId>wildfly-web-common-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common</artifactId>
+            <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>

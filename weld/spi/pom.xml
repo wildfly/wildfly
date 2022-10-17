@@ -13,7 +13,7 @@
       <version>27.0.0.Final-SNAPSHOT</version>
    </parent>
 
-   <artifactId>wildfly-weld-spi</artifactId>
+   <artifactId>wildfly-weld-spi-legacy-namespace</artifactId>
    <name>WildFly: Weld Subsystem SPI</name>
 
    <dependencies>
@@ -64,7 +64,7 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-ee</artifactId>
+         <artifactId>wildfly-ee-legacy-namespace</artifactId>
          <exclusions>
             <exclusion>
                <groupId>*</groupId>

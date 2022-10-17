@@ -25,7 +25,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-microprofile</artifactId>
+        <artifactId>wildfly-microprofile-legacy-namespace</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -33,7 +33,7 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
+    <artifactId>wildfly-microprofile-opentracing-smallrye-legacy-namespace</artifactId>
 
     <name>WildFly: MicroProfile OpenTracing with SmallRye</name>
 
@@ -89,7 +89,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-web-common</artifactId>
+            <artifactId>wildfly-web-common-legacy-namespace</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -100,7 +100,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-weld</artifactId>
+            <artifactId>wildfly-weld-legacy-namespace</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

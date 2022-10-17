@@ -35,9 +35,9 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>jipijapa-eclipselink-jakarta</artifactId>
+    <artifactId>jipijapa-eclipselink</artifactId>
 
-    <name>WildFly: Jipijapa Eclipselink (Jakarta Namespace)</name>
+    <name>WildFly: Jipijapa Eclipselink</name>
 
     <packaging>jar</packaging>
 
@@ -51,7 +51,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jipijapa-spi-jakarta</artifactId>
+            <artifactId>jipijapa-spi</artifactId>
         </dependency>
 
         <!-- Jakarta-namespace specific deps -->

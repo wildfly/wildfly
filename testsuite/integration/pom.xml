@@ -50,7 +50,7 @@
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
 
         <!-- Artifact id of the wildfly-testsuite-shared variant to use. Override to use the javax variant -->
-        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared-jakarta</wildfly-testsuite-shared.artifactId>
+        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared</wildfly-testsuite-shared.artifactId>
     </properties>
 
     <profiles>

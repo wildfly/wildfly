@@ -105,7 +105,7 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-health-smallrye-jakarta</artifactId>
+                <artifactId>wildfly-microprofile-health-smallrye</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -116,7 +116,7 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-jwt-smallrye-jakarta</artifactId>
+                <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -138,7 +138,7 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-opentracing-extension-jakarta</artifactId>
+                <artifactId>wildfly-microprofile-opentracing-extension</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -149,7 +149,7 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-opentracing-smallrye-jakarta</artifactId>
+                <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -160,7 +160,7 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-jakarta</artifactId>
+                <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>

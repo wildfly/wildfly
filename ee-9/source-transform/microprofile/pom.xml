@@ -36,10 +36,10 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-microprofile-jakarta</artifactId>
+    <artifactId>wildfly-microprofile</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly: Microprofile integration modules (Jakarta Namespace)</name>
+    <name>WildFly: Microprofile integration modules</name>
 
     <modules>
         <module>health-smallrye</module>

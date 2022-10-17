@@ -35,9 +35,9 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-weld-spi-jakarta</artifactId>
+    <artifactId>wildfly-weld-spi</artifactId>
 
-    <name>WildFly: Weld Subsystem SPI (Jakarta Namespace)</name>
+    <name>WildFly: Weld Subsystem SPI</name>
 
     <packaging>jar</packaging>
 
@@ -76,7 +76,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-jakarta</artifactId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <!-- Other deps consistent with the javax.* mail module -->

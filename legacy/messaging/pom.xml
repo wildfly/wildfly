@@ -220,7 +220,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq-subsystem-jakarta</artifactId>
+            <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -232,7 +232,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq-injection-jakarta</artifactId>
+            <artifactId>wildfly-messaging-activemq-injection</artifactId>
             <scope>test</scope>
         </dependency>
 

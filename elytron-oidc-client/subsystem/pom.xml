@@ -127,7 +127,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-web-common-jakarta</artifactId>
+            <artifactId>wildfly-web-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
