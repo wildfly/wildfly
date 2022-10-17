@@ -33,8 +33,8 @@ import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
 
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceProvider;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.WebServiceProvider;
 
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;

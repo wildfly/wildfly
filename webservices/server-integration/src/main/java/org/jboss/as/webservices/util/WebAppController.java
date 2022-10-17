@@ -22,7 +22,7 @@
 package org.jboss.as.webservices.util;
 
 import java.io.File;
-import javax.servlet.Servlet;
+import jakarta.servlet.Servlet;
 
 import org.jboss.as.web.host.ServletBuilder;
 import org.jboss.as.web.host.WebDeploymentController;

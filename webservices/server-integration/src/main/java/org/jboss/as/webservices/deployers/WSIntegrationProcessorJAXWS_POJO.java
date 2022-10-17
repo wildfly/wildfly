@@ -38,8 +38,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceProvider;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.WebServiceProvider;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleClassDescription;

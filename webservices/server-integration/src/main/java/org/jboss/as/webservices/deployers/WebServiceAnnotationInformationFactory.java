@@ -21,7 +21,7 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
@@ -35,7 +35,7 @@ public class WebServiceAnnotationInformationFactory extends
         ClassAnnotationInformationFactory<WebService, WebServiceAnnotationInfo> {
 
     protected WebServiceAnnotationInformationFactory() {
-        super(javax.jws.WebService.class, null);
+        super(jakarta.jws.WebService.class, null);
     }
 
     @Override

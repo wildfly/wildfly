@@ -64,10 +64,6 @@
         </dependency>
         <!-- dependencies for running tests -->
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client</artifactId>
             <exclusions>
@@ -110,10 +106,6 @@
         <dependency>
             <groupId>org.jboss.remoting</groupId>
             <artifactId>jboss-remoting</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jms-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
@@ -194,12 +186,5 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-client-properties</artifactId>
         </dependency>
-        <dependency>
-            <groupId>jakarta.jws</groupId>
-            <artifactId>jakarta.jws-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-       
     </dependencies>
-
 </project>

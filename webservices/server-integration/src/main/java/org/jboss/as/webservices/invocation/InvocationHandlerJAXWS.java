@@ -21,7 +21,7 @@
  */
 package org.jboss.as.webservices.invocation;
 
-import javax.xml.ws.WebServiceContext;
+import jakarta.xml.ws.WebServiceContext;
 
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;

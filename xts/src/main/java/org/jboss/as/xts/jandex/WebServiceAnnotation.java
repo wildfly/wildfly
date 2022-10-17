@@ -27,7 +27,7 @@ import org.jboss.as.xts.XTSException;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 import javax.xml.namespace.QName;
 
 /**

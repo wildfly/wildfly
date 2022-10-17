@@ -21,7 +21,7 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import javax.xml.ws.WebServiceContext;
+import jakarta.xml.ws.WebServiceContext;
 
 import org.jboss.as.weld.spi.ResourceInjectionResolver;
 import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;

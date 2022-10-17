@@ -225,11 +225,6 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-webservices-server-integration</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-weld</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
@@ -271,16 +266,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-webservices</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-xts</artifactId>
-                <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>

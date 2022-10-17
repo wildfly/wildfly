@@ -34,7 +34,7 @@ import java.util.Map;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.ws.WebServiceException;
+import jakarta.xml.ws.WebServiceException;
 
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.ws.common.JavaUtils;

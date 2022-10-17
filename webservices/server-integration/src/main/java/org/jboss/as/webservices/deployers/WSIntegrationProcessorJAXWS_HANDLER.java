@@ -31,8 +31,8 @@ import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_ENDPOINT_HANDLER
 
 import java.util.Set;
 
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceProvider;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.WebServiceProvider;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;

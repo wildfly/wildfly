@@ -21,7 +21,7 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import javax.xml.ws.WebServiceProvider;
+import jakarta.xml.ws.WebServiceProvider;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
