@@ -116,8 +116,6 @@
                             <offline>${galleon.offline}</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
-                                <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                <jboss-maven-provisioning-repo>${maven.repo.local}</jboss-maven-provisioning-repo>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                 <optional-packages>passive+</optional-packages>
                             </plugin-options>
