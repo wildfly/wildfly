@@ -77,6 +77,7 @@
         <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
         <module>health</module>
+        <module>jaxrs</module>
         <module>jdr</module>
         <module>jpa</module>
         <module>mail</module>
@@ -1992,8 +1993,6 @@
                 <module>ejb3</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>iiop-openjdk</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>jaxrs</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>jsf</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
