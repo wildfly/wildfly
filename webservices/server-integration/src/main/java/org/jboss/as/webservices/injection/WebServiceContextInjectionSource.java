@@ -32,7 +32,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;
 
 /**
- * {@link InjectionSource} for {@link javax.xml.ws.WebServiceContext} resource.
+ * {@link InjectionSource} for {@link jakarta.xml.ws.WebServiceContext} resource.
  *
  * User: Jaikiran Pai
  */

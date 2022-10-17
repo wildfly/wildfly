@@ -27,10 +27,10 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.jws.WebService;
-import javax.xml.ws.Service;
-import javax.xml.ws.WebServiceRef;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.WebServiceRef;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;

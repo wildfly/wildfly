@@ -44,7 +44,7 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -54,8 +54,24 @@
 
     <dependencies>
         <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <artifactId>wildfly-ee-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ejb3-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -63,80 +79,113 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-transactions</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-webservices-server-integration</artifactId>
+            <artifactId>wildfly-transactions-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-network</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-idlj</artifactId>
+            <groupId>org.wildfly.transaction</groupId>
+            <artifactId>wildfly-transaction-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.narayana.xts</groupId>
-            <artifactId>jbossxts</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-webservices-server-integration</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.narayana.xts</groupId>
-            <artifactId>jbossxts</artifactId>
-            <classifier>api</classifier>
+            <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
+            <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.narayana</groupId>
-            <artifactId>jbosstxbridge</artifactId>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.ws</groupId>
-            <artifactId>jbossws-spi</artifactId>
+            <groupId>org.jboss.invocation</groupId>
+            <artifactId>jboss-invocation-jakarta</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-subsystem-test</artifactId>
-            <type>pom</type>
-            <scope>test</scope>
+            <groupId>org.jboss</groupId>
+            <artifactId>staxmapper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.narayana.compensations</groupId>
-            <artifactId>compensations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.narayana.txframework</groupId>
-            <artifactId>txframework</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.jws</groupId>
-            <artifactId>jsr181-api</artifactId>
+            <groupId>io.smallrye</groupId>
+            <artifactId>jandex</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.javax.xml.ws</groupId>
-            <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
-            <scope>provided</scope>
+            <groupId>org.jboss.modules</groupId>
+            <artifactId>jboss-modules</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-naming</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana.xts</groupId>
+            <artifactId>jbossxts-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana.xts</groupId>
+            <artifactId>jbossxts-jakarta</artifactId>
+            <classifier>api</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana</groupId>
+            <artifactId>jbosstxbridge-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana.jts</groupId>
+            <artifactId>narayana-jts-idlj-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana.compensations</groupId>
+            <artifactId>compensations-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana.txframework</groupId>
+            <artifactId>txframework-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-spi</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem-test</artifactId>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

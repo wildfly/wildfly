@@ -43,6 +43,7 @@
 
     <modules>
         <module>ejb</module>
+        <module>webservices</module>
     </modules>
 
     <dependencyManagement>
@@ -73,8 +74,6 @@
                 <module>jpa</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>bean-validation</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>webservices</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>transactions</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->

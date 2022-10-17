@@ -115,6 +115,6 @@ public interface XtsAsLogger extends BasicLogger {
 
     @LogMessage(level = ERROR)
     @Message(id = 10, value = "Cannot get transaction status on handling context %s")
-    void cannotGetTransactionStatus(javax.xml.ws.handler.MessageContext ctx, @Cause Throwable cause);
+    void cannotGetTransactionStatus(jakarta.xml.ws.handler.MessageContext ctx, @Cause Throwable cause);
 
 }

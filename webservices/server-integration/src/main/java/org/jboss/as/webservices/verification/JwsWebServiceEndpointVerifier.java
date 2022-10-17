@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.jws.WebMethod;
+import jakarta.jws.WebMethod;
 
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;

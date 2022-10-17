@@ -26,7 +26,7 @@ import static org.wildfly.common.Assert.checkNotNullParam;
 
 import java.lang.reflect.AnnotatedElement;
 
-import javax.xml.ws.Service;
+import jakarta.xml.ws.Service;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.Attachments;

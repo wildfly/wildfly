@@ -31,7 +31,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-import javax.xml.ws.WebServiceException;
+import jakarta.xml.ws.WebServiceException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;

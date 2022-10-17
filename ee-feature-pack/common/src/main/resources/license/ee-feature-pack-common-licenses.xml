@@ -3442,7 +3442,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-webservices-jakarta</artifactId>
+      <artifactId>wildfly-weld-webservices</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3453,7 +3453,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-xts-jakarta</artifactId>
+      <artifactId>wildfly-xts</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>

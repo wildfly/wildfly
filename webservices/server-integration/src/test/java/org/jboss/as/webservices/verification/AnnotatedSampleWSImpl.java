@@ -21,8 +21,8 @@
  */
 package org.jboss.as.webservices.verification;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
 
 /**
  * @author sfcoy

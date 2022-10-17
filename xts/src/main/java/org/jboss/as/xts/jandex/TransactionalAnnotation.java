@@ -24,8 +24,8 @@ package org.jboss.as.xts.jandex;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
 
-import javax.ejb.TransactionAttribute;
-import javax.transaction.Transactional;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.transaction.Transactional;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>

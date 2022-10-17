@@ -26,7 +26,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
 import org.jboss.jandex.AnnotationInstance;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  * @author paul.robinson@redhat.com, 2012-02-06

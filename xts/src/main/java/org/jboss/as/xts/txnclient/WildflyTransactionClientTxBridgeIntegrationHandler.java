@@ -22,10 +22,10 @@
 
 package org.jboss.as.xts.txnclient;
 
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.xml.ws.handler.Handler;
-import javax.xml.ws.handler.MessageContext;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.xml.ws.handler.Handler;
+import jakarta.xml.ws.handler.MessageContext;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.txn.deployment.TransactionRollbackSetupAction;
