@@ -79,6 +79,7 @@
         <module>health</module>
         <module>jdr</module>
         <module>jpa</module>
+        <module>mail</module>
         <module>legacy/jacorb</module>
         <module>legacy/jsr77</module>
         <module>legacy/keycloak</module>
@@ -1995,8 +1996,6 @@
                 <module>jaxrs</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>jsf</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>mail</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>messaging-activemq</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
