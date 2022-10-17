@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,35 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.session;
+package org.wildfly.clustering.ee.expiration;
 
 import java.time.Duration;
-import java.time.Instant;
 
 /**
- * Session meta data that governs expiration.
+ * Describes the expiration criteria for an object.
  * @author Paul Ferraro
  */
-public interface SessionExpirationMetaData {
+public interface Expiration {
+    /**
+     * The duration of time, after which an idle object should expire.
+     * @return the object timeout
+     */
+    Duration getTimeout();
 
     /**
-     * Indicates whether or not this session was previously idle for longer than the maximum inactive interval.
-     * @return true, if this session is expired, false otherwise
+     * Indicates whether the associated timeout represents and immortal object,
+     * i.e. does not expire
+     * @return true, if this object is immortal, false otherwise
      */
-    default boolean isExpired() {
-        Duration maxInactiveInterval = this.getMaxInactiveInterval();
-        return !maxInactiveInterval.isZero() ? this.getLastAccessEndTime().plus(maxInactiveInterval).isBefore(Instant.now()) : false;
+    default boolean isImmortal() {
+        Duration timeout = this.getTimeout();
+        return (timeout == null) || timeout.isZero() || timeout.isNegative();
     }
-
-    /**
-     * Returns the end time of the last request to access this session.
-     * @return the end time of the last request to access this session.
-     */
-    Instant getLastAccessEndTime();
-
-    /**
-     * Returns the time interval since {@link #getLastAccessEndTime()} after which this session will expire.
-     * @return a time interval
-     */
-    Duration getMaxInactiveInterval();
 }

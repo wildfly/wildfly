@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,18 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
 
-import java.util.function.Supplier;
+package org.wildfly.clustering.ee.infinispan.expiration;
 
-import org.wildfly.clustering.ee.expiration.ExpirationConfiguration;
+import java.time.Instant;
+
+import org.wildfly.clustering.ee.Scheduler;
+import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
+import org.wildfly.clustering.ee.infinispan.scheduler.AbstractCacheEntryScheduler;
 
 /**
- * Encapsulates the configuration of a session manager.
+ * An {@link AbstractCacheEntryScheduler} suitable for expiration.
  * @author Paul Ferraro
- * @param <SC> the servlet context type
+ * @param <I> the identifier type of the scheduled object
  */
-public interface SessionManagerConfiguration<SC> extends ExpirationConfiguration<ImmutableSession> {
-    SC getServletContext();
-    Supplier<String> getIdentifierFactory();
+public abstract class AbstractExpirationScheduler<I> extends AbstractCacheEntryScheduler<I, ExpirationMetaData> {
+
+    public AbstractExpirationScheduler(Scheduler<I, Instant> scheduler) {
+        super(scheduler, metaData -> !metaData.isImmortal() ? metaData.getLastAccessTime().plus(metaData.getTimeout()) : null);
+    }
 }

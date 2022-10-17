@@ -66,7 +66,7 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
         this.creationMetaDataMutatorFactory = new RemoteCacheMutatorFactory<>(this.creationMetaDataCache, new Function<SessionCreationMetaDataEntry<L>, Duration>() {
             @Override
             public Duration apply(SessionCreationMetaDataEntry<L> entry) {
-                return entry.getMetaData().getMaxInactiveInterval();
+                return entry.getMetaData().getTimeout();
             }
         });
         this.accessMetaDataCache = configuration.getCache();

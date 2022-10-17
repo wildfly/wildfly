@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,38 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.ee.infinispan.expiration;
 
 import java.time.Duration;
 import java.time.Instant;
 
-import org.wildfly.clustering.web.session.SessionExpirationMetaData;
+import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
 
 /**
- * Immutable view of the expiration metadata for a session.
+ * Simple {@link ExpirationMetaData} implementation.
  * @author Paul Ferraro
  */
-public class SimpleSessionExpirationMetaData implements SessionExpirationMetaData {
+public class SimpleExpirationMetaData implements ExpirationMetaData {
 
-    private final Instant lastAccessEndTime;
-    private final Duration maxInactiveInterval;
+    private final Duration timeout;
+    private final Instant lastAccessTime;
 
-    public SimpleSessionExpirationMetaData(SessionExpirationMetaData metaData) {
-        this(metaData.getMaxInactiveInterval(), metaData.getLastAccessEndTime());
+    public SimpleExpirationMetaData(ExpirationMetaData metaData) {
+        this(metaData.getTimeout(), metaData.getLastAccessTime());
     }
 
-    SimpleSessionExpirationMetaData(Duration maxInactiveInterval, Instant lastAccessEndTime) {
-        this.maxInactiveInterval = maxInactiveInterval;
-        this.lastAccessEndTime = lastAccessEndTime;
-    }
-
-    @Override
-    public Instant getLastAccessEndTime() {
-        return this.lastAccessEndTime;
+    SimpleExpirationMetaData(Duration timeout, Instant lastAccessedTime) {
+        this.timeout = timeout;
+        this.lastAccessTime = lastAccessedTime;
     }
 
     @Override
-    public Duration getMaxInactiveInterval() {
-        return this.maxInactiveInterval;
+    public Duration getTimeout() {
+        return this.timeout;
+    }
+
+    @Override
+    public Instant getLastAccessTime() {
+        return this.lastAccessTime;
     }
 }

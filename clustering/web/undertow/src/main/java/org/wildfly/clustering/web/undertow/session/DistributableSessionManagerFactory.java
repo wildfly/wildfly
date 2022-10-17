@@ -22,7 +22,9 @@
 package org.wildfly.clustering.web.undertow.session;
 
 import java.security.PrivilegedAction;
+import java.time.Duration;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import jakarta.servlet.ServletContext;
@@ -31,7 +33,7 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
+import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
@@ -66,7 +68,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         boolean statisticsEnabled = info.getMetricsCollector() != null;
         RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new DistributableInactiveSessionStatistics() : null;
         Supplier<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
-        SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, this.listeners, inactiveSessionStatistics);
+        Consumer<ImmutableSession> expirationListener = new UndertowSessionExpirationListener(deployment, this.listeners, inactiveSessionStatistics);
         SessionManagerConfiguration<ServletContext> configuration = new SessionManagerConfiguration<>() {
             @Override
             public ServletContext getServletContext() {
@@ -79,8 +81,13 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             }
 
             @Override
-            public SessionExpirationListener getExpirationListener() {
+            public Consumer<ImmutableSession> getExpirationListener() {
                 return expirationListener;
+            }
+
+            @Override
+            public Duration getTimeout() {
+                return Duration.ofMinutes(this.getServletContext().getSessionTimeout());
             }
         };
         SessionManager<Map<String, Object>, Batch> manager = this.factory.createSessionManager(configuration);

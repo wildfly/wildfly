@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.cache.session;
+package org.wildfly.clustering.ee.infinispan.expiration;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -32,57 +32,52 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * ProtoStream marshaller for a {@link SimpleExpirationMetaData}.
  * @author Paul Ferraro
  */
-public class SessionCreationMetaDataEntryMarshaller implements ProtoStreamMarshaller<SessionCreationMetaDataEntry<Object>> {
+public class SimpleExpirationMetaDataMarshaller implements ProtoStreamMarshaller<SimpleExpirationMetaData> {
 
-    private static final Instant DEFAULT_CREATION_TIME = Instant.EPOCH;
-    // Optimize for specification default
-    private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(30L);
+    private static final int TIMEOUT_INDEX = 1;
+    private static final int LAST_ACCESS_TIME_INDEX = 2;
 
-    private static final int CREATION_TIME_INDEX = 1;
-    private static final int TIMEOUT_INDEX = 2;
+    // This is the default specification timeout for web sessions
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(30);
+    private static final Instant DEFAULT_LAST_ACCESS_TIME = Instant.EPOCH;
 
     @Override
-    public SessionCreationMetaDataEntry<Object> readFrom(ProtoStreamReader reader) throws IOException {
-        Instant creationTime = DEFAULT_CREATION_TIME;
+    public Class<? extends SimpleExpirationMetaData> getJavaClass() {
+        return SimpleExpirationMetaData.class;
+    }
+
+    @Override
+    public SimpleExpirationMetaData readFrom(ProtoStreamReader reader) throws IOException {
         Duration timeout = DEFAULT_TIMEOUT;
+        Instant lastAccessTime = DEFAULT_LAST_ACCESS_TIME;
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
-                case CREATION_TIME_INDEX:
-                    creationTime = reader.readObject(Instant.class);
-                    break;
                 case TIMEOUT_INDEX:
                     timeout = reader.readObject(Duration.class);
+                    break;
+                case LAST_ACCESS_TIME_INDEX:
+                    lastAccessTime = reader.readObject(Instant.class);
                     break;
                 default:
                     reader.skipField(tag);
             }
         }
-        SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(creationTime);
-        metaData.setTimeout(timeout);
-        return new SessionCreationMetaDataEntry<>(metaData);
+        return new SimpleExpirationMetaData(timeout, lastAccessTime);
     }
 
     @Override
-    public void writeTo(ProtoStreamWriter writer, SessionCreationMetaDataEntry<Object> entry) throws IOException {
-        SessionCreationMetaData metaData = entry.getMetaData();
-
-        Instant creationTime = metaData.getCreationTime();
-        if (!creationTime.equals(DEFAULT_CREATION_TIME)) {
-            writer.writeObject(CREATION_TIME_INDEX, creationTime);
-        }
-
+    public void writeTo(ProtoStreamWriter writer, SimpleExpirationMetaData metaData) throws IOException {
         Duration timeout = metaData.getTimeout();
-        if (!timeout.equals(DEFAULT_TIMEOUT)) {
+        if (!DEFAULT_TIMEOUT.equals(timeout)) {
             writer.writeObject(TIMEOUT_INDEX, timeout);
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Class<? extends SessionCreationMetaDataEntry<Object>> getJavaClass() {
-        return (Class<SessionCreationMetaDataEntry<Object>>) (Class<?>) SessionCreationMetaDataEntry.class;
+        Instant lastAccessedTime = metaData.getLastAccessTime();
+        if (!DEFAULT_LAST_ACCESS_TIME.equals(lastAccessedTime)) {
+            writer.writeObject(LAST_ACCESS_TIME_INDEX, lastAccessedTime);
+        }
     }
 }

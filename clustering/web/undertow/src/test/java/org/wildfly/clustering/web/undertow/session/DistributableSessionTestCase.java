@@ -309,7 +309,7 @@ public class DistributableSessionTestCase {
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.session.getMetaData()).thenReturn(metaData);
-        when(metaData.getMaxInactiveInterval()).thenReturn(Duration.ofSeconds(expected));
+        when(metaData.getTimeout()).thenReturn(Duration.ofSeconds(expected));
 
         long result = session.getMaxInactiveInterval();
 
@@ -1096,8 +1096,8 @@ public class DistributableSessionTestCase {
         when(oldAttributes.getAttribute(name)).thenReturn(value);
         when(newAttributes.setAttribute(name, value)).thenReturn(null);
         when(oldMetaData.getLastAccessStartTime()).thenReturn(now);
-        when(oldMetaData.getLastAccessEndTime()).thenReturn(now);
-        when(oldMetaData.getMaxInactiveInterval()).thenReturn(interval);
+        when(oldMetaData.getLastAccessTime()).thenReturn(now);
+        when(oldMetaData.getTimeout()).thenReturn(interval);
         when(this.session.getId()).thenReturn(oldSessionId);
         when(newSession.getId()).thenReturn(newSessionId);
         when(this.session.getLocalContext()).thenReturn(oldContext);
@@ -1194,8 +1194,8 @@ public class DistributableSessionTestCase {
         when(oldAttributes.getAttribute(name)).thenReturn(value);
         when(newAttributes.setAttribute(name, value)).thenReturn(null);
         when(oldMetaData.getLastAccessStartTime()).thenReturn(now);
-        when(oldMetaData.getLastAccessEndTime()).thenReturn(now);
-        when(oldMetaData.getMaxInactiveInterval()).thenReturn(interval);
+        when(oldMetaData.getLastAccessTime()).thenReturn(now);
+        when(oldMetaData.getTimeout()).thenReturn(interval);
         when(this.session.getId()).thenReturn(oldSessionId);
         when(newSession.getId()).thenReturn(newSessionId);
         when(this.session.getLocalContext()).thenReturn(oldContext);

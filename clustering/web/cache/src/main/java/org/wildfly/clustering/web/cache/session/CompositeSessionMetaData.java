@@ -64,13 +64,13 @@ public class CompositeSessionMetaData implements InvalidatableSessionMetaData {
     }
 
     @Override
-    public Instant getLastAccessEndTime() {
+    public Instant getLastAccessTime() {
         return this.getLastAccessStartTime().plus(this.accessMetaData.getLastAccessDuration());
     }
 
     @Override
-    public Duration getMaxInactiveInterval() {
-        return this.creationMetaData.getMaxInactiveInterval();
+    public Duration getTimeout() {
+        return this.creationMetaData.getTimeout();
     }
 
     @Override
@@ -81,7 +81,7 @@ public class CompositeSessionMetaData implements InvalidatableSessionMetaData {
 
     @Override
     public void setMaxInactiveInterval(Duration duration) {
-        this.creationMetaData.setMaxInactiveInterval(duration.isNegative() ? Duration.ZERO : duration);
+        this.creationMetaData.setTimeout(duration.isNegative() ? Duration.ZERO : duration);
     }
 
     @Override

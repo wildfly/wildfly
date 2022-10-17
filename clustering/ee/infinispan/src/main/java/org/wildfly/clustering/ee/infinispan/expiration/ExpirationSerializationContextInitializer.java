@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,18 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
 
-import java.util.function.Supplier;
+package org.wildfly.clustering.ee.infinispan.expiration;
 
-import org.wildfly.clustering.ee.expiration.ExpirationConfiguration;
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 
 /**
- * Encapsulates the configuration of a session manager.
+ * {@link SerializationContextInitializer} that registers marshallers for all marshallable objects in this package.
  * @author Paul Ferraro
- * @param <SC> the servlet context type
  */
-public interface SessionManagerConfiguration<SC> extends ExpirationConfiguration<ImmutableSession> {
-    SC getServletContext();
-    Supplier<String> getIdentifierFactory();
+@MetaInfServices(SerializationContextInitializer.class)
+public class ExpirationSerializationContextInitializer extends AbstractSerializationContextInitializer {
+
+    @Override
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new SimpleExpirationMetaDataMarshaller());
+    }
 }

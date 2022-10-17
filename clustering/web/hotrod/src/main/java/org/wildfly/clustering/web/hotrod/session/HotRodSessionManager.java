@@ -38,7 +38,6 @@ import org.wildfly.clustering.web.cache.session.ValidSession;
 import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.common.function.Functions;
 
@@ -51,8 +50,8 @@ import org.wildfly.common.function.Functions;
  * @author Paul Ferraro
  */
 public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
-    private final Registrar<SessionExpirationListener> registrar;
-    private final SessionExpirationListener expirationListener;
+    private final Registrar<Consumer<ImmutableSession>> expirationListenerRegistrar;
+    private final Consumer<ImmutableSession> expirationListener;
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final Supplier<String> identifierFactory;
     private final SC context;
@@ -65,7 +64,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
 
     public HotRodSessionManager(SessionFactory<SC, MV, AV, LC> factory, HotRodSessionManagerConfiguration<SC> configuration) {
         this.factory = factory;
-        this.registrar = configuration.getExpirationListenerRegistrar();
+        this.expirationListenerRegistrar = configuration.getExpirationListenerRegistrar();
         this.expirationListener = configuration.getExpirationListener();
         this.context = configuration.getServletContext();
         this.identifierFactory = configuration.getIdentifierFactory();
@@ -75,7 +74,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
 
     @Override
     public void start() {
-        this.expirationListenerRegistration = this.registrar.register(this.expirationListener);
+        this.expirationListenerRegistration = this.expirationListenerRegistrar.register(this.expirationListener);
     }
 
     @Override
@@ -120,7 +119,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
         ImmutableSession session = this.factory.createImmutableSession(id, entry);
         if (session.getMetaData().isExpired()) {
             Logger.ROOT_LOGGER.tracef("Session %s was found, but has expired", id);
-            this.expirationListener.sessionExpired(session);
+            this.expirationListener.accept(session);
             this.factory.remove(id);
             return null;
         }

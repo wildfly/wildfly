@@ -41,6 +41,7 @@ import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
 import org.wildfly.clustering.infinispan.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.distribution.Locality;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
@@ -49,8 +50,6 @@ import org.wildfly.clustering.web.cache.session.ValidSession;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
-import org.wildfly.clustering.web.session.SessionExpirationMetaData;
 import org.wildfly.clustering.web.session.SessionManager;
 
 /**
@@ -63,13 +62,13 @@ import org.wildfly.clustering.web.session.SessionManager;
  */
 public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
 
-    private final SessionExpirationListener expirationListener;
+    private final Consumer<ImmutableSession> expirationListener;
     private final Batcher<TransactionBatch> batcher;
     private final Cache<Key<String>, ?> cache;
     private final CacheProperties properties;
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final IdentifierFactory<String> identifierFactory;
-    private final Scheduler<String, SessionExpirationMetaData> expirationScheduler;
+    private final Scheduler<String, ExpirationMetaData> expirationScheduler;
     private final SC context;
     private final Runnable startTask;
     private final Consumer<ImmutableSession> closeTask;
@@ -93,7 +92,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
             @Override
             public void accept(ImmutableSession session) {
                 if (session.isValid()) {
-                    configuration.getExpirationScheduler().schedule(session.getId(), new SimpleSessionExpirationMetaData(session.getMetaData()));
+                    configuration.getExpirationScheduler().schedule(session.getId(), session.getMetaData());
                 }
             }
         };
@@ -156,7 +155,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
         ImmutableSession session = this.factory.createImmutableSession(id, value);
         if (session.getMetaData().isExpired()) {
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was found, but has expired", id);
-            this.expirationListener.sessionExpired(session);
+            this.expirationListener.accept(session);
             this.factory.remove(id);
             return null;
         }

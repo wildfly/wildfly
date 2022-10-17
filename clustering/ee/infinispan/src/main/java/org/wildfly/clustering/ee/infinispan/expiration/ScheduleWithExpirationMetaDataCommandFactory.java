@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,17 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+
+package org.wildfly.clustering.ee.infinispan.expiration;
+
+import java.util.function.BiFunction;
+
+import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
+import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleCommand;
+import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithMetaDataCommand;
 
 /**
- * Listener for session expiration notifications.
+ * {@link ScheduleCommand} factory that wraps expiration metadata with a marshallable implementation.
  * @author Paul Ferraro
+ * @param <I> the identifier type of the scheduled object
  */
-public interface SessionExpirationListener {
+public class ScheduleWithExpirationMetaDataCommandFactory<I> implements BiFunction<I, ExpirationMetaData, ScheduleCommand<I, ExpirationMetaData>> {
 
-    /**
-     * Invoked when the specified session expires.
-     * @param session a session
-     */
-    void sessionExpired(ImmutableSession session);
+    @Override
+    public ScheduleCommand<I, ExpirationMetaData> apply(I id, ExpirationMetaData metaData) {
+        return new ScheduleWithMetaDataCommand<>(id, new SimpleExpirationMetaData(metaData));
+    }
 }
