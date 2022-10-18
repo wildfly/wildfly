@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2021 Red Hat, Inc., and individual contributors
+ * Copyright 2022 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.wildfly.extension.micrometer;
 
-import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.METRICS_HTTP_CONTEXT_CAPABILITY;
+import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.HTTP_EXTENSIBILITY_CAPABILITY;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_HTTP_CONTEXT_CAPABILITY;
-import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_HTTP_SECURITY_CAPABILITY;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_REGISTRY_RUNTIME_CAPABILITY;
 
 import java.util.concurrent.locks.ReadWriteLock;
@@ -31,46 +29,36 @@ import java.util.function.Supplier;
 
 import io.undertow.util.HttpString;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.extension.metrics.MetricsContextService;
 import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
 
 class MicrometerContextService implements Service {
     public static final String CONTEXT = "/metrics";
 
     private final Consumer<MicrometerContextService> consumer;
-    private final Supplier<MetricsContextService> metricsContextService;
-    private final Supplier<Boolean> securityEnabledSupplier;
+    private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
+    private final Boolean securityEnabled;
     private final Supplier<WildFlyRegistry> registrySupplier;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     static MicrometerContextService install(OperationContext context, boolean securityEnabled) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(MICROMETER_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());
+        ServiceBuilder<?> serviceBuilder = context.getServiceTarget()
+                .addService(MICROMETER_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());
 
-        Supplier<MetricsContextService> metricsContextService = serviceBuilder.requires(context.getCapabilityServiceName(METRICS_HTTP_CONTEXT_CAPABILITY, MetricsContextService.class));
-
-        Supplier<WildFlyRegistry> registries =
-                serviceBuilder.requires(context.getCapabilityServiceName(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getName(),
-                        WildFlyRegistry.class));
+        Supplier<ExtensibleHttpManagement> extensibleHttpManagement =
+                serviceBuilder.requires(context.getCapabilityServiceName(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class));
+        Supplier<WildFlyRegistry> registrySupplier =
+                serviceBuilder.requires(context.getCapabilityServiceName(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getName(), WildFlyRegistry.class));
         Consumer<MicrometerContextService> metricsContext =
                 serviceBuilder.provides(MICROMETER_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());
-
-        final Supplier<Boolean> securityEnabledSupplier;
-        if (context.getCapabilityServiceSupport().hasCapability(MICROMETER_HTTP_SECURITY_CAPABILITY)) {
-            securityEnabledSupplier = serviceBuilder.requires(ServiceName.parse(MICROMETER_HTTP_SECURITY_CAPABILITY));
-        } else {
-            securityEnabledSupplier = () -> securityEnabled;
-        }
-
-        // ???
         MicrometerContextService service = new MicrometerContextService(metricsContext,
-                metricsContextService,
-                securityEnabledSupplier,
-                registries);
+                extensibleHttpManagement,
+                securityEnabled,
+                registrySupplier);
 
         serviceBuilder.setInstance(service)
                 .install();
@@ -78,20 +66,19 @@ class MicrometerContextService implements Service {
         return service;
     }
 
-
     private MicrometerContextService(Consumer<MicrometerContextService> consumer,
-                                     Supplier<MetricsContextService> metricsContextService,
-                                     Supplier<Boolean> securityEnabledSupplier,
+                                     Supplier<ExtensibleHttpManagement> extensibleHttpManagement,
+                                     Boolean securityEnabled,
                                      Supplier<WildFlyRegistry> registrySupplier) {
         this.consumer = consumer;
-        this.metricsContextService = metricsContextService;
-        this.securityEnabledSupplier = securityEnabledSupplier;
+        this.extensibleHttpManagement = extensibleHttpManagement;
+        this.securityEnabled = securityEnabled;
         this.registrySupplier = registrySupplier;
     }
 
     @Override
     public void start(StartContext context) {
-        metricsContextService.get().setOverrideableMetricHandler(exchange -> {
+        extensibleHttpManagement.get().addManagementHandler(CONTEXT, securityEnabled, exchange -> {
             lock.readLock().lock();
             try {
                 // Just a debug/testing thing for now
@@ -106,8 +93,7 @@ class MicrometerContextService implements Service {
 
     @Override
     public void stop(StopContext context) {
-        metricsContextService.get().setOverrideableMetricHandler(null);
-        registrySupplier.get().clear();
+        extensibleHttpManagement.get().removeContext(CONTEXT);
         consumer.accept(null);
     }
 }

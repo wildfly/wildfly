@@ -1,3 +1,21 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ *
+ * Copyright 2022 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.wildfly.extension.micrometer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -5,14 +23,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROMETER_LOGGER;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_COLLECTOR;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_REGISTRY_RUNTIME_CAPABILITY;
-import static org.wildfly.extension.micrometer.MicrometerSubsystemExtension.WELD_CAPABILITY_NAME;
 
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.structure.DeploymentType;
@@ -23,17 +39,13 @@ import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.weld.WeldCapability;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.extension.micrometer.api.MicrometerCdiExtension;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
 import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 public class MicrometerDeploymentService implements Service {
     private final Resource rootResource;
@@ -59,21 +71,6 @@ public class MicrometerDeploymentService implements Service {
             return;
         }
 
-        try {
-            final WeldCapability weldCapability = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
-                    .getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
-            if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
-                // Jakarta RESTful Web Services require Jakarta Contexts and Dependency Injection. Without Jakarta
-                // Contexts and Dependency Injection, there's no integration needed
-                MICROMETER_LOGGER.noCdiDeployment();
-                return;
-            }
-        } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
-            //We should not be here since the subsystem depends on weld capability. Just in case ...
-            throw MICROMETER_LOGGER.deploymentRequiresCapability(deploymentPhaseContext.getDeploymentUnit().getName(),
-                    WELD_CAPABILITY_NAME);
-        }
-
         PathAddress deploymentAddress = createDeploymentAddressPrefix(deploymentUnit);
 
         ServiceBuilder<?> sb = serviceTarget.addService(deploymentUnit.getServiceName().append(".micrometer-metrics"));
@@ -91,6 +88,8 @@ public class MicrometerDeploymentService implements Service {
                         exposeAnySubsystem, exposedSubsystems))
                 .install();
     }
+
+
 
     private MicrometerDeploymentService(Resource rootResource,
                                        ManagementResourceRegistration managementResourceRegistration,
@@ -129,24 +128,9 @@ public class MicrometerDeploymentService implements Service {
                         address -> deploymentAddress.append(address),
                         exposeAnySubsystem,
                         exposedSubsystems);
-
-        setupMicrometerCdiBeans();
     }
 
     @Override
     public void stop(StopContext context) {
     }
-
-    private void setupMicrometerCdiBeans() {
-        final ClassLoader initialCl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-
-        try {
-            final ModuleClassLoader moduleCL = deploymentUnit.getAttachment(Attachments.MODULE).getClassLoader();
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(moduleCL);
-            MicrometerCdiExtension.registerApplicationRegistry(moduleCL, registrySupplier.get());
-        } finally {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(initialCl);
-        }
-    }
-
 }

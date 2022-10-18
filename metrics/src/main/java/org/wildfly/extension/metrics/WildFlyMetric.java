@@ -76,6 +76,7 @@ public class WildFlyMetric implements Metric {
         readAttributeOp.get(NAME).set(attributeName);
         ModelNode response = modelControllerClient.execute(readAttributeOp);
         String error = getFailureDescription(response);
+        // TODO: Revisit this handling
         if (error != null) {
             // [WFLY-11933] if the value can not be read if the management resource is not accessible due to RBAC,
             // it is logged it at a lower level.
