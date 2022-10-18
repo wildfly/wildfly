@@ -20,10 +20,10 @@
 package org.wildfly.extension.micrometer;
 
 import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROMETER_LOGGER;
-import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_REGISTRY_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemExtension.WELD_CAPABILITY_NAME;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
@@ -36,13 +36,16 @@ import org.jboss.as.weld.WeldCapability;
 import org.wildfly.extension.micrometer.api.MicrometerCdiExtension;
 import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
 
-public class MicrometerSubsystemDeploymentProcessor implements DeploymentUnitProcessor {
+class MicrometerSubsystemDeploymentProcessor implements DeploymentUnitProcessor {
     private final boolean exposeAnySubsystem;
     private final List<String> exposedSubsystems;
+    private final Supplier<WildFlyRegistry> registrySupplier;
 
-    public MicrometerSubsystemDeploymentProcessor(boolean exposeAnySubsystem, List<String> exposedSubsystems) {
+    MicrometerSubsystemDeploymentProcessor(boolean exposeAnySubsystem, List<String> exposedSubsystems,
+                                                  Supplier<WildFlyRegistry> registrySupplier) {
         this.exposeAnySubsystem = exposeAnySubsystem;
         this.exposedSubsystems = exposedSubsystems;
+        this.registrySupplier = registrySupplier;
     }
 
     @Override
@@ -75,8 +78,10 @@ public class MicrometerSubsystemDeploymentProcessor implements DeploymentUnitPro
                 MICROMETER_LOGGER.noCdiDeployment();
                 return;
             }
-            WildFlyRegistry registry = (WildFlyRegistry) deploymentUnit.getServiceRegistry()
-                    .getService(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName()).getValue();
+            WildFlyRegistry registry = registrySupplier.get();
+            if (registry == null) {
+                throw new DeploymentUnitProcessingException(new IllegalStateException());
+            }
 
             weldCapability.registerExtensionInstance(new MicrometerCdiExtension(registry), deploymentUnit);
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {

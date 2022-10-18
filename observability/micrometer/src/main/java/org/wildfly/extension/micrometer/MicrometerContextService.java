@@ -28,10 +28,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import io.undertow.util.HttpString;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
@@ -45,14 +45,13 @@ class MicrometerContextService implements Service {
     private final Supplier<WildFlyRegistry> registrySupplier;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    static MicrometerContextService install(OperationContext context, boolean securityEnabled) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget()
-                .addService(MICROMETER_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());
+    static void install(OperationContext context, boolean securityEnabled) {
+        CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(MICROMETER_HTTP_CONTEXT_CAPABILITY);
 
         Supplier<ExtensibleHttpManagement> extensibleHttpManagement =
-                serviceBuilder.requires(context.getCapabilityServiceName(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class));
+                serviceBuilder.requiresCapability(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class);
         Supplier<WildFlyRegistry> registrySupplier =
-                serviceBuilder.requires(context.getCapabilityServiceName(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getName(), WildFlyRegistry.class));
+                serviceBuilder.requiresCapability(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getName(), WildFlyRegistry.class);
         Consumer<MicrometerContextService> metricsContext =
                 serviceBuilder.provides(MICROMETER_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());
         MicrometerContextService service = new MicrometerContextService(metricsContext,
@@ -62,8 +61,6 @@ class MicrometerContextService implements Service {
 
         serviceBuilder.setInstance(service)
                 .install();
-
-        return service;
     }
 
     private MicrometerContextService(Consumer<MicrometerContextService> consumer,
