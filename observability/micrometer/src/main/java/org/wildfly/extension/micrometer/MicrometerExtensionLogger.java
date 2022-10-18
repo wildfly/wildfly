@@ -45,11 +45,11 @@ public interface MicrometerExtensionLogger extends BasicLogger {
     @Message(id = 2, value = "Micrometer Subsystem is processing deployment")
     void processingDeployment();
 
-    @LogMessage(level = INFO) // DEBUG
+    @LogMessage(level = DEBUG)
     @Message(id = 3, value = "The deployment does not have Jakarta Contexts and Dependency Injection enabled. Skipping Micrometer integration.")
     void noCdiDeployment();
 
-    @LogMessage(level = INFO) // DEBUG
+    @LogMessage(level = DEBUG)
     @Message(id = 4, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
     void deploymentRequiresCapability(String deploymentName, String capabilityName);
 
