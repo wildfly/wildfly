@@ -31,6 +31,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
@@ -55,6 +56,7 @@ public class ExpiredSessionRemoverTestCase {
         ImmutableSessionMetaData validMetaData = mock(ImmutableSessionMetaData.class);
         ImmutableSessionMetaData expiredMetaData = mock(ImmutableSessionMetaData.class);
         ImmutableSession expiredSession = mock(ImmutableSession.class);
+        Recordable<ImmutableSessionMetaData> recorder = mock(Recordable.class);
 
         String missingSessionId = "missing";
         String expiredSessionId = "expired";
@@ -64,7 +66,7 @@ public class ExpiredSessionRemoverTestCase {
         UUID expiredAttributesValue = UUID.randomUUID();
         UUID validMetaDataValue = UUID.randomUUID();
 
-        ExpiredSessionRemover<Object, UUID, UUID, Object> subject = new ExpiredSessionRemover<>(factory);
+        ExpiredSessionRemover<Object, UUID, UUID, Object> subject = new ExpiredSessionRemover<>(factory, recorder);
 
         try (Registration regisration = subject.register(listener)) {
             when(factory.getMetaDataFactory()).thenReturn(metaDataFactory);
@@ -87,11 +89,14 @@ public class ExpiredSessionRemoverTestCase {
             subject.remove(expiredSessionId);
             subject.remove(validSessionId);
 
-            verify(factory).remove(expiredSessionId);
-            verify(factory, never()).remove(missingSessionId);
-            verify(factory, never()).remove(validSessionId);
+            verify(factory).purge(expiredSessionId);
+            verify(factory, never()).purge(missingSessionId);
+            verify(factory, never()).purge(validSessionId);
 
             verify(listener).sessionExpired(expiredSession);
+
+            verify(recorder).record(expiredMetaData);
+            verify(recorder, never()).record(validMetaData);
         }
     }
 }

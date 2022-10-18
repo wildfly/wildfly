@@ -51,7 +51,7 @@ import org.wildfly.common.function.Functions;
  * @author Paul Ferraro
  */
 public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
-    private final Registrar<SessionExpirationListener> expirationRegistrar;
+    private final Registrar<SessionManager<LC, TransactionBatch>> registrar;
     private final SessionExpirationListener expirationListener;
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final Supplier<String> identifierFactory;
@@ -61,11 +61,11 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
     private final Consumer<ImmutableSession> closeTask = Functions.discardingConsumer();
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
-    private volatile Registration expirationRegistration;
+    private volatile Registration registration;
 
-    public HotRodSessionManager(SessionFactory<SC, MV, AV, LC> factory, HotRodSessionManagerConfiguration<SC> configuration) {
+    public HotRodSessionManager(SessionFactory<SC, MV, AV, LC> factory, HotRodSessionManagerConfiguration<SC, LC> configuration) {
         this.factory = factory;
-        this.expirationRegistrar = configuration.getExpirationRegistrar();
+        this.registrar = configuration.getRegistrar();
         this.expirationListener = configuration.getExpirationListener();
         this.context = configuration.getServletContext();
         this.identifierFactory = configuration.getIdentifierFactory();
@@ -75,12 +75,12 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
 
     @Override
     public void start() {
-        this.expirationRegistration = this.expirationRegistrar.register(this.expirationListener);
+        this.registration = this.registrar.register(this);
     }
 
     @Override
     public void stop() {
-        this.expirationRegistration.close();
+        this.registration.close();
     }
 
     @Override

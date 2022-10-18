@@ -37,9 +37,11 @@ import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
+import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
 import org.wildfly.clustering.infinispan.listener.PostActivateListener;
+import org.wildfly.clustering.infinispan.listener.PostPassivateListener;
 import org.wildfly.clustering.infinispan.listener.PrePassivateListener;
-import org.wildfly.clustering.infinispan.notifications.PredicateKeyFilter;
+import org.wildfly.clustering.infinispan.listener.PredicateKeyFilter;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionAttributeActivationNotifier;
@@ -74,10 +76,10 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     private final MutatorFactory<SessionAttributeKey, V> mutatorFactory;
     private final HttpSessionActivationListenerProvider<S, C, L> provider;
     private final Function<String, SessionAttributeActivationNotifier> notifierFactory;
-    private final Object evictListener;
-    private final Object evictAttributesListener;
-    private final Object prePassivateListener;
-    private final Object postActivateListener;
+    private final ListenerRegistration evictListenerRegistration;
+    private final ListenerRegistration evictAttributesListenerRegistration;
+    private final ListenerRegistration prePassivateListenerRegistration;
+    private final ListenerRegistration postActivateListenerRegistration;
 
     public FineSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration) {
         this.namesCache = configuration.getCache();
@@ -90,29 +92,21 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
         this.mutatorFactory = new InfinispanMutatorFactory<>(this.attributeCache, this.properties);
         this.provider = configuration.getHttpSessionActivationListenerProvider();
         this.notifierFactory = configuration.getActivationNotifierFactory();
-        this.evictListener = new PrePassivateListener<>(this::cascadeEvict, configuration.getExecutor());
-        this.evictAttributesListener = new PrePassivateListener<>(this::cascadeEvictAttributes, configuration.getExecutor());
-        this.prePassivateListener = !this.properties.isPersistent() ? new PrePassivateListener<>(this::prePassivate, configuration.getExecutor()) : null;
-        this.postActivateListener = !this.properties.isPersistent() ? new PostActivateListener<>(this::postActivate, configuration.getExecutor()) : null;
-        if (this.prePassivateListener != null) {
-            this.attributeCache.addListener(this.prePassivateListener, new PredicateKeyFilter<>(SessionAttributeKeyFilter.INSTANCE), null);
-        }
-        if (this.postActivateListener != null) {
-            this.attributeCache.addListener(this.postActivateListener, new PredicateKeyFilter<>(SessionAttributeKeyFilter.INSTANCE), null);
-        }
-        this.namesCache.addListener(this.evictAttributesListener, new PredicateKeyFilter<>(SessionAttributeNamesKeyFilter.INSTANCE), null);
-        this.namesCache.addListener(this.evictListener, new PredicateKeyFilter<>(SessionCreationMetaDataKeyFilter.INSTANCE), null);
+        this.evictListenerRegistration = new PostPassivateListener<>(configuration.getCache(), this::cascadeEvict, SessionCreationMetaDataKeyFilter.INSTANCE);
+        this.evictAttributesListenerRegistration = new PrePassivateListener<>(this.namesCache, this::cascadeEvictAttributes, SessionAttributeNamesKeyFilter.INSTANCE);
+        this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateListener<>(this.attributeCache, this::prePassivate, SessionAttributeKeyFilter.INSTANCE) : null;
+        this.postActivateListenerRegistration = !this.properties.isPersistent() ? new PostActivateListener<>(this.attributeCache, this::postActivate, SessionAttributeKeyFilter.INSTANCE) : null;
     }
 
     @Override
     public void close() {
-        this.namesCache.removeListener(this.evictListener);
-        this.namesCache.removeListener(this.evictAttributesListener);
-        if (this.prePassivateListener != null) {
-            this.attributeCache.removeListener(this.prePassivateListener);
+        this.evictListenerRegistration.close();
+        this.evictAttributesListenerRegistration.close();
+        if (this.prePassivateListenerRegistration != null) {
+            this.prePassivateListenerRegistration.close();
         }
-        if (this.postActivateListener != null) {
-            this.attributeCache.removeListener(this.postActivateListener);
+        if (this.postActivateListenerRegistration != null) {
+            this.postActivateListenerRegistration.close();
         }
     }
 
@@ -204,7 +198,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
         };
     }
 
-    private void cascadeEvict(SessionCreationMetaDataKey key, Object value) {
+    private void cascadeEvict(SessionCreationMetaDataKey key) {
         this.namesCache.evict(new SessionAttributeNamesKey(key.getId()));
     }
 

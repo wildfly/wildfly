@@ -32,8 +32,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -43,6 +43,8 @@ import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.distribution.ch.KeyPartitioner;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
@@ -57,7 +59,6 @@ import org.infinispan.notifications.cachelistener.filter.EventType;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultExecutorService;
-import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
@@ -82,7 +83,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 @org.infinispan.notifications.Listener
 public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Object, Object>, ExceptionRunnable<CacheException>, Function<RegistryListener<K, V>, ExecutorService> {
 
-    private final ExecutorService topologyChangeExecutor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(this.getClass()));
     private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<Address, Map.Entry<K, V>> cache;
     private final Batcher<? extends Batch> batcher;
@@ -90,12 +90,17 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
     private final Runnable closeTask;
     private final Map.Entry<K, V> entry;
     private final Invoker invoker;
+    private final KeyPartitioner partitioner;
+    private final Executor executor;
 
+    @SuppressWarnings("deprecation")
     public CacheRegistry(CacheRegistryConfiguration<K, V> config, Map.Entry<K, V> entry, Runnable closeTask) {
         this.cache = config.getCache();
         this.batcher = config.getBatcher();
         this.group = config.getGroup();
         this.closeTask = closeTask;
+        this.executor = config.getBlockingManager().asExecutor(this.getClass().getName());
+        this.partitioner = this.cache.getAdvancedCache().getComponentRegistry().getLocalComponent(KeyPartitioner.class);
         this.entry = new AbstractMap.SimpleImmutableEntry<>(entry);
         this.invoker = new RetryingInvoker(this.cache);
         this.invoker.invoke(this);
@@ -117,7 +122,6 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
     @Override
     public void close() {
         this.cache.removeListener(this);
-        this.shutdown(this.topologyChangeExecutor);
         try (Batch batch = this.batcher.createBatch()) {
             // If this remove fails, the entry will be auto-removed on topology change by the new primary owner
             this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(this.group.getAddress(this.group.getLocalMember()));
@@ -187,14 +191,15 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
 
             if (!members.equals(previousMembers)) {
                 Cache<Address, Map.Entry<K, V>> cache = event.getCache().getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
-                Address localAddress = cache.getCacheManager().getAddress();
+                EmbeddedCacheManager container = cache.getCacheManager();
+                Address localAddress = container.getAddress();
 
                 // Determine which nodes have left the cache view
                 Set<Address> leftMembers = new HashSet<>(previousMembers);
                 leftMembers.removeAll(members);
 
                 if (!leftMembers.isEmpty()) {
-                    Locality locality = new ConsistentHashLocality(cache, hash);
+                    Locality locality = new ConsistentHashLocality(this.partitioner, hash, localAddress);
                     // We're only interested in the entries for which we are the primary owner
                     Iterator<Address> addresses = leftMembers.iterator();
                     while (addresses.hasNext()) {
@@ -208,39 +213,35 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
                 boolean restoreLocalEntry = !previousMembers.contains(localAddress);
 
                 if (!leftMembers.isEmpty() || restoreLocalEntry) {
-                    try {
-                        this.topologyChangeExecutor.submit(() -> {
-                            if (!leftMembers.isEmpty()) {
-                                Map<K, V> removed = new HashMap<>();
-                                try {
-                                    for (Address leftMember: leftMembers) {
-                                        Map.Entry<K, V> old = cache.remove(leftMember);
-                                        if (old != null) {
-                                            removed.put(old.getKey(), old.getValue());
-                                        }
+                    this.executor.execute(() -> {
+                        if (!leftMembers.isEmpty()) {
+                            Map<K, V> removed = new HashMap<>();
+                            try {
+                                for (Address leftMember: leftMembers) {
+                                    Map.Entry<K, V> old = cache.remove(leftMember);
+                                    if (old != null) {
+                                        removed.put(old.getKey(), old.getValue());
                                     }
-                                } catch (CacheException e) {
-                                    ClusteringServerLogger.ROOT_LOGGER.registryPurgeFailed(e, this.cache.getCacheManager().toString(), this.cache.getName(), leftMembers);
                                 }
-                                if (!removed.isEmpty()) {
-                                    this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
-                                }
+                            } catch (CacheException e) {
+                                ClusteringServerLogger.ROOT_LOGGER.registryPurgeFailed(e, container.toString(), cache.getName(), leftMembers);
                             }
-                            if (restoreLocalEntry) {
-                                // If this node is not a member at merge start, its mapping may have been lost and need to be recreated
-                                try {
-                                    if (cache.put(localAddress, this.entry) == null) {
-                                        // Local cache events do not trigger notifications
-                                        this.notifyListeners(Event.Type.CACHE_ENTRY_CREATED, this.entry);
-                                    }
-                                } catch (CacheException e) {
-                                    ClusteringServerLogger.ROOT_LOGGER.failedToRestoreLocalRegistryEntry(e, this.cache.getCacheManager().toString(), this.cache.getName());
-                                }
+                            if (!removed.isEmpty()) {
+                                this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
                             }
-                        });
-                    } catch (RejectedExecutionException e) {
-                        // Executor was shutdown
-                    }
+                        }
+                        if (restoreLocalEntry) {
+                            // If this node is not a member at merge start, its mapping may have been lost and need to be recreated
+                            try {
+                                if (cache.put(localAddress, this.entry) == null) {
+                                    // Local cache events do not trigger notifications
+                                    this.notifyListeners(Event.Type.CACHE_ENTRY_CREATED, this.entry);
+                                }
+                            } catch (CacheException e) {
+                                ClusteringServerLogger.ROOT_LOGGER.failedToRestoreLocalRegistryEntry(e, container.toString(), cache.getName());
+                            }
+                        }
+                    });
                 }
             }
         }

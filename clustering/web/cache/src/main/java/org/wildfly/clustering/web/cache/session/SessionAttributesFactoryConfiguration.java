@@ -23,7 +23,6 @@
 package org.wildfly.clustering.web.cache.session;
 
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 
@@ -38,7 +37,6 @@ import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
  */
 public interface SessionAttributesFactoryConfiguration<S, C, L, V, SV> {
     Marshaller<V, SV> getMarshaller();
-    CacheProperties getCacheProperties();
     Immutability getImmutability();
     HttpSessionActivationListenerProvider<S, C, L> getHttpSessionActivationListenerProvider();
 }

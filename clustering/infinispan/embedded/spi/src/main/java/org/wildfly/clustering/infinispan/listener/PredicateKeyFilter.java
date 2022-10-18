@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.notifications;
+package org.wildfly.clustering.infinispan.listener;
 
 import java.util.function.Predicate;
 

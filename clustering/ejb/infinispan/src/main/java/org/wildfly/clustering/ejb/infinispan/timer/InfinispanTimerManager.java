@@ -46,7 +46,6 @@ import org.wildfly.clustering.ee.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleLocalKeysTask;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithMetaDataCommand;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
-import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerListener;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerTopologyChangeListener;
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
 import org.wildfly.clustering.ejb.timer.IntervalTimerConfiguration;
@@ -57,6 +56,7 @@ import org.wildfly.clustering.ejb.timer.TimerRegistry;
 import org.wildfly.clustering.infinispan.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.distribution.Locality;
 import org.wildfly.clustering.infinispan.distribution.SimpleLocality;
+import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.Group;
@@ -79,7 +79,7 @@ public class InfinispanTimerManager<I, V> implements TimerManager<I, Transaction
 
     private volatile Scheduler<I, ImmutableTimerMetaData> scheduledTimers;
     private volatile Scheduler<I, ImmutableTimerMetaData> scheduler;
-    private volatile SchedulerListener listener;
+    private volatile ListenerRegistration schedulerListenerRegistration;
 
     public InfinispanTimerManager(InfinispanTimerManagerConfiguration<I, V> config) {
         this.cache = config.getCache();
@@ -111,7 +111,7 @@ public class InfinispanTimerManager<I, V> implements TimerManager<I, Transaction
             }
         });
 
-        this.listener = new SchedulerTopologyChangeListener<>(this.cache, localScheduler, scheduleTask);
+        this.schedulerListenerRegistration = new SchedulerTopologyChangeListener<>(this.cache, localScheduler, scheduleTask);
 
         scheduleTask.accept(new SimpleLocality(false), new CacheLocality(this.cache));
 
@@ -122,9 +122,9 @@ public class InfinispanTimerManager<I, V> implements TimerManager<I, Transaction
     public void stop() {
         this.identifierFactory.stop();
 
-        SchedulerListener listener = this.listener;
-        if (listener != null) {
-            listener.close();
+        ListenerRegistration registration = this.schedulerListenerRegistration;
+        if (registration != null) {
+            registration.close();
         }
 
         Scheduler<I, ImmutableTimerMetaData> scheduler = this.scheduler;

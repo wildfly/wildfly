@@ -32,8 +32,8 @@ import java.util.TreeSet;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -50,7 +50,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.context.DefaultExecutorService;
-import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
@@ -79,18 +78,19 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 @org.infinispan.notifications.Listener
 public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, AutoCloseable {
 
-    private final ExecutorService topologyChangeExecutor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(this.getClass()));
     private final Batcher<? extends Batch> batcher;
     private final ConcurrentMap<T, Map.Entry<Listener, ExecutorService>> listeners = new ConcurrentHashMap<>();
     private final Cache<T, Set<Address>> cache;
     private final Group<Address> group;
     private final Invoker invoker;
     private final CacheProperties properties;
+    private final Executor executor;
 
     public CacheServiceProviderRegistry(CacheServiceProviderRegistryConfiguration<T> config) {
         this.group = config.getGroup();
         this.cache = config.getCache();
         this.batcher = config.getBatcher();
+        this.executor = config.getBlockingManager().asExecutor(this.getClass().getName());
         this.cache.addListener(this);
         this.invoker = new RetryingInvoker(this.cache);
         this.properties = new InfinispanCacheProperties(this.cache.getCacheConfiguration());
@@ -99,7 +99,6 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     @Override
     public void close() {
         this.cache.removeListener(this);
-        this.shutdown(this.topologyChangeExecutor);
         // Cleanup any unclosed registrations
         for (Map.Entry<Listener, ExecutorService> entry : this.listeners.values()) {
             ExecutorService executor = entry.getValue();
@@ -186,7 +185,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     }
 
     @TopologyChanged
-    public void topologyChanged(TopologyChangedEvent<T, Set<Address>> event) {
+    public CompletionStage<Void> topologyChanged(TopologyChangedEvent<T, Set<Address>> event) {
         if (!event.isPre()) {
             ConsistentHash previousHash = event.getWriteConsistentHashAtStart();
             List<Address> previousMembers = previousHash.getMembers();
@@ -218,36 +217,33 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                 if (!leftMembers.isEmpty() || !localServices.isEmpty()) {
                     Batcher<? extends Batch> batcher = this.batcher;
                     Invoker invoker = this.invoker;
-                    try {
-                        this.topologyChangeExecutor.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (!leftMembers.isEmpty()) {
-                                    try (Batch batch = batcher.createBatch()) {
-                                        try (CloseableIterator<Map.Entry<T, Set<Address>>> entries = cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).entrySet().iterator()) {
-                                            while (entries.hasNext()) {
-                                                Map.Entry<T, Set<Address>> entry = entries.next();
-                                                Set<Address> addresses = entry.getValue();
-                                                if (addresses.removeAll(leftMembers)) {
-                                                    entry.setValue(addresses);
-                                                }
+                    this.executor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!leftMembers.isEmpty()) {
+                                try (Batch batch = batcher.createBatch()) {
+                                    try (CloseableIterator<Map.Entry<T, Set<Address>>> entries = cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).entrySet().iterator()) {
+                                        while (entries.hasNext()) {
+                                            Map.Entry<T, Set<Address>> entry = entries.next();
+                                            Set<Address> addresses = entry.getValue();
+                                            if (addresses.removeAll(leftMembers)) {
+                                                entry.setValue(addresses);
                                             }
                                         }
                                     }
                                 }
-                                if (!localServices.isEmpty()) {
-                                    for (T localService : localServices) {
-                                        invoker.invoke(new RegisterLocalServiceTask(localService));
-                                    }
+                            }
+                            if (!localServices.isEmpty()) {
+                                for (T localService : localServices) {
+                                    invoker.invoke(new RegisterLocalServiceTask(localService));
                                 }
                             }
-                        });
-                    } catch (RejectedExecutionException e) {
-                        // Executor is shutdown
-                    }
+                        }
+                    });
                 }
             }
         }
+        return CompletableFutures.completedNull();
     }
 
     @CacheEntryCreated

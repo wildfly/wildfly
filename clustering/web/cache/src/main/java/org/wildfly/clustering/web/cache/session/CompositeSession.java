@@ -23,8 +23,10 @@ package org.wildfly.clustering.web.cache.session;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
@@ -39,14 +41,16 @@ public class CompositeSession<L> extends CompositeImmutableSession implements Se
     private final AtomicReference<L> localContext;
     private final LocalContextFactory<L> localContextFactory;
     private final Remover<String> remover;
+    private final Recordable<ImmutableSessionMetaData> recorder;
 
-    public CompositeSession(String id, InvalidatableSessionMetaData metaData, SessionAttributes attributes, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, Remover<String> remover) {
+    public CompositeSession(String id, InvalidatableSessionMetaData metaData, SessionAttributes attributes, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, Remover<String> remover, Recordable<ImmutableSessionMetaData> recorder) {
         super(id, metaData, attributes);
         this.metaData = metaData;
         this.attributes = attributes;
         this.localContext = localContext;
         this.localContextFactory = localContextFactory;
         this.remover = remover;
+        this.recorder = recorder;
     }
 
     @Override
@@ -62,6 +66,7 @@ public class CompositeSession<L> extends CompositeImmutableSession implements Se
     @Override
     public void invalidate() {
         if (this.metaData.invalidate()) {
+            this.recorder.record(this.metaData);
             this.remover.remove(this.getId());
         }
     }

@@ -27,27 +27,16 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.context.Flag;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
-import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
-import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
-import org.wildfly.clustering.context.DefaultExecutorService;
-import org.wildfly.clustering.context.ExecutorServiceFactory;
+import org.infinispan.util.concurrent.BlockingManager;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
-import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
@@ -61,8 +50,10 @@ import org.wildfly.clustering.ejb.infinispan.BeanKey;
 import org.wildfly.clustering.ejb.infinispan.PassivationConfiguration;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
+import org.wildfly.clustering.infinispan.listener.PostActivateListener;
+import org.wildfly.clustering.infinispan.listener.PrePassivateListener;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Encapsulates the cache mapping strategy of a bean group.
@@ -73,7 +64,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <T> the bean type
  * @param <C> the marshalling context
  */
-@Listener
 public class InfinispanBeanGroupFactory<I, T, C> implements BeanGroupFactory<I, T, C> {
 
     private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> cache;
@@ -83,7 +73,9 @@ public class InfinispanBeanGroupFactory<I, T, C> implements BeanGroupFactory<I, 
     private final MarshalledValueFactory<C> factory;
     private final PassivationListener<T> passivationListener;
     private final MutatorFactory<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> mutatorFactory;
-    private final ExecutorService executor = new DefaultExecutorService(this.getClass(), ExecutorServiceFactory.CACHED_THREAD);
+    private final ListenerRegistration prePassivateListenerRegistration;
+    private final ListenerRegistration postActivateListenerRegistration;
+    private final Executor executor;
 
     public InfinispanBeanGroupFactory(Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> cache, Cache<BeanKey<I>, BeanEntry<I>> beanCache, Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter, MarshalledValueFactory<C> factory, CacheProperties properties, PassivationConfiguration<T> passivation) {
         this.cache = cache;
@@ -92,19 +84,18 @@ public class InfinispanBeanGroupFactory<I, T, C> implements BeanGroupFactory<I, 
         this.beanFilter = beanFilter;
         this.factory = factory;
         this.passivationListener = !properties.isPersistent() ? passivation.getPassivationListener() : null;
-        this.cache.addListener(this, BeanGroupFilter.INSTANCE, null);
+        @SuppressWarnings("deprecation")
+        BlockingManager blocking = cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
+        this.executor = blocking.asExecutor(this.getClass().getName());
+        this.prePassivateListenerRegistration = new PrePassivateListener<>(this.cache, this::prePassivate, BeanGroupFilter.INSTANCE);
+        this.postActivateListenerRegistration = new PostActivateListener<>(this.cache, this::postActivate, BeanGroupFilter.INSTANCE);
         this.mutatorFactory = new InfinispanMutatorFactory<>(cache, properties);
     }
 
     @Override
     public void close() {
-        this.cache.removeListener(this);
-        WildFlySecurityManager.doUnchecked(this.executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
-        try {
-            this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        this.prePassivateListenerRegistration.close();
+        this.postActivateListenerRegistration.close();
     }
 
     @Override
@@ -161,81 +152,52 @@ public class InfinispanBeanGroupFactory<I, T, C> implements BeanGroupFactory<I, 
         this.cache.evict(new InfinispanBeanGroupKey<>(id));
     }
 
-    @CacheEntryPassivated
-    public CompletionStage<Void> passivated(CacheEntryPassivatedEvent<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> event) {
-        if (!event.isPre()) return CompletableFutures.completedNull();
-
-        C context = this.factory.getMarshallingContext();
-        Remover<I> remover = this;
-        BeanGroupEntry<I, T, C> entry = event.getValue();
-        Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.beanCache;
-        PassivationListener<T> passivationListener = this.passivationListener;
-        Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter = this.beanFilter;
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try (BeanGroup<I, T> group = new InfinispanBeanGroup<>(event.getKey().getId(), entry, context, Mutator.PASSIVE, remover)) {
-                    Set<I> beans = group.getBeans();
-                    List<I> notified = new ArrayList<>(beans.size());
-                    try {
-                        for (I beanId : beans) {
-                            BeanKey<I> beanKey = new InfinispanBeanKey<>(beanId);
-                            BeanEntry<I> beanEntry = beanCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).get(beanKey);
-                            if ((beanEntry != null) && beanFilter.test(new AbstractMap.SimpleImmutableEntry<>(beanKey, beanEntry))) {
-                                InfinispanEjbLogger.ROOT_LOGGER.tracef("Passivating bean %s", beanKey);
-                                group.prePassivate(beanId, passivationListener);
-                                notified.add(beanId);
-                                // Cascade evict to bean entry
-                                beanCache.evict(beanKey);
-                            }
-                        }
-                    } catch (RuntimeException | Error e) {
-                        // Restore state of pre-passivated beans
-                        for (I beanId : notified) {
-                            try {
-                                group.postActivate(beanId, passivationListener);
-                            } catch (RuntimeException | Error t) {
-                                InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-                            }
-                        }
-                        // Abort passivation if any beans failed to pre-passivate
-                        throw e;
+    void prePassivate(BeanGroupKey<I> key, BeanGroupEntry<I, T, C> entry) {
+        try (BeanGroup<I, T> group = new InfinispanBeanGroup<>(key.getId(), entry, this.factory.getMarshallingContext(), Mutator.PASSIVE, this)) {
+            Set<I> beans = group.getBeans();
+            List<I> notified = new ArrayList<>(beans.size());
+            try {
+                for (I beanId : beans) {
+                    BeanKey<I> beanKey = new InfinispanBeanKey<>(beanId);
+                    BeanEntry<I> beanEntry = this.beanCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).get(beanKey);
+                    if ((beanEntry != null) && this.beanFilter.test(new AbstractMap.SimpleImmutableEntry<>(beanKey, beanEntry))) {
+                        InfinispanEjbLogger.ROOT_LOGGER.tracef("Passivating bean %s", beanKey);
+                        group.prePassivate(beanId, this.passivationListener);
+                        notified.add(beanId);
+                        // Cascade evict to bean entry
+                        this.executor.execute(() -> this.beanCache.evict(beanKey));
                     }
                 }
+            } catch (RuntimeException | Error e) {
+                // Restore state of pre-passivated beans
+                for (I beanId : notified) {
+                    try {
+                        group.postActivate(beanId, this.passivationListener);
+                    } catch (RuntimeException | Error ex) {
+                        InfinispanEjbLogger.ROOT_LOGGER.warn(ex.getLocalizedMessage(), ex);
+                    }
+                }
+                // Abort passivation if any beans failed to pre-passivate
+                throw e;
             }
-        };
-        return CompletableFuture.runAsync(task, this.executor);
+        }
     }
 
-    @CacheEntryActivated
-    public CompletionStage<Void> activated(CacheEntryActivatedEvent<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> event) {
-        if (event.isPre()) return CompletableFutures.completedNull();
-
+    void postActivate(BeanGroupKey<I> key, BeanGroupEntry<I, T, C> entry) {
         C context = this.factory.getMarshallingContext();
-        Remover<I> remover = this;
-        BeanGroupEntry<I, T, C> entry = event.getValue();
-        Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.beanCache;
-        PassivationListener<T> passivationListener = this.passivationListener;
-        Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter = this.beanFilter;
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try (BeanGroup<I, T> group = new InfinispanBeanGroup<>(event.getKey().getId(), entry, context, Mutator.PASSIVE, remover)) {
-                    for (I beanId : group.getBeans()) {
-                        BeanKey<I> beanKey = new InfinispanBeanKey<>(beanId);
-                        BeanEntry<I> beanEntry = beanCache.get(beanKey);
-                        if ((beanEntry != null) && beanFilter.test(new AbstractMap.SimpleImmutableEntry<>(beanKey, beanEntry))) {
-                            InfinispanEjbLogger.ROOT_LOGGER.tracef("Activating bean %s", beanKey);
-                            try {
-                                group.postActivate(beanId, passivationListener);
-                            } catch (RuntimeException | Error e) {
-                                InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-                            }
-                        }
+        try (BeanGroup<I, T> group = new InfinispanBeanGroup<>(key.getId(), entry, context, Mutator.PASSIVE, this)) {
+            for (I beanId : group.getBeans()) {
+                BeanKey<I> beanKey = new InfinispanBeanKey<>(beanId);
+                BeanEntry<I> beanEntry = this.beanCache.get(beanKey);
+                if ((beanEntry != null) && this.beanFilter.test(new AbstractMap.SimpleImmutableEntry<>(beanKey, beanEntry))) {
+                    InfinispanEjbLogger.ROOT_LOGGER.tracef("Activating bean %s", beanKey);
+                    try {
+                        group.postActivate(beanId, this.passivationListener);
+                    } catch (RuntimeException | Error e) {
+                        InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
                     }
                 }
             }
-        };
-        return CompletableFuture.runAsync(task, this.executor);
+        }
     }
 }

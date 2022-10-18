@@ -27,8 +27,10 @@ import static org.mockito.Mockito.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
+import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 
 /**
@@ -43,8 +45,9 @@ public class CompositeSessionTestCase {
     private final Remover<String> remover = mock(Remover.class);
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
     private final AtomicReference<Object> localContextRef = new AtomicReference<>();
+    private final Recordable<ImmutableSessionMetaData> recorder = mock(Recordable.class);
 
-    private final Session<Object> session = new CompositeSession<>(this.id, this.metaData, this.attributes, this.localContextRef, this.localContextFactory, this.remover);
+    private final Session<Object> session = new CompositeSession<>(this.id, this.metaData, this.attributes, this.localContextRef, this.localContextFactory, this.remover, this.recorder);
 
     @Test
     public void getId() {
@@ -61,7 +64,6 @@ public class CompositeSessionTestCase {
         assertSame(this.metaData, this.session.getMetaData());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void invalidate() {
         when(this.metaData.invalidate()).thenReturn(true);
@@ -69,13 +71,15 @@ public class CompositeSessionTestCase {
         this.session.invalidate();
 
         verify(this.remover).remove(this.id);
-        reset(this.remover);
+        verify(this.recorder).record(this.metaData);
+        reset(this.remover, this.recorder);
 
         when(this.metaData.invalidate()).thenReturn(false);
 
         this.session.invalidate();
 
         verify(this.remover, never()).remove(this.id);
+        verify(this.recorder, never()).record(this.metaData);
     }
 
     @Test

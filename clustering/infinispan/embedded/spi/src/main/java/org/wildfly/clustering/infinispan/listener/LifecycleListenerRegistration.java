@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,16 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.infinispan.listener;
 
-import java.util.concurrent.Executor;
-
-import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
+import org.infinispan.commons.api.Lifecycle;
 
 /**
  * @author Paul Ferraro
+ *
  */
-public interface InfinispanSessionMetaDataFactoryConfiguration extends InfinispanConfiguration {
+public class LifecycleListenerRegistration implements ListenerRegistration {
 
-    Executor getExecutor();
+    private final Lifecycle lifecycle;
+
+    protected LifecycleListenerRegistration(Lifecycle lifecycle) {
+        this.lifecycle = lifecycle;
+        this.lifecycle.start();
+    }
+
+    @Override
+    public void close() {
+        this.lifecycle.stop();
+    }
 }

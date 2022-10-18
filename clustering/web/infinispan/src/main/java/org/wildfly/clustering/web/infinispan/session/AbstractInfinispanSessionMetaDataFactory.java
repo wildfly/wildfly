@@ -37,9 +37,11 @@ import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
-import org.wildfly.clustering.infinispan.listener.PrePassivateListener;
-import org.wildfly.clustering.infinispan.notifications.PredicateKeyFilter;
+import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
+import org.wildfly.clustering.infinispan.listener.PostPassivateListener;
+import org.wildfly.clustering.infinispan.listener.PredicateKeyFilter;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaData;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.InvalidatableSessionMetaData;
@@ -67,32 +69,31 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
 
     private static final Set<Flag> TRY_LOCK_FLAGS = EnumSet.of(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY);
 
-    private final Cache<Key<String>, Object> cache;
-    private final Cache<Key<String>, Object> writeCache;
-    private final Cache<Key<String>, Object> silentCache;
+    private final Cache<Key<String>, Object> writeOnlyCache;
+    private final Cache<Key<String>, Object> silentWriteCache;
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
+    private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataTryLockCache;
     private final MutatorFactory<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataMutatorFactory;
     private final Cache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
     private final MutatorFactory<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataMutatorFactory;
     private final CacheProperties properties;
-    private final Object evictListener;
+    private final ListenerRegistration evictListenerRegistration;
 
-    public AbstractInfinispanSessionMetaDataFactory(InfinispanSessionMetaDataFactoryConfiguration configuration) {
-        this.cache = configuration.getCache();
-        this.writeCache = configuration.getWriteOnlyCache();
-        this.silentCache = configuration.getSilentWriteCache();
+    public AbstractInfinispanSessionMetaDataFactory(InfinispanConfiguration configuration) {
+        this.writeOnlyCache = configuration.getWriteOnlyCache();
+        this.silentWriteCache = configuration.getSilentWriteCache();
+        this.creationMetaDataTryLockCache = configuration.getTryLockCache();
         this.properties = configuration.getCacheProperties();
         this.creationMetaDataCache = configuration.getCache();
         this.creationMetaDataMutatorFactory = new InfinispanMutatorFactory<>(this.creationMetaDataCache, this.properties);
         this.accessMetaDataCache = configuration.getCache();
         this.accessMetaDataMutatorFactory = new InfinispanMutatorFactory<>(this.accessMetaDataCache, this.properties);
-        this.evictListener = new PrePassivateListener<>(this::cascadeEvict, configuration.getExecutor());
-        this.cache.addListener(this.evictListener, new PredicateKeyFilter<>(SessionCreationMetaDataKeyFilter.INSTANCE), null);
+        this.evictListenerRegistration = new PostPassivateListener<>(this.creationMetaDataCache, this::cascadeEvict, new PredicateKeyFilter<>(SessionCreationMetaDataKeyFilter.INSTANCE));
     }
 
     @Override
     public void close() {
-        this.cache.removeListener(this.evictListener);
+        this.evictListenerRegistration.close();
     }
 
     @Override
@@ -102,7 +103,7 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
         entries.put(new SessionCreationMetaDataKey(id), creationMetaDataEntry);
         SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
         entries.put(new SessionAccessMetaDataKey(id), accessMetaData);
-        this.writeCache.putAll(entries);
+        this.writeOnlyCache.putAll(entries);
         return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData);
     }
 
@@ -140,8 +141,8 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
     public boolean remove(String id) {
         SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
         try {
-            if (!this.properties.isLockOnWrite() || (this.creationMetaDataCache.getAdvancedCache().getTransactionManager().getTransaction() == null) || this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).lock(key)) {
-                return delete(this.writeCache, id);
+            if (!this.properties.isLockOnWrite() || (this.creationMetaDataCache.getAdvancedCache().getTransactionManager().getTransaction() == null) || this.creationMetaDataTryLockCache.getAdvancedCache().lock(key)) {
+                return delete(this.writeOnlyCache, id);
             }
             return false;
         } catch (SystemException e) {
@@ -151,7 +152,7 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
 
     @Override
     public boolean purge(String id) {
-        return delete(this.silentCache, id);
+        return delete(this.silentWriteCache, id);
     }
 
     private static boolean delete(Cache<Key<String>, Object> cache, String id) {
@@ -160,7 +161,7 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
         return true;
     }
 
-    private void cascadeEvict(SessionCreationMetaDataKey key, SessionCreationMetaDataEntry<L> value) {
-        this.silentCache.evict(new SessionAccessMetaDataKey(key.getId()));
+    void cascadeEvict(SessionCreationMetaDataKey key) {
+        this.silentWriteCache.evict(new SessionAccessMetaDataKey(key.getId()));
     }
 }

@@ -25,6 +25,7 @@ package org.wildfly.clustering.web.cache.session;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 
+import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
@@ -42,12 +43,14 @@ public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionF
     private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory;
     private final SessionAttributesFactory<C, V> attributesFactory;
     private final LocalContextFactory<L> localContextFactory;
+    private final Recordable<ImmutableSessionMetaData> recorder;
 
-    public CompositeSessionFactory(SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory, SessionAttributesFactory<C, V> attributesFactory, LocalContextFactory<L> localContextFactory) {
+    public CompositeSessionFactory(SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory, SessionAttributesFactory<C, V> attributesFactory, LocalContextFactory<L> localContextFactory, Recordable<ImmutableSessionMetaData> recorder) {
         super(metaDataFactory, attributesFactory);
         this.metaDataFactory = metaDataFactory;
         this.attributesFactory = attributesFactory;
         this.localContextFactory = localContextFactory;
+        this.recorder = recorder;
     }
 
     @Override
@@ -111,7 +114,7 @@ public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionF
         CompositeSessionMetaDataEntry<L> key = entry.getKey();
         InvalidatableSessionMetaData metaData = this.metaDataFactory.createSessionMetaData(id, key);
         SessionAttributes attributes = this.attributesFactory.createSessionAttributes(id, entry.getValue(), metaData, context);
-        return new CompositeSession<>(id, metaData, attributes, key.getLocalContext(), this.localContextFactory, this);
+        return new CompositeSession<>(id, metaData, attributes, key.getLocalContext(), this.localContextFactory, this, this.recorder);
     }
 
     @Override

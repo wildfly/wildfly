@@ -42,6 +42,7 @@ import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
 import org.wildfly.clustering.web.LocalContextFactory;
@@ -83,8 +84,8 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
      * @param attributesFactory
      * @param localContextFactory
      */
-    public HotRodSessionFactory(HotRodConfiguration config, SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory, SessionAttributesFactory<C, V> attributesFactory, LocalContextFactory<L> localContextFactory) {
-        super(metaDataFactory, attributesFactory, localContextFactory);
+    public HotRodSessionFactory(HotRodConfiguration config, SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory, SessionAttributesFactory<C, V> attributesFactory, LocalContextFactory<L> localContextFactory, Recordable<ImmutableSessionMetaData> recorder) {
+        super(metaDataFactory, attributesFactory, localContextFactory, recorder);
         this.metaDataFactory = metaDataFactory;
         this.attributesFactory = attributesFactory;
         this.attributesRemover = attributesFactory;

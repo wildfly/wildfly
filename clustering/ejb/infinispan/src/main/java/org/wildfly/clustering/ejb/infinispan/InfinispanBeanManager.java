@@ -46,7 +46,6 @@ import org.wildfly.clustering.ee.infinispan.affinity.AffinityIdentifierFactory;
 import org.wildfly.clustering.ee.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleLocalEntriesTask;
 import org.wildfly.clustering.ee.infinispan.scheduler.CacheEntryScheduler;
-import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerListener;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerTopologyChangeListener;
 import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.ejb.Bean;
@@ -59,6 +58,7 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.distribution.Locality;
 import org.wildfly.clustering.infinispan.distribution.SimpleLocality;
+import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 
 /**
@@ -85,7 +85,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
     private final Function<BeanKey<I>, Node> primaryOwnerLocator;
 
     private volatile org.wildfly.clustering.ee.Scheduler<I, ImmutableBeanEntry<I>> scheduler;
-    private volatile SchedulerListener listener;
+    private volatile ListenerRegistration schedulerListenerRegistration;
 
     public InfinispanBeanManager(InfinispanBeanManagerConfiguration<I, T> configuration, Supplier<I> identifierFactory, Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration, Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, C>, BeanGroupFactory<I, T, C>> groupConfiguration) {
         this.filter = configuration.getBeanFilter();
@@ -114,16 +114,16 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
         this.scheduler = (localScheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, dispatcherName, localScheduler, this.primaryOwnerLocator, InfinispanBeanKey::new)) : null;
 
         BiConsumer<Locality, Locality> scheduleTask = new ScheduleLocalEntriesTask<>(this.cache, this.filter, localScheduler);
-        this.listener = (localScheduler != null) ? new SchedulerTopologyChangeListener<>(this.cache, localScheduler, scheduleTask) : null;
-        if (this.listener != null) {
+        this.schedulerListenerRegistration = (localScheduler != null) ? new SchedulerTopologyChangeListener<>(this.cache, localScheduler, scheduleTask) : null;
+        if (this.schedulerListenerRegistration != null) {
             scheduleTask.accept(new SimpleLocality(false), new CacheLocality(this.cache));
         }
     }
 
     @Override
     public void stop() {
-        if (this.listener != null) {
-            this.listener.close();
+        if (this.schedulerListenerRegistration != null) {
+            this.schedulerListenerRegistration.close();
         }
         if (this.scheduler != null) {
             this.scheduler.close();

@@ -44,6 +44,7 @@
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
+        <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.common"/>

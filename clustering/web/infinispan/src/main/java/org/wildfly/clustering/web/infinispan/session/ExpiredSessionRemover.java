@@ -26,6 +26,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
@@ -46,9 +47,11 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Remover<String>, R
 
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final Collection<SessionExpirationListener> listeners = new CopyOnWriteArraySet<>();
+    private final Recordable<ImmutableSessionMetaData> recorder;
 
-    public ExpiredSessionRemover(SessionFactory<SC, MV, AV, LC> factory) {
+    public ExpiredSessionRemover(SessionFactory<SC, MV, AV, LC> factory, Recordable<ImmutableSessionMetaData> recorder) {
         this.factory = factory;
+        this.recorder = recorder;
     }
 
     @Override
@@ -57,6 +60,7 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Remover<String>, R
         if (metaDataValue != null) {
             ImmutableSessionMetaData metaData = this.factory.getMetaDataFactory().createImmutableSessionMetaData(id, metaDataValue);
             if (metaData.isExpired()) {
+                this.recorder.record(metaData);
                 AV attributesValue = this.factory.getAttributesFactory().findValue(id);
                 if (attributesValue != null) {
                     ImmutableSessionAttributes attributes = this.factory.getAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
@@ -66,7 +70,7 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Remover<String>, R
                         listener.sessionExpired(session);
                     }
                 }
-                return this.factory.remove(id);
+                return this.factory.purge(id);
             }
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s is not yet expired.", id);
         } else {
