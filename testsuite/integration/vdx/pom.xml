@@ -213,10 +213,6 @@
                                             </included-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <plugin-options combine.self="append">
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
-                                    </plugin-options>
                                 </configuration>
                             </execution>
                         </executions>
