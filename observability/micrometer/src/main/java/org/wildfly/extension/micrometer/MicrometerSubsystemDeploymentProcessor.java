@@ -81,7 +81,7 @@ public class MicrometerSubsystemDeploymentProcessor implements DeploymentUnitPro
             weldCapability.registerExtensionInstance(new MicrometerCdiExtension(registry), deploymentUnit);
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             //We should not be here since the subsystem depends on weld capability. Just in case ...
-            throw MICROMETER_LOGGER.deploymentRequiresCapability(deploymentUnit.getName(), WELD_CAPABILITY_NAME);
+            MICROMETER_LOGGER.deploymentRequiresCapability(deploymentUnit.getName(), WELD_CAPABILITY_NAME);
         }
     }
 }

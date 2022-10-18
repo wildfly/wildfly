@@ -43,7 +43,6 @@ class MicrometerSubsystemDefinition extends PersistentResourceDefinition {
     static final String HTTP_EXTENSIBILITY_CAPABILITY = "org.wildfly.management.http.extensible";
     static final String MANAGEMENT_EXECUTOR = "org.wildfly.management.executor";
     static final String PROCESS_STATE_NOTIFIER = "org.wildfly.management.process-state-notifier";
-
     private static final RuntimeCapability<Void> MICROMETER_COLLECTOR_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(MICROMETER_MODULE + ".wildfly-collector", MicrometerCollector.class)
                     .addRequirements(CLIENT_FACTORY_CAPABILITY, MANAGEMENT_EXECUTOR, PROCESS_STATE_NOTIFIER)
@@ -55,14 +54,13 @@ class MicrometerSubsystemDefinition extends PersistentResourceDefinition {
             RuntimeCapability.Builder.of(MICROMETER_MODULE + ".http-context", MicrometerContextService.class)
                     .build();
     static final RuntimeCapability METRICS_CAPABILITY =
-            RuntimeCapability.Builder.of("org.wildfly.management.http-context.metrics").build();
+            RuntimeCapability.Builder.of("org.wildfly.management.http-context.metrics")
+                    .build();
     static final ServiceName MICROMETER_COLLECTOR = MICROMETER_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName();
-
     static final String[] MODULES = {
             "io.prometheus",
             "org.latencyutils"
     };
-
     static final String[] EXPORTED_MODULES = {
             MICROMETER_API_MODULE,
             "io.micrometer"
