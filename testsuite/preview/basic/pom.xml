@@ -84,6 +84,7 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -262,7 +263,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -302,7 +302,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -479,7 +478,6 @@
                                     <plugin-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -516,7 +514,6 @@
                                     <plugin-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>

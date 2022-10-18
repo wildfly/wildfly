@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2021 Red Hat, Inc., and individual contributors
+ * Copyright 2022 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,9 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.wildfly.extension.micrometer;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -26,7 +26,6 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.IOException;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -47,12 +46,13 @@ public interface MicrometerExtensionLogger extends BasicLogger {
     @Message(id = 2, value = "Micrometer Subsystem is processing deployment")
     void processingDeployment();
 
-    @LogMessage(level = INFO) // DEBUG
+    @LogMessage(level = DEBUG)
     @Message(id = 3, value = "The deployment does not have Jakarta Contexts and Dependency Injection enabled. Skipping Micrometer integration.")
     void noCdiDeployment();
 
+    @LogMessage(level = DEBUG)
     @Message(id = 4, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
-    DeploymentUnitProcessingException deploymentRequiresCapability(String deploymentName, String capabilityName);
+    void deploymentRequiresCapability(String deploymentName, String capabilityName);
 
     @LogMessage(level = WARN)
     @Message(id = 5, value = "Unable to read attribute %s on %s: %s.")

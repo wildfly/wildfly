@@ -378,7 +378,6 @@
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                             </plugin-options>
                             <cli-sessions>
                                 <cli-session>
@@ -418,7 +417,6 @@
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                             </plugin-options>
                             <cli-sessions>
                                 <cli-session>
@@ -461,7 +459,6 @@
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                             </plugin-options>
                             <cli-sessions>
                                 <cli-session>
@@ -1375,7 +1372,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1523,7 +1519,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1594,7 +1589,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1672,7 +1666,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1736,7 +1729,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1800,7 +1792,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2707,42 +2698,6 @@
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.jar.plugin}</version>
-                        <executions>
-                            <!-- Package a cloud-profile server -->
-                            <execution>
-                                <id>bootable-jar-cloud-profile-packaging</id>
-                                <configuration>
-                                    <plugin-options combine-children="append">
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                    </plugin-options>
-                                </configuration>
-                            </execution>
-
-                            <!-- Package a jpa2lc server -->
-                            <execution>
-                                <id>bootable-jar-jpa-distributed-packaging</id>
-                                <configuration>
-                                    <plugin-options combine-children="append">
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                    </plugin-options>
-                                </configuration>
-                            </execution>
-
-                            <!-- Package a load balancer -->
-                            <execution>
-                                <id>bootable-jar-load-balancer-packaging</id>
-                                <configuration>
-                                    <plugin-options combine-children="append">
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                    </plugin-options>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

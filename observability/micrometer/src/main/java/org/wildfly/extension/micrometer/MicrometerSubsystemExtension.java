@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2021 Red Hat, Inc., and individual contributors
+ * Copyright 2022 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.wildfly.extension.micrometer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -62,7 +61,7 @@ public class MicrometerSubsystemExtension implements Extension {
         subsystem.registerXMLElementWriter(new MicrometerParser(MicrometerSchema.CURRENT));
 
         final ManagementResourceRegistration registration =
-                subsystem.registerSubsystemModel(org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.INSTANCE);
+                subsystem.registerSubsystemModel(new MicrometerSubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION,
                 GenericSubsystemDescribeHandler.INSTANCE);
     }

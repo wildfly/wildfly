@@ -284,7 +284,7 @@
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>6.1.0.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>6.2.0.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>8.0.0.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>3.0.2.Final</version.org.wildfly.plugin>
@@ -526,7 +526,7 @@
         <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
-        <version.org.jboss.metadata>15.2.0.Beta3</version.org.jboss.metadata>
+        <version.org.jboss.metadata>15.2.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>2.0.1.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.13.0.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.9.Final</version.org.jboss.openjdk-orb>
