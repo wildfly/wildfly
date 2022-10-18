@@ -33,7 +33,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly.core:wildfly-elytron-integration-jakarta}"/>
+        <artifact name="${org.wildfly.core:wildfly-elytron-integration}"/>
     </resources>
 
     <dependencies>
