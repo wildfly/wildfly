@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -61,12 +62,13 @@ public class UndertowSessionExpirationListenerTestCase {
         ImmutableSessionAttributes attributes = mock(ImmutableSessionAttributes.class);
         ImmutableSessionMetaData metaData = mock(ImmutableSessionMetaData.class);
         ArgumentCaptor<Session> capturedSession = ArgumentCaptor.forClass(Session.class);
+        Recordable<ImmutableSessionMetaData> recorder = mock(Recordable.class);
 
         String expectedSessionId = "session";
         SessionListeners listeners = new SessionListeners();
         listeners.addSessionListener(listener);
 
-        SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, listeners);
+        SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, listeners, recorder);
 
         when(deployment.getSessionManager()).thenReturn(manager);
         when(manager.getSessionManager()).thenReturn(delegateManager);
@@ -82,6 +84,7 @@ public class UndertowSessionExpirationListenerTestCase {
 
         expirationListener.sessionExpired(session);
 
+        verify(recorder).record(metaData);
         verify(batcher).suspendBatch();
         verify(listener).sessionDestroyed(capturedSession.capture(), isNull(), same(SessionListener.SessionDestroyedReason.TIMEOUT));
         verify(batcher).resumeBatch(batch);

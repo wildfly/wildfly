@@ -48,6 +48,7 @@ import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.Listener.Observation;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
@@ -69,7 +70,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * </ul>
  * @author Paul Ferraro
  */
-@Listener
+@Listener(observation = Observation.POST)
 public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supplier<BlockingQueue<K>> {
 
     private static final Logger LOGGER = Logger.getLogger(DefaultKeyAffinityService.class);
@@ -215,7 +216,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 
     @TopologyChanged
     public CompletionStage<Void> topologyChanged(TopologyChangedEvent<?, ?> event) {
-        if (!event.isPre() && !this.getSegments(event.getWriteConsistentHashAtStart()).equals(this.getSegments(event.getWriteConsistentHashAtEnd()))) {
+        if (!this.getSegments(event.getWriteConsistentHashAtStart()).equals(this.getSegments(event.getWriteConsistentHashAtEnd()))) {
             LOGGER.debugf("Restarting key generation based on new consistent hash for topology %d", event.getNewTopologyId());
             this.accept(event.getWriteConsistentHashAtEnd());
         }

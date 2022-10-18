@@ -61,7 +61,6 @@ public class CompositeSessionTestCase {
         assertSame(this.metaData, this.session.getMetaData());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void invalidate() {
         when(this.metaData.invalidate()).thenReturn(true);

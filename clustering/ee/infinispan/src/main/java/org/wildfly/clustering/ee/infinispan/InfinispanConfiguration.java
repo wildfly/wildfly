@@ -24,6 +24,7 @@ package org.wildfly.clustering.ee.infinispan;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.infinispan.util.concurrent.BlockingManager;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.CacheConfiguration;
 import org.wildfly.clustering.ee.cache.CacheProperties;
@@ -54,6 +55,16 @@ public interface InfinispanConfiguration extends CacheConfiguration {
     }
 
     /**
+     * Returns a cache with try-lock write semantic, e.g. whose write operations will return null if another transaction owns the write lock.
+     * @param <K> the cache key type
+     * @param <V> the cache value type
+     * @return a cache with try-lock semantics.
+     */
+    default <K, V> Cache<K, V> getTryLockCache() {
+        return this.getCacheProperties().isLockOnWrite() ? this.<K, V>getCache().getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY) : this.getCache();
+    }
+
+    /**
      * Returns a cache for use with write-only operations, e.g. put/remove where previous values are not needed.
      * @param <K> the cache key type
      * @param <V> the cache value type
@@ -76,5 +87,10 @@ public interface InfinispanConfiguration extends CacheConfiguration {
     @Override
     default Batcher<TransactionBatch> getBatcher() {
         return new InfinispanBatcher(this.getCache());
+    }
+
+    @SuppressWarnings("deprecation")
+    default BlockingManager getBlockingManager() {
+        return this.getCache().getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
     }
 }

@@ -22,40 +22,34 @@
 
 package org.wildfly.clustering.infinispan.listener;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Executor;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.function.BiConsumer;
 
-import org.infinispan.commons.util.concurrent.CompletableFutures;
+import org.infinispan.Cache;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
+import org.infinispan.util.concurrent.BlockingManager;
 
 /**
- * Generic non-blocking passivation listener that consumes an activation event.
+ * Generic non-blocking post-activation listener that delegates to a blocking consumer.
  * @author Paul Ferraro
  */
 @Listener(observation = Listener.Observation.POST)
-public class PostActivateListener<K, V> {
-    private final BiConsumer<K, V> consumer;
-    private final Executor executor;
+public class PostActivateListener<K, V> extends CacheEventListenerRegistrar<K, V> {
 
-    public PostActivateListener(BiConsumer<K, V> consumer, Executor executor) {
+    private final BlockingManager blocking;
+    private final BiConsumer<K, V> consumer;
+
+    @SuppressWarnings("deprecation")
+    public PostActivateListener(Cache<K, V> cache, BiConsumer<K, V> consumer) {
+        super(cache);
+        this.blocking = cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
         this.consumer = consumer;
-        this.executor = executor;
     }
 
     @CacheEntryActivated
-    public CompletionStage<Void> activated(CacheEntryActivatedEvent<K, V> event) {
-        if (!event.isPre()) {
-            try {
-                return CompletableFuture.runAsync(() -> this.consumer.accept(event.getKey(), event.getValue()), this.executor);
-            } catch (RejectedExecutionException e) {
-                // Executor was shutdown
-            }
-        }
-        return CompletableFutures.completedNull();
+    public CompletionStage<Void> postActivate(CacheEntryActivatedEvent<K, V> event) {
+        return this.blocking.runBlocking(() -> this.consumer.accept(event.getKey(), event.getValue()), event.getSource());
     }
 }

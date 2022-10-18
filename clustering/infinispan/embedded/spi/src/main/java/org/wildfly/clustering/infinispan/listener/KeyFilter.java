@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.fine;
+package org.wildfly.clustering.infinispan.listener;
 
-import org.infinispan.util.function.SerializablePredicate;
+import java.util.function.Predicate;
+
+import org.infinispan.metadata.Metadata;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
+import org.infinispan.notifications.cachelistener.filter.EventType;
 
 /**
- * Filter for cache keys of type {@link SessionAttributeKey}.
+ * A {@link CacheEventFilter} for filtering events based on the cache key.
  * @author Paul Ferraro
  */
-public enum SessionAttributeKeyFilter implements SerializablePredicate<Object> {
-    INSTANCE;
+public class KeyFilter<K> implements CacheEventFilter<K, Object> {
+
+    private final Predicate<? super K> predicate;
+
+    public KeyFilter(Class<? super K> keyClass) {
+        this(keyClass::isInstance);
+    }
+
+    public KeyFilter(Predicate<? super K> predicate) {
+        this.predicate = predicate;
+    }
 
     @Override
-    public boolean test(Object key) {
-        return key instanceof SessionAttributeKey;
+    public boolean accept(K key, Object oldValue, Metadata oldMetadata, Object newValue, Metadata newMetadata, EventType eventType) {
+        return this.predicate.test(key);
     }
 }

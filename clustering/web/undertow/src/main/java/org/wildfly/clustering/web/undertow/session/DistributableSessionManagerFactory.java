@@ -30,9 +30,7 @@ import jakarta.servlet.ServletContext;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
@@ -66,9 +64,9 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
     public io.undertow.server.session.SessionManager createSessionManager(final Deployment deployment) {
         DeploymentInfo info = deployment.getDeploymentInfo();
         boolean statisticsEnabled = info.getMetricsCollector() != null;
-        RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new RecordableInactiveSessionStatistics() : null;
+        RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new DistributableInactiveSessionStatistics() : null;
         Supplier<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
-        SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, this.listeners);
+        SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, this.listeners, inactiveSessionStatistics);
         SessionManagerConfiguration<ServletContext> configuration = new SessionManagerConfiguration<>() {
             @Override
             public ServletContext getServletContext() {
@@ -83,11 +81,6 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             @Override
             public SessionExpirationListener getExpirationListener() {
                 return expirationListener;
-            }
-
-            @Override
-            public Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder() {
-                return inactiveSessionStatistics;
             }
         };
         SessionManager<Map<String, Object>, Batch> manager = this.factory.createSessionManager(configuration);

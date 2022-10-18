@@ -32,7 +32,6 @@ import org.wildfly.clustering.server.infinispan.group.InfinispanTransportMarshal
 import org.wildfly.clustering.server.infinispan.group.JGroupsStackMarshallerProvider;
 import org.wildfly.clustering.server.infinispan.group.JGroupsUtilMarshallerProvider;
 import org.wildfly.clustering.server.infinispan.provider.ServiceProviderRegistrySerializationContextInitializer;
-import org.wildfly.clustering.server.infinispan.registry.RegistrySerializationContextInitializer;
 
 /**
  * Provider of the {@link SerializationContextInitializer} instances for this module.
@@ -46,7 +45,6 @@ public enum ServerSerializationContextInitializerProvider implements Serializati
     INFINISPAN_JGROUPS_TRANSPORT(new ProviderSerializationContextInitializer<>("org.infinispan.remoting.transport.jgroups.proto", InfinispanJGroupsTransportMarshallerProvider.class)),
     GROUP(new GroupSerializationContextInitializer()),
     PROVIDER(new ServiceProviderRegistrySerializationContextInitializer()),
-    REGISTRY(new RegistrySerializationContextInitializer()),
     ;
     private final SerializationContextInitializer initializer;
 

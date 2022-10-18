@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.SessionAccessMetaData;
 import org.wildfly.clustering.web.cache.session.SessionCreationMetaDataEntry;
@@ -39,10 +40,9 @@ public class LockOnReadInfinispanSessionMetaDataFactory<L> extends AbstractInfin
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
     private final Cache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
 
-    public LockOnReadInfinispanSessionMetaDataFactory(InfinispanSessionMetaDataFactoryConfiguration configuration) {
+    public LockOnReadInfinispanSessionMetaDataFactory(InfinispanConfiguration configuration) {
         super(configuration);
-        Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache = configuration.getCache();
-        this.creationMetaDataCache = creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK);
+        this.creationMetaDataCache = configuration.getReadForUpdateCache();
         this.accessMetaDataCache = configuration.getCache();
     }
 
