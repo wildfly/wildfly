@@ -522,10 +522,6 @@
                     <artifactId>jboss-invocation</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.wildfly.core</groupId>
-                    <artifactId>wildfly-elytron-integration</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.wildfly.security</groupId>
                     <artifactId>wildfly-elytron-jacc</artifactId>
                 </exclusion>
@@ -573,12 +569,6 @@
             <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
             <type>pom</type>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.wildfly.core</groupId>
-                    <artifactId>wildfly-elytron-integration</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>

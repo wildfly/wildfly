@@ -120,7 +120,7 @@ public class WildcardReadsTestCase {
 
     private static String readMasterServerOneState() throws IOException {
         ModelNode op = Util.getReadAttributeOperation(PathAddress.pathAddress(HOST_MASTER, SERVER_ONE), "server-state");
-        ModelNode response = support.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        ModelNode response = support.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         if (SUCCESS.equals(response.get(OUTCOME).asString())) {
             return response.get(RESULT).asString();
         }
@@ -682,7 +682,7 @@ public class WildcardReadsTestCase {
 
     private static ModelNode executeForResult(ModelNode op, ModelType expectedType) {
         try {
-            ModelNode response = support.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+            ModelNode response = support.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
             assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
             ModelNode result = response.get(RESULT);
             assertEquals(result.toString(), expectedType, result.getType());

@@ -68,7 +68,7 @@ public class DomainDeployWithRuntimeNameTestCase extends AbstractCliTestBase {
         List<String> groups = new ArrayList<>(CLITestSuite.serverGroups.keySet());
         Collections.sort(groups);
         serverGroups = groups.toArray(new String[groups.size()]);
-        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
+        AbstractCliTestBase.initCLI(DomainTestSupport.primaryAddress);
     }
 
    private File createWarFile(String content) throws IOException {

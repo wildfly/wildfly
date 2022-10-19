@@ -74,7 +74,7 @@ public abstract class LegacyConfigTest {
     @Test
     public void testServerLaunching() throws IOException, MgmtOperationException, InterruptedException {
 
-        DomainClient client = support.getDomainMasterLifecycleUtil().getDomainClient();
+        DomainClient client = support.getDomainPrimaryLifecycleUtil().getDomainClient();
         for (Map.Entry<String, String> entry : getProfilesToTest().entrySet()) {
             String profile = entry.getKey();
             String sbg = entry.getValue();
@@ -129,7 +129,7 @@ public abstract class LegacyConfigTest {
 
     private void verifyHttp(String profile) {
         try {
-            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(DomainTestSupport.slaveAddress) + ":8080").openConnection();
+            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(DomainTestSupport.secondaryAddress) + ":8080").openConnection();
             connection.connect();
         } catch (IOException e) {
             Assert.fail("Cannot connect to profile " + profile + " " + e.toString());

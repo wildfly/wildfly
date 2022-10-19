@@ -295,7 +295,7 @@ public class DeploymentOverlayTestCase {
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
         executeOnMaster(builder.build());
 
-        DomainClient client = testSupport.getDomainMasterLifecycleUtil().createDomainClient();
+        DomainClient client = testSupport.getDomainPrimaryLifecycleUtil().createDomainClient();
         Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/servlet"));
         Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/servlet"));
         Assert.assertEquals("new file", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
@@ -354,11 +354,11 @@ public class DeploymentOverlayTestCase {
     }
 
     private static ModelNode executeOnMaster(ModelNode op) throws IOException {
-        return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+        return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
     private static ModelNode executeOnMaster(Operation op) throws IOException {
-        return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+        return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
     private static ModelNode createDeploymentOperation(ModelNode content, ModelNode... serverGroupAddressses) {
@@ -380,7 +380,7 @@ public class DeploymentOverlayTestCase {
         ModelNode op = getEmptyOperation("read-children-names", address);
         op.get("child-type").set("deployment");
 
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         ModelNode result = validateResponse(response);
         return result.isDefined() ? result.asList() : Collections.<ModelNode>emptyList();
     }
@@ -390,7 +390,7 @@ public class DeploymentOverlayTestCase {
         deplAddr.set(address);
         deplAddr.add("deployment", deploymentName);
         ModelNode op = getEmptyOperation(REMOVE, deplAddr);
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         validateResponse(response);
     }
 
