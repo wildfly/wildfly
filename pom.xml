@@ -522,7 +522,8 @@
         <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
         <version.org.jboss.hal.console>3.6.4.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.2.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
+        <legacy.version.org.jboss.invocation>1.7.1.Final</legacy.version.org.jboss.invocation>
+        <version.org.jboss.invocation>2.0.0.Final</version.org.jboss.invocation>
         <version.org.jboss.ironjacamar>1.5.9.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->

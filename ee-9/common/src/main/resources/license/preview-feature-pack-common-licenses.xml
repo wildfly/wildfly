@@ -149,7 +149,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.invocation</groupId>
-      <artifactId>jboss-invocation-jakarta</artifactId>
+      <artifactId>jboss-invocation</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
