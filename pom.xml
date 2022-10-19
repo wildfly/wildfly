@@ -418,8 +418,8 @@
         <version.jakarta.servlet.jakarta-servlet-api>6.0.0</version.jakarta.servlet.jakarta-servlet-api>
         <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.1.0</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
         <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
-        <legacy.version.jakarta.transaction>2.0.0</legacy.version.jakarta.transaction>
-        <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
+        <legacy.version.jakarta.transaction>2.0.1</legacy.version.jakarta.transaction>
+        <version.jakarta.transaction.jakarta-transaction-api>2.0.1</version.jakarta.transaction.jakarta-transaction-api>
         <version.jakarta.validation>2.0.2</version.jakarta.validation>
         <version.jakarta.validation.jakarta-validation-api>3.0.2</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.1.0-jbossorg-2</version.jakarta.websocket.jakarta-websocket-api>
