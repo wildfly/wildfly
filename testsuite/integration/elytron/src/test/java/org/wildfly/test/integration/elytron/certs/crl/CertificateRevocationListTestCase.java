@@ -75,6 +75,7 @@ public class CertificateRevocationListTestCase extends CertificateRevocationList
      * This test verifies a certificate present in the single CRL configured using the certificate-revocation-lists
      * attribute gets rejected.
      */
+    @Test
     public void testTwoWayCertificateInServerCrls() throws Exception {
         configureSSLContext(TWO_WAY_SINGLE_CRL_SSL_CONTEXT);
 
