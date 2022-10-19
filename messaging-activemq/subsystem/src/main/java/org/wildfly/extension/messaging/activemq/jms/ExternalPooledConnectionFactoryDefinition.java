@@ -148,7 +148,7 @@ public class ExternalPooledConnectionFactoryDefinition extends PooledConnectionF
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.POOLED_CONNECTION_FACTORY))
                 .setAddHandler(ExternalPooledConnectionFactoryAdd.INSTANCE)
                 .setRemoveHandler(ExternalPooledConnectionFactoryRemove.INSTANCE)
-                .setCapabilities(CAPABILITY), deployed);
+                .setCapabilities(CAPABILITY), deployed, true);
     }
 
     @Override

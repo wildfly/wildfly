@@ -308,7 +308,11 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
             registration = PathAddress.pathAddress(serverElement, pcfPath);
         }
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
-        PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE.registerResource(serverName, managementName, model);
+        if(external) {
+            PooledConnectionFactoryConfigurationRuntimeHandler.EXTERNAL_INSTANCE.registerResource(serverName, managementName, model);
+        } else {
+            PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE.registerResource(serverName, managementName, model);
+        }
     }
 
     private List<String> getConnectors(Map<String, String> props) {
