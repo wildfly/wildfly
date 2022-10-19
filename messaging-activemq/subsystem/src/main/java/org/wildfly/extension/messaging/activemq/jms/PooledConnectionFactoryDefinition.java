@@ -132,6 +132,7 @@ public class PooledConnectionFactoryDefinition extends PersistentResourceDefinit
     }
 
     private final boolean deployed;
+    private final boolean external;
 
     public static final PooledConnectionFactoryDefinition INSTANCE = new PooledConnectionFactoryDefinition(false);
 
@@ -145,8 +146,13 @@ public class PooledConnectionFactoryDefinition extends PersistentResourceDefinit
     }
 
     protected PooledConnectionFactoryDefinition(SimpleResourceDefinition.Parameters parameters, final boolean deployed) {
+        this(parameters, deployed, false);
+    }
+
+    protected PooledConnectionFactoryDefinition(SimpleResourceDefinition.Parameters parameters, final boolean deployed, final boolean external) {
         super(parameters);
         this.deployed = deployed;
+        this.external = external;
     }
 
     @Override
@@ -162,7 +168,7 @@ public class PooledConnectionFactoryDefinition extends PersistentResourceDefinit
         for (AttributeDefinition attr : definitions) {
             if (!attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                 if (deployed) {
-                    registry.registerReadOnlyAttribute(attr, PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE);
+                    registry.registerReadOnlyAttribute(attr, external ? PooledConnectionFactoryConfigurationRuntimeHandler.EXTERNAL_INSTANCE: PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE);
                 } else {
                     if (CREDENTIAL_REFERENCE.equals(attr)) {
                         registry.registerReadWriteAttribute(attr, null, credentialReferenceWriteAttributeHandler);
