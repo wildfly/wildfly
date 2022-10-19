@@ -2158,63 +2158,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- TODO WFLY-16659 remove this -->
-            <dependency>
-                <groupId>org.jboss.seam.integration</groupId>
-                <artifactId>jboss-seam-int-jbossas</artifactId>
-                <version>${version.org.jboss.seam.int}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.seam.integration</groupId>
-                        <artifactId>jboss-seam-int-microcontainer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.deployers</groupId>
-                        <artifactId>jboss-deployers-vfs</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-common-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.cl</groupId>
-                        <artifactId>jboss-classloader</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.deployers</groupId>
-                        <artifactId>jboss-deployers-vfs-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.kernel</groupId>
-                        <artifactId>jboss-dependency</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.kernel</groupId>
-                        <artifactId>jboss-kernel</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jbossxb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.man</groupId>
-                        <artifactId>jboss-managed</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.seam</groupId>
-                        <artifactId>jboss-seam</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
             <dependency>
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-common-tools</artifactId>
