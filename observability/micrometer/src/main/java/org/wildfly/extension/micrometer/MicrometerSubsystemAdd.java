@@ -24,11 +24,11 @@ import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.server.deployment.Phase.DEPENDENCIES;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE_METRICS;
-import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_COLLECTOR;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemExtension.SUBSYSTEM_NAME;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -38,10 +38,10 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
+import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
 
-public class MicrometerSubsystemAdd extends AbstractBoottimeAddStepHandler {
+class MicrometerSubsystemAdd extends AbstractBoottimeAddStepHandler {
     MicrometerSubsystemAdd() {
         super(MicrometerSubsystemDefinition.ATTRIBUTES);
     }
@@ -60,8 +60,8 @@ public class MicrometerSubsystemAdd extends AbstractBoottimeAddStepHandler {
         boolean securityEnabled = MicrometerSubsystemDefinition.SECURITY_ENABLED.resolveModelAttribute(context, model)
                 .asBoolean();
 
-        MicrometerRegistryService.install(context, securityEnabled);
-        MicrometerCollectorService.install(context);
+        Supplier<WildFlyRegistry> registrySupplier = MicrometerRegistryService.install(context);
+        Supplier<MicrometerCollector> collectorSupplier = MicrometerCollectorService.install(context);
         MicrometerContextService.install(context, securityEnabled);
 
         context.addStep(new AbstractDeploymentChainStep() {
@@ -70,13 +70,16 @@ public class MicrometerSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, DEPENDENCIES, 0x1910,
                         new MicrometerDependencyProcessor());
                 processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, POST_MODULE, POST_MODULE_METRICS - 1, // ???
-                        new MicrometerSubsystemDeploymentProcessor(exposeAnySubsystem, exposedSubsystems));
+                        new MicrometerSubsystemDeploymentProcessor(exposeAnySubsystem, exposedSubsystems, registrySupplier));
             }
         }, RUNTIME);
 
         context.addStep((operationContext, modelNode) -> {
-            ServiceController<?> serviceController = context.getServiceRegistry(false).getService(MICROMETER_COLLECTOR);
-            MicrometerCollector micrometerCollector = MicrometerCollector.class.cast(serviceController.getValue());
+            MicrometerCollector micrometerCollector = collectorSupplier.get();
+
+            if (micrometerCollector == null) {
+                throw new IllegalStateException();
+            }
 
             ImmutableManagementResourceRegistration rootResourceRegistration = context.getRootResourceRegistration();
             Resource rootResource = context.readResourceFromRoot(EMPTY_ADDRESS);

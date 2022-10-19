@@ -24,10 +24,10 @@ import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.wildfly.extension.micrometer.model.MicrometerSchema;
 
-public class MicrometerParser extends PersistentResourceXMLParser {
+class MicrometerParser extends PersistentResourceXMLParser {
     private final MicrometerSchema schema;
 
-    public MicrometerParser(MicrometerSchema schema) {
+    MicrometerParser(MicrometerSchema schema) {
         this.schema = schema;
     }
 

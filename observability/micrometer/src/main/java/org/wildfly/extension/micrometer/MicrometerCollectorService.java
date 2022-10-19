@@ -21,6 +21,7 @@ package org.wildfly.extension.micrometer;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.CLIENT_FACTORY_CAPABILITY;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MANAGEMENT_EXECUTOR;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_COLLECTOR;
+import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_COLLECTOR_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_REGISTRY_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.PROCESS_STATE_NOTIFIER;
 
@@ -28,12 +29,12 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.ModelControllerClientFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ProcessStateNotifier;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
@@ -42,31 +43,37 @@ import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
 /**
  * Service to create a metric collector
  */
-public class MicrometerCollectorService implements Service<MicrometerCollector> {
+class MicrometerCollectorService implements Service {
 
     private final Supplier<ModelControllerClientFactory> modelControllerClientFactory;
     private final Supplier<Executor> managementExecutor;
     private final Supplier<ProcessStateNotifier> processStateNotifier;
     private final Supplier<WildFlyRegistry> registrySupplier;
-    private Consumer<MicrometerCollector> metricCollectorConsumer;
+    private final Consumer<MicrometerCollector> metricCollectorConsumer;
 
-    private MicrometerCollector micrometerCollector;
     private LocalModelControllerClient modelControllerClient;
 
-    public static void install(OperationContext context) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(MICROMETER_COLLECTOR);
-        Supplier<ModelControllerClientFactory> modelControllerClientFactory = serviceBuilder.requires(
-                context.getCapabilityServiceName(CLIENT_FACTORY_CAPABILITY, ModelControllerClientFactory.class));
-        Supplier<Executor> managementExecutor = serviceBuilder.requires(
-                context.getCapabilityServiceName(MANAGEMENT_EXECUTOR, Executor.class));
-        Supplier<ProcessStateNotifier> processStateNotifier = serviceBuilder.requires(
-                context.getCapabilityServiceName(PROCESS_STATE_NOTIFIER, ProcessStateNotifier.class));
-        Supplier<WildFlyRegistry> registrySupplier = serviceBuilder.requires(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName());
-        Consumer<MicrometerCollector> metricCollectorConsumer = serviceBuilder.provides(MICROMETER_COLLECTOR);
+    /**
+     * Installs a service that provides {@link MicrometerCollector}, and provides a {@link Supplier} the
+     * subsystem can use to obtain that collector.
+     * @param context the management operation context to use to install the service. Cannot be {@code null}
+     * @return the {@link Supplier}. Will not return {@code null}.
+     */
+    static Supplier<MicrometerCollector> install(OperationContext context) {
+        CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY);
+        Supplier<ModelControllerClientFactory> modelControllerClientFactory =
+                serviceBuilder.requiresCapability(CLIENT_FACTORY_CAPABILITY, ModelControllerClientFactory.class);
+        Supplier<Executor> managementExecutor = serviceBuilder.requiresCapability(MANAGEMENT_EXECUTOR, Executor.class);
+        Supplier<ProcessStateNotifier> processStateNotifier =
+                serviceBuilder.requiresCapability(PROCESS_STATE_NOTIFIER, ProcessStateNotifier.class);
+        Supplier<WildFlyRegistry> registrySupplier =
+                serviceBuilder.requiresCapability(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getName(), WildFlyRegistry.class);
+        MicrometerCollectorSupplier collectorSupplier = new MicrometerCollectorSupplier(serviceBuilder.provides(MICROMETER_COLLECTOR));
         MicrometerCollectorService service = new MicrometerCollectorService(modelControllerClientFactory, managementExecutor,
-                processStateNotifier, registrySupplier, metricCollectorConsumer);
+                processStateNotifier, registrySupplier, collectorSupplier);
         serviceBuilder.setInstance(service)
                 .install();
+        return collectorSupplier;
     }
 
     MicrometerCollectorService(Supplier<ModelControllerClientFactory> modelControllerClientFactory,
@@ -86,7 +93,7 @@ public class MicrometerCollectorService implements Service<MicrometerCollector> 
         // [WFLY-11933] if RBAC is enabled, the local client does not have enough privileges to read metrics
         modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
 
-        micrometerCollector = new MicrometerCollector(modelControllerClient, processStateNotifier.get(),
+        MicrometerCollector micrometerCollector = new MicrometerCollector(modelControllerClient, processStateNotifier.get(),
                 registrySupplier.get());
 
         metricCollectorConsumer.accept(micrometerCollector);
@@ -95,13 +102,29 @@ public class MicrometerCollectorService implements Service<MicrometerCollector> 
     @Override
     public void stop(StopContext context) {
         metricCollectorConsumer.accept(null);
-        micrometerCollector = null;
 
         modelControllerClient.close();
     }
 
-    @Override
-    public MicrometerCollector getValue() throws IllegalStateException, IllegalArgumentException {
-        return micrometerCollector;
+    /* Caches the MicrometerCollector created in Service.start for use by the subsystem. */
+    private static final class MicrometerCollectorSupplier implements Consumer<MicrometerCollector>, Supplier<MicrometerCollector> {
+        private final Consumer<MicrometerCollector> wrapped;
+        private volatile MicrometerCollector collector;
+
+        private MicrometerCollectorSupplier(Consumer<MicrometerCollector> wrapped) {
+            this.wrapped = wrapped;
+        }
+
+        @Override
+        public void accept(MicrometerCollector micrometerCollector) {
+            this.collector = micrometerCollector;
+            // Pass the collector on to MSC's consumer
+            wrapped.accept(micrometerCollector);
+        }
+
+        @Override
+        public MicrometerCollector get() {
+            return collector;
+        }
     }
 }

@@ -30,7 +30,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
-public class MicrometerDependencyProcessor implements DeploymentUnitProcessor {
+class MicrometerDependencyProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
         addDependencies(phaseContext.getDeploymentUnit());

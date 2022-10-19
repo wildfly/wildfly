@@ -22,26 +22,35 @@ import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MIC
 
 import java.io.IOException;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.micrometer.jmx.JmxMicrometerCollector;
 import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
 
-class MicrometerRegistryService implements Service<WildFlyRegistry> {
+class MicrometerRegistryService implements Service {
     private final Consumer<WildFlyRegistry> registriesConsumer;
-    private WildFlyRegistry registry;
 
-    static void install(OperationContext context, boolean securityEnabled) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget()
-                .addService(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName());
+    /**
+     * Installs a service that provides {@link WildFlyRegistry}, and provides a {@link Supplier} the
+     * subsystem can use to obtain that registry.
+     * @param context the management operation context to use to install the service. Cannot be {@code null}
+     * @return the {@link Supplier}. Will not return {@code null}.
+     */
+    static Supplier<WildFlyRegistry> install(OperationContext context) {
+        CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget()
+                .addCapability(MICROMETER_REGISTRY_RUNTIME_CAPABILITY);
 
-        serviceBuilder.setInstance(new MicrometerRegistryService(
-                serviceBuilder.provides(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName())
-        )).install();
+        RegistrySupplier registrySupplier =
+                new RegistrySupplier(serviceBuilder.provides(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName()));
+        serviceBuilder.setInstance(new MicrometerRegistryService(registrySupplier))
+                .install();
+
+        return registrySupplier;
     }
 
     private MicrometerRegistryService(Consumer<WildFlyRegistry> registriesConsumer) {
@@ -50,7 +59,7 @@ class MicrometerRegistryService implements Service<WildFlyRegistry> {
 
     @Override
     public void start(StartContext context) {
-        registry = new WildFlyRegistry();
+        WildFlyRegistry registry = new WildFlyRegistry();
 
         try {
             // register metrics from JMX MBeans for base metrics
@@ -65,10 +74,29 @@ class MicrometerRegistryService implements Service<WildFlyRegistry> {
     @Override
     public void stop(StopContext context) {
         // Clear registries?
+
+        registriesConsumer.accept(null);
     }
 
-    @Override
-    public WildFlyRegistry getValue() {
-        return registry;
+    /* Caches the WildFlyRegistry created in Service.start for use by the subsystem. */
+    private static final class RegistrySupplier implements Consumer<WildFlyRegistry>, Supplier<WildFlyRegistry> {
+        private final Consumer<WildFlyRegistry> wrapped;
+        private volatile WildFlyRegistry registry;
+
+        private RegistrySupplier(Consumer<WildFlyRegistry> wrapped) {
+            this.wrapped = wrapped;
+        }
+
+        @Override
+        public void accept(WildFlyRegistry registry) {
+            this.registry = registry;
+            // Pass the registry on to MSC's consumer
+            wrapped.accept(registry);
+        }
+
+        @Override
+        public WildFlyRegistry get() {
+            return registry;
+        }
     }
 }
