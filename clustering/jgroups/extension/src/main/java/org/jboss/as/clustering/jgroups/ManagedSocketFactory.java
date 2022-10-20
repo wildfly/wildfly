@@ -34,6 +34,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.util.SocketFactory;
@@ -91,7 +92,31 @@ public class ManagedSocketFactory implements SocketFactory {
     @Override
     public ServerSocket createServerSocket(String name) throws IOException {
         String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getServerSocketFactory().createServerSocket(socketBindingName);
+//        return this.manager.getServerSocketFactory().createServerSocket(socketBindingName);
+        ServerSocket socket = new ServerSocket() {
+            @Override
+            public void bind(SocketAddress endpoint) throws IOException {
+                try {
+                    super.bind(endpoint);
+                    JGroupsLogger.ROOT_LOGGER.infof("Bound ServerSocket %s to %s for binding %s", name, endpoint, socketBindingName);
+                } catch (IOException e) {
+                    JGroupsLogger.ROOT_LOGGER.errorf(e, "Failed to bind ServerSocket %s to %s for binding %s", name, endpoint, socketBindingName);
+                    throw e;
+                }
+            }
+
+            @Override
+            public void close() throws IOException {
+                try {
+                    super.close();
+                    JGroupsLogger.ROOT_LOGGER.infof("Closed ServerSocket %s for binding %s", name, socketBindingName);
+                } catch (IOException e) {
+                    JGroupsLogger.ROOT_LOGGER.errorf(e, "Failed to close ServerSocket %s for binding %s", name, socketBindingName);
+                    throw e;
+                }
+            }
+        };
+        return socket;
     }
 
     @Override

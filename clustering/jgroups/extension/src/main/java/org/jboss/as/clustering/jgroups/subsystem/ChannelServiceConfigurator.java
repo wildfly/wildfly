@@ -109,7 +109,13 @@ public class ChannelServiceConfigurator extends CapabilityServiceNameProvider im
                 }
             }
 
+            if (!(channel instanceof org.jgroups.fork.ForkChannel)) {
+                JGroupsLogger.ROOT_LOGGER.infof("Connecting JChannel %s", this.name);
+            }
             channel.connect(this.cluster.get());
+            if (!(channel instanceof org.jgroups.fork.ForkChannel)) {
+                JGroupsLogger.ROOT_LOGGER.tracef("Connected JChannel %s", this.name);
+            }
 
             return channel;
         } catch (Exception e) {
@@ -119,7 +125,13 @@ public class ChannelServiceConfigurator extends CapabilityServiceNameProvider im
 
     @Override
     public void accept(JChannel channel) {
+        if (!(channel instanceof org.jgroups.fork.ForkChannel)) {
+            JGroupsLogger.ROOT_LOGGER.infof("Disconnecting JChannel %s", this.name);
+        }
         channel.disconnect();
+        if (!(channel instanceof org.jgroups.fork.ForkChannel)) {
+            JGroupsLogger.ROOT_LOGGER.infof("Disconnected JChannel %s", this.name);
+        }
 
         if (this.server != null) {
             try {

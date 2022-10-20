@@ -45,6 +45,7 @@ import org.junit.Test;
 /**
  * @author Paul Ferraro
  */
+@org.junit.Ignore
 public class ManagedSocketFactoryTest {
 
     private SocketBindingManager manager = mock(SocketBindingManager.class);
