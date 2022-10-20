@@ -16,6 +16,7 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATION_QUERY_TIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceDefinition.PATH_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.SUBSYSTEM_NAME;
@@ -23,6 +24,7 @@ import static org.jboss.as.connector.subsystems.datasources.XaDataSourceDefiniti
 
 public class DataSourcesTransformers implements ExtensionTransformerRegistration {
 
+    private static final ModelVersion VERSION_7_1_0 = ModelVersion.create(7, 1, 0);
     private static final ModelVersion VERSION_7_0_0 = ModelVersion.create(7, 0, 0);
     private static final ModelVersion EAP_7_4 = ModelVersion.create(6, 0, 0);
 
@@ -35,13 +37,15 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
 
+        get800TransformationDescription(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), VERSION_7_1_0));
+
         //no transformation here - just XML parsing change
-        chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), VERSION_7_0_0).build();
+        chainedBuilder.createBuilder(VERSION_7_1_0, VERSION_7_0_0).build();
 
         get600TransformationDescription(chainedBuilder.createBuilder(VERSION_7_0_0, EAP_7_4));
 
         chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{
-                VERSION_7_0_0, EAP_7_4
+                VERSION_7_1_0, VERSION_7_0_0, EAP_7_4
         });
     }
 
@@ -70,6 +74,28 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
                         EXCEPTION_SORTER_MODULE,
                         STALE_CONNECTION_CHECKER_MODULE,
                         VALID_CONNECTION_CHECKER_MODULE
+                )
+                .end();
+        return parentBuilder.build();
+    }
+
+    private static TransformationDescription get800TransformationDescription(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
+        builder.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.UNDEFINED,
+                        VALIDATION_QUERY_TIMEOUT
+                )
+                .addRejectCheck(RejectAttributeChecker.DEFINED,
+                        VALIDATION_QUERY_TIMEOUT
+                )
+                .end();
+        builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
+        builder.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.UNDEFINED,
+                        VALIDATION_QUERY_TIMEOUT
+                )
+                .addRejectCheck(RejectAttributeChecker.DEFINED,
+                        VALIDATION_QUERY_TIMEOUT
                 )
                 .end();
         return parentBuilder.build();
