@@ -41,7 +41,6 @@ import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
 import org.wildfly.clustering.infinispan.listener.PostActivateListener;
 import org.wildfly.clustering.infinispan.listener.PostPassivateListener;
 import org.wildfly.clustering.infinispan.listener.PrePassivateListener;
-import org.wildfly.clustering.infinispan.listener.PredicateKeyFilter;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionAttributeActivationNotifier;
