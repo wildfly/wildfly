@@ -59,7 +59,7 @@ The `/subsystem=microprofile-metrics-smallrye` resource defines two attributes:
 The Metric HTTP endpoint is accessible on WildFly HTTP management interface http://localhost:9990/metrics[http://localhost:9990/metrics].
 
 Secured access to the HTTP endpoint is controlled by the `security-enabled` attribute of the `/subsystem=microprofile-metrics-smallrye` resource.
-The value of this attribute will override the `security-enabled` attribute of the `/subsystem=metrics` resource (documented in <<metrics-http-endpoint,Metrics subsystem configuration guide>>).
+The value of this attribute will override the `security-enabled` attribute of the `/subsystem=metrics` resource (documented in <<metrics-metrics-http-endpoint,Metrics subsystem configuration guide>>).
 
 When the `microprofile.metrics-smallrye` is installed, this HTTP endpoint will return metrics according to MicroProfile Metrics specification.
 

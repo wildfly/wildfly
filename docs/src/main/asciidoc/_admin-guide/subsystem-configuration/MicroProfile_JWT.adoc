@@ -42,7 +42,7 @@ For an individual deployment the configuration in relation to MicroProfile JWT c
 [cols="2,1,5"]
 |===
 |Property Name|Default|Description
-|mp.jwt.verify.publickey|none|Public Key supplied as a string, parsed from it in the order defined in section <<Supported Public Key Formats>>.
+|mp.jwt.verify.publickey|none|Public Key supplied as a string, parsed from it in the order defined in section https://smallrye.io/docs/smallrye-jwt/configuration.html#_supported_public_key_formats[Supported Public Key Formats].
 |mp.jwt.verify.publickey.location|none|Config property allows for an external or internal location of Public Key to be specified.
 |mp.jwt.verify.publickey.algorithm|`RS256`|Signature algorithm. Set it to `ES256` to support the Elliptic Curve signature algorithm.
 |mp.jwt.decrypt.key.location|none|Config property allows for an external or internal location of Private Decryption Key to be specified.

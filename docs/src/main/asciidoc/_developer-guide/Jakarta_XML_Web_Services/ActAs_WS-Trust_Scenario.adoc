@@ -465,7 +465,7 @@ Dependencies: org.jboss.ws.cxf.jbossws-cxf-client, org.apache.cxf.impl
 [[security-token-service-actas-ws-trust]]
 == Security Token Service
 
-This section examines the STS elements from the basic WS-Trust scenario
+This section examines the STS elements from the <<a-basic-ws-trust-scenario,basic WS-Trust scenario>>
 that have been changed to address the needs of the ActAs example. The
 components are.
 
@@ -476,7 +476,7 @@ components are.
 === STS Implementation class
 
 The initial description of SampleSTS can be found
-<<sts-implementation-class,here>>.
+<<sts-implementation,here>>.
 
 The declaration of the set of allowed token recipients by address has
 been extended to accept ActAs addresses and OnBehalfOf addresses. The
