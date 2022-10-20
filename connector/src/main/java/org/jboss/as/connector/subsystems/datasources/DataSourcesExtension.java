@@ -110,6 +110,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_TRY_LOCK;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATE_ON_MATCH;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATION_QUERY_TIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_PROPERTIES;
@@ -164,7 +165,7 @@ public class DataSourcesExtension implements Extension {
     public static final String SUBSYSTEM_NAME = Constants.DATASOURCES;
     private static final String RESOURCE_NAME = DataSourcesExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(8, 0, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -204,6 +205,7 @@ public class DataSourcesExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_5_0.getUriString(), DataSourceSubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_6_0.getUriString(), DataSourceSubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_7_0.getUriString(), DataSourceSubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_8_0.getUriString(), DataSourceSubsystemParser::new);
     }
 
     public static final class DataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -564,7 +566,8 @@ public class DataSourcesExtension implements Extension {
                         USE_TRY_LOCK.isMarshallable(dataSourceNode) ||
                         ALLOCATION_RETRY.isMarshallable(dataSourceNode) ||
                         ALLOCATION_RETRY_WAIT_MILLIS.isMarshallable(dataSourceNode) ||
-                        XA_RESOURCE_TIMEOUT.isMarshallable(dataSourceNode);
+                        XA_RESOURCE_TIMEOUT.isMarshallable(dataSourceNode) ||
+                        VALIDATION_QUERY_TIMEOUT.isMarshallable(dataSourceNode);
                 if (timeoutRequired) {
                     writer.writeStartElement(DataSource.Tag.TIMEOUT.getLocalName());
                     SET_TX_QUERY_TIMEOUT.marshallAsElement(dataSourceNode, writer);
@@ -575,6 +578,7 @@ public class DataSourcesExtension implements Extension {
                     ALLOCATION_RETRY.marshallAsElement(dataSourceNode, writer);
                     ALLOCATION_RETRY_WAIT_MILLIS.marshallAsElement(dataSourceNode, writer);
                     XA_RESOURCE_TIMEOUT.marshallAsElement(dataSourceNode, writer);
+                    VALIDATION_QUERY_TIMEOUT.marshallAsElement(dataSourceNode, writer);
                     writer.writeEndElement();
                 }
                 boolean statementRequired = hasAnyOf(dataSourceNode, TRACK_STATEMENTS, PREPARED_STATEMENTS_CACHE_SIZE, SHARE_PREPARED_STATEMENTS);

@@ -144,6 +144,8 @@ public class Constants {
 
     private static final String QUERYTIMEOUT_NAME = "query-timeout";
 
+    private static final String VALIDATION_QUERYTIMEOUT_NAME = "validation-query-timeout";
+
     private static final String USETRYLOCK_NAME = "use-try-lock";
 
     private static final String USERNAME_NAME = "user-name";
@@ -501,6 +503,12 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
+    static SimpleAttributeDefinition VALIDATION_QUERY_TIMEOUT = new SimpleAttributeDefinitionBuilder(VALIDATION_QUERYTIMEOUT_NAME, ModelType.LONG, true)
+            .setXmlName(TimeOut.Tag.VALIDATION_QUERY_TIMEOUT.getLocalName())
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     static SimpleAttributeDefinition TRANSACTION_ISOLATION = new SimpleAttributeDefinitionBuilder(TRANSACTION_ISOLATION_NAME, ModelType.STRING, true)
             .setXmlName(DataSource.Tag.TRANSACTION_ISOLATION.getLocalName())
             .setAllowExpression(true)
@@ -684,6 +692,7 @@ public class Constants {
             QUERY_TIMEOUT,
             USE_TRY_LOCK,
             SET_TX_QUERY_TIMEOUT,
+            VALIDATION_QUERY_TIMEOUT,
             TRANSACTION_ISOLATION,
             CHECK_VALID_CONNECTION_SQL,
             EXCEPTION_SORTER_CLASSNAME,
@@ -798,6 +807,7 @@ public class Constants {
             ALLOCATION_RETRY, ALLOCATION_RETRY_WAIT_MILLIS,
             org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS, org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES,
             QUERY_TIMEOUT, USE_TRY_LOCK, SET_TX_QUERY_TIMEOUT,
+            VALIDATION_QUERY_TIMEOUT,
             TRANSACTION_ISOLATION, CHECK_VALID_CONNECTION_SQL,
             EXCEPTION_SORTER_CLASSNAME,
             EXCEPTION_SORTER_MODULE,

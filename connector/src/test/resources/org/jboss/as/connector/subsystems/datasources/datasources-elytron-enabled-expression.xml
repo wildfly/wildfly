@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:7.0">
+<subsystem xmlns="urn:jboss:domain:datasources:8.0">
   <datasources>
     <!--You have a CHOICE of the next 2 items at this level-->
     <datasource jta="${test.expr:true}" jndi-name="${test.expr:java:/token}" pool-name="token" enabled="${test.expr:true}" use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" connectable="${test.expr:true}" statistics-enabled="${test.expr:true}" tracking="${test.expr:true}">
@@ -106,6 +106,8 @@
         <allocation-retry>${test.expr:200}</allocation-retry>
         <!--Optional:-->
         <allocation-retry-wait-millis>${test.expr:200}</allocation-retry-wait-millis>
+        <!--Optional:-->
+        <validation-query-timeout>${test.expr:200}</validation-query-timeout>
       </timeout>
       <!--Optional:-->
       <statement>
@@ -248,6 +250,8 @@
         <allocation-retry-wait-millis>${test.expr:200}</allocation-retry-wait-millis>
         <!--Optional:-->
         <xa-resource-timeout>${test.expr:200}</xa-resource-timeout>
+        <!--Optional:-->
+        <validation-query-timeout>${test.expr:200}</validation-query-timeout>
       </timeout>
       <!--Optional:-->
       <statement>

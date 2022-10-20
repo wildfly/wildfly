@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:7.0">
+<subsystem xmlns="urn:jboss:domain:datasources:8.0">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS"
                     use-java-context="true">
@@ -13,6 +13,11 @@
                 <stale-connection-checker class-name="someClass3" module="someModule3"/>
                 <exception-sorter class-name="someClass4" module="someModule4"/>
             </validation>
+            <timeout>
+                <validation-query-timeout>
+                    110
+                </validation-query-timeout>
+            </timeout>
         </datasource>
         <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool"
                        use-java-context="true" spy="false" use-ccm="true" connectable="false" statistics-enabled="true" tracking="true">
@@ -32,6 +37,11 @@
                 <stale-connection-checker class-name="someClass3" module="someModule3"/>
                 <exception-sorter class-name="someClass4" module="someModule4"/>
             </validation>
+            <timeout>
+                <validation-query-timeout>
+                    110
+                </validation-query-timeout>
+            </timeout>
         </xa-datasource>
         <drivers>
             <driver name="h2" module="com.h2database.h2">

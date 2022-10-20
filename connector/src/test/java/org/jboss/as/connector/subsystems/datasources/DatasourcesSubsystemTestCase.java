@@ -23,6 +23,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATION_QUERY_TIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
 
 import java.io.IOException;
@@ -67,7 +68,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-datasources_7_0.xsd";
+        return "schema/wildfly-datasources_8_0.xsd";
     }
 
     @Test
@@ -121,12 +122,14 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 EXCEPTION_SORTER_MODULE,
                                 VALID_CONNECTION_CHECKER_MODULE,
-                                STALE_CONNECTION_CHECKER_MODULE))
+                                STALE_CONNECTION_CHECKER_MODULE,
+                                VALIDATION_QUERY_TIMEOUT))
                 .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 EXCEPTION_SORTER_MODULE,
                                 VALID_CONNECTION_CHECKER_MODULE,
-                                STALE_CONNECTION_CHECKER_MODULE))
+                                STALE_CONNECTION_CHECKER_MODULE,
+                                VALIDATION_QUERY_TIMEOUT))
                 );
     }
 

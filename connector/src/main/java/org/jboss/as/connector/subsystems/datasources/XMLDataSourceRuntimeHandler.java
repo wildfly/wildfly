@@ -281,6 +281,11 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setBooleanIfNotNull(context, dataSource.getTimeOut().isSetTxQueryTimeout());
+        } else if (attributeName.equals(Constants.VALIDATION_QUERY_TIMEOUT.getName())) {
+            if (dataSource.getTimeOut() == null) {
+                return;
+            }
+            setLongIfNotNull(context, dataSource.getTimeOut().getValidationQueryTimeout());
         } else if (attributeName.equals(Constants.TRANSACTION_ISOLATION.getName())) {
             if (dataSource.getTransactionIsolation() == null) {
                 return;

@@ -76,6 +76,7 @@ public class ParseUtils {
         params.put("use-try-lock","100");
         params.put("allocation-retry","2");
         params.put("allocation-retry-wait-millis","3000");
+        params.put("validation-query-timeout","110");
         //statement
         params.put("track-statements","nowarn");
         params.put("prepared-statements-cache-size","30");

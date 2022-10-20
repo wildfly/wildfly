@@ -111,6 +111,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_TRY_LOCK;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATE_ON_MATCH;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATION_QUERY_TIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_PROPERTIES;
@@ -3051,6 +3052,11 @@ public class DsParser extends AbstractParser {
                         case XA_RESOURCE_TIMEOUT: {
                             String value = rawElementText(reader);
                             XA_RESOURCE_TIMEOUT.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case VALIDATION_QUERY_TIMEOUT: {
+                            String value = rawElementText(reader);
+                            VALIDATION_QUERY_TIMEOUT.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         default:
