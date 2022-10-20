@@ -37,9 +37,9 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-messaging-activemq-injection-jakarta</artifactId>
+    <artifactId>wildfly-messaging-activemq-injection</artifactId>
 
-    <name>WildFly: Messaging Injection With ActiveMQ Artemis (Jakarta Namespace)</name>
+    <name>WildFly: Messaging Injection With ActiveMQ Artemis</name>
 
     <properties>
         <transformer-input-dir>${project.basedir}/../../../../messaging-activemq/injection</transformer-input-dir>
@@ -85,7 +85,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common-jakarta</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
 
         <dependency>
@@ -95,7 +95,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-jakarta</artifactId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <dependency>

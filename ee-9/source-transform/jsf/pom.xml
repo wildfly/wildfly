@@ -36,10 +36,10 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-jsf-parent-jakarta</artifactId>
+    <artifactId>wildfly-jsf-parent</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly: Jakarta Faces integration modules (Jakarta Namespace)</name>
+    <name>WildFly: Jakarta Faces integration modules</name>
 
     <modules>
         <module>subsystem</module>

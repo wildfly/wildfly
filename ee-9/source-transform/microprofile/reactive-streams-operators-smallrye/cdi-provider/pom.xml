@@ -26,7 +26,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-microprofile-jakarta</artifactId>
+        <artifactId>wildfly-microprofile</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -35,8 +35,8 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-jakarta</artifactId>
-    <name>WildFly: MicroProfile Reactive Streams Operators CDI Provider (Jakarta Namespace)</name>
+    <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
+    <name>WildFly: MicroProfile Reactive Streams Operators CDI Provider</name>
 
     <packaging>jar</packaging>
 

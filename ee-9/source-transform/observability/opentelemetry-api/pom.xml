@@ -35,9 +35,9 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-opentelemetry-api-jakarta</artifactId>
+    <artifactId>wildfly-opentelemetry-api</artifactId>
 
-    <name>WildFly: OpenTelemetry API (Jakarta Namespace)</name>
+    <name>WildFly: OpenTelemetry API</name>
 
     <packaging>jar</packaging>
 

@@ -63,7 +63,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jipijapa-spi-jakarta</artifactId>
+            <artifactId>jipijapa-spi</artifactId>
         </dependency>
 
         <!-- External -->

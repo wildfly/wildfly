@@ -36,7 +36,7 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-jsf-parent</artifactId>
+    <artifactId>wildfly-jsf-parent-legacy-namespace</artifactId>
     <packaging>pom</packaging>
 
     <name>WildFly: JSF</name>

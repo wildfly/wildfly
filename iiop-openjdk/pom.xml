@@ -37,7 +37,7 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-iiop-openjdk</artifactId>
+    <artifactId>wildfly-iiop-openjdk-legacy-namespace</artifactId>
     <packaging>jar</packaging>
 
     <name>WildFly: IIOP Openjdk Subsystem</name>

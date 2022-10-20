@@ -35,9 +35,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-ee-jakarta</artifactId>
+    <artifactId>wildfly-ee</artifactId>
 
-    <name>WildFly: EE subsystem (Jakarta Namespace)</name>
+    <name>WildFly: EE subsystem</name>
 
     <packaging>jar</packaging>
 

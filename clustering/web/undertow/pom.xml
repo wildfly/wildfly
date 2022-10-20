@@ -108,11 +108,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-undertow-jakarta</artifactId>
+            <artifactId>wildfly-undertow</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common-jakarta</artifactId>
+            <artifactId>wildfly-web-common</artifactId>
         </dependency>
 
         <!-- External dependencies -->

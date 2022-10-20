@@ -35,9 +35,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-undertow-jakarta</artifactId>
+    <artifactId>wildfly-undertow</artifactId>
 
-    <name>WildFly: Undertow (Jakarta Namespace)</name>
+    <name>WildFly: Undertow</name>
 
     <packaging>jar</packaging>
 
@@ -83,7 +83,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-jakarta</artifactId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
         <dependency>
             <groupId>io.undertow</groupId>
@@ -111,7 +111,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common-jakarta</artifactId>
+            <artifactId>wildfly-web-common</artifactId>
         </dependency>
 
         <!-- Other deps -->

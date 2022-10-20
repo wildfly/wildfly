@@ -81,12 +81,12 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <artifactId>wildfly-ee-legacy-namespace</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-weld-common-jakarta</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.enterprise</groupId>
@@ -149,7 +149,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common</artifactId>
+            <artifactId>wildfly-web-common-legacy-namespace</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

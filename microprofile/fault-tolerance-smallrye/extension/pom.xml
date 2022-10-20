@@ -53,7 +53,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-weld-common-jakarta</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.enterprise</groupId>

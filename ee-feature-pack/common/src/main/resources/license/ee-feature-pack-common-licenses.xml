@@ -2430,7 +2430,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>jipijapa-eclipselink-jakarta</artifactId>
+      <artifactId>jipijapa-eclipselink</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2452,7 +2452,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>jipijapa-spi-jakarta</artifactId>
+      <artifactId>jipijapa-spi</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2485,7 +2485,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-bean-validation-jakarta</artifactId>
+      <artifactId>wildfly-bean-validation</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3035,7 +3035,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-connector-jakarta</artifactId>
+      <artifactId>wildfly-connector</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3068,7 +3068,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-ejb3-jakarta</artifactId>
+      <artifactId>wildfly-ejb3</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3090,7 +3090,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-iiop-openjdk-jakarta</artifactId>
+      <artifactId>wildfly-iiop-openjdk</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3134,7 +3134,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-jpa-jakarta</artifactId>
+      <artifactId>wildfly-jpa</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3145,7 +3145,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-jsf-jakarta</artifactId>
+      <artifactId>wildfly-jsf</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3156,7 +3156,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-jsf-injection-jakarta</artifactId>
+      <artifactId>wildfly-jsf-injection</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3211,7 +3211,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-messaging-activemq-injection-jakarta</artifactId>
+      <artifactId>wildfly-messaging-activemq-injection</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3222,7 +3222,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-messaging-activemq-subsystem-jakarta</artifactId>
+      <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3266,7 +3266,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-opentelemetry-api-jakarta</artifactId>
+      <artifactId>wildfly-opentelemetry-api</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3277,7 +3277,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-opentelemetry-jakarta</artifactId>
+      <artifactId>wildfly-opentelemetry</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3310,7 +3310,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-rts-jakarta</artifactId>
+      <artifactId>wildfly-rts</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3343,7 +3343,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-transactions-jakarta</artifactId>
+      <artifactId>wildfly-transactions</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3365,7 +3365,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-bean-validation-jakarta</artifactId>
+      <artifactId>wildfly-weld-bean-validation</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3376,7 +3376,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-common-jakarta</artifactId>
+      <artifactId>wildfly-weld-common</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3398,7 +3398,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-jakarta</artifactId>
+      <artifactId>wildfly-weld</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3409,7 +3409,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-jpa-jakarta</artifactId>
+      <artifactId>wildfly-weld-jpa</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3420,7 +3420,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-spi-jakarta</artifactId>
+      <artifactId>wildfly-weld-spi</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3431,7 +3431,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-transactions-jakarta</artifactId>
+      <artifactId>wildfly-weld-transactions</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>

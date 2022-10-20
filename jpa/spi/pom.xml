@@ -16,7 +16,7 @@
     </parent>
 
 
-    <artifactId>jipijapa-spi</artifactId>
+    <artifactId>jipijapa-spi-legacy-namespace</artifactId>
 
     <name>WildFly: Jipijapa SPI</name>
 

@@ -35,9 +35,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-iiop-openjdk-jakarta</artifactId>
+    <artifactId>wildfly-iiop-openjdk</artifactId>
 
-    <name>WildFly: IIOP Openjdk Subsystem (Jakarta Namespace)</name>
+    <name>WildFly: IIOP Openjdk Subsystem</name>
 
     <packaging>jar</packaging>
 

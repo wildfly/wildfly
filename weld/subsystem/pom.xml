@@ -13,7 +13,7 @@
       <version>27.0.0.Final-SNAPSHOT</version>
    </parent>
 
-   <artifactId>wildfly-weld</artifactId>
+   <artifactId>wildfly-weld-legacy-namespace</artifactId>
    <name>WildFly: Weld Subsystem</name>
 
    <build>
@@ -59,7 +59,7 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-ee</artifactId>
+         <artifactId>wildfly-ee-legacy-namespace</artifactId>
       </dependency>
 
       <dependency>
@@ -89,7 +89,7 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-web-common</artifactId>
+         <artifactId>wildfly-web-common-legacy-namespace</artifactId>
       </dependency>
 
       <dependency>
@@ -188,12 +188,12 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-weld-spi</artifactId>
+         <artifactId>wildfly-weld-spi-legacy-namespace</artifactId>
       </dependency>
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-weld-common</artifactId>
+         <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
       </dependency>
 
       <dependency>

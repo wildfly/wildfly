@@ -59,7 +59,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-spi</artifactId>
+                <artifactId>jipijapa-spi-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->

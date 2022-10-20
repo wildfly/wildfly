@@ -13,7 +13,7 @@
       <version>27.0.0.Final-SNAPSHOT</version>
    </parent>
 
-   <artifactId>wildfly-weld-jpa</artifactId>
+   <artifactId>wildfly-weld-jpa-legacy-namespace</artifactId>
    <name>WildFly: Weld JPA</name>
 
    <dependencies>
@@ -25,17 +25,17 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-weld-spi</artifactId>
+         <artifactId>wildfly-weld-spi-legacy-namespace</artifactId>
       </dependency>
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-weld-common</artifactId>
+         <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
       </dependency>
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-jpa</artifactId>
+         <artifactId>wildfly-jpa-legacy-namespace</artifactId>
       </dependency>
 
    </dependencies>

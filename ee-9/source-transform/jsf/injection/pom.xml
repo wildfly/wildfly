@@ -26,7 +26,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-jsf-parent-jakarta</artifactId>
+        <artifactId>wildfly-jsf-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -36,9 +36,9 @@
 
     <packaging>jar</packaging>
 
-    <artifactId>wildfly-jsf-injection-jakarta</artifactId>
+    <artifactId>wildfly-jsf-injection</artifactId>
 
-    <name>WildFly: JSF Injection Handlers (Jakarta Namespace)</name>
+    <name>WildFly: JSF Injection Handlers</name>
 
     <properties>
         <transformer-input-dir>${project.basedir}/../../../../jsf/injection</transformer-input-dir>
@@ -92,12 +92,12 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-jsf-jakarta</artifactId>
+            <artifactId>wildfly-jsf</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common-jakarta</artifactId>
+            <artifactId>wildfly-web-common</artifactId>
         </dependency>
 
         <dependency>

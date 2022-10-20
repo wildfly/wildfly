@@ -36,7 +36,7 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-messaging-activemq-injection</artifactId>
+    <artifactId>wildfly-messaging-activemq-injection-legacy-namespace</artifactId>
 
     <name>WildFly: Messaging Injection With ActiveMQ Artemis</name>
 
@@ -78,7 +78,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <artifactId>wildfly-ee-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
@@ -88,7 +88,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common</artifactId>
+            <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>

@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-messaging-activemq-injection@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-messaging-activemq-injection}"/>
     </resources>
 
     <dependencies>

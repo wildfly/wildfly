@@ -15,7 +15,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-testsuite-shared-jakarta</artifactId>
+    <artifactId>wildfly-testsuite-shared</artifactId>
     <packaging>jar</packaging>
 
     <name>WildFly Preview Test Suite: Shared</name>

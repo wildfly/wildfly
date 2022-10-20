@@ -15,7 +15,7 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jipijapa-eclipselink</artifactId>
+    <artifactId>jipijapa-eclipselink-legacy-namespace</artifactId>
     <name>WildFly: Jipijapa EclipseLink integration</name>
 
     <dependencies>
@@ -23,7 +23,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jipijapa-spi</artifactId>
+            <artifactId>jipijapa-spi-legacy-namespace</artifactId>
         </dependency>
 
         <!-- External -->

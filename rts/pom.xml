@@ -22,7 +22,7 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-rts</artifactId>
+    <artifactId>wildfly-rts-legacy-namespace</artifactId>
     <name>WildFly: RTS Subsystem</name>
 
     <dependencyManagement>
@@ -60,7 +60,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-undertow</artifactId>
+            <artifactId>wildfly-undertow-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>

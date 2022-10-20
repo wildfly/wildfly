@@ -65,7 +65,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-testsuite-shared-jakarta</artifactId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -96,7 +96,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq-injection-jakarta</artifactId>
+            <artifactId>wildfly-messaging-activemq-injection</artifactId>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -106,7 +106,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq-subsystem-jakarta</artifactId>
+            <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

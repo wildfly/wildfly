@@ -65,7 +65,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-eclipselink</artifactId>
+                <artifactId>jipijapa-eclipselink-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
@@ -109,17 +109,17 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-bean-validation</artifactId>
+                <artifactId>wildfly-bean-validation-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-connector</artifactId>
+                <artifactId>wildfly-connector-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee</artifactId>
+                <artifactId>wildfly-ee-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
                 <!-- TODO eliminate uses of transitive deps from this artifact -->
                 <!--
@@ -133,7 +133,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ejb3</artifactId>
+                <artifactId>wildfly-ejb3-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
@@ -154,7 +154,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-iiop-openjdk</artifactId>
+                <artifactId>wildfly-iiop-openjdk-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
@@ -164,17 +164,17 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jpa</artifactId>
+                <artifactId>wildfly-jpa-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jsf</artifactId>
+                <artifactId>wildfly-jsf-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jsf-injection</artifactId>
+                <artifactId>wildfly-jsf-injection-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -190,37 +190,37 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-messaging-activemq-injection</artifactId>
+                <artifactId>wildfly-messaging-activemq-injection-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
+                <artifactId>wildfly-messaging-activemq-subsystem-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-rts</artifactId>
+                <artifactId>wildfly-rts-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-transactions</artifactId>
+                <artifactId>wildfly-transactions-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-undertow</artifactId>
+                <artifactId>wildfly-undertow-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-web-common</artifactId>
+                <artifactId>wildfly-web-common-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld</artifactId>
+                <artifactId>wildfly-weld-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
@@ -233,27 +233,27 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-bean-validation</artifactId>
+                <artifactId>wildfly-weld-bean-validation-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-common</artifactId>
+                <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-jpa</artifactId>
+                <artifactId>wildfly-weld-jpa-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-spi</artifactId>
+                <artifactId>wildfly-weld-spi-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-transactions</artifactId>
+                <artifactId>wildfly-weld-transactions-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -264,12 +264,12 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-opentelemetry</artifactId>
+                <artifactId>wildfly-opentelemetry-legacy-namespace</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-opentelemetry-api</artifactId>
+                <artifactId>wildfly-opentelemetry-api-legacy-namespace</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
 

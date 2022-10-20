@@ -33,7 +33,7 @@
         <version>27.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-opentelemetry</artifactId>
+    <artifactId>wildfly-opentelemetry-legacy-namespace</artifactId>
 
     <name>WildFly: Base OpenTelemetry Extension</name>
 
@@ -41,7 +41,7 @@
         <!-- OpenTelemetry Deps -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-opentelemetry-api</artifactId>
+            <artifactId>wildfly-opentelemetry-api-legacy-namespace</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -161,7 +161,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <artifactId>wildfly-ee-legacy-namespace</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -172,7 +172,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-weld-common</artifactId>
+            <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -243,7 +243,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common</artifactId>
+            <artifactId>wildfly-web-common-legacy-namespace</artifactId>
         </dependency>
 
         <!--Test dependencies -->

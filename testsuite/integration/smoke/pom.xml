@@ -378,7 +378,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-connector-jakarta</artifactId>
+            <artifactId>wildfly-connector</artifactId>
             <scope>test</scope>
         </dependency>
 

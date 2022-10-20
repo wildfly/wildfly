@@ -37,7 +37,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-ee</artifactId>
+    <artifactId>wildfly-ee-legacy-namespace</artifactId>
 
     <name>WildFly: EE</name>
 
