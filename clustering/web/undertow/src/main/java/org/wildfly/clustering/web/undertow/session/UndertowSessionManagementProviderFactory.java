@@ -70,7 +70,7 @@ public class UndertowSessionManagementProviderFactory implements SessionManageme
                 UndertowClusteringLogger.ROOT_LOGGER.legacySessionManagementProviderInUse(unit.getName());
             }
             // Fabricate DistributableSessionManagementProvider from legacy ReplicationConfig
-            provider = this.legacyFactory.createSessionManagerProvider(config);
+            provider = this.legacyFactory.createSessionManagerProvider(unit, config);
         }
         Module module = unit.getAttachment(Attachments.MODULE);
         List<String> immutableClasses = unit.getAttachmentList(DistributableSessionManagementProvider.IMMUTABILITY_ATTACHMENT_KEY);

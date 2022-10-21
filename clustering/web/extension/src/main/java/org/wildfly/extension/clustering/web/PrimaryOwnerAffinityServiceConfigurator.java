@@ -24,7 +24,7 @@ package org.wildfly.extension.clustering.web;
 
 import org.jboss.as.controller.PathAddress;
 import org.wildfly.clustering.ee.infinispan.InfinispanCacheConfiguration;
-import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.service.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRouteLocatorServiceConfiguratorFactory;
 
 /**
@@ -33,7 +33,7 @@ import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRoute
 public class PrimaryOwnerAffinityServiceConfigurator<C extends InfinispanCacheConfiguration> extends AffinityServiceConfigurator<C> {
 
     public PrimaryOwnerAffinityServiceConfigurator(PathAddress address) {
-        super(address);
+        super(PrimaryOwnerAffinityResourceDefinition.Capability.AFFINITY, address);
     }
 
     @Override

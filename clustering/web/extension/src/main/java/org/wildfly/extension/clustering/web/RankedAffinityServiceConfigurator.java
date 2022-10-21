@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.ee.infinispan.InfinispanCacheConfiguration;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
-import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.service.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.extension.clustering.web.routing.infinispan.RankedRouteLocatorServiceConfiguratorFactory;
 
 /**
@@ -44,7 +44,7 @@ public class RankedAffinityServiceConfigurator<C extends InfinispanCacheConfigur
     private volatile int maxRoutes;
 
     public RankedAffinityServiceConfigurator(PathAddress address) {
-        super(address);
+        super(RankedAffinityResourceDefinition.Capability.AFFINITY, address);
     }
 
     @Override

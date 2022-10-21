@@ -25,6 +25,8 @@ package org.wildfly.extension.clustering.web;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.jboss.as.clustering.controller.Capability;
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.Service;
@@ -32,15 +34,15 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.service.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class AffinityServiceConfigurator<C> extends AffinityServiceNameProvider implements ResourceServiceConfigurator, Supplier<RouteLocatorServiceConfiguratorFactory<C>> {
+public abstract class AffinityServiceConfigurator<C> extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<RouteLocatorServiceConfiguratorFactory<C>> {
 
-    public AffinityServiceConfigurator(PathAddress address) {
-        super(address.getParent());
+    public AffinityServiceConfigurator(Capability capability, PathAddress address) {
+        super(capability, address);
     }
 
     @Override

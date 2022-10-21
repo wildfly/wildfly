@@ -43,15 +43,22 @@ import org.wildfly.clustering.web.service.routing.RoutingProvider;
  */
 public abstract class RoutingProviderServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<RoutingProvider> {
 
+    private final ServiceName alias;
+
     public RoutingProviderServiceConfigurator(PathAddress address) {
+        this(address, null);
+    }
+
+    public RoutingProviderServiceConfigurator(PathAddress address, ServiceName alias) {
         super(RoutingProviderResourceDefinition.Capability.ROUTING_PROVIDER, address);
+        this.alias = alias;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceName name = this.getServiceName();
-        ServiceBuilder<?> builder = target.addService(name);
-        Consumer<RoutingProvider> provider = builder.provides(name);
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<RoutingProvider> provider = builder.provides((this.alias != null) ? new ServiceName[] { name, this.alias } : new ServiceName[] { name });
         Service service = new FunctionalService<>(provider, Function.identity(), this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }

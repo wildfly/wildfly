@@ -34,6 +34,7 @@ import org.wildfly.clustering.web.service.routing.RoutingProvider;
  */
 public enum WebRequirement implements Requirement, ServiceNameFactoryProvider {
     ROUTING_PROVIDER("org.wildfly.clustering.web.routing-provider", RoutingProvider.class),
+    INFINISPAN_ROUTING_PROVIDER("org.wildfly.clustering.web.infinispan-routing-provider", RoutingProvider.class),
     ;
     private final String name;
     private final Class<?> type;

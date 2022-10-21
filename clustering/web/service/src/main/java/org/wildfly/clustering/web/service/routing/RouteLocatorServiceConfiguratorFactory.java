@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.web.routing;
+package org.wildfly.clustering.web.service.routing;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;

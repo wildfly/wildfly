@@ -46,10 +46,11 @@ import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.clustering.web.service.WebProviderRequirement;
+import org.wildfly.clustering.web.service.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
-import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * Abstract service configurator for session management providers.
@@ -69,7 +70,7 @@ public abstract class SessionManagementServiceConfigurator<C extends Distributab
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.granularity = SessionGranularity.valueOf(GRANULARITY.resolveModelAttribute(context, model).asString());
         this.marshallerFactory = SessionMarshallerFactory.valueOf(MARSHALLER.resolveModelAttribute(context, model).asString());
-        this.factory = new ServiceSupplierDependency<>(new AffinityServiceNameProvider(context.getCurrentAddress()));
+        this.factory = new ServiceSupplierDependency<>(WebProviderRequirement.AFFINITY.getServiceName(context, this.getServiceName().getSimpleName()));
         return this;
     }
 

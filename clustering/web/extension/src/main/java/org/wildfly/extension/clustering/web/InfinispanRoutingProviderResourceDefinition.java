@@ -24,15 +24,20 @@ package org.wildfly.extension.clustering.web;
 
 import java.util.function.UnaryOperator;
 
+import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
+import org.jboss.as.clustering.controller.RequirementCapability;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
+import org.wildfly.clustering.service.Requirement;
+import org.wildfly.clustering.web.service.WebRequirement;
 
 /**
  * Definition of the /subsystem=distributable-web/routing=infinispan resource.
@@ -42,13 +47,33 @@ public class InfinispanRoutingProviderResourceDefinition extends RoutingProvider
 
     static final PathElement PATH = pathElement("infinispan");
 
+    enum Capability implements CapabilityProvider, UnaryOperator<RuntimeCapability.Builder<Void>> {
+        INFINISPAN_ROUTING_PROVIDER(WebRequirement.INFINISPAN_ROUTING_PROVIDER),
+        ;
+        private final org.jboss.as.clustering.controller.Capability capability;
+
+        Capability(Requirement requirement) {
+            this.capability = new RequirementCapability(requirement);
+        }
+
+        @Override
+        public org.jboss.as.clustering.controller.Capability getCapability() {
+            return this.capability;
+        }
+
+        @Override
+        public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+            return builder.setAllowMultipleRegistrations(true);
+        }
+    }
+
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         CACHE_CONTAINER("cache-container", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
                         .setRequired(true)
-                        .setCapabilityReference(new CapabilityReference(Capability.ROUTING_PROVIDER, InfinispanDefaultCacheRequirement.CONFIGURATION))
+                        .setCapabilityReference(new CapabilityReference(Capability.INFINISPAN_ROUTING_PROVIDER, InfinispanDefaultCacheRequirement.CONFIGURATION))
                         ;
             }
         },
@@ -56,7 +81,7 @@ public class InfinispanRoutingProviderResourceDefinition extends RoutingProvider
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
-                        .setCapabilityReference(new CapabilityReference(Capability.ROUTING_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER))
+                        .setCapabilityReference(new CapabilityReference(Capability.INFINISPAN_ROUTING_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER))
                         ;
             }
         },
@@ -77,7 +102,14 @@ public class InfinispanRoutingProviderResourceDefinition extends RoutingProvider
         }
     }
 
+    static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return descriptor.addAttributes(Attribute.class).addCapabilities(Capability.class);
+        }
+    }
+
     InfinispanRoutingProviderResourceDefinition() {
-        super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), InfinispanRoutingProviderServiceConfigurator::new);
+        super(PATH, new ResourceDescriptorConfigurator(), InfinispanRoutingProviderServiceConfigurator::new);
     }
 }

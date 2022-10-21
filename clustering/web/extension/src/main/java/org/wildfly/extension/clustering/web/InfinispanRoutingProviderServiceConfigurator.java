@@ -45,7 +45,7 @@ public class InfinispanRoutingProviderServiceConfigurator extends RoutingProvide
     private volatile String cacheName;
 
     public InfinispanRoutingProviderServiceConfigurator(PathAddress address) {
-        super(address);
+        super(address, InfinispanRoutingProviderResourceDefinition.Capability.INFINISPAN_ROUTING_PROVIDER.getServiceName(address));
     }
 
     @Override

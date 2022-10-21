@@ -23,8 +23,8 @@
 package org.wildfly.extension.clustering.web;
 
 import org.jboss.as.controller.PathAddress;
+import org.wildfly.clustering.web.service.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.extension.clustering.web.routing.NullRouteLocatorServiceConfiguratorFactory;
-import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * @author Paul Ferraro
@@ -32,7 +32,7 @@ import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfigura
 public class NoAffinityServiceConfigurator<C> extends AffinityServiceConfigurator<C> {
 
     public NoAffinityServiceConfigurator(PathAddress address) {
-        super(address);
+        super(NoAffinityResourceDefinition.Capability.AFFINITY, address);
     }
 
     @Override
