@@ -37,4 +37,9 @@ public class EntriesCommand<I, M> implements Command<Collection<I>, CacheEntrySc
     public Collection<I> execute(CacheEntryScheduler<I, M> scheduler) throws Exception {
         return scheduler.stream().collect(Collectors.toList());
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName();
+    }
 }

@@ -50,4 +50,9 @@ public class ScheduleWithTransientMetaDataCommand<I, M> implements ScheduleComma
     public M getMetaData() {
         return this.metaData;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s[%s]", this.getClass().getSimpleName(), this.id);
+    }
 }
