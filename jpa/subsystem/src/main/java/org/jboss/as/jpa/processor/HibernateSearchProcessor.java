@@ -54,9 +54,7 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
  */
 public class HibernateSearchProcessor implements DeploymentUnitProcessor {
 
-    private static final DotName ANNOTATION_LEGACY_INDEXED_NAME = DotName.createSimple("org.hibernate.search.annotations.Indexed");
     private static final DotName ANNOTATION_INDEXED_NAME = DotName.createSimple("org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed");
-    private static final String MODULE_MAPPER_ORM_LEGACY = Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM_LEGACY;
     private static final ModuleIdentifier MODULE_MAPPER_ORM_DEFAULT =
             ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM);
 
@@ -124,17 +122,6 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
                         false, true, true, false));
                 ROOT_LOGGER.debugf("deployment %s contains %s annotation, added %s dependency", deploymentUnit.getName(),
                         ANNOTATION_INDEXED_NAME, MODULE_MAPPER_ORM_DEFAULT);
-            }
-            else {
-                // Hibernate Search 5.x support
-                // TODO WFLY-16362 Remove this when we switch to EE 10 and remove Hibernate Search 5.x modules
-                List<AnnotationInstance> legacyAnnotations = index.getAnnotations(ANNOTATION_LEGACY_INDEXED_NAME);
-                if (legacyAnnotations != null && !legacyAnnotations.isEmpty()) {
-                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_MAPPER_ORM_LEGACY,
-                            false, true, true, false));
-                    ROOT_LOGGER.debugf("deployment %s contains %s annotation, added %s dependency", deploymentUnit.getName(),
-                            ANNOTATION_LEGACY_INDEXED_NAME, MODULE_MAPPER_ORM_LEGACY);
-                }
             }
         }
 
