@@ -8,7 +8,7 @@ This subsystem is currently enabled only for WildFly Preview. It replaces the ex
 Standard WildFly continues to use the existing metrics subsystem.
 ====
 
-[[required-extension-metrics]]
+[[micrometer-required-extension-metrics]]
 == Extension
 
 This `org.wildfly.extension.micrometer` extension is included in all the standalone configurations included in the
@@ -48,7 +48,7 @@ HTTP metrics endpoints. By default, it is not defined (there will be no metrics 
 wildcard "{asterisk}" can be used to expose metrics from _all_ subsystems. The standalone configuration sets this
 attribute to "{asterisk}".
 
-[[metrics-http-endpoint]]
+[[micrometer-metrics-http-endpoint]]
 == HTTP Endpoint
 
 The Micrometer HTTP endpoint is accessible on WildFly HTTP management interface http://localhost:9990/metrics[].

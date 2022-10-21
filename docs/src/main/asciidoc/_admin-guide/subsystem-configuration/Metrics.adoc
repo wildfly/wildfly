@@ -9,7 +9,7 @@ Support for https://microprofile.io/project/eclipse/microprofile-metrics[MicroPr
 the _microprofile-metrics-smallrye_ subsystem.
 ====
 
-[[required-extension-metrics]]
+[[metrics-required-extension-metrics]]
 == Extension
 
 This `org.wildfly.extension.metrics` extension is included in all the standalone configurations included in the
@@ -35,7 +35,7 @@ By default, it is not defined (there will be no metrics exposed by subsystem. Th
 configuration sets this attribute to "*".
 * `prefix` - A string to prepend to WildFly metrics that are exposed by the HTTP endpoint `/metrics` with the Prometheus output format.
 
-[[metrics-http-endpoint]]
+[[metrics-metrics-http-endpoint]]
 == HTTP Endpoint
 
 The Metric HTTP endpoint is accessible on WildFly HTTP management interface http://localhost:9990/metrics[http://localhost:9990/metrics].
