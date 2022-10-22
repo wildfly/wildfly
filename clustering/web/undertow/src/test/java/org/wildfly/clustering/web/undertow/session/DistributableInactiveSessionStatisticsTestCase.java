@@ -33,12 +33,12 @@ import org.junit.Test;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
- * Unit test for {@link RecordableInactiveSessionStatistics}.
+ * Unit test for {@link DistributableInactiveSessionStatistics}.
  *
  * @author Paul Ferraro
  */
-public class RecordableInactiveSessionStatisticsTestCase {
-    private final RecordableInactiveSessionStatistics statistics = new RecordableInactiveSessionStatistics();
+public class DistributableInactiveSessionStatisticsTestCase {
+    private final RecordableInactiveSessionStatistics statistics = new DistributableInactiveSessionStatistics();
 
     @Test
     public void test() {

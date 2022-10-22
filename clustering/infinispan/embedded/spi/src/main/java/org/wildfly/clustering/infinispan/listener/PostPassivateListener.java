@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,33 +23,36 @@
 package org.wildfly.clustering.infinispan.listener;
 
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiConsumer;
+import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 import org.infinispan.util.concurrent.BlockingManager;
 
 /**
- * Generic non-blocking passivation listener that consumes a passivation event.
+ * Generic non-blocking post-passivation listener that delegates to a blocking consumer.
  * @author Paul Ferraro
  */
-@Listener(observation = Listener.Observation.PRE)
-public class PrePassivateListener<K, V> extends CacheEventListenerRegistrar<K, V> {
+@Listener(observation = Listener.Observation.POST)
+public class PostPassivateListener<K, V> extends CacheEventListenerRegistrar<K, V> {
 
-    private final BlockingManager blocking;
-    private final BiConsumer<K, V> consumer;
+    private final Executor executor;
+    private final Consumer<K> consumer;
 
     @SuppressWarnings("deprecation")
-    public PrePassivateListener(Cache<K, V> cache, BiConsumer<K, V> consumer) {
+    public PostPassivateListener(Cache<K, V> cache, Consumer<K> consumer) {
         super(cache);
-        this.blocking = cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
+        this.executor = cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class).asExecutor(this.getClass().getName());
         this.consumer = consumer;
     }
 
     @CacheEntryPassivated
-    public CompletionStage<Void> prePassivate(CacheEntryPassivatedEvent<K, V> event) {
-        return this.blocking.runBlocking(() -> this.consumer.accept(event.getKey(), event.getValue()), event.getSource());
+    public CompletionStage<Void> postPassivate(CacheEntryPassivatedEvent<K, V> event) {
+        this.executor.execute(() -> this.consumer.accept(event.getKey()));
+        return CompletableFutures.completedNull();
     }
 }

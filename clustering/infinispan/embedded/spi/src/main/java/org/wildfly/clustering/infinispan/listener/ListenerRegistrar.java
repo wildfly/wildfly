@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.infinispan.registry;
-
-import java.util.function.Predicate;
-
-import org.infinispan.metadata.Metadata;
-import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
-import org.infinispan.notifications.cachelistener.filter.EventType;
-import org.infinispan.remoting.transport.Address;
+package org.wildfly.clustering.infinispan.listener;
 
 /**
+ * A registering Infinispan listener.
  * @author Paul Ferraro
  */
-public enum CacheRegistryFilter implements CacheEventFilter<Object, Object>, Predicate<Object> {
-    INSTANCE;
+public interface ListenerRegistrar {
 
-    @Override
-    public boolean accept(Object key, Object oldValue, Metadata oldMetadata, Object newValue, Metadata newMetadata, EventType eventType) {
-        return this.test(key);
-    }
-
-    @Override
-    public boolean test(Object key) {
-        return key instanceof Address;
-    }
+    /**
+     * Registers this listener for a Infinispan events.
+     * @return a listener registration
+     */
+    ListenerRegistration register();
 }

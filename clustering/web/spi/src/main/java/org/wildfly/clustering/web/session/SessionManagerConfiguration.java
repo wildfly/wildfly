@@ -23,11 +23,8 @@ package org.wildfly.clustering.web.session;
 
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.ee.Recordable;
-
 public interface SessionManagerConfiguration<SC> {
     SC getServletContext();
     Supplier<String> getIdentifierFactory();
     SessionExpirationListener getExpirationListener();
-    Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder();
 }

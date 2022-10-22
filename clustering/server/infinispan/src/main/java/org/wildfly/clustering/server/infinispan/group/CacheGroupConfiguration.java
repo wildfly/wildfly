@@ -21,15 +21,14 @@
  */
 package org.wildfly.clustering.server.infinispan.group;
 
-import org.infinispan.Cache;
 import org.jgroups.Address;
+import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.server.NodeFactory;
 
 /**
  * Configuration for a {@link CacheGroup}.
  * @author Paul Ferraro
  */
-public interface CacheGroupConfiguration {
-    Cache<?, ?> getCache();
+public interface CacheGroupConfiguration extends InfinispanConfiguration {
     NodeFactory<Address> getMemberFactory();
 }

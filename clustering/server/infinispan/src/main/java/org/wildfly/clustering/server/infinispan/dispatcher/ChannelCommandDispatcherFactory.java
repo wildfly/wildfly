@@ -70,6 +70,7 @@ import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.server.infinispan.ClusteringServerLogger;
 import org.wildfly.clustering.server.infinispan.group.AddressableNode;
+import org.wildfly.clustering.server.infinispan.group.GroupListenerNotificationTask;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.common.function.Functions;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -296,25 +297,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
                 Address localAddress = this.dispatcher.getChannel().getAddress();
                 ViewMembership oldMembership = new ViewMembership(localAddress, oldView, this);
                 ViewMembership membership = new ViewMembership(localAddress, view, this);
-                for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
-                    GroupListener listener = entry.getKey();
-                    ExecutorService executor = entry.getValue();
-                    Runnable listenerTask = new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                listener.membershipChanged(oldMembership, membership, view instanceof MergeView);
-                            } catch (Throwable e) {
-                                ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-                            }
-                        }
-                    };
-                    try {
-                        executor.submit(listenerTask);
-                    } catch (RejectedExecutionException e) {
-                        // Executor was shutdown
-                    }
-                }
+                this.executorService.execute(new GroupListenerNotificationTask(this.listeners.entrySet(), oldMembership, membership, view instanceof MergeView));
             }
         }
     }

@@ -32,6 +32,15 @@ import java.util.concurrent.locks.StampedLock;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
+import io.undertow.UndertowMessages;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.session.SessionConfig;
+import io.undertow.server.session.SessionListener;
+import io.undertow.server.session.SessionListeners;
+import io.undertow.server.session.SessionManagerStatistics;
+import io.undertow.servlet.UndertowServletMessages;
+import io.undertow.util.AttachmentKey;
+
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.IdentifierMarshaller;
@@ -41,15 +50,6 @@ import org.wildfly.clustering.web.session.oob.OOBSession;
 import org.wildfly.clustering.web.undertow.UndertowIdentifierSerializerProvider;
 import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 import org.wildfly.common.function.Functions;
-
-import io.undertow.UndertowMessages;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.session.SessionConfig;
-import io.undertow.server.session.SessionListener;
-import io.undertow.server.session.SessionListeners;
-import io.undertow.server.session.SessionManagerStatistics;
-import io.undertow.servlet.UndertowServletMessages;
-import io.undertow.util.AttachmentKey;
 
 /**
  * Adapts a distributable {@link SessionManager} to an Undertow {@link io.undertow.server.session.SessionManager}.
@@ -180,10 +180,10 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
                 // Apply session ID encoding
                 config.setSessionId(exchange, id);
 
-                io.undertow.server.session.Session result = new DistributableSession(this, session, config, batcher.suspendBatch(), closeTask);
+                io.undertow.server.session.Session result = new DistributableSession(this, session, config, batcher.suspendBatch(), closeTask, this.statistics);
                 this.listeners.sessionCreated(result, exchange);
                 if (this.statistics != null) {
-                    this.statistics.record(result);
+                    this.statistics.record(session.getMetaData());
                 }
                 exchange.putAttachment(this.key, result);
                 close = false;
@@ -239,7 +239,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
                 // Update session ID encoding
                 config.setSessionId(exchange, id);
 
-                io.undertow.server.session.Session result = new DistributableSession(this, session, config, batcher.suspendBatch(), closeTask);
+                io.undertow.server.session.Session result = new DistributableSession(this, session, config, batcher.suspendBatch(), closeTask, this.statistics);
                 if (exchange != null) {
                     exchange.putAttachment(this.key, result);
                 }
@@ -298,7 +298,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
             return null;
         }
         Session<Map<String, Object>> session = new OOBSession<>(this.manager, sessionId, LocalSessionContextFactory.INSTANCE.createLocalContext());
-        return session.isValid() ? new DistributableSession(this, session, new SimpleSessionConfig(sessionId), null, Functions.discardingConsumer()) : null;
+        return session.isValid() ? new DistributableSession(this, session, new SimpleSessionConfig(sessionId), null, Functions.discardingConsumer(), null) : null;
     }
 
     @Override

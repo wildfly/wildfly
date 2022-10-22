@@ -22,42 +22,32 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.time.Duration;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.context.Flag;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
-import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Key;
-import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.distribution.Locality;
-import org.wildfly.clustering.infinispan.notifications.PredicateKeyFilter;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
-import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
 import org.wildfly.clustering.web.cache.session.ValidSession;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionExpirationMetaData;
@@ -71,10 +61,8 @@ import org.wildfly.clustering.web.session.SessionManager;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-@Listener(primaryOnly = true)
 public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
 
-    private final Registrar<SessionExpirationListener> expirationRegistrar;
     private final SessionExpirationListener expirationListener;
     private final Batcher<TransactionBatch> batcher;
     private final Cache<Key<String>, ?> cache;
@@ -82,28 +70,24 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final IdentifierFactory<String> identifierFactory;
     private final Scheduler<String, SessionExpirationMetaData> expirationScheduler;
-    private final Recordable<ImmutableSessionMetaData> recorder;
     private final SC context;
     private final Runnable startTask;
     private final Consumer<ImmutableSession> closeTask;
-    private final Registrar<Map.Entry<SC, SessionManager<LC, TransactionBatch>>> contextRegistrar;
+    private final Registrar<SessionManager<LC, TransactionBatch>> registrar;
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
-    private volatile Registration expirationRegistration;
-    private volatile Registration contextRegistration;
+    private volatile Registration registration;
 
     public InfinispanSessionManager(SessionFactory<SC, MV, AV, LC> factory, InfinispanSessionManagerConfiguration<SC, LC> configuration) {
         this.factory = factory;
         this.cache = configuration.getCache();
-        this.properties = configuration.getProperties();
-        this.expirationRegistrar = configuration.getExpirationRegistar();
+        this.properties = configuration.getCacheProperties();
         this.expirationListener = configuration.getExpirationListener();
         this.identifierFactory = configuration.getIdentifierFactory();
         this.batcher = configuration.getBatcher();
         this.expirationScheduler = configuration.getExpirationScheduler();
-        this.recorder = configuration.getInactiveSessionRecorder();
         this.context = configuration.getServletContext();
-        this.contextRegistrar = configuration.getContextRegistrar();
+        this.registrar = configuration.getRegistrar();
         this.startTask = configuration.getStartTask();
         this.closeTask = new Consumer<>() {
             @Override
@@ -117,13 +101,8 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
 
     @Override
     public void start() {
-        this.contextRegistration = this.contextRegistrar.register(new SimpleImmutableEntry<>(this.context, this));
-        if (this.recorder != null) {
-            this.recorder.reset();
-            this.cache.addListener(this, new PredicateKeyFilter<>(SessionCreationMetaDataKeyFilter.INSTANCE), null);
-        }
+        this.registration = this.registrar.register(this);
         this.identifierFactory.start();
-        this.expirationRegistration = this.expirationRegistrar.register(this.expirationListener);
         this.startTask.run();
     }
 
@@ -138,12 +117,8 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
                 }
             }
         }
-        this.expirationRegistration.close();
-        if (this.recorder != null) {
-            this.cache.removeListener(this);
-        }
         this.identifierFactory.stop();
-        this.contextRegistration.close();
+        this.registration.close();
     }
 
     @Override
@@ -227,20 +202,5 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     @Override
     public long getActiveSessionCount() {
         return this.getActiveSessions().size();
-    }
-
-    @CacheEntryRemoved
-    public CompletionStage<Void> removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (event.isPre()) {
-            String id = event.getKey().getId();
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-            SessionMetaDataFactory<MV> factory = this.factory.getMetaDataFactory();
-            MV value = factory.tryValue(id);
-            if (value != null) {
-                ImmutableSessionMetaData metaData = factory.createImmutableSessionMetaData(id, value);
-                this.recorder.record(metaData);
-            }
-        }
-        return CompletableFutures.completedNull();
     }
 }

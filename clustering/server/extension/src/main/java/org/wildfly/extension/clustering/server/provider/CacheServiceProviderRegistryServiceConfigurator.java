@@ -21,7 +21,6 @@
  */
 package org.wildfly.extension.clustering.server.provider;
 
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -36,9 +35,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
@@ -66,7 +62,7 @@ public class CacheServiceProviderRegistryServiceConfigurator<T> extends SimpleSe
 
     private volatile SupplierDependency<CommandDispatcherFactory> dispatcherFactory;
     private volatile SupplierDependency<Group<Address>> group;
-    private volatile SupplierDependency<Cache<T, Set<Address>>> cache;
+    private volatile SupplierDependency<Cache<?, ?>> cache;
 
     public CacheServiceProviderRegistryServiceConfigurator(ServiceName name, String containerName, String cacheName) {
         super(name);
@@ -105,18 +101,14 @@ public class CacheServiceProviderRegistryServiceConfigurator<T> extends SimpleSe
         return this.group.get();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Cache<T, Set<Address>> getCache() {
-        return this.cache.get();
+    public <K, V> Cache<K, V> getCache() {
+        return (Cache<K, V>) this.cache.get();
     }
 
     @Override
     public CommandDispatcherFactory getCommandDispatcherFactory() {
         return this.dispatcherFactory.get();
-    }
-
-    @Override
-    public Batcher<? extends Batch> getBatcher() {
-        return new InfinispanBatcher(this.getCache());
     }
 }

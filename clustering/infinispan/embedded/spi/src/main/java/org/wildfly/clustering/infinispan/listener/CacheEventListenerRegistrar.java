@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,13 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ee.infinispan.scheduler;
+package org.wildfly.clustering.infinispan.listener;
+
+import org.infinispan.Cache;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 
 /**
+ * A registering cache event listener.
  * @author Paul Ferraro
  */
-public interface SchedulerListener extends AutoCloseable {
+public class CacheEventListenerRegistrar<K, V> extends EventListenerRegistrar implements CacheListenerRegistrar<K, V> {
+
+    private final Cache<K, V> cache;
+
+    public CacheEventListenerRegistrar(Cache<K, V> cache) {
+        super(cache);
+        this.cache = cache;
+    }
 
     @Override
-    void close();
+    public ListenerRegistration register(CacheEventFilter<? super K, ? super V> filter) {
+        this.cache.addListener(this, filter, null);
+        return () -> this.cache.removeListener(this);
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,27 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.notifications;
+package org.wildfly.clustering.infinispan.listener;
 
-import java.util.function.Predicate;
-
-import org.infinispan.metadata.Metadata;
-import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
-import org.infinispan.notifications.cachelistener.filter.EventType;
+import org.infinispan.notifications.Listenable;
 
 /**
+ * A registering Infinispan listener.
  * @author Paul Ferraro
  */
-public class PredicateKeyFilter<K> implements CacheEventFilter<K, Object> {
+public class EventListenerRegistrar implements ListenerRegistrar {
 
-    private final Predicate<? super K> predicate;
+    private final Listenable listenable;
 
-    public PredicateKeyFilter(Predicate<? super K> predicate) {
-        this.predicate = predicate;
+    public EventListenerRegistrar(Listenable listenable) {
+        this.listenable = listenable;
     }
 
     @Override
-    public boolean accept(K key, Object oldValue, Metadata oldMetadata, Object newValue, Metadata newMetadata, EventType eventType) {
-        return this.predicate.test(key);
+    public ListenerRegistration register() {
+        this.listenable.addListener(this);
+        return () -> this.listenable.removeListener(this);
     }
 }
