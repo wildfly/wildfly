@@ -45,7 +45,7 @@ embed-server --server-config=standalone-ha.xml
 /subsystem=jgroups/stack=tcp-bridge/protocol=RED:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=TCPPING:add(socket-bindings=[node-1-bridge,node-2-bridge,node-3-bridge,node-4-bridge])
 /subsystem=jgroups/stack=tcp-bridge/protocol=MERGE3:add
-/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK:add(socket-binding=jgroups-tcp-fd-bridge)
+/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK2:add(socket-binding=jgroups-tcp-fd-bridge)
 /subsystem=jgroups/stack=tcp-bridge/protocol=FD_ALL3:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=VERIFY_SUSPECT2:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.NAKACK2:add
@@ -90,7 +90,7 @@ embed-server --server-config=standalone-full-ha.xml
 /subsystem=jgroups/stack=tcp-bridge/protocol=RED:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=TCPPING:add(socket-bindings=[node-1-bridge,node-2-bridge,node-3-bridge,node-4-bridge])
 /subsystem=jgroups/stack=tcp-bridge/protocol=MERGE3:add
-/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK:add(socket-binding=jgroups-tcp-fd-bridge)
+/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK2:add(socket-binding=jgroups-tcp-fd-bridge)
 /subsystem=jgroups/stack=tcp-bridge/protocol=FD_ALL3:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=VERIFY_SUSPECT2:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.NAKACK2:add

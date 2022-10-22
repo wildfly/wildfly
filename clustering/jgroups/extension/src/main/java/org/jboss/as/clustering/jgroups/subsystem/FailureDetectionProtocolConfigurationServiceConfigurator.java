@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.ClientMapping;
@@ -39,6 +40,11 @@ public class FailureDetectionProtocolConfigurationServiceConfigurator extends So
 
     public FailureDetectionProtocolConfigurationServiceConfigurator(PathAddress address) {
         super(address);
+    }
+
+    @Override
+    public Map<String, SocketBinding> getSocketBindings() {
+        return Map.of("jgroups.nio.server.fd_sock", this.getSocketBinding());
     }
 
     @Override
