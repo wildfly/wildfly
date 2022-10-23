@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.net.InetSocketAddress;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -42,6 +43,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.JChannel;
 import org.jgroups.jmx.JmxConfigurator;
+import org.jgroups.protocols.TP;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
@@ -109,7 +111,11 @@ public class ChannelServiceConfigurator extends CapabilityServiceNameProvider im
                 }
             }
 
-            channel.connect(this.cluster.get());
+            String clusterName = this.cluster.get();
+            TP transport = channel.getProtocolStack().getTransport();
+            JGroupsLogger.ROOT_LOGGER.connecting(this.name, channel.getName(), clusterName, new InetSocketAddress(transport.getBindAddress(), transport.getBindPort()));
+            channel.connect(clusterName);
+            JGroupsLogger.ROOT_LOGGER.connected(this.name, channel.getName(), clusterName, channel.getView());
 
             return channel;
         } catch (Exception e) {
@@ -119,7 +125,10 @@ public class ChannelServiceConfigurator extends CapabilityServiceNameProvider im
 
     @Override
     public void accept(JChannel channel) {
+        String clusterName = this.cluster.get();
+        JGroupsLogger.ROOT_LOGGER.disconnecting(this.name, channel.getName(), clusterName, channel.getView());
         channel.disconnect();
+        JGroupsLogger.ROOT_LOGGER.disconnected(this.name, channel.getName(), clusterName);
 
         if (this.server != null) {
             try {
