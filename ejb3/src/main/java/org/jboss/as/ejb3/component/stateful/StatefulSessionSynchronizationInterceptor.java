@@ -80,7 +80,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
 
         final OwnableReentrantLock lock = instance.getLock();
         final Object threadLock = instance.getThreadLock();
-        final AtomicInteger invocationSyncState = instance.getInvocationSynchState();
+        final AtomicInteger invocationSyncState = instance.getInvocationSyncState();
 
         final TransactionSynchronizationRegistry tsr = component.getTransactionSynchronizationRegistry();
         final Object lockOwner = getLockOwner(tsr);
@@ -252,7 +252,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         @Override
         public void afterCompletion(int status) {
             StatefulSessionComponentInstance instance = this.bean.getInstance();
-            AtomicInteger state = instance.getInvocationSynchState();
+            AtomicInteger state = instance.getInvocationSyncState();
             final boolean committed = status == Status.STATUS_COMMITTED;
             for(;;) {
                 int s = state.get();

@@ -97,7 +97,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         return lock;
     }
 
-    AtomicInteger getInvocationSynchState() {
+    AtomicInteger getInvocationSyncState() {
         return invocationSyncState;
     }
 
