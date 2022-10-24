@@ -38,6 +38,11 @@
                         <xs:documentation>An Infinispan-based bean management provider</xs:documentation>
                     </xs:annotation>
                 </xs:element>
+                <xs:element name="hotrod-bean-management" type="tns:hotrod-bean-management">
+                    <xs:annotation>
+                        <xs:documentation>A HotRod-based bean management provider</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:choice>
             <xs:choice>
                 <xs:element name="local-client-mappings-registry" type="tns:empty">
@@ -66,18 +71,33 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="infinispan-bean-management">
-        <xs:attribute name="name" type="xs:string">
+    <xs:complexType name="abstract-bean-management" abstract="true">
+        <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>The name of this bean management provider</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attributeGroup ref="tns:infinispan"/>
         <xs:attribute name="max-active-beans" type="xs:string">
             <xs:annotation>
                 <xs:documentation>The maximum number active beans to retain in memory at a time, after which the least recently used will passivate.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="infinispan-bean-management">
+        <xs:complexContent>
+            <xs:extension base="tns:abstract-bean-management">
+                <xs:attributeGroup ref="tns:infinispan"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="hotrod-bean-management">
+        <xs:complexContent>
+            <xs:extension base="tns:abstract-bean-management">
+                <xs:attributeGroup ref="tns:hotrod"/>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="infinispan-client-mappings-registry">
@@ -96,6 +116,19 @@
                     References a cache within the associated cache-container.
                     If unspecified, the default cache of the associated cache-container is assumed.
                 </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+
+    <xs:attributeGroup name="hotrod">
+        <xs:attribute name="remote-cache-container" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>References a remote-cache-container defined by the Infinispan subsystem.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cache-configuration" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>References a named configuration on the remote server.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:attributeGroup>

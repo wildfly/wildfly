@@ -3253,6 +3253,16 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-clustering-ejb-hotrod</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
             <exclusions>
                 <exclusion>

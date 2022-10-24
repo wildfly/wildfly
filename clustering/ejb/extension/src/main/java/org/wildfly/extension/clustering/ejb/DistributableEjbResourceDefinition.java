@@ -103,10 +103,9 @@ public class DistributableEjbResourceDefinition extends SubsystemResourceDefinit
         ResourceServiceHandler handler = new DistributableEjbResourceServiceHandler();
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
-        // register the child resource infinispan-bean-management
         new InfinispanBeanManagementResourceDefinition().register(registration);
+        new HotRodBeanManagementResourceDefinition().register(registration);
 
-        // register the child resources for client-mappings-registry-provider
         new LocalClientMappingsRegistryProviderResourceDefinition().register(registration);
         new InfinispanClientMappingsRegistryProviderResourceDefinition().register(registration);
 
