@@ -5,18 +5,19 @@
     <resource-adapter id="myRA" statistics-enabled="false">
       <!--Optional:-->
       <module id="moduleID" slot="main"/>
-      <!--Optional:-->
-      <bootstrap-context>bootstrapContext</bootstrap-context>
       <bean-validation-groups>
         <!--1 or more repetitions:-->
         <bean-validation-group>group</bean-validation-group>
       </bean-validation-groups>
       <!--Optional:-->
-      <transaction-support>NoTransaction</transaction-support>
+      <bootstrap-context>bootstrapContext</bootstrap-context>
       <!--Zero or more repetitions:-->
       <config-property name="config1">value</config-property>
+      <!--Optional:-->
+      <transaction-support>NoTransaction</transaction-support>
       <workmanager>
         <security>
+          <mapping-required>false</mapping-required>
           <domain>domain</domain>
           <default-groups>
             <group>group</group>

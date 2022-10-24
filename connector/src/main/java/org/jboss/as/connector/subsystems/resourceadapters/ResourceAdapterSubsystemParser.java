@@ -172,8 +172,6 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         ARCHIVE.marshallAsElement(ra, streamWriter);
         MODULE.marshallAsElement(ra, streamWriter);
 
-        BOOTSTRAP_CONTEXT.marshallAsElement(ra, streamWriter);
-
         if (ra.hasDefined(BEANVALIDATION_GROUPS.getName())) {
             streamWriter.writeStartElement(Activation.Tag.BEAN_VALIDATION_GROUPS.getLocalName());
             for (ModelNode bvg : ra.get(BEANVALIDATION_GROUPS.getName()).asList()) {
@@ -184,8 +182,12 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             streamWriter.writeEndElement();
         }
 
-        TRANSACTION_SUPPORT.marshallAsElement(ra, streamWriter);
+        BOOTSTRAP_CONTEXT.marshallAsElement(ra, streamWriter);
+
         writeNewConfigProperties(streamWriter, ra);
+
+        TRANSACTION_SUPPORT.marshallAsElement(ra, streamWriter);
+
         TransactionSupportEnum transactionSupport = ra.hasDefined(TRANSACTION_SUPPORT.getName()) ? TransactionSupportEnum
             .valueOf(ra.get(TRANSACTION_SUPPORT.getName()).resolve().asString()) : null;
         boolean isXa = false;

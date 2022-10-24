@@ -33,6 +33,7 @@
   <xs:complexType name="subsystemType">
     <xs:all>
       <xs:element name="resource-adapters" type="resource-adaptersType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="report-directory" type="report-directoryType" minOccurs="0" maxOccurs="1"/>
     </xs:all>
   </xs:complexType>
 
@@ -710,7 +711,7 @@
           </xs:annotation>
         </xs:element>
         <xs:sequence minOccurs="0" maxOccurs="1">
-          <xs:element name="elytron-enabled" type="boolean-presenceType" minOccurs="1">
+          <xs:element name="elytron-enabled" type="xs:boolean" minOccurs="1">
             <xs:annotation>
               <xs:documentation>
                 <![CDATA[[
@@ -1118,6 +1119,10 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="report-directoryType">
+    <xs:attribute name="path" type="xs:token" use="required"></xs:attribute>
   </xs:complexType>
 
 </xs:schema>
