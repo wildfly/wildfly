@@ -41,16 +41,16 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Predicate;
 
-import javax.ejb.EJBException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -280,7 +280,7 @@ public class TimerServiceImpl implements ManagedTimerService {
     }
 
     /**
-     * Create a {@link javax.ejb.Timer}. Caller of this method should already have checked for allowed operations,
+     * Create a {@link jakarta.ejb.Timer}. Caller of this method should already have checked for allowed operations,
      * and validated parameters.
      *
      * @param initialExpiration The {@link java.util.Date} at which the first timeout should occur.
@@ -288,7 +288,7 @@ public class TimerServiceImpl implements ManagedTimerService {
      *                          when the timer moves to {@link TimerState#ACTIVE}</p>
      * @param intervalDuration  The interval (in milliseconds) between consecutive timeouts for the newly created timer.
      *                          <p>Cannot be a negative value. A value of 0 indicates a single timeout action</p>
-     * @param info              {@link java.io.Serializable} info that will be made available through the newly created timer's {@link javax.ejb.Timer#getInfo()} method
+     * @param info              {@link java.io.Serializable} info that will be made available through the newly created timer's {@link jakarta.ejb.Timer#getInfo()} method
      * @param persistent        True if the newly created timer has to be persistent
      * @return Returns the newly created timer
      */
@@ -319,12 +319,12 @@ public class TimerServiceImpl implements ManagedTimerService {
     }
 
     /**
-     * Creates a calendar based {@link javax.ejb.Timer}. Caller of this method should
+     * Creates a calendar based {@link jakarta.ejb.Timer}. Caller of this method should
      * already have checked for allowed operations, and validated parameters.
      *
-     * @param schedule   The {@link javax.ejb.ScheduleExpression} which will be used for creating scheduled timer tasks
+     * @param schedule   The {@link jakarta.ejb.ScheduleExpression} which will be used for creating scheduled timer tasks
      *                   for a calendar based timer
-     * @param info       {@link java.io.Serializable} info that will be made available through the newly created timer's {@link javax.ejb.Timer#getInfo()} method
+     * @param info       {@link java.io.Serializable} info that will be made available through the newly created timer's {@link jakarta.ejb.Timer#getInfo()} method
      * @param persistent True if the newly created timer has to be persistent
      * @return Returns the newly created timer
      */
@@ -415,7 +415,7 @@ public class TimerServiceImpl implements ManagedTimerService {
 
     /**
      * @return Returns the current transaction, if any. Else returns null.
-     * @throws javax.ejb.EJBException If there is any system level exception
+     * @throws jakarta.ejb.EJBException If there is any system level exception
      */
     protected Transaction getTransaction() {
         return ContextTransactionManager.getInstance().getTransaction();
@@ -425,7 +425,7 @@ public class TimerServiceImpl implements ManagedTimerService {
      * Persists the passed <code>timer</code>.
      * <p/>
      * <p>
-     * If the passed timer is null or is non-persistent (i.e. {@link javax.ejb.Timer#isPersistent()} returns false),
+     * If the passed timer is null or is non-persistent (i.e. {@link jakarta.ejb.Timer#isPersistent()} returns false),
      * then this method acts as a no-op
      * </p>
      *
@@ -514,18 +514,18 @@ public class TimerServiceImpl implements ManagedTimerService {
     }
 
     /**
-     * Suspends any currently scheduled tasks for {@link javax.ejb.Timer}s
+     * Suspends any currently scheduled tasks for {@link jakarta.ejb.Timer}s
      * <p>
-     * Note that, suspend does <b>not</b> cancel the {@link javax.ejb.Timer}. Instead,
-     * it just cancels the <b>next scheduled timeout</b>. So once the {@link javax.ejb.Timer}
-     * is restored (whenever that happens), the {@link javax.ejb.Timer} will continue to
+     * Note that, suspend does <b>not</b> cancel the {@link jakarta.ejb.Timer}. Instead,
+     * it just cancels the <b>next scheduled timeout</b>. So once the {@link jakarta.ejb.Timer}
+     * is restored (whenever that happens), the {@link jakarta.ejb.Timer} will continue to
      * timeout at appropriate times.
      * </p>
      */
     public void suspendTimers() {
         // get all active timers (persistent/non-persistent inclusive)
-        Collection<javax.ejb.Timer> timers = this.getTimers();
-        for (javax.ejb.Timer timer : timers) {
+        Collection<jakarta.ejb.Timer> timers = this.getTimers();
+        for (jakarta.ejb.Timer timer : timers) {
             if (!(timer instanceof TimerImpl)) {
                 continue;
             }

@@ -27,8 +27,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.IllegalLoopbackException;
+import jakarta.ejb.ConcurrentAccessTimeoutException;
+import jakarta.ejb.IllegalLoopbackException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -58,7 +58,7 @@ public class EJBReadWriteLockTest {
     }
 
     /**
-     * Test that a {@link javax.ejb.IllegalLoopbackException} is thrown when the thread owning a read lock
+     * Test that a {@link jakarta.ejb.IllegalLoopbackException} is thrown when the thread owning a read lock
      * tries to obtain a write lock
      *
      * @throws Exception

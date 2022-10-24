@@ -21,9 +21,9 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import javax.ejb.EJBException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
+import jakarta.ejb.EJBException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
 
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
@@ -66,7 +66,7 @@ public abstract class BMTInterceptor implements Interceptor {
 
     /**
      * Checks if the passed exception is an application exception. If yes, then throws back the
-     * exception as-is. Else, wraps the exception in a {@link javax.ejb.EJBException} and throws the EJBException
+     * exception as-is. Else, wraps the exception in a {@link jakarta.ejb.EJBException} and throws the EJBException
      *
      * @param ex The exception to handle
      * @throws Exception Either the passed exception or an EJBException

@@ -30,9 +30,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
-import javax.ejb.TransactionManagementType;
+import jakarta.ejb.EJBLocalObject;
+import jakarta.ejb.EJBObject;
+import jakarta.ejb.TransactionManagementType;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
@@ -429,10 +429,10 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     }
 
     /**
-     * EJB 3.2 spec allows the {@link javax.ejb.TimerService} to be injected/looked up/accessed from the stateful bean so as to allow access to the {@link javax.ejb.TimerService#getAllTimers()}
-     * method from a stateful bean. Hence we make {@link javax.ejb.TimerService} applicable for stateful beans too. However, we return <code>false</code> in {@link #isTimerServiceRequired()} so that a {@link org.jboss.as.ejb3.timerservice.NonFunctionalTimerService}
-     * is made available for the stateful bean. The {@link org.jboss.as.ejb3.timerservice.NonFunctionalTimerService} only allows access to {@link javax.ejb.TimerService#getAllTimers()} and {@link javax.ejb.TimerService#getTimers()}
-     * methods and throws an {@link IllegalStateException} for all other methods on the {@link javax.ejb.TimerService} and that's exactly how we want it to behave for stateful beans
+     * EJB 3.2 spec allows the {@link jakarta.ejb.TimerService} to be injected/looked up/accessed from the stateful bean so as to allow access to the {@link jakarta.ejb.TimerService#getAllTimers()}
+     * method from a stateful bean. Hence we make {@link jakarta.ejb.TimerService} applicable for stateful beans too. However, we return <code>false</code> in {@link #isTimerServiceRequired()} so that a {@link org.jboss.as.ejb3.timerservice.NonFunctionalTimerService}
+     * is made available for the stateful bean. The {@link org.jboss.as.ejb3.timerservice.NonFunctionalTimerService} only allows access to {@link jakarta.ejb.TimerService#getAllTimers()} and {@link jakarta.ejb.TimerService#getTimers()}
+     * methods and throws an {@link IllegalStateException} for all other methods on the {@link jakarta.ejb.TimerService} and that's exactly how we want it to behave for stateful beans
      *
      * @return
      * @see {@link #isTimerServiceRequired()}

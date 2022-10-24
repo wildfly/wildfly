@@ -53,7 +53,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     private static final String EJB_NAMING_CLIENT = "org.wildfly.naming-client";
     private static final String EJB_IIOP_CLIENT = "org.jboss.iiop-client";
     private static final String IIOP_OPENJDK = "org.wildfly.iiop-openjdk";
-    private static final String EJB_API = "javax.ejb.api";
+    private static final String EJB_API = "jakarta.ejb.api";
     private static final String JAX_RPC_API = "javax.xml.rpc.api";
     private static final String HTTP_EJB = "org.wildfly.http-client.ejb";
     private static final String HTTP_TRANSACTION = "org.wildfly.http-client.transaction";

@@ -27,7 +27,7 @@ import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class MessageDrivenContext extends EJBContextImpl implements javax.ejb.MessageDrivenContext{
+public class MessageDrivenContext extends EJBContextImpl implements jakarta.ejb.MessageDrivenContext{
 
 
     public MessageDrivenContext(final EjbComponentInstance instance) {

@@ -26,11 +26,11 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 /**
- * Processes the {@link javax.ejb.TransactionManagementType} annotation on a session bean
+ * Processes the {@link jakarta.ejb.TransactionManagementType} annotation on a session bean
  *
  * @author Stuart Douglas
  */

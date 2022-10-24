@@ -37,7 +37,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
 /**
- * An {@link InjectionSource} which returns a {@link ManagedReference reference} to a {@link javax.ejb.TimerService}
+ * An {@link InjectionSource} which returns a {@link ManagedReference reference} to a {@link jakarta.ejb.TimerService}
  * <p/>
  * @author Jaikiran Pai
  */
@@ -51,7 +51,7 @@ public class TimerServiceBindingSource extends InjectionSource {
     }
 
     /**
-     * {@link ManagedReferenceFactory} for returning a {@link ManagedReference} to a {@link javax.ejb.TimerService}
+     * {@link ManagedReferenceFactory} for returning a {@link ManagedReference} to a {@link jakarta.ejb.TimerService}
      */
     private static class TimerServiceManagedReferenceFactory implements ContextListManagedReferenceFactory {
 
@@ -64,12 +64,12 @@ public class TimerServiceBindingSource extends InjectionSource {
 
         @Override
         public String getInstanceClassName() {
-            return javax.ejb.TimerService.class.getName();
+            return jakarta.ejb.TimerService.class.getName();
         }
     }
 
     /**
-     * A {@link ManagedReference} to a {@link javax.ejb.TimerService}
+     * A {@link ManagedReference} to a {@link jakarta.ejb.TimerService}
      */
     private static class TimerServiceManagedReference implements ManagedReference {
 

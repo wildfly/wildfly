@@ -88,13 +88,13 @@ public abstract class DynamicIIOPStub
      */
     public Object invoke(String operationName, final StubStrategy stubStrategy, Object[] params) throws Throwable {
         if (operationName.equals("_get_handle")
-                && this instanceof javax.ejb.EJBObject) {
+                && this instanceof jakarta.ejb.EJBObject) {
             if (handle == null) {
                 handle = new HandleImplIIOP(this);
             }
             return handle;
         } else if (operationName.equals("_get_homeHandle")
-                && this instanceof javax.ejb.EJBHome) {
+                && this instanceof jakarta.ejb.EJBHome) {
             if (handle == null) {
                 handle = new HomeHandleImplIIOP(this);
             }

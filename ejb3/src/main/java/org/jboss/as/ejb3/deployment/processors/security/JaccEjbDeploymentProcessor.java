@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.security;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
 
-import javax.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyConfiguration;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentConfiguration;

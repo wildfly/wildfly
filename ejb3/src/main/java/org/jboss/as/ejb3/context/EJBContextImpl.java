@@ -27,10 +27,10 @@ import java.security.Principal;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.TimerService;
-import javax.transaction.UserTransaction;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBLocalHome;
+import jakarta.ejb.TimerService;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
@@ -42,7 +42,7 @@ import org.jboss.invocation.InterceptorContext;
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBContextImpl implements javax.ejb.EJBContext, Serializable {
+public abstract class EJBContextImpl implements jakarta.ejb.EJBContext, Serializable {
     private final EjbComponentInstance instance;
 
     public EJBContextImpl(final EjbComponentInstance instance) {

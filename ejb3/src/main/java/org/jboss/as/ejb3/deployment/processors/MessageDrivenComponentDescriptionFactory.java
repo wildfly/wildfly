@@ -29,8 +29,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import javax.ejb.MessageDriven;
-import javax.jms.MessageListener;
+import jakarta.ejb.MessageDriven;
+import jakarta.jms.MessageListener;
 
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;

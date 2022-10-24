@@ -25,8 +25,8 @@ package org.jboss.as.ejb3.security;
 import java.security.Permission;
 import java.util.Map.Entry;
 
-import javax.security.jacc.PolicyConfiguration;
-import javax.security.jacc.PolicyContextException;
+import jakarta.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyContextException;
 
 import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.server.deployment.AttachmentList;

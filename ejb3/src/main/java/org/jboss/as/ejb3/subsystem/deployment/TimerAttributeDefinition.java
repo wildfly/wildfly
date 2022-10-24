@@ -34,11 +34,11 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javax.ejb.EJBException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.NoSuchObjectLocalException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 

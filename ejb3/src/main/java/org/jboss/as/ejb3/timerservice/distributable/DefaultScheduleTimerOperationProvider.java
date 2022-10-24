@@ -29,7 +29,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.function.UnaryOperator;
 
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfMonth;

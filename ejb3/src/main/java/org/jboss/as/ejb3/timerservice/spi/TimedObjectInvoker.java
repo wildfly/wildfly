@@ -23,7 +23,7 @@ package org.jboss.as.ejb3.timerservice.spi;
 
 import java.lang.reflect.Method;
 
-import javax.ejb.Timer;
+import jakarta.ejb.Timer;
 
 import org.jboss.as.ejb3.component.EJBComponent;
 

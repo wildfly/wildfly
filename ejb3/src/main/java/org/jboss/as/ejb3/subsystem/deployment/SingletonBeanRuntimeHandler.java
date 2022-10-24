@@ -26,7 +26,7 @@ import static org.jboss.as.ejb3.subsystem.deployment.SingletonBeanDeploymentReso
 import static org.jboss.as.ejb3.subsystem.deployment.SingletonBeanDeploymentResourceDefinition.INIT_ON_STARTUP;
 
 import java.util.List;
-import javax.ejb.ConcurrencyManagementType;
+import jakarta.ejb.ConcurrencyManagementType;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;

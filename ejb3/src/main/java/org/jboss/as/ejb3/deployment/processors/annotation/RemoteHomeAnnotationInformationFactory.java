@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
-import javax.ejb.RemoteHome;
+import jakarta.ejb.RemoteHome;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
@@ -29,7 +29,7 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.metadata.property.PropertyReplacer;
 
 /**
- * Processes the {@link javax.ejb.RemoteHome} annotation on a session bean
+ * Processes the {@link jakarta.ejb.RemoteHome} annotation on a session bean
  *
  * @author Stuart Douglas
  */

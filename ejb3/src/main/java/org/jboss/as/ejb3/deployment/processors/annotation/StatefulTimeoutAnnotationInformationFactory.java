@@ -27,7 +27,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.ejb.StatefulTimeout;
+import jakarta.ejb.StatefulTimeout;
 import java.util.concurrent.TimeUnit;
 
 /**

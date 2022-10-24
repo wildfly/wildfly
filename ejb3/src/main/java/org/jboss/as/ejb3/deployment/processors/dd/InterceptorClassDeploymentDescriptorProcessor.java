@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors.dd;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;

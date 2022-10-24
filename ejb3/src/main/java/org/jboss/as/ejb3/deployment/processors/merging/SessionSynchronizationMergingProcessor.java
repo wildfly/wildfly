@@ -25,10 +25,10 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.AfterBegin;
-import javax.ejb.AfterCompletion;
-import javax.ejb.BeforeCompletion;
-import javax.ejb.SessionSynchronization;
+import jakarta.ejb.AfterBegin;
+import jakarta.ejb.AfterCompletion;
+import jakarta.ejb.BeforeCompletion;
+import jakarta.ejb.SessionSynchronization;
 
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;

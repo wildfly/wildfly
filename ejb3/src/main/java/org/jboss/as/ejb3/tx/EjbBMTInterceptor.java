@@ -21,10 +21,10 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import javax.ejb.EJBException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
+import jakarta.ejb.EJBException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;

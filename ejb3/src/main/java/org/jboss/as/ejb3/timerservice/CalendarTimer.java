@@ -24,16 +24,16 @@ package org.jboss.as.ejb3.timerservice;
 import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.Date;
-import javax.ejb.EJBException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.Timer;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.Timer;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 
 /**
- * Represents a {@link javax.ejb.Timer} which is created out a calendar expression
+ * Represents a {@link jakarta.ejb.Timer} which is created out a calendar expression
  *
  * @author Jaikiran Pai
  * @version $Revision: $
@@ -90,8 +90,8 @@ public class CalendarTimer extends TimerImpl {
 
     /**
      * This method is similar to {@link #getSchedule()}, except that this method does <i>not</i> check the timer state
-     * and hence does <i>not</i> throw either {@link IllegalStateException} or {@link javax.ejb.NoSuchObjectLocalException}
-     * or {@link javax.ejb.EJBException}.
+     * and hence does <i>not</i> throw either {@link IllegalStateException} or {@link jakarta.ejb.NoSuchObjectLocalException}
+     * or {@link jakarta.ejb.EJBException}.
      *
      * @return
      */

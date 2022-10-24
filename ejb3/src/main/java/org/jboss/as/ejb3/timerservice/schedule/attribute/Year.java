@@ -26,7 +26,7 @@ import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 import java.util.Calendar;
 
 /**
- * Represents in the year value part constructed out of a {@link javax.ejb.ScheduleExpression#getYear()}
+ * Represents in the year value part constructed out of a {@link jakarta.ejb.ScheduleExpression#getYear()}
  * <p/>
  * <p>
  * A {@link Year} can hold only {@link Integer} as its value. The only exception to this being the wildcard (*)

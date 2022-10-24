@@ -23,7 +23,7 @@ package org.jboss.as.ejb3.timerservice.persistence;
 
 import java.lang.reflect.Method;
 import java.util.Date;
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
 

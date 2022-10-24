@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 import org.jboss.as.ejb3.logging.EjbLogger;
 
 /**
- * Represents a value for a {@link javax.ejb.ScheduleExpression} which is expressed as a range type. An
+ * Represents a value for a {@link jakarta.ejb.ScheduleExpression} which is expressed as a range type. An
  * {@link RangeValue} comprises of a start and an end value for the range, separated by a "-"
  * <p/>
  * <p>

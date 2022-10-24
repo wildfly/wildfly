@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.context;
 
-import javax.ejb.EJBContext;
+import jakarta.ejb.EJBContext;
 
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessor;

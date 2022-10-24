@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.TransactionManagementType;
+import jakarta.ejb.TransactionManagementType;
 
 import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
 import org.jboss.as.ee.component.Attachments;

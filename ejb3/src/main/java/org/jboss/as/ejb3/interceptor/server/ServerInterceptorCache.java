@@ -28,9 +28,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.AroundTimeout;
+import jakarta.interceptor.InvocationContext;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.utils.ClassLoadingUtils;

@@ -34,7 +34,7 @@ import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.RemoveMethodMetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 
-import javax.ejb.Remove;
+import jakarta.ejb.Remove;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class that can merge {@link javax.ejb.Remove}
+ * Class that can merge {@link jakarta.ejb.Remove}
  *
  * @author Stuart Douglas
  */

@@ -1,6 +1,6 @@
 package org.jboss.as.ejb3.component;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 /**
  * An exception which can be used to indicate that a particular Jakarta Enterprise Beans component is (no longer) available for handling invocations.

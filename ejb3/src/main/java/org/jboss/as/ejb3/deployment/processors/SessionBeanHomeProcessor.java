@@ -24,8 +24,8 @@ package org.jboss.as.ejb3.deployment.processors;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
-import javax.ejb.EJBHome;
-import javax.ejb.Handle;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.Handle;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -190,7 +190,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
         }
         if (initMethod == null) {
             for (Class<?> exceptionClass : method.getExceptionTypes()) {
-                if (javax.ejb.CreateException.class == exceptionClass) {
+                if (jakarta.ejb.CreateException.class == exceptionClass) {
                     throw EjbLogger.ROOT_LOGGER.failToCallEjbCreateForHomeInterface(method, description.getEJBClassName());
                 }
             }

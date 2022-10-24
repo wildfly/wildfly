@@ -29,8 +29,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
-import javax.ejb.ScheduleExpression;
-import javax.ejb.TimerConfig;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.TimerConfig;
 
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
@@ -77,7 +77,7 @@ public class CompositeTimerService implements ManagedTimerService {
     }
 
     @Override
-    public javax.ejb.Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig config) {
+    public jakarta.ejb.Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig config) {
         this.validateInvocationContext();
         if (schedule == null) {
             throw EJB3_TIMER_LOGGER.invalidTimerParameter("schedule", null);
@@ -87,7 +87,7 @@ public class CompositeTimerService implements ManagedTimerService {
     }
 
     @Override
-    public javax.ejb.Timer createIntervalTimer(Date initialExpiration, long intervalDuration, TimerConfig config) {
+    public jakarta.ejb.Timer createIntervalTimer(Date initialExpiration, long intervalDuration, TimerConfig config) {
         this.validateInvocationContext();
         if (initialExpiration == null) {
             throw EJB3_TIMER_LOGGER.invalidTimerParameter("initialExpiration", null);
@@ -103,7 +103,7 @@ public class CompositeTimerService implements ManagedTimerService {
     }
 
     @Override
-    public javax.ejb.Timer createSingleActionTimer(Date expiration, TimerConfig config) {
+    public jakarta.ejb.Timer createSingleActionTimer(Date expiration, TimerConfig config) {
         this.validateInvocationContext();
         if (expiration == null) {
             throw EJB3_TIMER_LOGGER.invalidTimerParameter("expiration", null);
@@ -116,17 +116,17 @@ public class CompositeTimerService implements ManagedTimerService {
     }
 
     @Override
-    public Collection<javax.ejb.Timer> getTimers() {
-        Collection<javax.ejb.Timer> transientTimers = this.transientTimerService.getTimers();
-        Collection<javax.ejb.Timer> persistentTimers = this.persistentTimerService.getTimers();
-        Collection<javax.ejb.Timer> result = new ArrayList<>(transientTimers.size() + persistentTimers.size());
+    public Collection<jakarta.ejb.Timer> getTimers() {
+        Collection<jakarta.ejb.Timer> transientTimers = this.transientTimerService.getTimers();
+        Collection<jakarta.ejb.Timer> persistentTimers = this.persistentTimerService.getTimers();
+        Collection<jakarta.ejb.Timer> result = new ArrayList<>(transientTimers.size() + persistentTimers.size());
         result.addAll(transientTimers);
         result.addAll(persistentTimers);
         return Collections.unmodifiableCollection(result);
     }
 
     @Override
-    public Collection<javax.ejb.Timer> getAllTimers() {
+    public Collection<jakarta.ejb.Timer> getAllTimers() {
         return this.registry.getAllTimers();
     }
 

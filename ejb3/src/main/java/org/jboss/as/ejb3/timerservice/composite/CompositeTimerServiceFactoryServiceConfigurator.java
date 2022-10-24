@@ -25,7 +25,7 @@ package org.jboss.as.ejb3.timerservice.composite;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import javax.ejb.TimerConfig;
+import jakarta.ejb.TimerConfig;
 
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;

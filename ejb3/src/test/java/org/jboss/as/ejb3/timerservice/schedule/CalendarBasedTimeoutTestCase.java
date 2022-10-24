@@ -29,7 +29,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
 
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 
 import org.junit.Assert;
 import org.junit.Test;

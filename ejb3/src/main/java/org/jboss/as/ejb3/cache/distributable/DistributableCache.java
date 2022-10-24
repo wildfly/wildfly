@@ -24,8 +24,8 @@ package org.jboss.as.ejb3.cache.distributable;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.ejb.ConcurrentAccessTimeoutException;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.Contextual;

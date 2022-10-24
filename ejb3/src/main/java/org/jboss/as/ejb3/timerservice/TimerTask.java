@@ -28,7 +28,7 @@ import java.util.Date;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * A timer task which will be invoked at appropriate intervals based on a {@link javax.ejb.Timer}
+ * A timer task which will be invoked at appropriate intervals based on a {@link jakarta.ejb.Timer}
  * schedule.
  * <p/>
  * <p>

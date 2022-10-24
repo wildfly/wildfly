@@ -7,7 +7,7 @@ package org.jboss.as.ejb3.cache.distributable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;

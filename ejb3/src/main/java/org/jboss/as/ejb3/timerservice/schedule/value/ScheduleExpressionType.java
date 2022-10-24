@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.timerservice.schedule.value;
 import org.jboss.as.ejb3.logging.EjbLogger;
 
 /**
- * Represents the type of expression used in the values of a {@link javax.ejb.ScheduleExpression}
+ * Represents the type of expression used in the values of a {@link jakarta.ejb.ScheduleExpression}
  *
  * @author Jaikiran Pai
  * @version $Revision: $

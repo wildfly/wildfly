@@ -39,8 +39,8 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.Module;
 
-import javax.ejb.LocalHome;
-import javax.ejb.RemoteHome;
+import jakarta.ejb.LocalHome;
+import jakarta.ejb.RemoteHome;
 import java.lang.reflect.Method;
 import java.util.Collection;
 

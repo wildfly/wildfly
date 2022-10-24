@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.component.stateful;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import javax.ejb.CreateException;
+import jakarta.ejb.CreateException;
 
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactories;

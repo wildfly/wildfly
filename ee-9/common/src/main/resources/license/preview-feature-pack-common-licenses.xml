@@ -443,22 +443,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.spec.javax.ejb</groupId>
-      <artifactId>jboss-ejb-api_3.2_spec</artifactId>
-      <licenses>
-        <license>
-          <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
       <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
       <licenses>

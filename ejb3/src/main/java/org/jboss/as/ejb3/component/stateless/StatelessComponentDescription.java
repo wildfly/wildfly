@@ -27,7 +27,7 @@ import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPP
 
 import java.lang.reflect.Method;
 import java.util.Collection;
-import javax.ejb.TransactionManagementType;
+import jakarta.ejb.TransactionManagementType;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;

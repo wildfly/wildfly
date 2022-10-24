@@ -40,10 +40,10 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.ejb.EJBLocalObject;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.ejb.TransactionManagementType;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.registry.Resource;

@@ -25,7 +25,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 
 import org.jboss.logging.Logger;
 import org.junit.Assert;

@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.ejb.AfterBegin;
-import javax.ejb.AfterCompletion;
-import javax.ejb.Asynchronous;
-import javax.ejb.BeforeCompletion;
-import javax.ejb.Startup;
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.ejb.AfterBegin;
+import jakarta.ejb.AfterCompletion;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.BeforeCompletion;
+import jakarta.ejb.Startup;
 
 import org.jboss.as.ee.component.deployers.BooleanAnnotationInformationFactory;
 import org.jboss.as.ee.metadata.AbstractEEAnnotationProcessor;

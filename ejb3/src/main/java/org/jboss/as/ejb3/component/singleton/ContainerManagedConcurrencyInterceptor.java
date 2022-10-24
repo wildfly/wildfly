@@ -27,8 +27,8 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
-import javax.ejb.LockType;
-import javax.interceptor.InvocationContext;
+import jakarta.ejb.LockType;
+import jakarta.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;

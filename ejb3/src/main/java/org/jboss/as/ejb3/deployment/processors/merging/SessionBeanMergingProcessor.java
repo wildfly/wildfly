@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 
 import java.lang.reflect.Method;
 
-import javax.ejb.SessionBean;
+import jakarta.ejb.SessionBean;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -42,7 +42,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 
 /**
- * Processor that handles the {@link javax.ejb.SessionBean} interface
+ * Processor that handles the {@link jakarta.ejb.SessionBean} interface
  *
  * @author Stuart Douglas
  */
@@ -60,7 +60,7 @@ public class SessionBeanMergingProcessor extends AbstractMergingProcessor<Sessio
     @Override
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
         if (SessionBean.class.isAssignableFrom(componentClass)) {
-            // add the setSessionContext(SessionContext) method invocation interceptor for session bean implementing the javax.ejb.SessionContext
+            // add the setSessionContext(SessionContext) method invocation interceptor for session bean implementing the jakarta.ejb.SessionContext
             // interface
             description.getConfigurators().add(new ComponentConfigurator() {
                 @Override
