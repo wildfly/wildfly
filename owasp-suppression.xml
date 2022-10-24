@@ -881,4 +881,12 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
         <cve>CVE-2022-1278</cve>
     </suppress>
+    <!-- False positive, this vulnerability affects module used in wildfly tests only -->
+    <suppress>
+        <notes><![CDATA[
+		file name: commons-text-1.8.jar
+		]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-text@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-42889</vulnerabilityName>
+    </suppress>
 </suppressions>
