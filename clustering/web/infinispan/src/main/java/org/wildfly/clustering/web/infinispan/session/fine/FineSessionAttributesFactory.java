@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -74,6 +75,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     private final MutatorFactory<SessionAttributeKey, V> mutatorFactory;
     private final HttpSessionActivationListenerProvider<S, C, L> provider;
     private final Function<String, SessionAttributeActivationNotifier> notifierFactory;
+    private final Executor executor;
     private final ListenerRegistration evictListenerRegistration;
     private final ListenerRegistration evictAttributesListenerRegistration;
     private final ListenerRegistration prePassivateListenerRegistration;
@@ -90,6 +92,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
         this.mutatorFactory = new InfinispanMutatorFactory<>(this.attributeCache, this.properties);
         this.provider = configuration.getHttpSessionActivationListenerProvider();
         this.notifierFactory = configuration.getActivationNotifierFactory();
+        this.executor = configuration.getBlockingManager().asExecutor(this.getClass().getName());
         this.evictListenerRegistration = new PostPassivateListener<>(configuration.getCache(), this::cascadeEvict).register(SessionCreationMetaDataKey.class);
         this.evictAttributesListenerRegistration = new PrePassivateListener<>(this.namesCache, this::cascadeEvictAttributes).register(SessionAttributeNamesKey.class);
         this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateListener<>(this.attributeCache, this::prePassivate).register(SessionAttributeKey.class) : null;
@@ -203,7 +206,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     private void cascadeEvictAttributes(SessionAttributeNamesKey key, Map<String, UUID> value) {
         String sessionId = key.getId();
         for (UUID attributeId : value.values()) {
-            this.attributeCache.evict(new SessionAttributeKey(sessionId, attributeId));
+            this.executor.execute(() -> this.attributeCache.evict(new SessionAttributeKey(sessionId, attributeId)));
         }
     }
 
