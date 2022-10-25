@@ -176,7 +176,7 @@ public interface JGroupsLogger extends BasicLogger {
     void connected(String channelName, String nodeName, String clusterName, View view);
 
     @LogMessage(level = INFO)
-    @Message(id = 34, value = "Disonnecting '%s' channel. '%s' leaving cluster '%s' with view: %s")
+    @Message(id = 34, value = "Disconnecting '%s' channel. '%s' leaving cluster '%s' with view: %s")
     void disconnecting(String channelName, String nodeName, String clusterName, View view);
 
     @LogMessage(level = INFO)
