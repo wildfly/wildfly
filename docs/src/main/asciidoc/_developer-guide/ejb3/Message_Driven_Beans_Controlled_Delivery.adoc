@@ -57,7 +57,7 @@ annotation, as in the example below:
 ----
 @MessageDriven(name = "HelloWorldMDB", activationConfig = {
 
- @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+ @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue"),
 
  @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
 
@@ -234,7 +234,7 @@ annotation on each MDB class belonging to a group:
 [source,java,options="nowrap"]
 ----
 @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
- @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+ @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue"),
  @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
  @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
 
@@ -286,7 +286,7 @@ The same could be specified using the @DeliveryGroup annotation:
 [source, java]
 ----
 @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
- @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+ @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue"),
  @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
  @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
 
@@ -356,7 +356,7 @@ to mark an MDB as clustered singleton:
 [source,java,options="nowrap"]
 ----
 @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
- @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+ @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue"),
  @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
  @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
 
