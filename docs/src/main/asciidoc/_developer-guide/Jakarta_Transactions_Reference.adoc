@@ -19,13 +19,13 @@ Or he can use annotations. There are two types.
 === Transactions managed with programmatic JTA API
 
 The JTA API is defined under
-https://javaee.github.io/javaee-spec/javadocs/javax/transaction/package-summary.html[`javax.transaction`]
+https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/package-summary.html[`jakarta.transaction`]
 package. The package could be considered a bit misguiding as it presents classes
 which are expected to be used by application developer. These classes
 are intended as an API for the application server (as the WildFly is).
 
 The user is expected to interact with
-https://javaee.github.io/javaee-spec/javadocs/javax/transaction/UserTransaction.html[`javax.transaction.UserTransaction`]
+https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/usertransaction[`jakarta.transaction.UserTransaction`]
 which defines the transaction boundaries. The `UserTransaction` could be used
 in case the transaction is not defined by annotation at the method
 - aka. the transaction is not managed by the container. Those are places like
@@ -83,9 +83,9 @@ public class TestServlet extends HttpServlet {
 }
 ----
 
-https://javaee.github.io/javaee-spec/javadocs/javax/transaction/TransactionManager.html[`javax.transaction.TransactionManager`]
+https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/transactionmanager[`jakarta.transaction.TransactionManager`]
 is not meant to be used by business logic but if you need to register
-https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html[a synchronization]
+https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/synchronization[a synchronization]
 or you need to change transaction timeout (before the `begin()` method is called)
 then it will be the option for you.
 
@@ -108,7 +108,7 @@ TransactionManager tm;
 
 If you start using CDI beans then you can manage transactions either programmatically
 or you can use annotations.
-The https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Transactional.html[`@Transactional`]
+The https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/transactional[`@Transactional`]
 defines transaction boundaries
 (start of the method starts the transaction, while the transaction is finished at its end).
 If the method finishes sucessfully the transaction is committed.
@@ -117,7 +117,7 @@ If the transaction ends with `RuntimeException` then it's rolled-back.
 When you define the method to be `@Transactional` you define the behaviour
 of incoming (or non-existent) transactional context.
 Please refer the to documentation for
-https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Transactional.TxType.html[`Transactional.TxType`].
+https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/transactional.txtype[`Transactional.TxType`].
 
 It's important to note that the `TxType` influences the transaction management
 *only* when called with the managed CDI bean. If you call the method directly -
@@ -155,15 +155,15 @@ WARNING: if you use the `@Transactional` for managing transactions boundaries
          you won't be permitted to use the `UserTransaction` methods.
          If you do so you can expect a runtime exception being thrown.
 
-The CDI introduces as well a new scope for use with transactions -
-https://javaee.github.io/javaee-spec/javadocs/javax/ejb/SessionContext.html[`@TransactionScoped`].
+CDI introduces as well a scope for use with transactions -
+https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/transactionscoped[`@TransactionScoped`].
 
 [[in-ejbs]]
 === Transactions in EJBs
 
 Transaction management in EJB is administered with two annotations:
-https://javaee.github.io/javaee-spec/javadocs/javax/ejb/TransactionManagement.html[`@TransactionManagement`]
- https://javaee.github.io/javaee-spec/javadocs/javax/ejb/TransactionAttribute.html[`@TransactionAttribute`].
+https://jakarta.ee/specifications/enterprise-beans/4.0/apidocs/jakarta/ejb/transactionmanagement[`@TransactionManagement`]
+https://jakarta.ee/specifications/enterprise-beans/4.0/apidocs/jakarta/ejb/transactionattribute[`@TransactionAttribute`].
 
 NOTE: you can define the same behaviour when you use the `ejb-jar.xml`
       descriptor instead of the annotations
@@ -194,10 +194,10 @@ It's the same transactional behaviour as if the EJB is annotated with
 Using the `@TransactionManagement(TransactionManagementType.CONTAINER)` means
 the container is responsible to manage transactions. The boundary of the transaction
 is defined by the start and end of the method and you influence the behaviour by using
-https://javaee.github.io/javaee-spec/javadocs/javax/ejb/TransactionAttribute.html[`@TransactionAttribute`].
+https://jakarta.ee/specifications/enterprise-beans/4.0/apidocs/jakarta/ejb/transactionattribute[`@TransactionAttribute`].
 
 If `java.lang.RuntimeException` is thrown the transaction is rolled back.
-https://javaee.github.io/javaee-spec/javadocs/javax/ejb/EJBContext.html[EJBContext]
+https://jakarta.ee/specifications/enterprise-beans/4.0/apidocs/jakarta/ejb/ejbcontext[EJBContext]
 could be used to define the transaction should be rolled-back
 by the end of the method when `setRollbackOnly` is used.
 
@@ -240,10 +240,10 @@ NOTE: if a call is made from the container-managed method,
 
 JTA API gives a chance to react to the event of a finishing transaction.
 The definition says that transaction manager announces the even of `beforeCompletion` and `afterCompletion`
-which are defined by the interface https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html[javax.transaction.Synchronization].
-The https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html#beforeCompletion--[`beforeCompletion`]
+which are defined by the interface https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/synchronization[jakarta.transaction.Synchronization].
+The https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/synchronization#beforeCompletion--[`beforeCompletion`]
 callback is invoked at time the transaction manager starts to commit the global transaction. The invocation is processed in the transaction context.
-The https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html#afterCompletion-int-[`afterCompletion`]
+The https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/synchronization#afterCompletion-int-[`afterCompletion`]
 is invoked after the transaction is committed or rolled-back (and is processed outside of the transaction context).
 
 The user needs just to create a simple Java POJO and implement the interface.
@@ -251,7 +251,7 @@ The user needs just to create a simple Java POJO and implement the interface.
 [source,java,options="nowrap"]
 ----
 public class MySynchronization
-        implements javax.transaction.Synchronization {
+        implements jakarta.transaction.Synchronization {
   @Override
   public void beforeCompletion() {
     System.out.println("Transaction is about to be finished"):
@@ -265,7 +265,7 @@ public class MySynchronization
 ----
 
 For registration of the synchronization callback, the user can inject the
-https://docs.oracle.com/javaee/7/api/javax/transaction/TransactionSynchronizationRegistry.html[javax.transaction.TransactionSynchronizationRegistry].
+https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/transactionsynchronizationregistry[jakarta.transaction.TransactionSynchronizationRegistry].
 (the mandated JNDI location for the object is at `java:comp/TransactionSynchronizationRegistry`) and then to register
 the synchronization instance. The instance is bound to the currently active transaction.
 
@@ -286,7 +286,7 @@ When the transaction is active you can store and retrieve the saved data. When t
 and there is no transaction context available (e.g. at `afterCompletion`) the `java.lang.IllegalStateException`
 is thrown.
 
-The other option for the user is to use https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Transaction.html[the transaction object]
+The other option for the user is to use https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/transaction[the transaction object]
 to register the synchronization.
 
 [source,java,options="nowrap"]
@@ -299,7 +299,7 @@ tm.getTransaction().registerSynchronization(new MySynchronization());
 ----
 
 When the user runs the Stateful Session Bean he can implement
-interface https://javaee.github.io/javaee-spec/javadocs/javax/ejb/SessionSynchronization.html[javax.ejb.SessionSynchronization]
+interface https://jakarta.ee/specifications/enterprise-beans/4.0/apidocs/jakarta/ejb/sessionsynchronization[jakarta.ejb.SessionSynchronization]
 (or to use annotations) for the definition of the synchronization callbacks onto the bean.
 The session synchronization defines three methods.
 Of these three methods `afterBegin` is not connected to the transaction synchronization so we will not discuss it further.
@@ -398,7 +398,7 @@ An example of the log messages produces by Narayana is (the content is shortened
 
 [section 2]
 TRACE [com.arjuna.ats.jta] (default task-1) TransactionImple.enlistResource ( TestXAResource(TestXAResourceCommon(id:944, xid:null, timeout:299, prepareReturn:0)) )
-TRACE [com.arjuna.ats.jta] (default task-1) TransactionImple.getStatus: javax.transaction.Status.STATUS_ACTIVE
+TRACE [com.arjuna.ats.jta] (default task-1) TransactionImple.getStatus: jakarta.transaction.Status.STATUS_ACTIVE
 TRACE [com.arjuna.ats.arjuna] (default task-1) OutputObjectState::OutputObjectState()
 TRACE [com.arjuna.ats.arjuna] (default task-1) FileSystemStore.write_committed(0:ffff0a28050c:-a09a5fe:5c598d64:43, EISNAME)
 TRACE [com.arjuna.ats.arjuna] (default task-1) ShadowingStore.write_state(0:ffff0a28050c:-a09a5fe:5c598d64:43, EISNAME, StateType.OS_ORIGINAL)
@@ -414,7 +414,7 @@ TRACE [com.arjuna.ats.arjuna] (default task-1) RecordList::insert(RecordList: em
 [section 3]
 TRACE [com.arjuna.ats.jta] (default task-1) BaseTransaction.commit
 TRACE [com.arjuna.ats.jta] (default task-1) TransactionImple.commitAndDisassociate
-TRACE [com.arjuna.ats.jta] (default task-1) TransactionImple.getStatus: javax.transaction.Status.STATUS_ACTIVE
+TRACE [com.arjuna.ats.jta] (default task-1) TransactionImple.getStatus: jakarta.transaction.Status.STATUS_ACTIVE
 TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::End() for action-id 0:ffff0a28050c:-a09a5fe:5c598d64:3b
 
 [section 4]
@@ -451,7 +451,7 @@ TRACE [com.arjuna.ats.arjuna] (default task-1) TransactionReaper::remove ( Basic
    shows only one resource to be part of the two-phase commit handling.
    That's intentional for the log not being too long.
 * the `section-1` refers to the point where the transaction is started. The
-  https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html[JTA synchronizations]
+https://jakarta.ee/specifications/transactions/2.0/apidocs/jakarta/transaction/synchronization[JTA synchronizations]
   are registered and the transaction is added to be handled by transaction reaper
   (the transaction reaper is an independent thread taking care of transaction timeouts,
     see more at http://narayana.io/docs/project/index.html#d0e2032[section Transaction timeouts]
