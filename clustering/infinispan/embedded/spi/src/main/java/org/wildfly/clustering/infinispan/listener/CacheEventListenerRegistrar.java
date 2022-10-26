@@ -32,15 +32,23 @@ import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 public class CacheEventListenerRegistrar<K, V> extends EventListenerRegistrar implements CacheListenerRegistrar<K, V> {
 
     private final Cache<K, V> cache;
+    private final Object listener;
 
     public CacheEventListenerRegistrar(Cache<K, V> cache) {
         super(cache);
         this.cache = cache;
+        this.listener = this;
+    }
+
+    public CacheEventListenerRegistrar(Cache<K, V> cache, Object listener) {
+        super(cache, listener);
+        this.cache = cache;
+        this.listener = listener;
     }
 
     @Override
     public ListenerRegistration register(CacheEventFilter<? super K, ? super V> filter) {
-        this.cache.addListener(this, filter, null);
-        return () -> this.cache.removeListener(this);
+        this.cache.addListener(this.listener, filter, null);
+        return () -> this.cache.removeListener(this.listener);
     }
 }
