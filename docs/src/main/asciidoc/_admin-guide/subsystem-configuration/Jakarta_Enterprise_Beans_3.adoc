@@ -87,12 +87,12 @@ This element is used to configure Stateful Session Beans.
 amount of time in milliseconds a stateful session bean can remain idle
 before it is eligible for removal by the container.
 It can be overridden via `ejb-jar.xml` deployment descriptor or via
-`javax.ejb.StatefulTimeout` annotation.
+`jakarta.ejb.StatefulTimeout` annotation.
 
 * `default-access-timeout` This attribute specifies the default time
 concurrent invocations on the same bean instance will wait to acquire
 the instance lock. It can be overridden via the deployment descriptor or
-via the `javax.ejb.AccessTimeout` annotation.
+via the `jakarta.ejb.AccessTimeout` annotation.
 
 * `cache-ref` This attribute is used to set the default cache for
 beans which require a passivating cache. It can be overridden by `jboss-ejb3.xml`, or via
@@ -109,7 +109,7 @@ This element is used to configure Singleton Session Beans.
 * `default-access-timeout` This attribute specifies the default time
 concurrent invocations will wait to acquire the instance lock. It can be
 overridden via the deployment descriptor or via the
-`javax.ejb.AccessTimeout` annotation.
+`jakarta.ejb.AccessTimeout` annotation.
 
 [[mdb]]
 == <mdb>
@@ -353,7 +353,7 @@ In order to use server interceptors you have to create a module that implements
 them and place it into _${WILDFLY_HOME}/modules_ directory.
 
 Interceptor implementations are POJO classes which use
-_javax.interceptor.AroundInvoke_ and _javax.interceptor.AroundTimeout_ to
+_jakarta.interceptor.AroundInvoke_ and _jakarta.interceptor.AroundTimeout_ to
 mark interceptor methods.
 
 Sample configuration:
@@ -370,9 +370,9 @@ Sample interceptor implementation:
 ----
 package org.foo;
 
-import javax.annotation.PostConstruct;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 public class FooInterceptor {
 

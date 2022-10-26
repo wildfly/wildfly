@@ -143,7 +143,7 @@ here
 https://github.com/wildfly/wildfly/blob/main/ejb3/src/main/resources/schema/jboss-ejb-container-interceptors_1_0.xsd
 
 The interceptor classes themselves are simple POJOs and use the
-`@javax.annotation.AroundInvoke` to mark the around invoke method which
+`@jakarta.annotation.AroundInvoke` to mark the around invoke method which
 will get invoked during the invocation on the bean. Here's an example of
 the interceptor:
 
@@ -174,7 +174,7 @@ context data before the invocation proceeds.
 Although the container interceptors are modeled to be similar to the
 Jakarta Interceptors, there are some differences in the API semantics.
 One such difference is that invoking on
-javax.interceptor.InvocationContext.getTarget() method is illegal for
+jakarta.interceptor.InvocationContext.getTarget() method is illegal for
 container interceptors since these interceptors are invoked way before
 the EJB components are setup or instantiated.
 
