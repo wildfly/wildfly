@@ -51,7 +51,7 @@ import org.wildfly.clustering.ejb.infinispan.PassivationConfiguration;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
-import org.wildfly.clustering.infinispan.listener.PostActivateListener;
+import org.wildfly.clustering.infinispan.listener.PostActivateBlockingListener;
 import org.wildfly.clustering.infinispan.listener.PrePassivateBlockingListener;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 
@@ -88,7 +88,7 @@ public class InfinispanBeanGroupFactory<I, T, C> implements BeanGroupFactory<I, 
         BlockingManager blocking = cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
         this.executor = blocking.asExecutor(this.getClass().getName());
         this.prePassivateListenerRegistration = new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(BeanGroupFilter.INSTANCE);
-        this.postActivateListenerRegistration = new PostActivateListener<>(this.cache, this::postActivate).register(BeanGroupFilter.INSTANCE);
+        this.postActivateListenerRegistration = new PostActivateBlockingListener<>(this.cache, this::postActivate).register(BeanGroupFilter.INSTANCE);
         this.mutatorFactory = new InfinispanMutatorFactory<>(cache, properties);
     }
 
