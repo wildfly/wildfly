@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,32 +23,31 @@
 package org.wildfly.clustering.infinispan.listener;
 
 import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
+import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
-import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 
 /**
- * Generic non-blocking post-passivation listener that delegates to a blocking consumer.
+ * Generic non-blocking post-activation listener that delegates to a blocking consumer.
  * @author Paul Ferraro
  */
 @Listener(observation = Listener.Observation.POST)
-public class PostPassivateListener<K, V> extends CacheEventListenerRegistrar<K, V> {
+public class PostActivateBlockingListener<K, V> extends CacheEventListenerRegistrar<K, V> {
 
-    private Consumer<CacheEntryEvent<K, V>> listener;
+    private final Function<CacheEntryEvent<K, V>, CompletionStage<Void>> listener;
 
-    public PostPassivateListener(Cache<K, V> cache, Consumer<K> listener) {
+    public PostActivateBlockingListener(Cache<K, V> cache, BiConsumer<K, V> consumer) {
         super(cache);
-        this.listener = new BlockingCacheEventListener<>(cache, listener);
+        this.listener = new BlockingCacheEventListener<>(cache, consumer);
     }
 
-    @CacheEntryPassivated
-    public CompletionStage<Void> postPassivate(CacheEntryPassivatedEvent<K, V> event) {
-        this.listener.accept(event);
-        return CompletableFutures.completedNull();
+    @CacheEntryActivated
+    public CompletionStage<Void> postActivate(CacheEntryActivatedEvent<K, V> event) {
+        return this.listener.apply(event);
     }
 }

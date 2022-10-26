@@ -40,7 +40,7 @@ import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
 import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
-import org.wildfly.clustering.infinispan.listener.PostPassivateListener;
+import org.wildfly.clustering.infinispan.listener.PostPassivateBlockingListener;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaData;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.InvalidatableSessionMetaData;
@@ -87,7 +87,7 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
         this.creationMetaDataMutatorFactory = new InfinispanMutatorFactory<>(this.creationMetaDataCache, this.properties);
         this.accessMetaDataCache = configuration.getCache();
         this.accessMetaDataMutatorFactory = new InfinispanMutatorFactory<>(this.accessMetaDataCache, this.properties);
-        this.evictListenerRegistration = new PostPassivateListener<>(this.creationMetaDataCache, this::cascadeEvict).register(SessionCreationMetaDataKey.class);
+        this.evictListenerRegistration = new PostPassivateBlockingListener<>(this.creationMetaDataCache, this::cascadeEvict).register(SessionCreationMetaDataKey.class);
     }
 
     @Override

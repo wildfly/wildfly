@@ -35,8 +35,8 @@ import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
 import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
-import org.wildfly.clustering.infinispan.listener.PostActivateListener;
-import org.wildfly.clustering.infinispan.listener.PostPassivateListener;
+import org.wildfly.clustering.infinispan.listener.PostActivateBlockingListener;
+import org.wildfly.clustering.infinispan.listener.PostPassivateBlockingListener;
 import org.wildfly.clustering.infinispan.listener.PrePassivateBlockingListener;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
@@ -84,8 +84,8 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
         this.provider = configuration.getHttpSessionActivationListenerProvider();
         this.notifierFactory = configuration.getActivationNotifierFactory();
         this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
-        this.postActivateListenerRegistration = !this.properties.isPersistent() ? new PostActivateListener<>(this.cache, this::postActivate).register(SessionAttributesKey.class) : null;
-        this.evictListenerRegistration = new PostPassivateListener<>(configuration.getCache(), this::cascadeEvict).register(SessionCreationMetaDataKey.class);
+        this.postActivateListenerRegistration = !this.properties.isPersistent() ? new PostActivateBlockingListener<>(this.cache, this::postActivate).register(SessionAttributesKey.class) : null;
+        this.evictListenerRegistration = new PostPassivateBlockingListener<>(configuration.getCache(), this::cascadeEvict).register(SessionCreationMetaDataKey.class);
     }
 
     @Override
