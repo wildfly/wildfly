@@ -64,7 +64,7 @@ This can be as simple as creating a single class:
 ----
 package echo;
  
-@javax.jws.WebService
+@jakarta.jws.WebService
 public class Echo
 {
    public String echo(String input)
@@ -247,7 +247,7 @@ class, which can now be written, using the above interface.
 ----
 package echo;
  
-@javax.jws.WebService(endpointInterface="echo.Echo")
+@jakarta.jws.WebService(endpointInterface="echo.Echo")
 public class EchoImpl implements Echo
 {
    public String echo(String arg0)
@@ -366,7 +366,7 @@ public class EchoService extends Service
 ----
 
 As you can see, this generated class extends the main client entry point
-in Jakarta XML Web Services, `javax.xml.ws.Service`. While you can use `Service` directly,
+in Jakarta XML Web Services, `jakarta.xml.ws.Service`. While you can use `Service` directly,
 this is far simpler since it provides the configuration info for you.
 The only method we really care about is the `getEchoPort()` method,
 which returns an instance of our Service Endpoint Interface. Any WS

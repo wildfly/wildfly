@@ -385,8 +385,8 @@ straight forward web service definition.
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service;
  
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
  
 @WebService
 (
@@ -437,7 +437,7 @@ user's password for the certificates in the keystore file.
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service;
  
-import javax.jws.WebService;
+import jakarta.jws.WebService;
  
 import org.apache.cxf.annotations.EndpointProperties;
 import org.apache.cxf.annotations.EndpointProperty;
@@ -969,7 +969,7 @@ annotation defines the service as a Provider-based endpoint, meaning it
 supports a more messaging-oriented approach to Web services. In
 particular, it signals that the exchanged messages will be XML documents
 of some type. SecurityTokenServiceProvider is an implementation of the
-javax.xml.ws.Provider interface. In comparison the WebService annotation
+jakarta.xml.ws.Provider interface. In comparison the WebService annotation
 defines a (service endpoint interface) SEI-based endpoint which supports
 message exchange via SOAP envelopes.
 
@@ -1022,7 +1022,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.xml.ws.WebServiceProvider;
+import jakarta.xml.ws.WebServiceProvider;
 
 import org.apache.cxf.annotations.EndpointProperties;
 import org.apache.cxf.annotations.EndpointProperty;

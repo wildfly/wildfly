@@ -284,7 +284,7 @@ on server side
 
 [source,java,options="nowrap"]
 ----
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 import org.apache.cxf.annotations.SchemaValidation;
  
 @WebService(...)

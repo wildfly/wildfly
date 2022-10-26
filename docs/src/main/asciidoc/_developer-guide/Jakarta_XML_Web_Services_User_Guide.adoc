@@ -221,7 +221,7 @@ generated class:
 // Generated Service Class
 
 @WebServiceClient(name="StockQuoteService", targetNamespace="http://example.com/stocks", wsdlLocation="http://example.com/stocks.wsdl")
-public class StockQuoteService extends javax.xml.ws.Service
+public class StockQuoteService extends jakarta.xml.ws.Service
 {
    public StockQuoteService()
    {
@@ -347,7 +347,7 @@ public class TestEndpointService extends Service
 
 The `@WebServiceRef` annotation is used to declare a reference to a Web
 service. It follows the resource pattern exemplified by the
-`javax.annotation.Resource` annotation in
+`jakarta.annotation.Resource` annotation in
 http://www.jcp.org/en/jsr/summary?id=250[JSR-250].
 
 There are two uses to the WebServiceRef annotation:
@@ -363,7 +363,7 @@ present with a non-default value.
 element MAY be present with its default value if the type of the
 reference can be inferred from the annotated field/method declaration,
 but the value element MUST always be present and refer to a generated
-service class type (a subtype of javax.xml.ws.Service). The wsdlLocation
+service class type (a subtype of jakarta.xml.ws.Service). The wsdlLocation
 element, if present, overrides theWSDL location information specified in
 the WebService annotation of the referenced generated service class.
 +
@@ -388,8 +388,8 @@ message level is desirable. The Dispatch interface provides support for
 this mode of interaction.
 
 `Dispatch` supports two usage modes, identified by the constants
-`javax.xml.ws.Service.Mode.MESSAGE` and
-`javax.xml.ws.Service.Mode.PAYLOAD` respectively:
+`jakarta.xml.ws.Service.Mode.MESSAGE` and
+`jakarta.xml.ws.Service.Mode.PAYLOAD` respectively:
 
 *_Message_* In this mode, client applications work directly with
 protocol-specific message structures. E.g., when used with a SOAP
@@ -487,10 +487,10 @@ client receive time out:
 public void testConfigureTimeout() throws Exception
 {
    //Set timeout until a connection is established
-   ((BindingProvider)port).getRequestContext().put("javax.xml.ws.client.connectionTimeout", "6000");
+   ((BindingProvider)port).getRequestContext().put("jakarta.xml.ws.client.connectionTimeout", "6000");
 
    //Set timeout until the response is received
-   ((BindingProvider) port).getRequestContext().put("javax.xml.ws.client.receiveTimeout", "1000");
+   ((BindingProvider) port).getRequestContext().put("jakarta.xml.ws.client.receiveTimeout", "1000");
 
    port.echo("testTimeout");
 }
@@ -529,7 +529,7 @@ invoked with different types of message context.
 Handlers that only operate on message context properties and message
 payloads. Logical handlers are protocol agnostic and are unable to
 affect protocol specific parts of a message. Logical handlers are
-handlers that implement `javax.xml.ws.handler.LogicalHandler`.
+handlers that implement `jakarta.xml.ws.handler.LogicalHandler`.
 
 [[protocol-handler]]
 ==== Protocol Handler
@@ -538,8 +538,8 @@ Handlers that operate on message context properties and protocol
 specific messages. Protocol handlers are specific to a particular
 protocol and may access and change protocol specific aspects of a
 message. Protocol handlers are handlers that implement any interface
-derived from `javax.xml.ws.handler.Handler` except
-`javax.xml.ws.handler.LogicalHandler`.
+derived from `jakarta.xml.ws.handler.Handler` except
+`jakarta.xml.ws.handler.LogicalHandler`.
 
 [[service-endpoint-handlers]]
 ==== Service endpoint handlers
@@ -658,16 +658,16 @@ beans at runtime if they are not part of the deployment
 For details, see http://www.jcp.org/en/jsr/detail?id=224[JSR-224 - Java
 API for XML-Based Web Services (JAX-WS) 2.2]
 
-[[javax.xml.ws.servicemode]]
-=== javax.xml.ws.ServiceMode
+[[jakarta.xml.ws.servicemode]]
+=== jakarta.xml.ws.ServiceMode
 
 The `ServiceMode` annotation is used to specify the mode for a provider
 class, i.e. whether a provider wants to have access to protocol message
 payloads (e.g. a SOAP body) or the entire protocol messages (e.g. a SOAP
 envelope).
 
-[[javax.xml.ws.webfault]]
-=== javax.xml.ws.WebFault
+[[jakarta.xml.ws.webfault]]
+=== jakarta.xml.ws.WebFault
 
 The `WebFault` annotation is used when mapping WSDL faults to Java
 exceptions, see section 2.5. It is used to capture the name of the fault
@@ -675,8 +675,8 @@ element used when marshalling the Jakarta XML Binding type generated from the gl
 element referenced by the WSDL fault message. It can also be used to
 customize the mapping of service specific exceptions to WSDL faults.
 
-[[javax.xml.ws.requestwrapper]]
-=== javax.xml.ws.RequestWrapper
+[[jakarta.xml.ws.requestwrapper]]
+=== jakarta.xml.ws.RequestWrapper
 
 The `RequestWrapper` annotation is applied to the methods of an SEI. It
 is used to capture the Jakarta XML Binding generated request wrapper bean and the
@@ -687,8 +687,8 @@ element is the target namespace of the SEI.When starting from Java, this
 annotation is used to resolve overloading conflicts in document literal
 mode. Only the className element is required in this case.
 
-[[javax.xml.ws.responsewrapper]]
-=== javax.xml.ws.ResponseWrapper
+[[jakarta.xml.ws.responsewrapper]]
+=== jakarta.xml.ws.ResponseWrapper
 
 The `ResponseWrapper` annotation is applied to the methods of an SEI. It
 is used to capture the Jakarta XML Binding generated response wrapper bean and the
@@ -700,27 +700,27 @@ starting from Java, this annotation is used to resolve overloading
 conflicts in document literal mode. Only the className element is
 required in this case.
 
-[[javax.xml.ws.webserviceclient]]
-=== javax.xml.ws.WebServiceClient
+[[jakarta.xml.ws.webserviceclient]]
+=== jakarta.xml.ws.WebServiceClient
 
 The `WebServiceClient` annotation is specified on a generated service
 class (see 2.7). It is used to associate a class with a specific Web
 service, identify by a URL to a WSDL document and the qualified name of
 a wsdl:service element.
 
-[[javax.xml.ws.webendpoint]]
-=== javax.xml.ws.WebEndpoint
+[[jakarta.xml.ws.webendpoint]]
+=== jakarta.xml.ws.WebEndpoint
 
 The `WebEndpoint` annotation is specified on the getPortName() methods
 of a generated service class (see 2.7). It is used to associate a get
 method with a specific wsdl:port, identified by its local name (a
 NCName).
 
-[[javax.xml.ws.webserviceprovider]]
-=== javax.xml.ws.WebServiceProvider
+[[jakarta.xml.ws.webserviceprovider]]
+=== jakarta.xml.ws.WebServiceProvider
 
 The `WebServiceProvider` annotation is specified on classes that
-implement a strongly typed `javax.xml.ws.Provider`. It is used to
+implement a strongly typed `jakarta.xml.ws.Provider`. It is used to
 declare that a class that satisfies the requirements for a provider (see
 5.1) does indeed define a Web service endpoint, much like the
 `WebService` annotation does for SEI-based endpoints.
@@ -728,8 +728,8 @@ declare that a class that satisfies the requirements for a provider (see
 The `WebServiceProvider` and `WebService` annotations are mutually
 exclusive.
 
-[[javax.xml.ws.bindingtype]]
-=== javax.xml.ws.BindingType
+[[jakarta.xml.ws.bindingtype]]
+=== jakarta.xml.ws.BindingType
 
 The `BindingType` annotation is applied to an endpoint implementation
 class. It specifies the binding to use when publishing an endpoint of
@@ -737,25 +737,25 @@ this type.
 
 The default binding for an endpoint is the SOAP 1.1/HTTP one.
 
-[[javax.xml.ws.webserviceref]]
-=== javax.xml.ws.WebServiceRef
+[[jakarta.xml.ws.webserviceref]]
+=== jakarta.xml.ws.WebServiceRef
 
 The `WebServiceRef` annotation is used to declare a reference to a Web
 service. It follows the resource pattern exemplified by the
-`javax.annotation.Resource` annotation in JSR-250 [JBWS:32]. The
+`jakarta.annotation.Resource` annotation in JSR-250 [JBWS:32]. The
 `WebServiceRef` annotation is required to be honored when running on the
 Jakarta EE platform, where it is subject to the common resource injection
 rules described by the platform specification [JBWS:33].
 
-[[javax.xml.ws.webservicerefs]]
-=== javax.xml.ws.WebServiceRefs
+[[jakarta.xml.ws.webservicerefs]]
+=== jakarta.xml.ws.WebServiceRefs
 
 The `WebServiceRefs` annotation is used to declare multiple references
 to Web services on a single class. It is necessary to work around the
 limition against specifying repeated annotations of the same type on any
-given class, which prevents listing multiple `javax.ws.WebServiceRef`
+given class, which prevents listing multiple `jakarta.ws.WebServiceRef`
 annotations one after the other. This annotation follows the resource
-pattern exemplified by the `javax.annotation.Resources` annotation in
+pattern exemplified by the `jakarta.annotation.Resources` annotation in
 JSR-250.
 
 Since no name and type can be inferred in this case, each
@@ -765,15 +765,15 @@ required to be honored when running on the Jakarta EE platform, where it
 is subject to the common resource injection rules described by the
 platform specification.
 
-[[javax.xml.ws.action]]
-=== javax.xml.ws.Action
+[[jakarta.xml.ws.action]]
+=== jakarta.xml.ws.Action
 
 The `Action` annotation is applied to the methods of a SEI. It used to
 generate the wsa:Action on wsdl:input and wsdl:output of each
 wsdl:operation mapped from the annotated methods.
 
-[[javax.xml.ws.faultaction]]
-=== javax.xml.ws.FaultAction
+[[jakarta.xml.ws.faultaction]]
+=== jakarta.xml.ws.FaultAction
 
 The `FaultAction` annotation is used within the `Action` annotation to
 generate the wsa:Action element on the wsdl:fault element of each
@@ -788,19 +788,19 @@ metadata and default values.
 For details, see http://www.jcp.org/en/jsr/detail?id=181[JSR 181 - Web
 Services Metadata for the Java Platform].
 
-[[javax.jws.webservice]]
-=== javax.jws.WebService
+[[jakarta.jws.webservice]]
+=== jakarta.jws.WebService
 
 Marks a Java class as implementing a Web Service, or a Java interface as
 defining a Web Service interface.
 
-[[javax.jws.webmethod]]
-=== javax.jws.WebMethod
+[[jakarta.jws.webmethod]]
+=== jakarta.jws.WebMethod
 
 Customizes a method that is exposed as a Web Service operation.
 
-[[javax.jws.oneway]]
-=== javax.jws.OneWay
+[[jakarta.jws.oneway]]
+=== jakarta.jws.OneWay
 
 Indicates that the given web method has only an input message and no
 output. Typically, a oneway method returns the thread of control to the
@@ -809,20 +809,20 @@ JSR-181 processor is REQUIRED to report an error if an operation marked
 `@Oneway` has a return value, declares any checked exceptions or has any
 INOUT or OUT parameters.
 
-[[javax.jws.webparam]]
-=== javax.jws.WebParam
+[[jakarta.jws.webparam]]
+=== jakarta.jws.WebParam
 
 Customizes the mapping of an individual parameter to a Web Service
 message part and XML element.
 
-[[javax.jws.webresult]]
-=== javax.jws.WebResult
+[[jakarta.jws.webresult]]
+=== jakarta.jws.WebResult
 
 Customizes the mapping of the return value to a WSDL part and XML
 element.
 
-[[javax.jws.soapbinding]]
-=== javax.jws.SOAPBinding
+[[jakarta.jws.soapbinding]]
+=== jakarta.jws.SOAPBinding
 
 Specifies the mapping of the Web Service onto the SOAP message protocol.
 
@@ -833,8 +833,8 @@ if the `SOAPBinding` annotation is placed on a method with a
 `SOAPBinding.style` of `RPC`. Methods that do not have a `SOAPBinding`
 annotation accept the `SOAPBinding` behavior defined on the type.
 
-[[javax.jws.handlerchain]]
-=== javax.jws.HandlerChain
+[[jakarta.jws.handlerchain]]
+=== jakarta.jws.HandlerChain
 
 The `@HandlerChain` annotation associates the Web Service with an
 externally defined handler chain.

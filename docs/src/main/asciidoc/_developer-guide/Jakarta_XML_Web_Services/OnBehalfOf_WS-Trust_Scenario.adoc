@@ -114,8 +114,8 @@ simple web service definition.
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof;
  
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
  
 @WebService
 (
@@ -154,12 +154,12 @@ import org.apache.cxf.ws.security.trust.STSClient;
 import org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service.ServiceIface;
 import org.jboss.test.ws.jaxws.samples.wsse.policy.trust.shared.WSTrustAppUtils;
  
-import javax.jws.WebService;
-import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.Service;
 import java.net.*;
 import java.util.Map;
+import javax.xml.namespace.QName;
  
 @WebService
 (
