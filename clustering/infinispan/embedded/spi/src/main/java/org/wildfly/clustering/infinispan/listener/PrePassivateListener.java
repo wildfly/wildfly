@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,32 +24,30 @@ package org.wildfly.clustering.infinispan.listener;
 
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
+import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
-import org.infinispan.util.concurrent.BlockingManager;
 
 /**
- * Generic non-blocking passivation listener that consumes a passivation event.
+ * Generic non-blocking pre-passivation listener that delegates to a blocking consumer.
  * @author Paul Ferraro
  */
 @Listener(observation = Listener.Observation.PRE)
 public class PrePassivateListener<K, V> extends CacheEventListenerRegistrar<K, V> {
 
-    private final BlockingManager blocking;
-    private final BiConsumer<K, V> consumer;
+    private final Function<CacheEntryEvent<K, V>, CompletionStage<Void>> listener;
 
-    @SuppressWarnings("deprecation")
     public PrePassivateListener(Cache<K, V> cache, BiConsumer<K, V> consumer) {
         super(cache);
-        this.blocking = cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
-        this.consumer = consumer;
+        this.listener = new BlockingCacheEventListener<>(cache, consumer);
     }
 
     @CacheEntryPassivated
     public CompletionStage<Void> prePassivate(CacheEntryPassivatedEvent<K, V> event) {
-        return this.blocking.runBlocking(() -> this.consumer.accept(event.getKey(), event.getValue()), event.getSource());
+        return this.listener.apply(event);
     }
 }
