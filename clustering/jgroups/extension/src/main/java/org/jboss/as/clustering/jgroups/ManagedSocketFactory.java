@@ -30,6 +30,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.StandardSocketOptions;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
@@ -163,6 +164,10 @@ public class ManagedSocketFactory implements SocketFactory {
     @Override
     public ServerSocketChannel createServerSocketChannel(String name) throws IOException {
         ServerSocketChannel channel = ServerSocketChannel.open();
+        // Ensure server socket channels created by NioServer can rebind to the same port on restart
+        if (channel.supportedOptions().contains(StandardSocketOptions.SO_LINGER)) {
+            channel.setOption(StandardSocketOptions.SO_LINGER, 1);
+        }
         this.manager.getNamedRegistry().registerChannel(name, channel);
         return channel;
     }
