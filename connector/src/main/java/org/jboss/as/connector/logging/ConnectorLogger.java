@@ -648,22 +648,22 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 69, value = "At least one xa-datasource-property is required for an xa-datasource")
     OperationFailedException xaDataSourcePropertiesNotPresent();
 
-    /**
-     * A message indicating that jndi-name is missing and it's a required attribute
-     *
-     * @return the message.
-     */
-    @Message(id = 70, value = "Jndi name is required")
-    OperationFailedException jndiNameRequired();
+//    /**
+//     * A message indicating that jndi-name is missing and it's a required attribute
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 70, value = "Jndi name is required")
+//    OperationFailedException jndiNameRequired();
 
 
-    /**
-     * A message indicating that jndi-name has an invalid format
-     *
-     * @return the message.
-     */
-    @Message(id = 71, value = "Jndi name have to start with java:/ or java:jboss/")
-    OperationFailedException jndiNameInvalidFormat();
+//    /**
+//     * A message indicating that jndi-name has an invalid format
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 71, value = "Jndi name have to start with java:/ or java:jboss/")
+//    OperationFailedException jndiNameInvalidFormat();
 
     /**
      * Creates an exception indicating the deployment failed.

@@ -55,6 +55,7 @@ public class ResourceAdapterStatisticsTestCase extends JcaStatisticsBase {
     static int archiveCount = 0;
     static final String pack = "org.jboss.as.test.integration.jca.rar";
     static final String fact = "java:jboss/ConnectionFactory";
+    static final String shortFact = "jboss/ConnectionFactory";
 
     @ArquillianResource
     Deployer deployer;
@@ -124,6 +125,31 @@ public class ResourceAdapterStatisticsTestCase extends JcaStatisticsBase {
 
     }
 
+    private ModelNode prepareTestShortName() throws Exception {
+        String archiveName = getArchiveName(++archiveCount);
+        ModelNode address = getRaAddress(archiveName + ".rar");
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("add");
+        operation.get(OP_ADDR).set(address);
+        operation.get("archive").set(archiveName + ".rar");
+        executeOperation(operation);
+
+        ModelNode addressConn = address.clone();
+        int count = ++jndiCount;
+        addressConn.add("connection-definitions", fact + count);
+        ModelNode operationConn = new ModelNode();
+        operationConn.get(OP).set("add");
+        operationConn.get(OP_ADDR).set(addressConn);
+        operationConn.get("class-name").set(pack + ".MultipleManagedConnectionFactory1");
+        operationConn.get("jndi-name").set(shortFact + count);
+        executeOperation(operationConn);
+        operation = addressConn;
+
+        deployer.deploy(archiveName);
+        return operation;
+
+    }
+
     public static ResourceAdapterArchive createDeployment(String deploymentName) throws Exception {
 
         ResourceAdapterArchive raa = ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName + ".rar");
@@ -153,6 +179,13 @@ public class ResourceAdapterStatisticsTestCase extends JcaStatisticsBase {
     @Test
     public void testOneConnection() throws Exception {
         ModelNode mn = prepareTest(false);
+        testStatistics(mn);
+        testStatisticsDouble(mn);
+    }
+
+    @Test
+    public void testOneConnectionShortName() throws Exception {
+        ModelNode mn = prepareTestShortName();
         testStatistics(mn);
         testStatisticsDouble(mn);
     }

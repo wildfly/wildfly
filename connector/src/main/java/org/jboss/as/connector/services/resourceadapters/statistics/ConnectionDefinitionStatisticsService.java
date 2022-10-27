@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.jboss.as.connector.dynamicresource.StatisticsResourceDefinition;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
+import org.jboss.as.connector.subsystems.common.jndi.Util;
 import org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes;
 import org.jboss.as.connector.subsystems.resourceadapters.Constants;
 import org.jboss.as.controller.PathAddress;
@@ -65,10 +66,11 @@ public class ConnectionDefinitionStatisticsService implements Service<Management
      */
     public ConnectionDefinitionStatisticsService(final ManagementResourceRegistration registration,
                                                  final String jndiName,
+                                                 final boolean useJavaContext,
                                                  final String poolName,
                                                  final boolean statsEnabled) {
         super();
-        this.jndiName = jndiName;
+        this.jndiName = Util.cleanJndiName(jndiName, useJavaContext);
         if (registration.isAllowsOverride()) {
             overrideRegistration = registration.registerOverrideModel(poolName, new OverrideDescriptionProvider() {
                 @Override

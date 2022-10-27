@@ -23,6 +23,8 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME;
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -58,7 +60,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABL
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MCP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
@@ -84,7 +85,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUP;
@@ -290,7 +290,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
     private void writeAdminObject(XMLExtendedStreamWriter streamWriter, ModelNode adminObject, final String poolName) throws XMLStreamException {
         streamWriter.writeStartElement(Activation.Tag.ADMIN_OBJECT.getLocalName());
         CLASS_NAME.marshallAsAttribute(adminObject, streamWriter);
-        JNDINAME.marshallAsAttribute(adminObject, streamWriter);
+        JNDI_NAME.marshallAsAttribute(adminObject, streamWriter);
         ENABLED.marshallAsAttribute(adminObject, streamWriter);
         USE_JAVA_CONTEXT.marshallAsAttribute(adminObject, streamWriter);
         streamWriter.writeAttribute("pool-name", poolName);
@@ -303,7 +303,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
     private void writeConDef(XMLExtendedStreamWriter streamWriter, ModelNode conDef, final String poolName, final boolean isXa) throws XMLStreamException {
         streamWriter.writeStartElement(Activation.Tag.CONNECTION_DEFINITION.getLocalName());
         CLASS_NAME.marshallAsAttribute(conDef, streamWriter);
-        JNDINAME.marshallAsAttribute(conDef, streamWriter);
+        JNDI_NAME.marshallAsAttribute(conDef, streamWriter);
         ENABLED.marshallAsAttribute(conDef, streamWriter);
         CONNECTABLE.marshallAsAttribute(conDef, streamWriter);
         TRACKING.marshallAsAttribute(conDef, streamWriter);

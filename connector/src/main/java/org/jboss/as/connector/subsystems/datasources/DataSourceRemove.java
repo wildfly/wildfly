@@ -22,7 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import javax.sql.DataSource;
