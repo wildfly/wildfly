@@ -24,9 +24,9 @@ package org.jboss.as.txn.service.internal.tsr;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
 
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -43,7 +43,7 @@ import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
  * 2. During afterCompletion the Jakarta Connectors synchronizations should be called last as that allows Jakarta Connectors to detect connection leaks from
  * frameworks that have not closed the Jakarta Connectors managed resources. This is described in (for example)
  * http://docs.oracle.com/javaee/5/api/javax/transaction/TransactionSynchronizationRegistry
- * .html#registerInterposedSynchronization(javax.transaction.Synchronization) where it says that during afterCompletion
+ * .html#registerInterposedSynchronization(jakarta.transaction.Synchronization) where it says that during afterCompletion
  * "Resources can be closed but no transactional work can be performed with them"
  */
 public class JCAOrderedLastSynchronizationList implements Synchronization {
@@ -63,8 +63,8 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
     public void registerInterposedSynchronization(Synchronization synchronization) throws IllegalStateException, SystemException {
         int status = ContextTransactionSynchronizationRegistry.getInstance().getTransactionStatus();
         switch (status) {
-            case javax.transaction.Status.STATUS_ACTIVE:
-            case javax.transaction.Status.STATUS_PREPARING:
+            case jakarta.transaction.Status.STATUS_ACTIVE:
+            case jakarta.transaction.Status.STATUS_PREPARING:
                 break;
             case Status.STATUS_MARKED_ROLLBACK:
                 // do nothing; we can pretend like it was registered, but it'll never be run anyway.

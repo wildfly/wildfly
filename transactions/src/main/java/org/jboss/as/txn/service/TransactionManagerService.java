@@ -38,7 +38,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.CreationListener;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.concurrent.atomic.AtomicBoolean;
