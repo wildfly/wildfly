@@ -32,7 +32,7 @@ link:Admin_Guide{outfilesuffix}#EE_Default_Bindings_Configuration[Default EE Bin
 [[context-service]]
 == Context Service
 
-The Context Service ( `javax.enterprise.concurrent.ContextService`) is a
+The Context Service ( `jakarta.enterprise.concurrent.ContextService`) is a
 brand new concurrency utility, which applications may use to build
 contextual proxies from existing objects.
 
@@ -84,7 +84,7 @@ instance's JNDI name is `java:comp/DefaultContextService`.
 == Managed Thread Factory
 
 The Managed Thread Factory (
-`javax.enterprise.concurrent.ManagedThreadFactory`) allows Java EE
+`jakarta.enterprise.concurrent.ManagedThreadFactory`) allows Java EE
 applications to create Java threads. It is an extension of Java SE's
 Thread Factory ( `java.util.concurrent.ThreadFactory`) adapted to the
 Jakarta EE platform specifics.
@@ -99,7 +99,7 @@ creation is requested, and such context is propagated to the thread's
 Runnable execution.
 
 Managed Thread Factory threads implement
-`javax.enterprise.concurrent.ManageableThread`, which allows an
+`jakarta.enterprise.concurrent.ManageableThread`, which allows an
 application to learn about termination status.
 
 Usage example:
@@ -148,7 +148,7 @@ Factory instance's JNDI name is `java:comp/DefaultManagedThreadFactory`.
 == Managed Executor Service
 
 The Managed Executor Service (
-`javax.enterprise.concurrent.ManagedExecutorService`) allows Java EE
+`jakarta.enterprise.concurrent.ManagedExecutorService`) allows Java EE
 applications to submit tasks for asynchronous execution. It is an
 extension of Java SE's Executor Service (
 `java.util.concurrent.ExecutorService`) adapted to the Jakarta EE platform
@@ -209,7 +209,7 @@ Service instance's JNDI name is
 == Managed Scheduled Executor Service
 
 The Managed Scheduled Executor Service (
-`javax.enterprise.concurrent.ManagedScheduledExecutorService`) allows
+`jakarta.enterprise.concurrent.ManagedScheduledExecutorService`) allows
 Jakarta EE applications to schedule tasks for asynchronous execution. It is
 an extension of Java SE's Executor Service (
 `java.util.concurrent.ScheduledExecutorService`) adapted to the Java EE
