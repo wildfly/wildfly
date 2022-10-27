@@ -26,9 +26,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.txn.logging.TransactionLogger;

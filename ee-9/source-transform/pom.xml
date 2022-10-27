@@ -51,7 +51,6 @@
         <module>connector</module>
         <module>ee</module>
         <module>iiop-openjdk</module>
-        <module>transactions</module>
         <module>rts</module>
         <module>jsf</module>
         <module>microprofile</module>
