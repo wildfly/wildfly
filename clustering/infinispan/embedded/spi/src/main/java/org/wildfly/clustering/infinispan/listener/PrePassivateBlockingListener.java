@@ -22,34 +22,17 @@
 
 package org.wildfly.clustering.infinispan.listener;
 
-import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 
 import org.infinispan.Cache;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
-import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
-import org.infinispan.util.concurrent.BlockingManager;
 
 /**
- * Generic non-blocking post-activation listener that delegates to a blocking consumer.
+ * Generic non-blocking pre-passivation listener that delegates to a blocking consumer.
  * @author Paul Ferraro
  */
-@Listener(observation = Listener.Observation.POST)
-public class PostActivateListener<K, V> extends CacheEventListenerRegistrar<K, V> {
+public class PrePassivateBlockingListener<K, V> extends CacheEventListenerRegistrar<K, V> {
 
-    private final BlockingManager blocking;
-    private final BiConsumer<K, V> consumer;
-
-    @SuppressWarnings("deprecation")
-    public PostActivateListener(Cache<K, V> cache, BiConsumer<K, V> consumer) {
-        super(cache);
-        this.blocking = cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
-        this.consumer = consumer;
-    }
-
-    @CacheEntryActivated
-    public CompletionStage<Void> postActivate(CacheEntryActivatedEvent<K, V> event) {
-        return this.blocking.runBlocking(() -> this.consumer.accept(event.getKey(), event.getValue()), event.getSource());
+    public PrePassivateBlockingListener(Cache<K, V> cache, BiConsumer<K, V> consumer) {
+        super(cache, new PrePassivateListener<>(new BlockingCacheEventListener<>(cache, consumer)));
     }
 }

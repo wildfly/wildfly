@@ -25,21 +25,19 @@ package org.wildfly.clustering.web.infinispan.session.coarse;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.infinispan.util.concurrent.BlockingManager;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
 import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
-import org.wildfly.clustering.infinispan.listener.PostActivateListener;
-import org.wildfly.clustering.infinispan.listener.PostPassivateListener;
-import org.wildfly.clustering.infinispan.listener.PrePassivateListener;
+import org.wildfly.clustering.infinispan.listener.PostActivateBlockingListener;
+import org.wildfly.clustering.infinispan.listener.PostPassivateBlockingListener;
+import org.wildfly.clustering.infinispan.listener.PrePassivateBlockingListener;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionActivationNotifier;
@@ -71,8 +69,6 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     private final MutatorFactory<SessionAttributesKey, V> mutatorFactory;
     private final HttpSessionActivationListenerProvider<S, C, L> provider;
     private final Function<String, SessionAttributeActivationNotifier> notifierFactory;
-    private final BlockingManager blocking;
-    private final Executor executor;
     private final ListenerRegistration evictListenerRegistration;
     private final ListenerRegistration prePassivateListenerRegistration;
     private final ListenerRegistration postActivateListenerRegistration;
@@ -87,11 +83,9 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
         this.mutatorFactory = new InfinispanMutatorFactory<>(this.cache, this.properties);
         this.provider = configuration.getHttpSessionActivationListenerProvider();
         this.notifierFactory = configuration.getActivationNotifierFactory();
-        this.blocking = configuration.getBlockingManager();
-        this.executor = this.blocking.asExecutor(this.getClass().getName());
-        this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
-        this.postActivateListenerRegistration = !this.properties.isPersistent() ? new PostActivateListener<>(this.cache, this::postActivate).register(SessionAttributesKey.class) : null;
-        this.evictListenerRegistration = new PostPassivateListener<>(configuration.getCache(), this::cascadeEvict).register(SessionCreationMetaDataKey.class);
+        this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
+        this.postActivateListenerRegistration = !this.properties.isPersistent() ? new PostActivateBlockingListener<>(this.cache, this::postActivate).register(SessionAttributesKey.class) : null;
+        this.evictListenerRegistration = new PostPassivateBlockingListener<>(configuration.getCache(), this::cascadeEvict).register(SessionCreationMetaDataKey.class);
     }
 
     @Override
@@ -174,7 +168,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     }
 
     private void cascadeEvict(SessionCreationMetaDataKey key) {
-        this.executor.execute(() -> this.cache.evict(new SessionAttributesKey(key.getId())));
+        this.cache.evict(new SessionAttributesKey(key.getId()));
     }
 
     private void prePassivate(SessionAttributesKey key, V value) {
