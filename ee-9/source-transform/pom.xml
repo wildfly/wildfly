@@ -49,7 +49,6 @@
     <modules>
         <module>bean-validation</module>
         <module>ee</module>
-        <module>iiop-openjdk</module>
         <module>jsf</module>
         <module>microprofile</module>
         <module>shared</module>

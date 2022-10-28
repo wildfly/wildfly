@@ -296,7 +296,7 @@ public class RmiIdlUtil {
             if (f.getType().isPrimitive())
                 continue;
 
-            if (f.getType().equals(java.lang.String.class))
+            if (f.getType().equals(String.class))
                 continue;
 
             return false;
@@ -446,7 +446,7 @@ public class RmiIdlUtil {
 
                 if (f.getType().isPrimitive())
                     continue;
-                if (f.getType().equals(java.lang.String.class))
+                if (f.getType().equals(String.class))
                     continue;
                 cannotBeRemote = true;
                 break;
@@ -463,11 +463,11 @@ public class RmiIdlUtil {
             re = new org.omg.CORBA.OBJECT_NOT_EXIST(e.toString());
         else if (e instanceof java.rmi.AccessException)
             re = new org.omg.CORBA.NO_PERMISSION(e.toString());
-        else if (e instanceof javax.transaction.TransactionRequiredException)
+        else if (e instanceof jakarta.transaction.TransactionRequiredException)
             re = new org.omg.CORBA.TRANSACTION_REQUIRED(e.toString());
-        else if (e instanceof javax.transaction.TransactionRolledbackException)
+        else if (e instanceof jakarta.transaction.TransactionRolledbackException)
             re = new org.omg.CORBA.TRANSACTION_ROLLEDBACK(e.toString());
-        else if (e instanceof javax.transaction.InvalidTransactionException)
+        else if (e instanceof jakarta.transaction.InvalidTransactionException)
             re = new org.omg.CORBA.INVALID_TRANSACTION(e.toString());
         else if (e instanceof org.omg.CORBA.SystemException)
             re = (org.omg.CORBA.SystemException) e;
