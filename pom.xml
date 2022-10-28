@@ -96,6 +96,7 @@
         <module>picketlink</module>
         <module>pojo</module>
         <module>release</module>
+        <module>rts</module>
         <module>sar</module>
         <module>security</module>
         <module>system-jmx</module>
