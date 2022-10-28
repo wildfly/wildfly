@@ -73,6 +73,8 @@ public class LayersTestCase {
             // Perhaps via deployment descriptor? In any case, no layer provides them
             "org.wildfly.security.jakarta.client.resteasy",
             "org.wildfly.security.jakarta.client.webservices",
+            // This is added in the jaxrs subsystem to deployments if the MP config capability is met. The package is
+            // added in the microprofile-rest-client as well.
             "org.jboss.resteasy.microprofile.config",
             // Temporarily provided to not break the wildfly-extras gRPC feature pack
             // until it provides it itself.
