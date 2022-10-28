@@ -249,7 +249,7 @@ vi:ts=4:sw=4:expandtab
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-integration-jakarta</artifactId>
+            <artifactId>narayana-jts-integration</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.transaction</groupId>

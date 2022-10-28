@@ -252,7 +252,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.jts</groupId>
-      <artifactId>narayana-jts-idlj-jakarta</artifactId>
+      <artifactId>narayana-jts-idlj</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -263,7 +263,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.jts</groupId>
-      <artifactId>narayana-jts-integration-jakarta</artifactId>
+      <artifactId>narayana-jts-integration</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -274,7 +274,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
-      <artifactId>narayana-bridge-jakarta</artifactId>
+      <artifactId>narayana-bridge</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -285,7 +285,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
-      <artifactId>narayana-api-jakarta</artifactId>
+      <artifactId>narayana-api</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -296,7 +296,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
-      <artifactId>narayana-util-jakarta</artifactId>
+      <artifactId>narayana-util</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -317,7 +317,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
-      <artifactId>restat-bridge-jakarta</artifactId>
+      <artifactId>restat-bridge</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -328,7 +328,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
-      <artifactId>restat-integration-jakarta</artifactId>
+      <artifactId>restat-integration</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -339,7 +339,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
-      <artifactId>restat-util-jakarta</artifactId>
+      <artifactId>restat-util</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -350,7 +350,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.xts</groupId>
-      <artifactId>jbossxts-jakarta</artifactId>
+      <artifactId>jbossxts</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -361,7 +361,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.xts</groupId>
-      <artifactId>jbossxts-jakarta</artifactId>
+      <artifactId>jbossxts</artifactId>
       <classifier>api</classifier>
       <licenses>
         <license>
@@ -373,7 +373,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana</groupId>
-      <artifactId>jbosstxbridge-jakarta</artifactId>
+      <artifactId>jbosstxbridge</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -384,7 +384,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.compensations</groupId>
-      <artifactId>compensations-jakarta</artifactId>
+      <artifactId>compensations</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -395,7 +395,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.txframework</groupId>
-      <artifactId>txframework-jakarta</artifactId>
+      <artifactId>txframework</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>

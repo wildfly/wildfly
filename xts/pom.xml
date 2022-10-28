@@ -141,28 +141,28 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.xts</groupId>
-            <artifactId>jbossxts-jakarta</artifactId>
+            <artifactId>jbossxts</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.xts</groupId>
-            <artifactId>jbossxts-jakarta</artifactId>
+            <artifactId>jbossxts</artifactId>
             <classifier>api</classifier>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana</groupId>
-            <artifactId>jbosstxbridge-jakarta</artifactId>
+            <artifactId>jbosstxbridge</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-idlj-jakarta</artifactId>
+            <artifactId>narayana-jts-idlj</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.compensations</groupId>
-            <artifactId>compensations-jakarta</artifactId>
+            <artifactId>compensations</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.txframework</groupId>
-            <artifactId>txframework-jakarta</artifactId>
+            <artifactId>txframework</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.ws</groupId>
