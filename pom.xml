@@ -90,6 +90,7 @@
         <module>legacy/messaging</module>
         <module>legacy/web</module>
         <module>metrics</module>
+        <module>messaging-activemq</module>
         <module>microprofile</module>
         <module>mod_cluster</module>
         <module>naming</module>
@@ -2019,8 +2020,6 @@
                 <module>ee</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>jsf</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>messaging-activemq</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>observability</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->

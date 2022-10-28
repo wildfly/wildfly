@@ -31,7 +31,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
 import java.util.List;
 import java.util.Set;
 
-import javax.jms.Queue;
+import jakarta.jms.Queue;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;

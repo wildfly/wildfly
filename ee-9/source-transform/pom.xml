@@ -62,8 +62,6 @@
         <module>weld/subsystem</module>
         <module>weld/transactions</module>
         <module>undertow</module>
-        <module>messaging-activemq/injection</module>
-        <module>messaging-activemq/subsystem</module>
     </modules>
 
     <dependencyManagement>

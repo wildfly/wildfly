@@ -693,7 +693,7 @@ class ServerAdd extends AbstractAddStepHandler {
          *
          * @param configuration the ActiveMQ configuration
          * @param params the detyped operation parameters
-         * @throws org.jboss.as.controller.OperationFailedException
+         * @throws OperationFailedException
          */
         private void processAddressSettings(final OperationContext context, final Configuration configuration, final ModelNode params) throws OperationFailedException {
             if (params.hasDefined(ADDRESS_SETTING)) {

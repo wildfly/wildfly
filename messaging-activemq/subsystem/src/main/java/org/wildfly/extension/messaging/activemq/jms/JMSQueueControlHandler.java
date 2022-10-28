@@ -60,7 +60,7 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<QueueCon
     }
 
     @Override
-    protected AbstractQueueControlHandler.DelegatingQueueControl<QueueControl> getQueueControl(ActiveMQServer server, String queueName){
+    protected DelegatingQueueControl<QueueControl> getQueueControl(ActiveMQServer server, String queueName){
         String name = queueName;
         if (queueName.startsWith(JMS_QUEUE_PREFIX)) {
             name = queueName.substring(JMS_QUEUE_PREFIX.length());
@@ -74,7 +74,7 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<QueueCon
             }
         }
         final QueueControl control = queueControl;
-        return new AbstractQueueControlHandler.DelegatingQueueControl<QueueControl>() {
+        return new DelegatingQueueControl<QueueControl>() {
 
             @Override
             public QueueControl getDelegate() {

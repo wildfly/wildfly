@@ -22,8 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq.deployment;
 
-import javax.jms.JMSDestinationDefinition;
-import javax.jms.JMSDestinationDefinitions;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.JMSDestinationDefinitions;
 
 import org.jboss.as.ee.resource.definition.ResourceDefinitionAnnotationProcessor;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
