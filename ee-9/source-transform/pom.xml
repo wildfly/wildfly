@@ -50,7 +50,6 @@
         <module>bean-validation</module>
         <module>ee</module>
         <module>iiop-openjdk</module>
-        <module>rts</module>
         <module>jsf</module>
         <module>microprofile</module>
         <module>shared</module>

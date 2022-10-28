@@ -72,7 +72,7 @@ public final class ParticipantService extends AbstractRTSService implements Serv
         undeployServlet();
 
         final Map<String, String> initialParameters = new HashMap<String, String>();
-        initialParameters.put("javax.ws.rs.Application", ParticipantApplication.class.getName());
+        initialParameters.put("jakarta.ws.rs.Application", ParticipantApplication.class.getName());
 
         final DeploymentInfo participantDeploymentInfo = getDeploymentInfo(DEPLOYMENT_NAME, CONTEXT_PATH, initialParameters);
 
