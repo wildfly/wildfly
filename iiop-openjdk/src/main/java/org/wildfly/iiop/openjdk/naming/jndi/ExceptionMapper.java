@@ -98,7 +98,7 @@ public final class ExceptionMapper {
                 ne.setResolvedObj(ctx);
             }
 
-            ne.setRemainingName(org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.cosNameToName(rest));
+            ne.setRemainingName(CNNameParser.cosNameToName(rest));
 
         } else if (e instanceof InvalidName) {
             ne = new InvalidNameException();
@@ -135,7 +135,7 @@ public final class ExceptionMapper {
             } else {
                 // Due to 1.2/1.3 bug that always returns single-item 'rest'
                 NamingException ne = new NameNotFoundException();
-                ne.setRemainingName(org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.cosNameToName(rest));
+                ne.setRemainingName(CNNameParser.cosNameToName(rest));
                 ne.setRootCause(e);
                 throw ne;
             }
@@ -175,12 +175,12 @@ public final class ExceptionMapper {
         CannotProceedException cpe = new CannotProceedException();
         cpe.setRootCause(e);
         if (rest != null && rest.length > 0) {
-            cpe.setRemainingName(org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.cosNameToName(rest));
+            cpe.setRemainingName(CNNameParser.cosNameToName(rest));
         }
         cpe.setEnvironment(ctx._env);
 
         // Lookup resolved name to get resolved object
-        final java.lang.Object resolvedObj =
+        final Object resolvedObj =
                 (resolvedName != null) ? ctx.callResolve(resolvedName) : ctx;
 
         if (resolvedObj instanceof javax.naming.Context) {
@@ -188,7 +188,7 @@ public final class ExceptionMapper {
             // try getting its nns dynamically by constructing
             // a Reference containing obj.
             RefAddr addr = new RefAddr("nns") {
-                public java.lang.Object getContent() {
+                public Object getContent() {
                     return resolvedObj;
                 }
 
@@ -209,8 +209,8 @@ public final class ExceptionMapper {
         } else {
             // Not a context, use object factory to transform object.
 
-            Name cname = org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.cosNameToName(resolvedName);
-            java.lang.Object resolvedObj2;
+            Name cname = CNNameParser.cosNameToName(resolvedName);
+            Object resolvedObj2;
             try {
                 resolvedObj2 = NamingManager.getObjectInstance(resolvedObj,
                         cname, ctx, ctx._env);
@@ -231,9 +231,9 @@ public final class ExceptionMapper {
                 cpe.setAltName(cname);
 
                 // Create nns reference
-                final java.lang.Object rf2 = resolvedObj2;
+                final Object rf2 = resolvedObj2;
                 RefAddr addr = new RefAddr("nns") {
-                    public java.lang.Object getContent() {
+                    public Object getContent() {
                         return rf2;
                     }
 
