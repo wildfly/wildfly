@@ -407,7 +407,7 @@ WildFly may use multicast communication for some services, particularly
 those involving high availability clustering. The multicast addresses
 and ports used are configured using the `socket-binding` elements in
 `standalone.xml` and `domain.xml`. (See
-link:General_configuration_concepts.html#src-557065_Generalconfigurationconcepts-socket-bindings[Socket
+link:#socket-bindings-and-socket-binding-groups[Socket
 Bindings] for further information on these elements.) The standard HA
 configurations that ship with WildFly include two socket binding
 configurations that use a default multicast address:
