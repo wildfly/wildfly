@@ -92,7 +92,7 @@ public class SocketProtocolConfigurationServiceConfigurator extends ProtocolConf
         SocketBinding binding = this.binding.get();
         if (binding != null) {
             protocol.setValue("bind_addr", binding.getAddress());
-            protocol.setValue("start_port", binding.getPort());
+            protocol.setValue("start_port", binding.getAbsolutePort());
 
             List<ClientMapping> clientMappings = binding.getClientMappings();
             if (!clientMappings.isEmpty()) {
