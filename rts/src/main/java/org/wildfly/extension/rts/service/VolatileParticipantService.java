@@ -71,7 +71,7 @@ public final class VolatileParticipantService extends AbstractRTSService impleme
         undeployServlet();
 
         final Map<String, String> initialParameters = new HashMap<String, String>();
-        initialParameters.put("javax.ws.rs.Application", VolatileParticipantApplication.class.getName());
+        initialParameters.put("jakarta.ws.rs.Application", VolatileParticipantApplication.class.getName());
 
         final DeploymentInfo participantDeploymentInfo = getDeploymentInfo(DEPLOYMENT_NAME, CONTEXT_PATH, initialParameters);
 

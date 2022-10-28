@@ -28,7 +28,7 @@ import java.util.Set;
 import org.jboss.narayana.rest.integration.HeuristicMapper;
 import org.jboss.narayana.rest.integration.ParticipantResource;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 
 /**
  *

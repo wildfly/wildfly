@@ -95,6 +95,7 @@
         <module>picketlink</module>
         <module>pojo</module>
         <module>release</module>
+        <module>rts</module>
         <module>sar</module>
         <module>security</module>
         <module>system-jmx</module>
@@ -2023,7 +2024,7 @@
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>messaging-activemq</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>rts</module>
+                <module>observability</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>undertow</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->

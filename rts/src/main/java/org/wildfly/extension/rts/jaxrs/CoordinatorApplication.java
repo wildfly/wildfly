@@ -25,7 +25,7 @@ import java.util.Set;
 
 import org.jboss.jbossts.star.service.TMApplication;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 
 /**
  *
