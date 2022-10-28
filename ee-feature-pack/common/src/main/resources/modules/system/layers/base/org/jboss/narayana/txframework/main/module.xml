@@ -30,7 +30,7 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.jboss.narayana.txframework:txframework@module.jakarta.suffix@}"/>
+        <artifact name="${org.jboss.narayana.txframework:txframework}"/>
     </resources>
 
     <dependencies>
