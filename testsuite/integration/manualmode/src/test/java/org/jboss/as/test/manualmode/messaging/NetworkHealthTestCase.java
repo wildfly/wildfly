@@ -21,13 +21,13 @@
  */
 package org.jboss.as.test.manualmode.messaging;
 
+import static org.jboss.as.controller.client.helpers.Operations.isSuccessfulOutcome;
+
 import java.io.IOException;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.cli.Util;
 import org.jboss.as.controller.client.helpers.Operations;
-
-import static org.jboss.as.controller.client.helpers.Operations.isSuccessfulOutcome;
 
 import java.net.UnknownHostException;
 import java.nio.file.Path;
@@ -35,6 +35,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.apache.activemq.artemis.core.server.NetworkHealthCheck;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -93,11 +94,19 @@ public class NetworkHealthTestCase {
     @Test
     public void testNetworkUnHealthyNetwork() throws Exception {
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-        //Windows fix required until ARTEMIS-3799 is in
-        ModelNode op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping6-command", "ping -6 -n 1 -w %d %s");
+
+        ModelNode op;
         if(TestSuiteEnvironment.isWindows()) {
+            // The default ping commands in the AttributeDefinitions are meant for *nix based OSs and don't work,
+            // on Windows, so on Windows use the default *Artemis* values (from their NetworkHealthCheck class).
+            // The values of the Artemis defaults vary at runtime based on the OS, so we'll get the ones they think are best for Windows.
+            // Doing this also serves to test their current values (vs us hard coding something here).
+            op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping-command", NetworkHealthCheck.IPV4_DEFAULT_COMMAND);
             executeOperationForSuccess(managementClient, op);
-        }
+            op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping6-command", NetworkHealthCheck.IPV6_DEFAULT_COMMAND);
+            executeOperationForSuccess(managementClient, op);
+        } // else .... for non-Windows for the ping commands we leave the config as-is and test the default AD values
+
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", IP_ADDRESS);
         executeOperationForSuccess(managementClient, op);
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-period", 1000);
