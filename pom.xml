@@ -67,6 +67,7 @@
         <module>client/properties</module>
         <module>client/shade</module>
         <module>clustering</module>
+        <module>connector</module>
         <module>datasources-agroal</module>
         <module>dist</module>
         <module>ee-build</module>
@@ -2013,8 +2014,6 @@
             <modules>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>bean-validation</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>connector</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>ee</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->

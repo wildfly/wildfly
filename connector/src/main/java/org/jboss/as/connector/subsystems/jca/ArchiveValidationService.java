@@ -37,17 +37,17 @@ import org.jboss.msc.value.InjectedValue;
 final class ArchiveValidationService implements Service<ArchiveValidationService.ArchiveValidation> {
 
 
-    private final ArchiveValidationService.ArchiveValidation value;
+    private final ArchiveValidation value;
         private final InjectedValue<JcaSubsystemConfiguration> jcaConfig = new InjectedValue<JcaSubsystemConfiguration>();
 
 
         /** create an instance **/
-        public ArchiveValidationService(ArchiveValidationService.ArchiveValidation value) {
+        public ArchiveValidationService(ArchiveValidation value) {
             this.value = value;
         }
 
         @Override
-        public ArchiveValidationService.ArchiveValidation getValue() throws IllegalStateException {
+        public ArchiveValidation getValue() throws IllegalStateException {
             return value;
         }
 

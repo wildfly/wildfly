@@ -29,11 +29,11 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.resource.AdministeredObjectDefinition;
-import javax.resource.AdministeredObjectDefinitions;
+import jakarta.resource.AdministeredObjectDefinition;
+import jakarta.resource.AdministeredObjectDefinitions;
 
 /**
- * Deployment processor responsible for processing {@link javax.resource.AdministeredObjectDefinition} and {@link javax.resource.AdministeredObjectDefinitions}.
+ * Deployment processor responsible for processing {@link jakarta.resource.AdministeredObjectDefinition} and {@link jakarta.resource.AdministeredObjectDefinitions}.
  *
  * @author Jesper Pedersen
  * @author Eduardo Martins

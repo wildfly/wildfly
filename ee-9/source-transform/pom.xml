@@ -48,7 +48,6 @@
 
     <modules>
         <module>bean-validation</module>
-        <module>connector</module>
         <module>ee</module>
         <module>iiop-openjdk</module>
         <module>jpa/spi</module>
