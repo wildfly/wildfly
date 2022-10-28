@@ -37,7 +37,7 @@
         <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-iiop-openjdk-legacy-namespace</artifactId>
+    <artifactId>wildfly-iiop-openjdk</artifactId>
     <packaging>jar</packaging>
 
     <name>WildFly: IIOP Openjdk Subsystem</name>
@@ -56,7 +56,7 @@
                       <artifactItems>
                          <artifactItem>
                             <groupId>org.jboss.openjdk-orb</groupId>
-                            <artifactId>openjdk-orb</artifactId>
+                            <artifactId>openjdk-orb-jakarta</artifactId>
                             <type>jar</type>
                             <overWrite>true</overWrite>
                             <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
@@ -73,7 +73,7 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -82,12 +82,37 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <!-- Jakarta-namespace specific deps -->
+
+        <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.narayana.jts</groupId>
+            <artifactId>narayana-jts-idlj</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+        </dependency>
+
+        <!-- Other deps -->
+
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>
-            <artifactId>openjdk-orb</artifactId>
-       </dependency>
+            <artifactId>openjdk-orb-jakarta</artifactId>
+        </dependency>
 
-       <dependency>
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
         </dependency>
@@ -100,26 +125,6 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-network</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-idlj</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-ejb</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.transaction</groupId>
-            <artifactId>jboss-transaction-api_1.3_spec</artifactId>
         </dependency>
 
         <dependency>

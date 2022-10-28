@@ -69,7 +69,7 @@ public class OperationAnalysis  extends AbstractAnalysis {
         boolean gotRemoteException = false;
         ArrayList a = new ArrayList();
         for (int i = 0; i < ex.length; ++i) {
-            if (ex[i].isAssignableFrom(java.rmi.RemoteException.class))
+            if (ex[i].isAssignableFrom(RemoteException.class))
                 gotRemoteException = true;
             if (Exception.class.isAssignableFrom(ex[i]) &&
                     !RuntimeException.class.isAssignableFrom(ex[i]) &&

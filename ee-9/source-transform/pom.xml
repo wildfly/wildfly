@@ -49,7 +49,6 @@
     <modules>
         <module>bean-validation</module>
         <module>ee</module>
-        <module>iiop-openjdk</module>
         <module>jpa/spi</module>
         <module>jpa/eclipselink</module>
         <module>jpa/subsystem</module>

@@ -21,7 +21,7 @@
  */
 package org.wildfly.iiop.openjdk.tm;
 
-import javax.transaction.Transaction;
+import jakarta.transaction.Transaction;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;

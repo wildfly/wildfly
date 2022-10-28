@@ -55,27 +55,27 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
             this.absolute_name = "::" + name;
     }
 
-    public java.lang.String id() {
+    public String id() {
         return id;
     }
 
-    public void id(java.lang.String id) {
+    public void id(String id) {
         throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
-    public java.lang.String name() {
+    public String name() {
         return name;
     }
 
-    public void name(java.lang.String name) {
+    public void name(String name) {
         throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
-    public java.lang.String version() {
+    public String version() {
         return version;
     }
 
-    public void version(java.lang.String version) {
+    public void version(String version) {
         throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
@@ -83,7 +83,7 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
         return ContainerHelper.narrow(defined_in.getReference());
     }
 
-    public java.lang.String absolute_name() {
+    public String absolute_name() {
         return absolute_name;
     }
 
