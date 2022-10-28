@@ -22,7 +22,7 @@
 
 package org.jboss.as.txn.service;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;

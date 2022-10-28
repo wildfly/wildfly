@@ -35,8 +35,8 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
-import javax.transaction.TransactionScoped;
-import javax.transaction.Transactional;
+import jakarta.transaction.TransactionScoped;
+import jakarta.transaction.Transactional;
 import java.util.List;
 
 

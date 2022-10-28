@@ -51,7 +51,6 @@
         <module>connector</module>
         <module>ee</module>
         <module>iiop-openjdk</module>
-        <module>transactions</module>
         <module>rts</module>
         <module>jpa/spi</module>
         <module>jpa/eclipselink</module>

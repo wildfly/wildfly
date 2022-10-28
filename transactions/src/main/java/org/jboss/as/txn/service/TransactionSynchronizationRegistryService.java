@@ -23,7 +23,7 @@ package org.jboss.as.txn.service;
 
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY;
 
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.msc.service.AbstractService;

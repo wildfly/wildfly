@@ -103,6 +103,7 @@
         <module>weld</module>
         <module>testsuite/test-feature-pack</module>
         <module>testsuite</module>
+        <module>transactions</module>
     </modules>
 
     <scm>
@@ -2023,8 +2024,6 @@
                 <module>messaging-activemq</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>rts</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>transactions</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>undertow</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->

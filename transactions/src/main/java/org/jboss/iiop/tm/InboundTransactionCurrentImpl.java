@@ -22,8 +22,8 @@
 
 package org.jboss.iiop.tm;
 
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
 
 import org.omg.CORBA.LocalObject;
 import org.wildfly.transaction.client.ContextTransactionManager;
