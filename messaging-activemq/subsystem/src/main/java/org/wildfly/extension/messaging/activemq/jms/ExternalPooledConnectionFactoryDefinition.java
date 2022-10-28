@@ -73,10 +73,10 @@ public class ExternalPooledConnectionFactoryDefinition extends PooledConnectionF
         for (int i = 0; i < specific.length; i++) {
             ConnectionFactoryAttribute attr = specific[i];
             AttributeDefinition definition = attr.getDefinition();
-            if (definition == ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS) {
+            if (definition == Pooled.INITIAL_CONNECT_ATTEMPTS) {
                 result[i] = ConnectionFactoryAttribute.create(
                         SimpleAttributeDefinitionBuilder
-                                .create(ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS)
+                                .create(Pooled.INITIAL_CONNECT_ATTEMPTS)
                                 .setDefaultValue(new ModelNode(-1))
                                 .build(),
                         attr.getPropertyName(),

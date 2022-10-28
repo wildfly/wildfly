@@ -64,8 +64,6 @@
         <module>weld/common</module>
         <module>weld/spi</module>
         <module>undertow</module>
-        <module>messaging-activemq/injection</module>
-        <module>messaging-activemq/subsystem</module>
     </modules>
 
     <dependencyManagement>

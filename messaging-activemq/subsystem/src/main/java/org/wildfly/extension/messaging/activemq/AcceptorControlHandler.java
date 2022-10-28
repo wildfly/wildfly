@@ -44,6 +44,6 @@ public class AcceptorControlHandler extends AbstractActiveMQComponentControlHand
 
     @Override
     protected String getDescriptionPrefix() {
-        return org.wildfly.extension.messaging.activemq.CommonAttributes.ACCEPTOR;
+        return CommonAttributes.ACCEPTOR;
     }
 }

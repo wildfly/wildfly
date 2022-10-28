@@ -47,7 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
-import javax.resource.spi.TransactionSupport;
+import jakarta.resource.spi.TransactionSupport;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactoryImpl;
@@ -59,7 +59,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -104,7 +103,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     /*
     String description() default "";
     String name();
-    String interfaceName() default "javax.jms.ConnectionFactory";
+    String interfaceName() default "jakarta.jms.ConnectionFactory";
     String className() default "";
     String resourceAdapter() default "";
     String user() default "";
@@ -351,14 +350,14 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
         }
     }
 
-    private static String uniqueName(InjectionSource.ResolutionContext context, final String jndiName) {
+    private static String uniqueName(ResolutionContext context, final String jndiName) {
         StringBuilder uniqueName = new StringBuilder();
         return uniqueName.append(context.getApplicationName()).append("_")
                 .append(managementName(context, jndiName))
                 .toString();
     }
 
-    private static String managementName(InjectionSource.ResolutionContext context, final String jndiName) {
+    private static String managementName(ResolutionContext context, final String jndiName) {
         StringBuilder uniqueName = new StringBuilder();
         uniqueName.append(context.getModuleName()).append("_");
         if (context.getComponentName() != null) {

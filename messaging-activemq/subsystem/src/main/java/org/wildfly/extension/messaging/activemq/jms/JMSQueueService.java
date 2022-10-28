@@ -26,7 +26,7 @@ import static org.jboss.as.server.Services.addServerExecutorDependency;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
-import javax.jms.Queue;
+import jakarta.jms.Queue;
 
 import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.apache.activemq.artemis.jms.server.JMSServerManager;
@@ -43,7 +43,7 @@ import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
- * Service responsible for creating and destroying a {@code javax.jms.Queue}.
+ * Service responsible for creating and destroying a {@code jakarta.jms.Queue}.
  *
  * @author Emanuel Muckenhuber
  */
