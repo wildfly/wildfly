@@ -69,7 +69,7 @@ annotation:
 
 [source,java,options="nowrap"]
 ----
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 import org.apache.cxf.annotations.Policy;
  
 @WebService(portName = "MyServicePort",
@@ -130,7 +130,7 @@ annotation on a service endpoint interface:
 
 [source,java,options="nowrap"]
 ----
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 import org.jboss.ws.api.annotation.PolicySets;
  
 @WebService(name = "EndpointTwo", targetNamespace = "http://org.jboss.ws.jaxws.cxf/jbws3648")

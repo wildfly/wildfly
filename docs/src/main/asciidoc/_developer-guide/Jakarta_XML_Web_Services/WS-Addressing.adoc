@@ -13,8 +13,8 @@ WS-Addressing can be turned on in multiple standard ways:
 
 * consuming a WSDL contract that specifies a WS-Addressing assertion /
 policy
-* using the `@javax.xml.ws.soap.Addressing` annotation
-* using the `javax.xml.ws.soap.AddressingFeature` feature
+* using the `@jakarta.xml.ws.soap.Addressing` annotation
+* using the `jakarta.xml.ws.soap.AddressingFeature` feature
 
 [IMPORTANT]
 
@@ -52,13 +52,13 @@ CXF WS-Policy engine.
 
 This basically means that the WSDL contract generation for code-first
 endpoint deployment is policy-aware: users can annotate endpoints with
-the `@` `javax.xml.ws.soap.` `Addressing` annotation and expect the
+the `@` `jakarta.xml.ws.soap.` `Addressing` annotation and expect the
 published WSDL contract to contain proper WS-Addressing policy (assuming
 no `wsdlLocation` is specified in the endpoint's `@WebService`
 annotation).
 
 Similarly, on client side users do not need to manually specify the
-`javax.xml.ws.soap.AddressingFeature` feature, as the policy engine is
+`jakarta.xml.ws.soap.AddressingFeature` feature, as the policy engine is
 able to properly process the WS-Addressing policy in the consumed WSDL
 and turn on addressing as requested.
 
@@ -79,8 +79,8 @@ WS-Addressing is enforced through `@Addressing` annotation and no
 ----
 package org.jboss.test.ws.jaxws.samples.wsa;
  
-import javax.jws.WebService;
-import javax.xml.ws.soap.Addressing;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.soap.Addressing;
 import org.jboss.logging.Logger;
  
 @WebService

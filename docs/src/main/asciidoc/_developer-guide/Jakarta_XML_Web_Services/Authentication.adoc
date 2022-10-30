@@ -76,7 +76,7 @@ version in use.
 [[use-bindingprovider-to-set-principalcredential]]
 === Use BindingProvider to set principal/credential
 
-A web service client may use the `javax.xml.ws.BindingProvider`
+A web service client may use the `jakarta.xml.ws.BindingProvider`
 interface to set the username/password combination
 
 [source,java,options="nowrap"]
