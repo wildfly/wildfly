@@ -32,6 +32,8 @@
         <module name="org.eclipse.microprofile.restclient"/>
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.jboss.logging"/>
+        <!--This will add additional configuration lookups if available, however it's not required -->
+        <module name="org.jboss.resteasy.microprofile.config" services="import" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-cdi" services="import"/>
         <module name="org.jboss.resteasy.resteasy-client-api"/>
         <module name="org.jboss.resteasy.resteasy-client" services="import"/>
