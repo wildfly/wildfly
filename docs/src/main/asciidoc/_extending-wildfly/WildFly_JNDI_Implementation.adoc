@@ -266,7 +266,7 @@ and
 [source,java,options="nowrap"]
 ----
 /**
- * Deployment processor responsible for processing {@link javax.resource.AdministeredObjectDefinition} and {@link javax.resource.AdministeredObjectDefinitions}.
+ * Deployment processor responsible for processing {@link jakarta.resource.AdministeredObjectDefinition} and {@link jakarta.resource.AdministeredObjectDefinitions}.
  *
  * @author Jesper Pedersen
  * @author Eduardo Martins

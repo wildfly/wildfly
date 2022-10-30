@@ -13,10 +13,10 @@ when and which modules are added as implicit dependencies.
 == What's an implicit module dependency?
 
 Consider an application deployment which contains Jakarta Enterprise Beans. Jakarta Enterprise Beans typically
-need access to classes from the javax.ejb.* package and other Jakarta EE
+need access to classes from the jakarta.ejb.* package and other Jakarta EE
 API packages. The jars containing these packages are already shipped in
 WildFly and are available as "modules". The module which contains the
-javax.ejb.* classes has a specific name and so does the module which
+jakarta.ejb.* classes has a specific name and so does the module which
 contains all the Jakarta EE API classes. For an application to be able to
 use these classes, it has to add a dependency on the relevant modules.
 Forcing the application developers to add module dependencies like these
@@ -92,9 +92,9 @@ com.fasterxml.jackson.core.jackson-databind +
 com.fasterxml.jackson.datatype.jackson-datatype-jdk8 +
 com.fasterxml.jackson.datatype.jackson-datatype-jsr310 +
 com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider +
-javax.json.api +
-javax.ws.rs.api +
-javax.xml.bind.api +
+jakarta.json.api +
+jakarta.ws.rs.api +
+jakarta.xml.bind.api +
 org.eclipse.microprofile.restclient +
 org.jboss.resteasy.resteasy-atom-provider +
 org.jboss.resteasy.resteasy-client +
@@ -113,12 +113,12 @@ org.jboss.resteasy.resteasy-validator-provider
 |
 |The presence of Jakarta RESTful Web Services annotations in the deployment
 
-|Jakarta Connectors subsystem |javax.resource.api |javax.jms.api javax.validation.api
+|Jakarta Connectors subsystem |jakarta.resource.api |jakarta.jms.api jakarta.validation.api
 org.jboss.logging org.jboss.ironjacamar.api org.jboss.ironjacamar.impl
 org.hibernate.validator |If the deployment is a resource adaptor (RAR)
 deployment.
 
-|Jakarta Persistence (Hibernate) subsystem |javax.persistence.api |javaee.api
+|Jakarta Persistence (Hibernate) subsystem |jakarta.persistence.api |javaee.api
 org.jboss.as.jpa org.hibernate |The presence of an @PersistenceUnit or
 @PersistenceContext annotation, or a <persistence-unit-ref> or
 <persistence-context-ref> in a deployment descriptor..
@@ -137,7 +137,7 @@ is only added if used. Multiple version options exist for mojarra.
 
 |Web Services Subsystem |org.jboss.ws.api org.jboss.ws.spi |  | 
 
-|Weld (CDI) Subsystem |  |javax.persistence.api javaee.api org.javassist
+|Weld (CDI) Subsystem |  |jakarta.persistence.api javaee.api org.javassist
 org.jboss.interceptor org.jboss.as.weld org.jboss.logging
 org.jboss.weld.core org.jboss.weld.api org.jboss.weld.spi |If a
 beans.xml file is detected in the deployment

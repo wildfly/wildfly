@@ -210,7 +210,7 @@ defined in the deployment descriptor into the field.
 
 The `executor` field has no attributes specified, so the bind's name
 would default to
-`java:comp/env/javax.enterprise.concurrent.ManagedExecutorService/executor`,
+`java:comp/env/jakarta.enterprise.concurrent.ManagedExecutorService/executor`,
 but there is no such entry in the deployment descriptor, and when that
 happens it's up to WildFly to provide a default value or null, depending
 on the field's Java type. In this particular case WildFly would inject

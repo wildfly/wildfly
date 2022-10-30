@@ -27,7 +27,7 @@ The _microprofile-jwt-smallrye_ subsystem contains no configurable attributes or
 
 The subsystem will scan all deployments to detect if the _MP-JWT_ mechanism is required for any web components and if true activate the integration and the authentication mechanism.
 
-The classes in the deployment will be scanned to identify if there is a class which extends `javax.ws.rs.core.Application` annotated with the `org.eclipse.microprofile.auth.LoginConfig` to specify an _auth-method_.  Additionally the _auth-method_ contained within the deployments _web.xml_ will be checked.
+The classes in the deployment will be scanned to identify if there is a class which extends `jakarta.ws.rs.core.Application` annotated with the `org.eclipse.microprofile.auth.LoginConfig` to specify an _auth-method_.  Additionally the _auth-method_ contained within the deployments _web.xml_ will be checked.
 
 If authentication configuration is defined within the `@LoginConfig` annotation and within the _web.xml_ deployment descriptor the contents of the web.xml are given precedence.
 

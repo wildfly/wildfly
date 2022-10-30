@@ -8,7 +8,7 @@ allows multiple Jakarta Server Faces implementations to be installed on the same
 server. In particular, any version of Mojarra or MyFaces that implements
 spec level 2.1 or higher can be installed. For each Jakarta Server Faces implementation,
 a new slot needs to be created under `com.sun.jsf-impl`,
-`javax.faces.api`, and `org.jboss.as.jsf-injection`. When the Jakarta Server Faces
+`jakarta.faces.api`, and `org.jboss.as.jsf-injection`. When the Jakarta Server Faces
 subsystem starts up, it scans the module path to find all of the Jakarta Server Faces
 implementations that have been installed. The default Jakarta Server Faces implementation
 that WildFly should use is defined by the `default-jsf-impl-slot`
@@ -44,7 +44,7 @@ Jakarta Server Faces implementation JAR and fill in appropriate values for $\{
 
 * Create the following directory structure under the
 WILDFLY_HOME/modules directory: +
-WILDFLY_HOME/modules/javax/faces/api/<JSF_IMPL_NAME>-<JSF_VERSION>
+WILDFLY_HOME/modules/jakarta/faces/api/<JSF_IMPL_NAME>-<JSF_VERSION>
 
 * Place the JSF API JAR in the <JSF_IMPL_NAME>-<JSF_VERSION>
 subdirectory. In the same subdirectory, add a `module.xml` file similar

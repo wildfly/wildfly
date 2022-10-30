@@ -99,9 +99,9 @@ Then we add Jakarta Server Faces dependency into pom.xml:
 [source,xml,options="nowrap"]
 ----
 <dependency>
-    <groupId>javax.faces</groupId>
-    <artifactId>jsf-api</artifactId>
-    <version>2.1</version>
+    <groupId>jakarta.faces</groupId>
+    <artifactId>jakarta.faces-api</artifactId>
+    <version>4.0.1</version>
     <scope>provided</scope>
 </dependency>
 ----

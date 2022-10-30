@@ -880,7 +880,7 @@ persistence.xml
 public class ExampleSFSB {
   public void createSomeEntityWithTransactionScopedEM(String name) {
     Context context = new InitialContext();
-    jakarta.persistence.EntityManager entityManager = (javax.persistence.EntityManager) context.lookup("java:/myEntityManager");
+    jakarta.persistence.EntityManager entityManager = (jakarta.persistence.EntityManager) context.lookup("java:/myEntityManager");
     SomeEntity someEntity = new SomeEntity();
     someEntity.setName(name);    entityManager.persist(name);
   }
