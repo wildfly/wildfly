@@ -22,7 +22,7 @@ how _application-security-domain_ is configured, see the
 Application Authentication Configuration>> section.
 
 To configure applications to use _application-security-domain_, see
-<<set-up-and-configure-authentication-for-applications,Set Up and Configure Authentication for Applications>>. You
+<<WildFly_Elytron_Security.adoc#set-up-and-configure-authentication-for-applications,Set Up and Configure Authentication for Applications>>. You
 can also override the default behavior of all applications using the
 steps in
 <<override-an-applications-authentication-configuration,
@@ -71,7 +71,7 @@ and application authentication.
 [[undertow-subsystem]]
 == Undertow Subsystem
 
-As a web application is deployed the name of the security domain required by that application will be identified, this will either be from within the deployment or if the deployment does not have a security domain the `default-security-domain` as defined on the Undertow subsystem will be assumed.  By default it is assumed that the security domain maps to a PicketBox domain defined in the legacy security subsystem, however an `application-security-domain` resource can be added to the Undertow subsystem which maps from the name of the security domain required by the application to the appropriate WildFly Elytron configuration.
+As a web application is deployed the name of the security domain required by that application will be identified, this will either be from within the deployment or if the deployment does not have a security domain the `default-security-domain` as defined on the Undertow subsystem will be assumed.  An `application-security-domain` resource can be added to the Undertow subsystem which maps from the name of the security domain required by the application to the appropriate WildFly Elytron configuration.
 
 As an example in it's simplest form a mapping can be added as: -
 

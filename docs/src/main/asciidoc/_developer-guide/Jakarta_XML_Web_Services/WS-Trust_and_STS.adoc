@@ -1169,20 +1169,19 @@ configuration file.
 For this scenario the domain needs to contain user _alice_, password
 _clarinet_, and role _friend_. See the listings below for
 jbossws-users.properties and jbossws-roles.properties. In addition the
-following XML must be added to the JBoss security subsystem in the
+following XML elements must be added to the Elytron subsystem in the
 server configuration file. Replace " *SOME_PATH*" with appropriate
-information.
+information and then configure <<WildFly_Elytron_Security.adoc#set-up-and-configure-authentication-for-applications,authentication with this security domain>>.
 
 [source,xml,options="nowrap"]
 ----
- <security-domain name="JBossWS-trust-sts">
-  <authentication>
-    <login-module code="UsersRoles" flag="required">
-      <module-option name="usersProperties" value="/SOME_PATH/jbossws-users.properties"/>
-      <module-option name="unauthenticatedIdentity" value="anonymous"/>
-      <module-option name="rolesProperties" value="/SOME_PATH/jbossws-roles.properties"/>
-    </login-module>
-  </authentication>
+<properties-realm name="JBossWS-trust-sts">
+    <users-properties path="/SOME_PATH/usersProperties"/>
+    <groups-properties path="/SOME_PATH/rolesProperties"/>
+</properties-realm>
+...
+<security-domain name="JBossWS-trust-sts" default-realm="JBossWS-trust-sts" permission-mapper="default-permission-mapper">
+    <realm name="JBossWS-trust-sts" role-decoder="groups-to-roles"/>
 </security-domain>
 ----
 

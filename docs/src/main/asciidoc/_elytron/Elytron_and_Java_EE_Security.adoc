@@ -15,7 +15,6 @@ The `SecurityContext` API makes use of JACC to access the current authenticated 
 
 [source, ruby]
 ----
-/subsystem=security:write-attribute(name=initialize-jacc, value=false)
 /subsystem=elytron/policy=jacc:add(jacc-policy={})
 :reload
 ----

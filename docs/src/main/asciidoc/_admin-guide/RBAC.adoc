@@ -995,13 +995,13 @@ actually does:
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /profile=default/subsystem=security/security-domain=other:read-resource
+[domain@localhost:9990 /] /profile=default/subsystem=elytron/security-domain=ManagementDomain:read-resource
 {
     "outcome" => "failed",
     "failure-description" => "WFLYCTL0216: Management resource '[
     (\"profile\" => \"default\"),
-    (\"subsystem\" => \"security\"),
-    (\"security-domain\" => \"other\")
+    (\"subsystem\" => \"elytron\"),
+    (\"security-domain\" => \"ManagementDomain\")
 ]' not found",
     "rolled-back" => true
 }
@@ -1015,25 +1015,25 @@ which they are allowed to see and some of which they are not. If this
 happens, the request will not fail, but inaccessible data will be elided
 and a response header will be included advising on what was not
 included. Here we show the effect of a Monitor trying to recursively
-read the security subsystem configuration:
+read the elytron subsystem configuration:
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /profile=default/subsystem=security:read-resource(recursive=true)
+[domain@localhost:9990 /] /profile=default/subsystem=elytron:read-resource(recursive=true)
 {
     "outcome" => "success",
     "result" => {
-        "deep-copy-subject-mode" => undefined,
+        "security-properties" => undefined,
         "security-domain" => undefined,
         "vault" => undefined
     },
     "response-headers" => {"access-control" => [{
         "absolute-address" => [
             ("profile" => "default"),
-            ("subsystem" => "security")
+            ("subsystem" => "elytron")
         ],
         "relative-address" => [],
-        "filtered-attributes" => ["deep-copy-subject-mode"],
+        "filtered-attributes" => ["security-properties"],
         "filtered-children-types" => ["security-domain"]
     }]}
 }
