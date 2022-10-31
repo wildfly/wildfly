@@ -1,0 +1,322 @@
+[[Elytron_Java_Security_Manager]]
+= Elytron WildFly Java Security Manager
+
+== Overview
+
+=== General introduction
+The Elytron WildFly Java Security Manager is build on top of and within the https://docs.oracle.com/en/java/javase/11/security/java-se-platform-security-architecture.html[Java SE Platform Security Architecture].
+
+The Java Enterprise Edition (EE) 7 specification introduced a new feature which allows application developers to specify a Java Security Manager (JSM) policy for their Java EE applications, when deployed to a compliant Java EE Application Server such as WildFly. Until now, writing JSM policies has been pretty tedious. Now a new tool has been developed which allows the generation of a JSM policy for deployments running on WildFly. It is possible that running with JSM enabled may affect performance, https://bugs.openjdk.java.net/browse/JDK-8043631[JEP 232] indicates the performance impact would be 10-15%, but it is still recommended to test the impact per application.
+
+Elytron WildFly Java Security Manager basic enhancements are
+
+* Support of JavaEE 7 (and newer) https://www.oracle.com/webfolder/technetwork/jsc/xml/ns/javaee/permissions_7.xsd[Java EE application permissions schema] to allow declarative security per application deployment.
+* Support of minimum and maximum permissions per server instance.
+* Support of a "log-only" mode to ease development and testing of permissions.
+* Output of debug information to detect missing permissions.
+* Output of trace information to analyse special situations with {oracle-javadoc}/java.base/java/security/ProtectionDomain.html[protection domains], classloaders, and {oracle-javadoc}/java.base/java/security/CodeSource.html[codesources].
+
+==== Why Run with the Java Security Manager Enabled?
+Running a JSM will not fully protect the server from malicious attackers exploiting security vulnerabilities. It does, however, offer another layer of protection which can help reduce the impact of serious security vulnerabilities, such as deserialization attacks. For example, most of the recent https://www.github.com/mbechler/marshalsec/blob/master/marshalsec.pdf?raw=true[attacks against Jackson Databind] rely on making a Socket connection to an attacker-controlled JNDI Server to load malicious code. https://access.redhat.com/solutions/3279231[This article] provides information on how this issue potentially affects an application written for JBoss EAP, which would be same for WildFly. The Security Manager could block the socket creation, and potentially thwart the attack.
+
+==== JavaSE 17 Deprecate the Security Manager for Removal
+The community decided to deprecate the Java Security Manager with Java 17. The full details are described in https://openjdk.org/jeps/411[JEP 411: Deprecate the Security Manager for Removal]. WildFly {wildflyversion} still tests and actively supports the Security Manager. Used in conjunction with other tools such as https://docs.oracle.com/en/java/javase/11/core/serialization-filtering1.html#GUID-3ECB288D-E5BD-4412-892F-E9BB11D4C98A[Serialization Filtering] the JSM is still a good defense in depth measure.
+
+==== Multi-Layer Security
+The Elytron WildFly Java Security Manager is just one piece in a multi-layer security with https://en.wikipedia.org/wiki/Defense_in_depth_(computing)[Defense in depth]. Take care to https://www.cisecurity.org/cis-benchmarks/[harden your environment] and minimize rights of the process for example with https://selinuxproject.org[SELinux] and https://www.ctrl.blog/entry/systemd-service-hardening.html[systemd service hardening].
+
+== The Security manager subsystem
+
+[[Elytron_JSM_cli_enable_jsm]]
+=== Enabling the Security Manager
+You can enable the security manager with one of the following options:
+[source,sh,options="nowrap"]
+----
+./standalone.sh -secmgr # command line argument or
+./standalone.sh SECMGR=true
+----
+
+The server startup log should indicate this
+[source,options="nowrap"]
+----
+INFO  [org.jboss.as] (MSC service thread 1-8) WFLYSRV0235: Security Manager is enabled
+----
+
+The use of ```-Djava.security.manager``` as described in https://docs.oracle.com/en/java/javase/11/security/java-se-platform-security-architecture.html#GUID-36A4FAF4-B31B-4BF1-A030-51E9555FE349[Managing Applets and Applications] has been removed from WildFly.
+
+=== Security Policy Support
+You can still utilize a custom https://docs.oracle.com/en/java/javase/11/security/permissions-jdk1.html#GUID-789089CA-8557-4017-B8B0-6899AD3BA18D[security policy file] with the `-Djava.security.policy` option. This is useful for special cases, for example a java agent. *The default is the JVM provided policy*.
+[source,sh,options="nowrap"]
+----
+./standalone.sh -secmgr -Djava.security.policy=file://$JBOSS_HOME/standalone/configuration/customjsm.policy
+----
+`-Djava.security.policy=` with one equal sign (`=`) utilizes the default policy plus the custom policy.
+`-Djava.security.policy==` with two equal signs (`==`) utilizes only the custom policy, take care for the necessary rights of the JVM in this case.
+
+[[Elytron_JSM_security_policy_property_replacement]]
+==== Property replacement in security policies
+You can use variables in custom security policies which are resolved at runtime. You have to specify them on the command line or in the ```$JBOSS_HOME/bin/standalone.conf``` file. Properties in the server configuration are not available at the time of variable resolution on startup for the JSM.
+
+[[Elytron_JSM_Log-ony_mode]]
+=== Log-only mode
+The log-only mode could be described as JSM simulation mode: Every permission check will be done but the result will not be propagated to the system - no SecurityException will be thrown. It is _NOT_ about enabling or disabling log entries, which is solely driven by the logging configuration. The log-only mode is controlled with the `-Dorg.wildfly.security.manager.log-only` option. *The default is false.*
+[source,sh,options="nowrap"]
+----
+./standalone.sh -secmgr -Dorg.wildfly.security.manager.log-only=true
+----
+Do _NOT_ use this option in production environments.
+
+[[Elytron_JSM_logging_debug_trace]]
+=== Logging Debug and trace
+
+You can find a detailed description and how to about the command line interface and the logging configuration in the link:Admin_Guide{outfilesuffix}[Admin Guide]. The logger name to configure for the Elytron WildFly Security Manager is ```org.wildfly.security.access```.
+
+==== WildFly Security Manager Debug logging
+Debug is enabled via the following CLI commands
+[source,sh,options="nowrap"]
+----
+/subsystem=logging/logger=org.wildfly.security.access:add
+/subsystem=logging/logger=org.wildfly.security.access:write-attribute(name=level,value=DEBUG)
+----
+A sample output will look like this:
+[source]
+----
+DEBUG [org.wildfly.security.access] (Batch Thread - 1) Permission check failed (permission "("java.util.PropertyPermission" "java.io.tmpdir" "read")" in code source "(vfs:/content/batch-processing.war/WEB-INF/classes <no signer certificates>)" of "ModuleClassLoader for Module "deployment.batch-processing.war" from Service Module Loader")
+----
+
+==== WildFly Security Manager Trace logging
+You might have a case where you need to find out what exactly caused a certain permission request. Or you have an error case with an `null` classloader or `null` codesource. To get a stacktrace you can enable `org.wildfly.security.access` on log level `TRACE`.
+
+[source,sh,options="nowrap"]
+----
+/subsystem=logging/logger=org.wildfly.security.access:add
+/subsystem=logging/logger=org.wildfly.security.access:write-attribute(name=level,value=TRACE)
+----
+Attention: This generates a lot of log output and has a severe performance impact. It's not intended for permanent activation in development or testing but for special cases only.
+
+==== Logging Profiles
+If you are using one or more logging profiles it is strongly recommended to configure the `org.wildfly.security.access` logger for the server _AND_ all logging profiles. If not, you might miss a relevant output.
+
+[[Elytron_JSM_min_max_permissions]]
+=== Minimum and maximum permissions
+The ```security-manager``` subsystem configures a maximum-set with the ```AllPermission``` by default:
+[source,xml,options="nowrap"]
+----
+            <deployment-permissions>
+                <maximum-set>
+                    <permission class="java.security.AllPermission"/>
+                </maximum-set>
+            </deployment-permissions>
+----
+If you cannot configure a third-party blackbox deployment unit or you want to share a common set of permissions across multiple deployments you can add a ```minimum-set``` of permissions.
+You could modify the ```maximum-set```, remove the AllPermission and setup further restrictions to permissions you are willing to grant to deployments.
+
+[[Elytron_JSM_permissions_xml_property_replacement]]
+=== Property replacement in permissions.xml
+link:Admin_Guide{outfilesuffix}#spec-descriptor-property-replacement[Expression resolution in EE security manager deployment descriptors] (permissions.xml and jboss-permissions.xml) is supported since WildFly 19. You can use the familiar ```${foo:true}``` syntax in these deployment descriptors to allow customization of settings at runtime.
+
+Enable in standalone mode
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=ee:write-attribute(name=jboss-descriptor-property-replacement,value=TRUE)
+[standalone@localhost:9990 /] /subsystem=ee:write-attribute(name=spec-descriptor-property-replacement,value=TRUE)
+----
+
+Enable in domain mode
+[source,options="nowrap"]
+----
+[domain@localhost:9990 /] /profile=*/subsystem=ee:write-attribute(name=jboss-descriptor-property-replacement, value=TRUE)
+[domain@localhost:9990 /] /profile=*/subsystem=ee:write-attribute(name=spec-descriptor-property-replacement, value=TRUE)
+----
+
+=== Sample permissions.xml
+The permissions.xml file has to be placed below META-INF of deployment unit. The following example shows some entries, including
+property replacement. This is especially useful for immutable artifacts.
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<permissions xmlns="https://jakarta.ee/xml/ns/jakartaee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+             https://jakarta.ee/xml/ns/jakartaee/permissions_10.xsd"
+             version="10">
+    <permission>
+        <class-name>java.util.PropertyPermission</class-name>
+        <name>*</name> <!-- many 3rd party APIs cache and require access to all properties -->
+        <actions>read, write</actions>
+    </permission>
+    <permission>
+        <class-name>java.lang.RuntimePermission</class-name>
+        <name>getClassLoader</name>
+    </permission>
+    <permission>
+        <class-name>java.io.FilePermission</class-name>
+        <name>${install.app.home}/a/folder/-</name> <!-- recursive in and below folder -->
+        <actions>read</actions> <!-- but not write, delete, execute -->
+    </permission>
+    <permission>
+        <class-name>java.io.FilePermission</class-name>
+        <name>${install.app.home}/b/folder</name> <!-- folder itself -->
+        <actions>read, write, delete</actions> <!-- but not execute -->
+    </permission>
+    <permission>
+        <class-name>java.io.FilePermission</class-name>
+        <name>${install.app.home}/b/folder/*</name> <!-- all IN the folder -->
+        <actions>read, write, delete</actions> <!-- but not execute -->
+    </permission>
+    <permission>
+        <class-name>java.net.URLPermission</class-name>
+        <name>${myserver.prot}://${myserver.hostname}:${myserver.port}/c/path/-</name> <!-- recursive in and below path -->
+        <actions>POST,GET,DELETE:*</actions> <!-- refer to JavaDoc for more samples -->
+    </permission>
+</permissions>
+----
+
+== How to generate a Java Security Manager Policy
+
+=== Prerequisites
+
+* Java EE EAR or WAR file to add policies to;
+* Targeting WildFly 11 or later;
+* the Gradle build tool https://gradle.org/install/
+* Comprehensive test plan which exercises every "normal" function of the application.
+
+If a comprehensive test plan isn't available, a policy could be generated in a production environment, as long as some extra disk space for logging is available and there is confidence the security of the application is not going to be compromised while generating policies.
+
+=== Setup 'Log Only' mode and 'debug' logging for the Security Manager
+Please enable the link:#Elytron_JSM_Log-ony_mode[log-only mode] and  link:#Elytron_JSM_logging_debug_trace[debug logging].
+
+=== Test the application to generate policy violations
+For this example we'll use the https://github.com/wildfly/quickstart/tree/main/batch-processing[batch-processing] quickstart. Follow the README to deploy the application and access it running on the application server at ```http://localhost:8080/batch-processing```. Click the 'Generate a new file and start import job' button in the Web UI and notice some policy violations are logged to the ```$JBOSS_HOME/standalone/log/server.log``` file, for example:
+[source]
+----
+DEBUG [org.wildfly.security.access] (Batch Thread - 1) Permission check failed (permission "("java.util.PropertyPermission" "java.io.tmpdir" "read")" in code source "(vfs:/content/batch-processing.war/WEB-INF/classes <no signer certificates>)" of "ModuleClassLoader for Module "deployment.batch-processing.war" from Service Module Loader")
+----
+
+=== Generate a policy file for the application
+Checkout the source code for the wildfly-policygen project written by Red Hat Product Security.
+
+[source,sh,options="nowrap"]
+----
+git clone git@github.com:jasinner/wildfly-policygen.git
+----
+
+Set the location of the ```server.log``` file which contains the generated security violations in the ```build.gradle``` script, i.e.:
+
+[source,options="nowrap"]
+----
+task runScript (dependsOn: 'classes', type: JavaExec) {
+    main = 'com.redhat.prodsec.eap.EntryPoint'
+    classpath = sourceSets.main.runtimeClasspath
+    args '$JBOSS_HOME/standalone/log/server.log'
+}
+----
+
+Run wildfly-policygen using gradle, i.e.:
+[source,options="nowrap"]
+----
+gradle runScript
+----
+
+A ```permissions.xml``` file should be generated in the current directory. Using the example application, the file is called ```batch-processing.war.permissions.xml```. Copy that file to ```src/main/webapp/META-INF/permissions.xml```, build, and redeploy the application, for example:
+[source,sh,options="nowrap"]
+----
+cp batch-processing.war.permissions.xml $APP_HOME/src/main/webapp/META-INF/permissions.xml
+----
+Where APP_HOME is an environment variable pointing to the batch-processing application's home directory.
+
+=== Run with the security manager in enforcing mode
+Recall that we set the link:#Elytron_JSM_Log-ony_mode[org.wildfly.security.manager.log-only] system property in order to log permission violations. Remove that system property or set it to ```false``` in order to enforce the JSM policy that's been added to the deployment. Once that line has been changed or removed from ```bin/standalone.conf```, restart the application server, build, and redeploy the application.
+
+Also go ahead and remove the extra logging category that was added previously using the CLI, e.g.:
+[source,options="nowrap"]
+----
+/subsystem=logging/logger=org.wildfly.security.access:remove
+----
+This time there shouldn't be any permission violations logged in the server.log file.
+
+== Conclusion
+While the Java Security Manager will not prevent all security vulnerabilities possible against an application deployed to WildFly, it will add another layer of protection, which could mitigate the impact of serious security vulnerabilities such as deserialization attacks. If running with Security Manager enabled, be sure to check the impact on the performance of the application to make sure it's within acceptable limits. Finally, use of the wildfly-policygen tool is not officially supported by Red Hat, however issues can be raised for the project in Github or in the https://groups.google.com/forum/#!forum/wildfly[WildFly User Forum].
+
+[[Elytron_JSM_Further_Background]]
+== Further background
+Additionally to the documentation of https://jboss-modules.github.io/jboss-modules/manual/#security-manager[JBoss Modules and the Security Manager] the following explanations have been extracted from an WildFly developer conversation.
+
+[[Elytron_JSM_Protection_Domains]]
+=== Elytron WildFly Security Manager and Protection Domains
+Within WildFly there are two types of ProtectionDomain:
+
+* Server module (everything under the modules folder).
+* Deployment.
+
+Server modules automatically have the {oracle-javadoc}/java.base/java/security/AllPermission.html[AllPermission] granted.
+Deployments have a combination of their permission.xml as well as possibly the minimal permission set from the security manager subsystem.
+
+==== Permission checks
+As a call progresses from class to class, module to module, deployment to module a list of all of the protection domains of each of these builds up.
+When a permission check is performed it will only succeed if each and every protection domain on the call stack has been granted the permission.
+
+This is where {oracle-javadoc}/java.base/java/security/AccessController.html#doPrivileged(java.security.PrivilegedAction)[doPrivileged] comes in, this is effectively saying "At this point in the callstack it is verified safe, forget the protection domains that called me."
+So when a deployment calls into a server module and that server module calls doPrivileged then the deployments module will not longer be a part of the permission check.
+
+Adding a doPrivileged seems an obvious solution but when added one also need to think about how deployments could abuse this to get their protection domain dropped from the permissions check.
+
+==== Privileged blocks in dependencies
+Adding the privileged block in a dependency used by WildFly works because the protection domain of the server modules has all the permissions. It is important to understand how module all permissions and doPrivileged checks work combined for a deployment.
+
+One point to start with there is nothing special about a {oracle-javadoc}/java.base/java/security/PrivilegedAction.html[PrivilegedAction]: PrivilegedAction is an interface which allows a {oracle-javadoc}/java.base/java/lang/Runnable.html[Runnable] class to be passed in and also has a return type. If this was added later it could have been implemented with the functional interfaces. The special part is the doPrivileged call.
+Under normal circumstances every jar would be represented by it's own protection domain and each jar could be assigned it's own permissions. When the security manager performs it's permissions check it would make sure every protection domain in the call stack has been granted that permission.
+
+The WildFly modules case is slightly special as all the modules just get granted AllPermission, so we end up in a situation where deployments have a defined set of permissions and the WildFly modules have all - by default the security manager checks the permissions of both of these during a permission check that spans them - the WildFly module will of course always pass.
+
+Because of WildFly's model it is easy to get into the assumption that it is the doPrivileged call which is doing something special to bypass the security manager permissions check, it is not - all it is doing is dropping the protection domains from the call stack prior to that point, so we just end up with the protection domains for WildFly modules on the call stack which have the all permission.
+
+So where you say the current protection domain where the dependency is has all permissions granted - yes that is it - the remaining protections domains on the call stack have the appropriate permissions granted.
+
+The documentation might lead to the view the doPriviledge does some magical things that allowed your code run as trusted code that can bypass the permissions, for example at https://docs.oracle.com/en/java/javase/11/security/java-se-platform-security-architecture.html#GUID-73F600BE-8098-4613-AD4B-E2DEFB9118D8[What It Means to Have Privileged Code], with sentences as:
+____
+Marking code as "privileged" enables a piece of trusted code to temporarily enable access to more resources than are available directly to the code that called it. This is necessary in some situations. For example, an application may not be allowed direct access to files that contain fonts, but the system utility to display a document must obtain those fonts, on behalf of the user. In order to do this, the system utility becomes privileged while obtaining the fonts.
+____
+
+This is all part of the argument for removing it, the confusion around how to apply the APIs - one could say the following sentence is correct but hides the important detail. ```"Marking code as "privileged" enables a piece of trusted code to temporarily enable access to more resources than are available directly to the code that called it."```
+
+If we have module A calling module B - by default the permissions check checks both.
+If module B contains a doPrivileged before the permission check then only module B's protection domain will be checked.
+
+The reason for using the doPrivileged is the assumption module B has the greater (or more appropriate permissions) and just want these compared without those from A.
+
+But it is also possible that A actually had the required permissions and B does not do even though one adds a doPrivileged it still fails as B does not have sufficient permissions anyway.
+
+The reason for using the doPrivileged is the assumption module B has the greater (or more appropriate permissions) and just want these compared without those from A.
+
+==== Privileged blocks implications for third party libraries
+
+It is not a requirement for a developer of a third-party library to add a doProviledge block and configure the corresponding protection domain with the permissions the library requires for doing the work.
+
+A third-party developer of a library could add a doPrivileged block to allow the consumers of the library to have the freedom to not require all the permissions needed available on all the protection domains. However, consumers have to at least give the required permissions to the protection domain where the third-party library is. This is just to add a possibility for the consumers of the library.
+
+==== Privileged blocks implications for WildFly modules
+
+Without WildFly's special AllPermission assignment each module should specify the permissions that it needs.
+
+But this is where the permissions get even more complex. Let's say in that example module B needs to read a file, the developer of module B may not know where that file will exist as it is not until the module is used in another project (like an app server we know file locations).
+
+One way is avoiding doPrivileged:
+
+* Module B has the permission to access all files.
+* Module A has the permission to access just a specific file.
+
+Combined a permission check would pass.
+
+Second is module B contains a doPrivileged.
+
+If module B still has the permission to access all files but module A has no file permission. If module A can pass the path of the file to module B one now has the problem that modules can potentially use this to bypass permissions and get access to all files.
+
+The next variation is the permissions for module B need adjusting in context, i.e. it now needs to specify which file module B can access so there is no way for A to abuse it.
+
+WildFly developers should not need to specify permissions for all modules in the app server, and if they need context that would be even more difficult.
+
+The first example would be the equivalent of all deployments now needing the permissions granted but deployments are not supposed to need to be aware of the inner workings of the application server to decide what permissions they need.
+
+So it ends up in that middle ground where if WildFly developers are not careful it could be open to abuse from deployments.

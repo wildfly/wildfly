@@ -118,5 +118,5 @@ configuration options, using information generated directly from the WildFly man
 * https://www.wildfly.org[WildFly project page]
 * https://issues.redhat.com/browse/WFLY[WildFly issue tracker]
 * https://groups.google.com/g/wildfly[WildFly user forum]
-* https://community.jboss.org/en/wildfly/dev[WildFly wiki]
+* https://developer.jboss.org/en/wildfly/dev[WildFly wiki]
 * https://github.com/wildfly/wildfly/[WildFly source]
