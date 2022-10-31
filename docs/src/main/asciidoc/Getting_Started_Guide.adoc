@@ -34,65 +34,67 @@ server configuration profiles.
 |Jakarta EE Platform Technology |Jakarta EE Full Platform |Jakarta EE Web
 Profile |WildFly {wildflyVersion} Full profile |WildFly {wildflyVersion} Web profile
 
-|Jakarta WebSocket 2.1 |X |X |X |X
-
-|Jakarta JSON Processing 2.1 |X |X |X |X
-
-|Jakarta JSON Binding 3.0 |X |X |X |X
-
-|Jakarta Servlet 6.0 |X |X |X |X
-
-|Jakarta Server Faces 4.0 |X |X |X |X
-
-|Jakarta Expression Language 5.0 |X |X |X |X
-
-|Jakarta Server Pages 3.1 |X |X |X |X
-
-|Jakarta Standard Tag Library 3.0 |X |X |X |X
-
-|Jakarta Batch 2.1 |X |-- |X |--
-
-|Jakarta Concurrency 3.0 |X |X |X |X
-
-|Jakarta Contexts and Dependency Injection 4.0 |X |X |X |X
-
-|Jakarta Dependency Injection 2.0 |X |X |X |X
-
-|Jakarta Bean Validation 3.0 |X |X |X |X
-
-|Jakarta Enterprise Beans 4.0 |X |X(Lite) |X |X(Lite)
-
-|Jakarta Interceptors 2.1 |X |X |X |X
-
-|Jakarta Connectors 2.1 |X |-- |X |X
-
-|Jakarta Persistence 3.1 |X |X |X |X
+|Jakarta Activation 2.1 |X |-- |X |X
 
 |Jakarta Annotations 2.1 |X |X |X |X
-
-|Jakarta Messaging 3.1 |X |-- |X |--
-
-|Jakarta Transactions 2.0 |X |X |X |X
-
-|Jakarta Mail 2.1 |X |-- |X |X
-
-|Jakarta RESTful Web Services 3.1 |X |X |X |X
-
-|Jakarta Enterprise Web Services 2.0 |Optional |-- |X |X
-
-|Jakarta XML Web Services 4.0 |Optional |-- |X |X
-
-|Jakarta SOAP with Attachments 1.3 |Optional |-- |X |X
-
-|Jakarta XML Binding 4.0 |Optional |X |X |X
 
 |Jakarta Authentication 3.0 |X |X |X |X
 
 |Jakarta Authorization 2.1 |X |-- |X |--
 
+|Jakarta Batch 2.1 |X |-- |X |--
+
+|Jakarta Bean Validation 3.0 |X |X |X |X
+
+|Jakarta Concurrency 3.0 |X |X |X |X
+
+|Jakarta Connectors 2.1 |X |-- |X |X
+
+|Jakarta Contexts and Dependency Injection 4.0 |X |X |X |X
+
 |Jakarta Debugging Support for Other Languages 2.0 |X |X |X |X
 
+|Jakarta Dependency Injection 2.0 |X |X |X |X
+
+|Jakarta Enterprise Beans 4.0 |X |X(Lite) |X |X(Lite)
+
+|Jakarta Enterprise Web Services 2.0 |Optional |-- |X |X
+
+|Jakarta Expression Language 5.0 |X |X |X |X
+
+|Jakarta Interceptors 2.1 |X |X |X |X
+
+|Jakarta JSON Binding 3.0 |X |X |X |X
+
+|Jakarta JSON Processing 2.1 |X |X |X |X
+
+|Jakarta Mail 2.1 |X |-- |X |X
+
+|Jakarta Messaging 3.1 |X |-- |X |--
+
+|Jakarta Persistence 3.1 |X |X |X |X
+
+|Jakarta RESTful Web Services 3.1 |X |X |X |X
+
 |Jakarta Security 3.0 |X |X |X |X
+
+|Jakarta Server Faces 4.0 |X |X |X |X
+
+|Jakarta Server Pages 3.1 |X |X |X |X
+
+|Jakarta Servlet 6.0 |X |X |X |X
+
+|Jakarta SOAP with Attachments 1.3 |Optional |-- |X |X
+
+|Jakarta Standard Tag Library 3.0 |X |X |X |X
+
+|Jakarta Transactions 2.0 |X |X |X |X
+
+|Jakarta WebSocket 2.1 |X |X |X |X
+
+|Jakarta XML Binding 4.0 |Optional |X |X |X
+
+|Jakarta XML Web Services 4.0 |Optional |-- |X |X
 |=======================================================================
 
 Missing ActiveMQ Artemis and Jakarta Messaging?
