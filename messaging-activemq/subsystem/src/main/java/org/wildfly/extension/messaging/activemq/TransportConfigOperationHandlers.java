@@ -564,7 +564,7 @@ public class TransportConfigOperationHandlers {
                             if (sa.getAddress().isLoopbackAddress()) {
                                 host = NetworkUtils.canonize(sa.getAddress().getHostName());
                             } else {
-                                host = NetworkUtils.canonize(sa.getAddress().getHostAddress());
+                                host = NetworkUtils.canonize(sa.getHostString());
                             }
                         }
                     } else {
