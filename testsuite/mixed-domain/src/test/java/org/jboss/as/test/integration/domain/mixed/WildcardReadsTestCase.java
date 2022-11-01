@@ -78,8 +78,8 @@ import org.junit.Test;
 public class WildcardReadsTestCase {
 
     private static final PathElement HOST_WILD = PathElement.pathElement(HOST);
-    private static final PathElement HOST_MASTER = PathElement.pathElement(HOST, "primary");
-    private static final PathElement HOST_SLAVE = PathElement.pathElement(HOST, "secondary");
+    private static final PathElement HOST_PRIMARY = PathElement.pathElement(HOST, "primary");
+    private static final PathElement HOST_SECONDARY = PathElement.pathElement(HOST, "secondary");
     private static final PathElement SERVER_WILD = PathElement.pathElement(RUNNING_SERVER);
     private static final PathElement SERVER_ONE = PathElement.pathElement(RUNNING_SERVER, "server-one");
     private static final PathElement INTERFACE_WILD = PathElement.pathElement(INTERFACE);
@@ -87,39 +87,39 @@ public class WildcardReadsTestCase {
     private static final PathElement SERVER_CONFIG_WILD = PathElement.pathElement(SERVER_CONFIG);
     private static final PathElement SERVER_CONFIG_ONE = PathElement.pathElement(SERVER_CONFIG, "server-one");
     private static final PathAddress SOCKET_BINDING_HTTP = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, "standard-sockets"), PathElement.pathElement(SOCKET_BINDING, "http"));
-    private static final ValueExpression MASTER_ADDRESS = new ValueExpression("${jboss.test.host.primary.address}");
-    private static final ValueExpression SLAVE_ADDRESS = new ValueExpression("${jboss.test.host.secondary.address}");
+    private static final ValueExpression PRIMARY_ADDRESS = new ValueExpression("${jboss.test.host.primary.address}");
+    private static final ValueExpression SECONDARY_ADDRESS = new ValueExpression("${jboss.test.host.secondary.address}");
 
     private static final Set<String> VALID_STATES = new HashSet<>(Arrays.asList("running", "stopped"));
 
     private static DomainTestSupport support;
-    private static Boolean masterServerOneStarted;
+    private static Boolean primaryServerOneStarted;
 
     @Before
     public void init() throws Exception {
         support = KernelBehaviorTestSuite.getSupport(this.getClass());
 
-        if (masterServerOneStarted == null) {
-            String state = readMasterServerOneState();
-            masterServerOneStarted = "running".equalsIgnoreCase(state);
+        if (primaryServerOneStarted == null) {
+            String state = readPrimaryServerOneState();
+            primaryServerOneStarted = "running".equalsIgnoreCase(state);
         }
-        if (!masterServerOneStarted) {
-            ModelNode op = Util.createEmptyOperation("start", PathAddress.pathAddress(HOST_MASTER, SERVER_CONFIG_ONE));
+        if (!primaryServerOneStarted) {
+            ModelNode op = Util.createEmptyOperation("start", PathAddress.pathAddress(HOST_PRIMARY, SERVER_CONFIG_ONE));
             executeForResult(op, ModelType.STRING);
 
             String state;
             long timeout = System.currentTimeMillis() + TimeoutUtil.adjust(30000);
-            while (!"running".equalsIgnoreCase(state = readMasterServerOneState())
+            while (!"running".equalsIgnoreCase(state = readPrimaryServerOneState())
                     && System.currentTimeMillis() < timeout) {
                 Thread.sleep(25);
             }
-            assertNotNull("Could not start master/server-one", state);
-            assertEquals("Could not start master/server-one", "running", state.toLowerCase(Locale.ENGLISH));
+            assertNotNull("Could not start primary/server-one", state);
+            assertEquals("Could not start primary/server-one", "running", state.toLowerCase(Locale.ENGLISH));
         }
     }
 
-    private static String readMasterServerOneState() throws IOException {
-        ModelNode op = Util.getReadAttributeOperation(PathAddress.pathAddress(HOST_MASTER, SERVER_ONE), "server-state");
+    private static String readPrimaryServerOneState() throws IOException {
+        ModelNode op = Util.getReadAttributeOperation(PathAddress.pathAddress(HOST_PRIMARY, SERVER_ONE), "server-state");
         ModelNode response = support.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         if (SUCCESS.equals(response.get(OUTCOME).asString())) {
             return response.get(RESULT).asString();
@@ -129,8 +129,8 @@ public class WildcardReadsTestCase {
 
     @AfterClass
     public static synchronized void afterClass() {
-        if (masterServerOneStarted == Boolean.FALSE) {
-            ModelNode op = Util.createEmptyOperation("stop", PathAddress.pathAddress(HOST_MASTER, SERVER_CONFIG_ONE));
+        if (primaryServerOneStarted == Boolean.FALSE) {
+            ModelNode op = Util.createEmptyOperation("stop", PathAddress.pathAddress(HOST_PRIMARY, SERVER_CONFIG_ONE));
             executeForResult(op, ModelType.STRING);
         }
         KernelBehaviorTestSuite.afterClass();
@@ -141,29 +141,29 @@ public class WildcardReadsTestCase {
         ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(HOST_WILD, SERVER_WILD, INTERFACE_WILD));
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), 6, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 3)) {
-                masterCount++;
+            if (isPrimaryItem(item, 3)) {
+                primaryCount++;
             }
             assertEquals(item.toString(), ModelType.EXPRESSION, item.get(RESULT, INET_ADDRESS).getType());
         }
-        assertEquals(resp.toString(), 3, masterCount);
+        assertEquals(resp.toString(), 3, primaryCount);
     }
 
     @Test
-    public void testSlaveAllServersReadInterfaceResources() {
-        ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(HOST_SLAVE, SERVER_WILD, INTERFACE_WILD));
+    public void testSecondaryAllServersReadInterfaceResources() {
+        ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(HOST_SECONDARY, SERVER_WILD, INTERFACE_WILD));
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), 3, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 3)) {
-                masterCount++;
+            if (isPrimaryItem(item, 3)) {
+                primaryCount++;
             }
             assertEquals(item.toString(), ModelType.EXPRESSION, item.get(RESULT, INET_ADDRESS).getType());
         }
-        assertEquals(resp.toString(), 0, masterCount);
+        assertEquals(resp.toString(), 0, primaryCount);
     }
 
     @Test
@@ -172,30 +172,30 @@ public class WildcardReadsTestCase {
         op.get(INCLUDE_RUNTIME).set(true);
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), expectUnstartedServerResource() ? 4 : 3, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 2)) {
-                masterCount++;
+            if (isPrimaryItem(item, 2)) {
+                primaryCount++;
             }
             assertTrue(item.toString(), VALID_STATES.contains(item.get(RESULT, "server-state").asString().toLowerCase(Locale.ENGLISH)));
         }
-        assertEquals(resp.toString(), 2, masterCount);
+        assertEquals(resp.toString(), 2, primaryCount);
     }
 
     @Test
-    public void testSlaveAllServersReadRootResource() {
-        ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(HOST_SLAVE, SERVER_WILD));
+    public void testSecondaryAllServersReadRootResource() {
+        ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(HOST_SECONDARY, SERVER_WILD));
         op.get(INCLUDE_RUNTIME).set(true);
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), expectUnstartedServerResource() ? 2 : 1, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 2)) {
-                masterCount++;
+            if (isPrimaryItem(item, 2)) {
+                primaryCount++;
             }
             assertTrue(item.toString(), VALID_STATES.contains(item.get(RESULT, "server-state").asString().toLowerCase(Locale.ENGLISH)));
         }
-        assertEquals(resp.toString(), 0, masterCount);
+        assertEquals(resp.toString(), 0, primaryCount);
     }
 
     @Test
@@ -204,30 +204,30 @@ public class WildcardReadsTestCase {
         op.get(NAME).set("inet-address");
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), 2, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 3)) {
-                masterCount++;
+            if (isPrimaryItem(item, 3)) {
+                primaryCount++;
             }
             assertEquals(item.toString(), ModelType.EXPRESSION, item.get(RESULT).getType());
         }
-        assertEquals(resp.toString(), 1, masterCount);
+        assertEquals(resp.toString(), 1, primaryCount);
     }
 
     @Test
-    public void testSlaveAllServersReadInterfaceAttribute() {
-        ModelNode op = Util.createEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(HOST_SLAVE, SERVER_WILD, INTERFACE_PUBLIC));
+    public void testSecondaryAllServersReadInterfaceAttribute() {
+        ModelNode op = Util.createEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(HOST_SECONDARY, SERVER_WILD, INTERFACE_PUBLIC));
         op.get(NAME).set("inet-address");
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), 1, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 3)) {
-                masterCount++;
+            if (isPrimaryItem(item, 3)) {
+                primaryCount++;
             }
             assertEquals(item.toString(), ModelType.EXPRESSION, item.get(RESULT).getType());
         }
-        assertEquals(resp.toString(), 0, masterCount);
+        assertEquals(resp.toString(), 0, primaryCount);
 
     }
 
@@ -237,31 +237,31 @@ public class WildcardReadsTestCase {
         op.get(NAME).set("server-state");
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), expectUnstartedServerResource() ? 4 : 3, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 2)) {
-                masterCount++;
+            if (isPrimaryItem(item, 2)) {
+                primaryCount++;
             }
             assertTrue(item.toString(), VALID_STATES.contains(item.get(RESULT).asString().toLowerCase(Locale.ENGLISH)));
         }
-        assertEquals(resp.toString(), 2, masterCount);
+        assertEquals(resp.toString(), 2, primaryCount);
 
     }
 
     @Test
-    public void testSlaveAllServersReadRootAttribute() {
-        ModelNode op = Util.createEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(HOST_SLAVE, SERVER_WILD));
+    public void testSecondaryAllServersReadRootAttribute() {
+        ModelNode op = Util.createEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(HOST_SECONDARY, SERVER_WILD));
         op.get(NAME).set("server-state");
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), expectUnstartedServerResource() ? 2 : 1, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 2)) {
-                masterCount++;
+            if (isPrimaryItem(item, 2)) {
+                primaryCount++;
             }
             assertTrue(item.toString(), VALID_STATES.contains(item.get(RESULT).asString().toLowerCase(Locale.ENGLISH)));
         }
-        assertEquals(resp.toString(), 0, masterCount);
+        assertEquals(resp.toString(), 0, primaryCount);
 
     }
 
@@ -270,30 +270,30 @@ public class WildcardReadsTestCase {
         ModelNode op = Util.createEmptyOperation(READ_RESOURCE_DESCRIPTION_OPERATION, PathAddress.pathAddress(HOST_WILD, SERVER_WILD, INTERFACE_PUBLIC));
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), 2, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 3)) {
-                masterCount++;
+            if (isPrimaryItem(item, 3)) {
+                primaryCount++;
             }
             assertTrue(item.toString(), item.hasDefined(RESULT, ATTRIBUTES, INET_ADDRESS));
         }
-        assertEquals(resp.toString(), 1, masterCount);
+        assertEquals(resp.toString(), 1, primaryCount);
 
     }
 
     @Test
-    public void testSlaveAllServersReadInterfaceDescription() {
-        ModelNode op = Util.createEmptyOperation(READ_RESOURCE_DESCRIPTION_OPERATION, PathAddress.pathAddress(HOST_SLAVE, SERVER_WILD, INTERFACE_PUBLIC));
+    public void testSecondaryAllServersReadInterfaceDescription() {
+        ModelNode op = Util.createEmptyOperation(READ_RESOURCE_DESCRIPTION_OPERATION, PathAddress.pathAddress(HOST_SECONDARY, SERVER_WILD, INTERFACE_PUBLIC));
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), 1, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 3)) {
-                masterCount++;
+            if (isPrimaryItem(item, 3)) {
+                primaryCount++;
             }
             assertTrue(item.toString(), item.hasDefined(RESULT, ATTRIBUTES, INET_ADDRESS));
         }
-        assertEquals(resp.toString(), 0, masterCount);
+        assertEquals(resp.toString(), 0, primaryCount);
 
     }
 
@@ -302,30 +302,30 @@ public class WildcardReadsTestCase {
         ModelNode op = Util.createEmptyOperation(READ_RESOURCE_DESCRIPTION_OPERATION, PathAddress.pathAddress(HOST_WILD, SERVER_WILD));
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), expectUnstartedServerResource() ? 4 : 3, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 2)) {
-                masterCount++;
+            if (isPrimaryItem(item, 2)) {
+                primaryCount++;
             }
             assertTrue(item.toString(), item.hasDefined(RESULT, ATTRIBUTES, "server-state"));
         }
-        assertEquals(resp.toString(), 2, masterCount);
+        assertEquals(resp.toString(), 2, primaryCount);
 
     }
 
     @Test
-    public void testSlaveAllServersReadRootDescription() {
-        ModelNode op = Util.createEmptyOperation(READ_RESOURCE_DESCRIPTION_OPERATION, PathAddress.pathAddress(HOST_SLAVE, SERVER_WILD));
+    public void testSecondaryAllServersReadRootDescription() {
+        ModelNode op = Util.createEmptyOperation(READ_RESOURCE_DESCRIPTION_OPERATION, PathAddress.pathAddress(HOST_SECONDARY, SERVER_WILD));
         ModelNode resp = executeForResult(op);
         assertEquals(resp.toString(), expectUnstartedServerResource() ? 2 : 1, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 2)) {
-                masterCount++;
+            if (isPrimaryItem(item, 2)) {
+                primaryCount++;
             }
             assertTrue(item.toString(), item.hasDefined(RESULT, ATTRIBUTES, "server-state"));
         }
-        assertEquals(resp.toString(), 0, masterCount);
+        assertEquals(resp.toString(), 0, primaryCount);
 
     }
 
@@ -336,18 +336,18 @@ public class WildcardReadsTestCase {
         ModelNode resp = executeForResult(op);
 
         assertEquals(resp.toString(), 2, resp.asInt());
-        ModelNode slaveResult = null;
-        int masterCount = 0;
+        ModelNode secondaryResult = null;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 1)) {
-                masterCount++;
+            if (isPrimaryItem(item, 1)) {
+                primaryCount++;
             } else {
-                slaveResult = item.get(RESULT);
+                secondaryResult = item.get(RESULT);
             }
             assertTrue(item.toString(), item.hasDefined(RESULT, "host-state"));
         }
-        assertEquals(resp.toString(), 1, masterCount);
-        assertNotNull(resp.toString(), slaveResult);
+        assertEquals(resp.toString(), 1, primaryCount);
+        assertNotNull(resp.toString(), secondaryResult);
 
         // Now limit the result to secondary hosts
         op.get(WHERE, PRIMARY).set(false);
@@ -358,7 +358,7 @@ public class WildcardReadsTestCase {
         op.get(WHERE, "master").set(false);
         resp = executeForResult(op);
         assertEquals(resp.toString(), 1, resp.asInt());
-        assertEquals(resp.toString(), slaveResult, resp.get(0).get(RESULT));
+        assertEquals(resp.toString(), secondaryResult, resp.get(0).get(RESULT));
 
         // Now slim down the output
         op.get(SELECT).add(NAME);
@@ -370,14 +370,14 @@ public class WildcardReadsTestCase {
 
     @Test
     public void testSpecificHostRootQuery() {
-        // /host=slave:query
-        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SLAVE));
+        // /host=secondary:query
+        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SECONDARY));
         ModelNode result = executeForResult(op, ModelType.OBJECT);
 
         assertTrue(result.toString(), result.hasDefined("host-state"));
         assertEquals(result.toString(), "secondary", result.get(NAME).asString());
 
-        // Now cause the filter to exclude the slave
+        // Now cause the filter to exclude the secondary
         op.get(WHERE, "master").set(true);
         executeForResult(op, ModelType.UNDEFINED);
 
@@ -398,10 +398,10 @@ public class WildcardReadsTestCase {
 
         assertEquals(resp.toString(), 4, resp.asInt());
         Set<ModelNode> autoStarts = new HashSet<>();
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
-            if (isMasterItem(item, 2)) {
-                masterCount++;
+            if (isPrimaryItem(item, 2)) {
+                primaryCount++;
             }
             ModelNode result = item.get(RESULT);
             assertTrue(item.toString(), result.has(AUTO_START));
@@ -411,7 +411,7 @@ public class WildcardReadsTestCase {
             assertTrue(item.toString(), result.hasDefined(GROUP));
             assertTrue(item.toString(), result.hasDefined("status"));
         }
-        assertEquals(resp.toString(), 2, masterCount);
+        assertEquals(resp.toString(), 2, primaryCount);
 
         // Now limit the result to non-auto-start
         op.get(WHERE, AUTO_START).set(false);
@@ -434,14 +434,14 @@ public class WildcardReadsTestCase {
 
     @Test
     public void testSpecificHostServerConfigQuery() {
-        // Basic /host=slave/server-config=*:query
-        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SLAVE, SERVER_CONFIG_WILD));
+        // Basic /host=secondary/server-config=*:query
+        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SECONDARY, SERVER_CONFIG_WILD));
         ModelNode resp = executeForResult(op);
 
         assertEquals(resp.toString(), 2, resp.asInt());
         Set<ModelNode> autoStarts = new HashSet<>();
         for (ModelNode item : resp.asList()) {
-            assertFalse(resp.toString(), isMasterItem(item, 2));
+            assertFalse(resp.toString(), isPrimaryItem(item, 2));
             ModelNode result = item.get(RESULT);
             assertTrue(item.toString(), result.has(AUTO_START));
             if (result.hasDefined(AUTO_START) && !result.get(AUTO_START).asBoolean()) {
@@ -479,11 +479,11 @@ public class WildcardReadsTestCase {
 
         assertEquals(resp.toString(), expectUnstartedServerResource() ? 4 : 3, resp.asInt());
         Set<ModelNode> running = new HashSet<>();
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
             String expectedHost;
-            if (isMasterItem(item, 2)) {
-                masterCount++;
+            if (isPrimaryItem(item, 2)) {
+                primaryCount++;
                 expectedHost = "primary";
             } else {
                 expectedHost = "secondary";
@@ -495,7 +495,7 @@ public class WildcardReadsTestCase {
                 running.add(result);
             }
         }
-        assertEquals(resp.toString(), 2, masterCount);
+        assertEquals(resp.toString(), 2, primaryCount);
         assertEquals(resp.toString(), 2, running.size());
 
         // Now limit the result to running servers
@@ -520,14 +520,14 @@ public class WildcardReadsTestCase {
 
     @Test
     public void testSpecificHostServerRootQuery() {
-        // Basic /host=slave/server=*:query
-        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SLAVE, SERVER_WILD));
+        // Basic /host=secondary/server=*:query
+        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SECONDARY, SERVER_WILD));
         ModelNode resp = executeForResult(op);
 
         assertEquals(resp.toString(), expectUnstartedServerResource() ? 2 : 1, resp.asInt());
         Set<ModelNode> running = new HashSet<>();
         for (ModelNode item : resp.asList()) {
-            assertFalse(resp.toString(), isMasterItem(item, 2));
+            assertFalse(resp.toString(), isPrimaryItem(item, 2));
             ModelNode result = item.get(RESULT);
             assertTrue(item.toString(), result.hasDefined("server-state"));
             if (result.get("server-state").asString().toLowerCase(Locale.ENGLISH).equals("running")) {
@@ -559,8 +559,8 @@ public class WildcardReadsTestCase {
 
     @Test
     public void testSpecificServerRootQuery() {
-        // /host=slave/server=server-one:query
-        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SLAVE, SERVER_ONE));
+        // /host=secondary/server=server-one:query
+        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SECONDARY, SERVER_ONE));
         ModelNode result = executeForResult(op, ModelType.OBJECT);
 
         assertEquals(result.toString(), "running", result.get("server-state").asString());
@@ -587,22 +587,22 @@ public class WildcardReadsTestCase {
         ModelNode resp = executeForResult(op);
 
         assertEquals(resp.toString(), 2 * 3, resp.asInt());
-        int masterCount = 0;
+        int primaryCount = 0;
         for (ModelNode item : resp.asList()) {
             ValueExpression expectedAddress;
-            if (isMasterItem(item, 3)) {
-                masterCount++;
-                expectedAddress = MASTER_ADDRESS;
+            if (isPrimaryItem(item, 3)) {
+                primaryCount++;
+                expectedAddress = PRIMARY_ADDRESS;
             } else {
-                expectedAddress = SLAVE_ADDRESS;
+                expectedAddress = SECONDARY_ADDRESS;
             }
             ModelNode result = item.get(RESULT);
             assertEquals(resp.toString(), expectedAddress, result.get(INET_ADDRESS).asExpression());
         }
-        assertEquals(resp.toString(), 3, masterCount);
+        assertEquals(resp.toString(), 3, primaryCount);
 
-        // Now limit the result to slave servers
-        op.get(WHERE, INET_ADDRESS).set(SLAVE_ADDRESS);
+        // Now limit the result to secondary servers
+        op.get(WHERE, INET_ADDRESS).set(SECONDARY_ADDRESS);
         resp = executeForResult(op);
         assertEquals(resp.toString(), 3, resp.asInt());
 
@@ -613,46 +613,46 @@ public class WildcardReadsTestCase {
         for (ModelNode item : resp.asList()) {
             ModelNode result = item.get(RESULT);
             assertEquals(resp.toString(), 1, result.keys().size());
-            assertEquals(resp.toString(), SLAVE_ADDRESS, result.get(INET_ADDRESS).asExpression());
+            assertEquals(resp.toString(), SECONDARY_ADDRESS, result.get(INET_ADDRESS).asExpression());
         }
 
     }
 
     @Test
     public void testSpecificServerWildcardInterfaceQuery() {
-        // Basic /host=slave/server=server-one/interface=*:query
-        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SLAVE, SERVER_ONE, INTERFACE_WILD));
+        // Basic /host=secondary/server=server-one/interface=*:query
+        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SECONDARY, SERVER_ONE, INTERFACE_WILD));
         ModelNode resp = executeForResult(op);
 
         assertEquals(resp.toString(), 3, resp.asInt());
         for (ModelNode item : resp.asList()) {
             ModelNode result = item.get(RESULT);
-            assertEquals(resp.toString(), SLAVE_ADDRESS, result.get(INET_ADDRESS).asExpression());
+            assertEquals(resp.toString(), SECONDARY_ADDRESS, result.get(INET_ADDRESS).asExpression());
         }
 
-        // Now limit the result to master servers
+        // Now limit the result to primary servers
         // This is a wildcard request, so the result should be an empty list
-        op.get(WHERE, INET_ADDRESS).set(MASTER_ADDRESS);
+        op.get(WHERE, INET_ADDRESS).set(PRIMARY_ADDRESS);
         resp = executeForResult(op);
         assertEquals(resp.toString(), 0, resp.asInt());
 
         // Now correct the filter and slim down the output
-        op.get(WHERE, INET_ADDRESS).set(SLAVE_ADDRESS);
+        op.get(WHERE, INET_ADDRESS).set(SECONDARY_ADDRESS);
         op.get(SELECT).add(INET_ADDRESS);
         resp = executeForResult(op);
         assertEquals(resp.toString(), 3, resp.asInt());
         for (ModelNode item : resp.asList()) {
             ModelNode result = item.get(RESULT);
             assertEquals(resp.toString(), 1, result.keys().size());
-            assertEquals(resp.toString(), SLAVE_ADDRESS, result.get(INET_ADDRESS).asExpression());
+            assertEquals(resp.toString(), SECONDARY_ADDRESS, result.get(INET_ADDRESS).asExpression());
         }
 
     }
 
     @Test
     public void testSpecificServerSpecificSocketBindingQuery() {
-        // /host=slave/server=server-one/socket-binding-group=standard-sockets/socket-binding=*:query
-        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SLAVE, SERVER_ONE).append(SOCKET_BINDING_HTTP));
+        // /host=secondary/server=server-one/socket-binding-group=standard-sockets/socket-binding=*:query
+        ModelNode op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_SECONDARY, SERVER_ONE).append(SOCKET_BINDING_HTTP));
         ModelNode result = executeForResult(op, ModelType.OBJECT);
 
         assertEquals(result.toString(), 8080, result.get(PORT).asInt());
@@ -692,7 +692,7 @@ public class WildcardReadsTestCase {
         }
     }
 
-    private boolean isMasterItem(ModelNode item, int itemSize) {
+    private boolean isPrimaryItem(ModelNode item, int itemSize) {
         assertTrue(item.toString(), item.hasDefined(ADDRESS));
         PathAddress pa = PathAddress.pathAddress(item.get(ADDRESS));
         assertEquals(item.toString(), itemSize, pa.size());

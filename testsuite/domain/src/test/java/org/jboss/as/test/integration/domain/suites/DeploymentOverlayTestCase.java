@@ -189,7 +189,7 @@ public class DeploymentOverlayTestCase {
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
 
         //add an override that will not be linked via a wildcard
@@ -203,7 +203,7 @@ public class DeploymentOverlayTestCase {
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         op.get(ModelDescriptionConstants.CONTENT).get(INPUT_STREAM_INDEX).set(0);
         builder.addInputStream(getClass().getClassLoader().getResourceAsStream("deploymentoverlay/override.xml"));
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
         //add the non-wildcard link to the server group
         op = new ModelNode();
@@ -212,7 +212,7 @@ public class DeploymentOverlayTestCase {
         addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY);
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         op = new ModelNode();
         addr = new ModelNode();
@@ -221,7 +221,7 @@ public class DeploymentOverlayTestCase {
         addr.add(ModelDescriptionConstants.DEPLOYMENT, "test.war");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
 
         //add the wildard link
@@ -275,7 +275,7 @@ public class DeploymentOverlayTestCase {
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         steps.add(op);
 
-        executeOnMaster(opBuilder.build());
+        executeOnPrimary(opBuilder.build());
     }
 
 
@@ -293,7 +293,7 @@ public class DeploymentOverlayTestCase {
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS);
         OperationBuilder builder = new OperationBuilder(composite, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
         DomainClient client = testSupport.getDomainPrimaryLifecycleUtil().createDomainClient();
         Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/servlet"));
@@ -307,7 +307,7 @@ public class DeploymentOverlayTestCase {
                 .append(ModelDescriptionConstants.DEPLOYMENT, "*.war")
                 .toModelNode());
         op.get("redeploy-affected").set(true);
-        executeOnMaster(op);
+        executeOnPrimary(op);
         Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/servlet"));
         Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/servlet"));
         Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
@@ -317,7 +317,7 @@ public class DeploymentOverlayTestCase {
                 .append(ModelDescriptionConstants.DEPLOYMENT, "test.war")
                 .toModelNode());
         op.get("redeploy-affected").set(true);
-        executeOnMaster(op);
+        executeOnPrimary(op);
         Assert.assertEquals("NON OVERRIDDEN", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/servlet"));
         Assert.assertEquals("NON OVERRIDDEN", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/servlet"));
         Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "primary", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
@@ -353,11 +353,11 @@ public class DeploymentOverlayTestCase {
         return content.toString();
     }
 
-    private static ModelNode executeOnMaster(ModelNode op) throws IOException {
+    private static ModelNode executeOnPrimary(ModelNode op) throws IOException {
         return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
-    private static ModelNode executeOnMaster(Operation op) throws IOException {
+    private static ModelNode executeOnPrimary(Operation op) throws IOException {
         return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 

@@ -40,16 +40,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests slave behavior in a mixed domain when the master has booted with a legacy domain.xml.
+ * Tests secondary behavior in a mixed domain when the primary has booted with a legacy domain.xml.
  *
  * @author Brian Stansberry
  */
 public abstract class LegacyConfigTest {
 
-    private static final PathElement SLAVE = PathElement.pathElement("host", "secondary");
-    private static final PathAddress TEST_SERVER_CONFIG = PathAddress.pathAddress(SLAVE,
+    private static final PathElement SECONDARY = PathElement.pathElement("host", "secondary");
+    private static final PathAddress TEST_SERVER_CONFIG = PathAddress.pathAddress(SECONDARY,
             PathElement.pathElement("server-config", "legacy-server"));
-    private static final PathAddress TEST_SERVER = PathAddress.pathAddress(SLAVE,
+    private static final PathAddress TEST_SERVER = PathAddress.pathAddress(SECONDARY,
             PathElement.pathElement("server", "legacy-server"));
     private static final PathAddress TEST_SERVER_GROUP = PathAddress.pathAddress("server-group", "legacy-group");
 

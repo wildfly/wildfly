@@ -67,28 +67,28 @@ import org.xnio.IoUtils;
  */
 public class ReadEnvironmentVariablesTestCase {
     private static DomainTestSupport testSupport;
-    private static DomainLifecycleUtil domainMasterLifecycleUtil;
-    private static DomainLifecycleUtil domainSlaveLifecycleUtil;
+    private static DomainLifecycleUtil domainPrimaryLifecycleUtil;
+    private static DomainLifecycleUtil domainSecondaryLifecycleUtil;
 
     @BeforeClass
     public static void setupDomain() throws Exception {
         testSupport = DomainTestSuite.createSupport(ReadEnvironmentVariablesTestCase.class.getSimpleName());
 
-        domainMasterLifecycleUtil = testSupport.getDomainPrimaryLifecycleUtil();
-        domainSlaveLifecycleUtil = testSupport.getDomainSecondaryLifecycleUtil();
+        domainPrimaryLifecycleUtil = testSupport.getDomainPrimaryLifecycleUtil();
+        domainSecondaryLifecycleUtil = testSupport.getDomainSecondaryLifecycleUtil();
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
         DomainTestSuite.stopSupport();
         testSupport = null;
-        domainMasterLifecycleUtil = null;
-        domainSlaveLifecycleUtil = null;
+        domainPrimaryLifecycleUtil = null;
+        domainSecondaryLifecycleUtil = null;
     }
 
     @Test
     public void testReadEnvironmentVariablesForServers() throws Exception {
-        DomainClient client = domainMasterLifecycleUtil.createDomainClient();
+        DomainClient client = domainPrimaryLifecycleUtil.createDomainClient();
         DomainDeploymentManager manager = client.getDeploymentManager();
 
         try {
