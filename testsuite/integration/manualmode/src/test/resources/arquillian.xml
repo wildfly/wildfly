@@ -508,6 +508,31 @@
                 <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
+
+        <container qualifier="session-digest-node1" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly-session-digest-node1</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=session-digest-node1 -Djboss.socket.binding.port-offset=100</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:10090}</property>
+            </configuration>
+        </container>
+
+        <container qualifier="session-digest-node2" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly-session-digest-node2</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=session-digest-node2 -Djboss.socket.binding.port-offset=200</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:10190}</property>
+            </configuration>
+        </container>
+
     </group>
 
 </arquillian>

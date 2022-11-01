@@ -164,6 +164,24 @@ Resulting in: -
 </subsystem>
 ----
 
+If you want to use the HTTP DIGEST authentication mechanism with a load balancer, you can add the following property to the HTTP server mechanism factory:
+
+----
+<subsystem xmlns="urn:wildfly:elytron:1.1" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+  ...
+  <http>
+    ...
+    <configurable-http-server-mechanism-factory name="configured-http" http-server-mechanism-factory="global">
+        <properties>
+            <property name="org.wildfly.security.http.session-digest" value="true"/>
+        </properties>
+    </configurable-http-server-mechanism-factory>
+    ...
+  </http>
+  ...
+</subsystem>
+----
+
 == SASL Authentication Factory
 
 The architecture of the two authentication factories if very similar so a SASL authentication factory can be defined in the same way as the HTTP equivalent.

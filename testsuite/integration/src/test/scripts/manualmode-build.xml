@@ -56,6 +56,16 @@
             <fileset dir="target/wildfly"/>
         </copy>
 
+        <echo message="Copying and configuring instance wildfly-session-digest-node1"/>
+        <copy todir="target/wildfly-session-digest-node1">
+            <fileset dir="target/wildfly"/>
+        </copy>
+
+        <echo message="Copying and configuring instance wildfly-session-digest-node2"/>
+        <copy todir="target/wildfly-session-digest-node2">
+            <fileset dir="target/wildfly"/>
+        </copy>
+
         <echo message="Copying and configuring instance jbossas-layered"/>
         <copy todir="target/jbossas-layered">
             <fileset dir="target/wildfly"/>
