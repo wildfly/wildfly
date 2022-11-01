@@ -93,8 +93,8 @@ server factories.
 the SASL server factory is an aggregation of other SASL server
 factories.
 
-|configurable-http-server-mechanism-factory |A SASL server factory
-definition where the SASL server factory is an aggregation of other SASL
+|configurable-http-server-mechanism-factory |An HTTP server factory
+definition where the HTTP server factory is an aggregation of other HTTP
 server factories.
 
 |configurable-sasl-server-factory |A SASL server factory definition
