@@ -191,7 +191,7 @@
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
+                                    <reportNameSuffix>basic-preview-default-full.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -222,6 +222,7 @@
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
+                                    <reportNameSuffix>basic-preview-default-web.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -381,6 +382,7 @@
                                         <!-- Dummy test used to validate this pom -->
                                         <include>org/wildfly/test/preview/util/TestsuiteModuleTestCase.java</include>
                                     </includes>
+                                    <reportNameSuffix>cloud-server.layer.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -407,6 +409,7 @@
                                     <includes>
                                         <include>org/wildfly/test/preview/hibernate/search/**/*TestCase.java</include>
                                     </includes>
+                                    <reportNameSuffix>hibernate-search.layer.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -582,6 +585,7 @@
                                         <!-- Dummy test used to validate this pom -->
                                         <include>org/wildfly/test/preview/util/TestsuiteModuleTestCase.java</include>
                                     </includes>
+                                    <reportNameSuffix>cloud.server.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -607,6 +611,7 @@
                                         <!-- Dummy test used to validate this pom -->
                                         <include>org/wildfly/test/preview/util/TestsuiteModuleTestCase.java</include>
                                     </includes>
+                                    <reportNameSuffix>jpa-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
                         </executions>

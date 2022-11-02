@@ -445,6 +445,7 @@
                                 <!-- The enable-microprofile.cli script does not enable the reactive extensions/subsystems -->
                                 <exclude>org/wildfly/test/integration/microprofile/reactive/**</exclude>
                             </excludes>
+                            <reportNameSuffix>standalone-enabled-microprofile-test</reportNameSuffix>
                         </configuration>
                     </execution>
                 </executions>
@@ -575,6 +576,9 @@
                             <execution>
                                 <id>layers-test</id>
                                 <phase>test</phase>
+                                <configuration>
+                                    <reportNameSuffix>layers-test</reportNameSuffix>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>default-test</id>
@@ -714,6 +718,9 @@
                             <execution>
                                 <id>layers-test</id>
                                 <phase>test</phase>
+                                <configuration>
+                                    <reportNameSuffix>layers-test</reportNameSuffix>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>default-test</id>
