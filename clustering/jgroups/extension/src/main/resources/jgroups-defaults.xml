@@ -41,7 +41,6 @@
     <TCP_NIO2
         send_buf_size="640k"
         sock_conn_timeout="300"
-        port_range="0"
         bundler_type="transfer-queue"
     />
     <TCPPING
@@ -60,7 +59,6 @@
         timeout_check_interval="5000"
     />
     <FD_SOCK port_range="0"/>
-    <!-- Restore port_range="0" once FD_SOCK2 respects our SocketFactory override -->
     <FD_SOCK2 offset="1"/>
     <VERIFY_SUSPECT timeout="1000"/>
     <VERIFY_SUSPECT2 timeout="1000"/>
