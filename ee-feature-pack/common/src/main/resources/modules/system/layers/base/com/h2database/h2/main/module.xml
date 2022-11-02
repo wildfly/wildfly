@@ -43,7 +43,7 @@
              javax.* EE namespace and jakarta.* EE namespace environment, so this no longer works out of the box.
              But, we add an optional dep on a non-existent module as a hook to allow users to get it to work.
              Users who want this to work can provide a module with the name:slot javax.servlet.api:h2. That module could
-             be a simple alias to the javax.servlet.api module the server provides, if that works with this module's
+             be a simple alias to the jakarta.servlet.api module the server provides, if that works with this module's
              H2 artifact. Or the user could provide a non-alias module that packages and exposes the servlet resources H2 needs. -->
         <module name="javax.servlet.api:h2" optional="true"/>
         <module name="org.slf4j"/>
