@@ -4,7 +4,7 @@
 [[introduction]]
 == Introduction
 
-The WildFly JPA subsystem implements the JPA 2.2 container-managed
+The WildFly JPA subsystem implements the Jakarta Persistence 3.1 container-managed
 requirements. Deploys the persistence unit definitions, the persistence
 unit/context annotations and persistence unit/context references in the
 deployment descriptor. JPA Applications use the Hibernate (version 5.3)
@@ -25,7 +25,7 @@ for the JPA interfaces]and https://jcp.org/en/jsr/detail?id=338[JPA 2.2
 specification].
 
 The index of the Hibernate documentation is at
-http://hibernate.org/orm/documentation/5.3/
+https://hibernate.org/orm/documentation/6.1/
 
 [[update-your-persistence.xml-for-hibernate]]
 == Update your Persistence.xml for Hibernate
