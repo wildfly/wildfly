@@ -614,12 +614,8 @@
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.picketlink</groupId>
-                        <artifactId>picketlink-idm-simple-schema</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketlink.distribution</groupId>
-                        <artifactId>picketlink-wildfly8</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
