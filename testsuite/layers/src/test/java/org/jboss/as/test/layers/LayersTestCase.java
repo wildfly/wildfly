@@ -174,6 +174,8 @@ public class LayersTestCase {
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
             // Extension not included in the default config
+            "org.wildfly.extension.microprofile.telemetry",
+            // Extension not included in the default config
             "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
             "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
             "io.vertx.client",

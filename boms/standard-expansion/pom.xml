@@ -637,6 +637,12 @@
                 <scope>test</scope>
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.telemetry.tracing</groupId>
+                <artifactId>microprofile-telemetry-tracing-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.telemetry}</version>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy.microprofile</groupId>

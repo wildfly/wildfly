@@ -30,5 +30,6 @@
         <layer name="microprofile-openapi" optional="true"/>
         <layer name="microprofile-opentracing" optional="true"/>
         <layer name="microprofile-rest-client" optional="true"/>
+        <layer name="microprofile-telemetry" optional="true"/>
     </dependencies>
 </layer-spec>

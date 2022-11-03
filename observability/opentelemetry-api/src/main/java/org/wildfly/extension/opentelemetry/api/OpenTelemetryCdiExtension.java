@@ -1,55 +1,60 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ *
+ * Copyright 2022 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.wildfly.extension.opentelemetry.api;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.WeakHashMap;
 
+import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
+import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryClientFilter;
+import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryServerFilter;
 import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
-import jakarta.enterprise.inject.spi.BeforeShutdown;
 import jakarta.enterprise.inject.spi.Extension;
+import jakarta.inject.Singleton;
 
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.Tracer;
-import org.wildfly.security.manager.WildFlySecurityManager;
+public final class OpenTelemetryCdiExtension implements Extension {
+    private final boolean useServerConfig;
+    private final Map<String, String> config;
 
-public class OpenTelemetryCdiExtension implements Extension {
-    private static final Map<ClassLoader, OpenTelemetry> OTEL_INSTANCES = Collections.synchronizedMap(new WeakHashMap<>());
-    private static final Map<ClassLoader, Tracer> TRACERS = Collections.synchronizedMap(new WeakHashMap<>());
-
-    private static final Class<?>[] BEANS_TO_ADD = {
-            OpenTelemetryContainerFilter.class,
-            OpenTelemetryRestClientProducer.class,
-            OpenTelemetryClientRequestFilter.class
-    };
-
-    public static OpenTelemetry registerApplicationOpenTelemetryBean(ClassLoader classLoader, OpenTelemetry bean) {
-        OTEL_INSTANCES.put(classLoader, bean);
-        return bean;
+    public OpenTelemetryCdiExtension(boolean useServerConfig, Map<String, String> config) {
+        this.useServerConfig = useServerConfig;
+        this.config = config;
     }
 
-    public static Tracer registerApplicationTracer(ClassLoader classLoader, Tracer tracer) {
-        TRACERS.put(classLoader, tracer);
-        return tracer;
+    public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, final BeanManager beanManager) {
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(OpenTelemetryServerFilter.class),
+                OpenTelemetryServerFilter.class.getName());
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(OpenTelemetryClientFilter.class),
+                OpenTelemetryClientFilter.class.getName());
     }
 
-    public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager beanManager) {
-        for (Class<?> clazz : BEANS_TO_ADD) {
-            bbd.addAnnotatedType(beanManager.createAnnotatedType(clazz), clazz.getName());
+    public void registerOpenTelemetryConfigBean(@Observes AfterBeanDiscovery abd) {
+        if (useServerConfig) {
+            abd.addBean()
+                    .scope(Singleton.class)
+                    .addQualifier(Default.Literal.INSTANCE)
+                    .types(OpenTelemetryConfig.class)
+                    .createWith(e -> (OpenTelemetryConfig) () -> config);
         }
-    }
-
-    public void registerOpenTelemetryBeans(@Observes AfterBeanDiscovery abd, BeanManager beanManager) {
-        abd.addBean().addTransitiveTypeClosure(OpenTelemetry.class).produceWith(i ->
-                OTEL_INSTANCES.get(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged()));
-        abd.addBean().addTransitiveTypeClosure(Tracer.class).produceWith(i ->
-                TRACERS.get(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged()));
-    }
-
-    public void beforeShutdown(@Observes final BeforeShutdown bs) {
-        OTEL_INSTANCES.remove(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
-        TRACERS.remove(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
     }
 }
