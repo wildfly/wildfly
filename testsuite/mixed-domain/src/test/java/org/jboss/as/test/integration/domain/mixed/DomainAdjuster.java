@@ -78,7 +78,7 @@ public class DomainAdjuster {
     private final String OTHER_SERVER_GROUP = "other-server-group";
     private static final Set<String> UNUSED_SERVER_GROUP_ATTRIBUTES = new HashSet<>(Arrays.asList("management-subsystem-endpoint", "deployment", "deployment-overlay", "jvm", "system-property"));
 
-    static void adjustForVersion(final DomainClient client, final Version.AsVersion asVersion, final String profile, final boolean withMasterServers) throws Exception {
+    static void adjustForVersion(final DomainClient client, final Version.AsVersion asVersion, final String profile, final boolean withPrimaryServers) throws Exception {
 
         final DomainAdjuster adjuster;
         switch (asVersion) {
@@ -88,10 +88,10 @@ public class DomainAdjuster {
             default:
                 adjuster = new DomainAdjuster();
         }
-        adjuster.adjust(client, profile, withMasterServers);
+        adjuster.adjust(client, profile, withPrimaryServers);
     }
 
-    final void adjust(final DomainClient client, String profile, boolean withMasterServers) throws Exception {
+    final void adjust(final DomainClient client, String profile, boolean withPrimaryServers) throws Exception {
         //Trim it down so we have only
         //profile=full-ha,
         //the main-server-group and other-server-group
@@ -111,7 +111,7 @@ public class DomainAdjuster {
         removeIpv4SystemProperty(client);
 
         // We don't want any standard host-excludes as the tests are meant to see what happens
-        // with the current configs on legacy slaves
+        // with the current configs on legacy secondarys
         removeHostExcludes(client);
 
         // Mixed Domain tests always use the full build instead of alternating between ee-dist and dist. If the DC is not an EAP server, we need to remove here
@@ -125,8 +125,8 @@ public class DomainAdjuster {
         removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "opentelemetry"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.opentelemetry"));
 
         //Version specific changes
-        final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, profile), withMasterServers);
-        if (withMasterServers) {
+        final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, profile), withPrimaryServers);
+        if (withPrimaryServers) {
             adjustments.addAll(reconfigureServers());
         }
 
@@ -149,15 +149,15 @@ public class DomainAdjuster {
     }
 
     /**
-     * Adjust the Domain configuration to work properly with the expected slave.
+     * Adjust the Domain configuration to work properly with the expected secondary.
      *
      * @param client           The domain client.
      * @param profileAddress   The address of the profile that is being used.
-     * @param withMasterServer Whether the Dc has managed servers.
+     * @param withPrimaryServer Whether the Dc has managed servers.
      * @return The List of Operations that need to be executed to adjust the domain.
      * @throws Exception
      */
-    protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress, final boolean withMasterServer) throws Exception {
+    protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress, final boolean withPrimaryServer) throws Exception {
         return Collections.emptyList();
     }
 
@@ -262,13 +262,13 @@ public class DomainAdjuster {
 
     private Collection<? extends ModelNode> reconfigureServers() {
         final List<ModelNode> list = new ArrayList<>();
-        //Reconfigure master servers
-        final PathAddress masterHostAddress = PathAddress.pathAddress(HOST, "primary");
-        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), AUTO_START, true));
-        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.GROUP, "main-server-group"));
-        list.add(Util.getUndefineAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET));
-        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-two"), AUTO_START, true));
-        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-two"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET, 100));
+        //Reconfigure primary servers
+        final PathAddress primaryHostAddress = PathAddress.pathAddress(HOST, "primary");
+        list.add(Util.getWriteAttributeOperation(primaryHostAddress.append(SERVER_CONFIG, "server-one"), AUTO_START, true));
+        list.add(Util.getWriteAttributeOperation(primaryHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.GROUP, "main-server-group"));
+        list.add(Util.getUndefineAttributeOperation(primaryHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET));
+        list.add(Util.getWriteAttributeOperation(primaryHostAddress.append(SERVER_CONFIG, "server-two"), AUTO_START, true));
+        list.add(Util.getWriteAttributeOperation(primaryHostAddress.append(SERVER_CONFIG, "server-two"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET, 100));
         return list;
     }
 

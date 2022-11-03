@@ -260,7 +260,7 @@ public class GlobalDirectoryDomainTestCase {
         ModelNode content = new ModelNode();
         content.get("url").set(url);
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(composite);
+        executeOnPrimary(composite);
 
         String response = performHttpCall(DomainTestSupport.primaryAddress, 8080, "test/global-directory/library");
         assertEquals("HELLO WORLD", response);
@@ -395,7 +395,7 @@ public class GlobalDirectoryDomainTestCase {
         return response;
     }
 
-    private static ModelNode executeOnMaster(ModelNode op) throws IOException {
+    private static ModelNode executeOnPrimary(ModelNode op) throws IOException {
         return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
@@ -465,9 +465,9 @@ public class GlobalDirectoryDomainTestCase {
         }
     }
 
-    private void reloadServerGroup(DomainLifecycleUtil domainMasterLifecycleUtil, PathAddress address) {
+    private void reloadServerGroup(DomainLifecycleUtil domainPrimaryLifecycleUtil, PathAddress address) {
         ModelNode reload = Util.createEmptyOperation("reload-servers", address);
         reload.get("blocking").set("true");
-        domainMasterLifecycleUtil.executeForResult(reload);
+        domainPrimaryLifecycleUtil.executeForResult(reload);
     }
 }

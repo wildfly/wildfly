@@ -20,16 +20,16 @@ package org.jboss.as.test.integration.domain.mixed;
 
 import org.junit.AfterClass;
 
-public class ElytronOnlyMasterSmokeTestCase extends SimpleMixedDomainTest {
+public class ElytronOnlyPrimarySmokeTestCase extends SimpleMixedDomainTest {
 
     @Override
     public void init() throws Exception {
-        support = ElytronOnlyMasterTestSuite.getSupport(this.getClass());
-        version = ElytronOnlyMasterTestSuite.getVersion(this.getClass());
+        support = ElytronOnlyPrimaryTestSuite.getSupport(this.getClass());
+        version = ElytronOnlyPrimaryTestSuite.getVersion(this.getClass());
     }
 
     @AfterClass
     public static synchronized void afterClass() {
-        ElytronOnlyMasterTestSuite.afterClass();
+        ElytronOnlyPrimaryTestSuite.afterClass();
     }
 }

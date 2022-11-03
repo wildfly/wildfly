@@ -59,15 +59,15 @@ public @interface Version {
         final ModelVersion modelVersion;
 
         /**
-         * Metadata related to the server version we are using as slave
-         * @param basename Base name of the server, used to locate the zip file that contains the slave under test.
+         * Metadata related to the server version we are using as secondary
+         * @param basename Base name of the server, used to locate the zip file that contains the secondary under test.
          * @param major Major release number
          * @param minor Minor release number
          * @param micro Micro release number
          * @param maxVM The maximum Java version under which a legacy host can properly execute tests
          * @param minVM The minimum Java version under which a legacy host can properly execute tests
-         * @param hostExclude The host-exclude name that represents this slave
-         * @param modelVersion The Kernel version of this slave
+         * @param hostExclude The host-exclude name that represents this secondary
+         * @param modelVersion The Kernel version of this secondary
          */
         AsVersion(String basename, int major, int minor, int micro, int maxVM, int minVM, String hostExclude, ModelVersion modelVersion){
             this.basename = basename;
@@ -131,7 +131,7 @@ public @interface Version {
 
         /**
          * Checks whether the current VM version exceeds the maximum version under which a legacy host can properly
-         * execute tests. The check is disabled if system property "jboss.test.host.slave.jvmhome" is set.
+         * execute tests. The check is disabled if system property "jboss.test.host.secondary.jvmhome" is set.
          */
         public void assumeMaxVM() {
             if (System.getProperty("jboss.test.host.secondary.jvmhome") == null) {

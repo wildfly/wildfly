@@ -85,9 +85,9 @@ import org.junit.Test;
 @Ignore("WFLY-17231")
 public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
-    private static DomainLifecycleUtil masterUtils;
-    private static DomainClient masterClient;
-    private static WildFlyManagedConfiguration masterConfig;
+    private static DomainLifecycleUtil primaryUtils;
+    private static DomainClient primaryClient;
+    private static WildFlyManagedConfiguration primaryConfig;
     private static final  BiFunction<Set<String>, Set<String>, Set<String>> diff = (a, b) -> a.stream().filter(e -> !b.contains(e)).collect(Collectors.toSet());
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
@@ -171,7 +171,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 // This extension was added in WF17, however we add it here because WF16/WF17/WF18 use the same management
                 // kernel API, which is 10.0.0. Adding a host-exclusion for this extension on WF16 could affect to WF17/WF18
                 // We decided to add the host-exclusion only for WF15 and below. It means potentially a DC running on WF17
-                // with an WF16 as slave will not exclude this extension. It is not a problem at all since mixed domains in
+                // with an WF16 as secondary will not exclude this extension. It is not a problem at all since mixed domains in
                 // WildFly is not supported.
                 "org.wildfly.extension.clustering.web"
         )),
@@ -331,16 +331,16 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
     @BeforeClass
     public static void setUp() throws IOException {
-        masterConfig = createConfiguration("domain.xml", "host-primary.xml", HostExcludesTestCase.class.getSimpleName());
-        masterUtils = new DomainLifecycleUtil(masterConfig);
-        masterUtils.start();
-        masterClient = masterUtils.getDomainClient();
+        primaryConfig = createConfiguration("domain.xml", "host-primary.xml", HostExcludesTestCase.class.getSimpleName());
+        primaryUtils = new DomainLifecycleUtil(primaryConfig);
+        primaryUtils.start();
+        primaryClient = primaryUtils.getDomainClient();
     }
 
     @AfterClass
     public static void tearDown() {
-        if (masterUtils != null) {
-            masterUtils.stop();
+        if (primaryUtils != null) {
+            primaryUtils.stop();
         }
     }
 
@@ -351,7 +351,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         ModelNode op = Util.getEmptyOperation(READ_CHILDREN_RESOURCES_OPERATION, null);
         op.get(CHILD_TYPE).set(EXTENSION);
 
-        ModelNode result = DomainTestUtils.executeForResult(op, masterClient);
+        ModelNode result = DomainTestUtils.executeForResult(op, primaryClient);
 
         Set<String> currentExtensions = new HashSet<>();
         for (Property prop : result.asPropertyList()) {
@@ -379,7 +379,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // not included in this test.
         if (ExtensionConf.CURRENT.isModified()) {
             op = Util.getReadAttributeOperation(null, "product-version");
-            result = DomainTestUtils.executeForResult(op, masterClient);
+            result = DomainTestUtils.executeForResult(op, primaryClient);
             if (!result.asString().startsWith(ExtensionConf.CURRENT.getName())) {
                 fail(String.format("The ExtensionConf.CURRENT has extensions added or removed but it no longer points to the current release. " +
                         "Modify this test adding new ExtensionConf enums for each previous releases undefined in this test by using the list of extensions added or removed on ExtensionConf.CURRENT." +
@@ -390,7 +390,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         op = Util.getEmptyOperation(READ_CHILDREN_RESOURCES_OPERATION, null);
         op.get(CHILD_TYPE).set(HOST_EXCLUDE);
 
-        result = DomainTestUtils.executeForResult(op, masterClient);
+        result = DomainTestUtils.executeForResult(op, primaryClient);
 
         Set<String> processedExclusionsIds = new HashSet<>();
         for (Property prop : result.asPropertyList()) {
@@ -475,7 +475,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     }
 
     private static File[] getModuleRoots() throws IOException {
-        Path layersRoot = Paths.get(masterConfig.getModulePath()) .resolve("system").resolve("layers");
+        Path layersRoot = Paths.get(primaryConfig.getModulePath()) .resolve("system").resolve("layers");
         DirectoryStream.Filter<Path> filter = entry -> {
             File f = entry.toFile();
             return f.isDirectory() && !f.isHidden();

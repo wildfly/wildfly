@@ -46,7 +46,7 @@
         <jboss.dist>${project.basedir}/../../${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
-        <!-- Don't set the modular.jdk.args args so the slaves can use a different JVM -->
+        <!-- Don't set the modular.jdk.args args so the secondarys can use a different JVM -->
         <modular.jdk.args/>
         <modular.jdk.testsuite.args/>
 
