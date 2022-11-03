@@ -44,7 +44,9 @@ public class FailureDetectionProtocolConfigurationServiceConfigurator extends So
 
     @Override
     public Map<String, SocketBinding> getSocketBindings() {
-        return Map.of("jgroups.nio.server.fd_sock", this.getSocketBinding());
+        // Socket binding is optional
+        SocketBinding binding = this.getSocketBinding();
+        return (binding != null) ? Map.of("jgroups.nio.server.fd_sock", binding) : Map.of();
     }
 
     @Override
