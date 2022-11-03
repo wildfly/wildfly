@@ -588,7 +588,7 @@
         <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
         <version.org.latencyutils>2.0.3</version.org.latencyutils>
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
-        <version.org.ow2.asm>9.3</version.org.ow2.asm>
+        <version.org.ow2.asm>9.4</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <!-- Test dependency -->
