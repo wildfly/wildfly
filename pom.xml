@@ -91,6 +91,7 @@
         <module>microprofile</module>
         <module>mod_cluster</module>
         <module>naming</module>
+        <module>observability</module>
         <module>picketlink</module>
         <module>pojo</module>
         <module>release</module>
@@ -2016,8 +2017,6 @@
                 <module>jsf</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>messaging-activemq</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>observability</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>rts</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->

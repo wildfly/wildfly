@@ -19,10 +19,10 @@
 
 package org.wildfly.extension.opentelemetry.api;
 
-import javax.enterprise.inject.spi.CDI;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
-import javax.ws.rs.ext.Provider;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.ext.Provider;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
