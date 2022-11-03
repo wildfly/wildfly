@@ -63,6 +63,7 @@ import org.jboss.modules.Resource;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -81,6 +82,7 @@ import org.junit.Test;
  *
  * @author Yeray Borges
  */
+@Ignore("WFLY-17231")
 public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
     private static DomainLifecycleUtil masterUtils;
