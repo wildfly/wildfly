@@ -45,11 +45,14 @@ public class ClientInterceptorsBindingsProcessor implements DeploymentUnitProces
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         try {
-            final List<EJBClientInterceptor> clientInterceptors = new ArrayList<>();
+            final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+            List<EJBClientInterceptor> clientInterceptors = deploymentUnit.getAttachment(org.jboss.as.ejb3.subsystem.Attachments.STATIC_EJB_CLIENT_INTERCEPTORS);
+            if (clientInterceptors == null) {
+                clientInterceptors = new ArrayList<>();
+            }
             for (final Class<? extends EJBClientInterceptor> interceptorClass : clientInterceptorCache.getClientInterceptors()) {
                 clientInterceptors.add(interceptorClass.newInstance());
             }
-            final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
             deploymentUnit.putAttachment(org.jboss.as.ejb3.subsystem.Attachments.STATIC_EJB_CLIENT_INTERCEPTORS, clientInterceptors);
 
         } catch (InstantiationException | IllegalAccessException e) {
