@@ -989,16 +989,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.narayana.txframework</groupId>
-            <artifactId>txframework</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <!-- end XTS -->
 
         <dependency>

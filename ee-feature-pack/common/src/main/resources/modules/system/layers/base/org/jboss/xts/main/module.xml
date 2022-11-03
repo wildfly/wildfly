@@ -64,7 +64,6 @@
         <module name="org.jboss.weld.core" />
         <module name="org.jboss.logging" />
         <module name="org.jboss.narayana.compensations" export="true" />
-        <module name="org.jboss.narayana.txframework" export="true" />
         <module name="javax.interceptor.api"  export="true" />
 
         <!-- This dependency is required only if the

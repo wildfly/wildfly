@@ -2471,18 +2471,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.narayana.txframework</groupId>
-                <artifactId>txframework</artifactId>
-                <version>${version.org.jboss.narayana}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.narayana.xts</groupId>
                 <artifactId>jbossxts</artifactId>
                 <version>${version.org.jboss.narayana}</version>

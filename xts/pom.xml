@@ -161,10 +161,6 @@
             <artifactId>compensations</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.narayana.txframework</groupId>
-            <artifactId>txframework</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.ws</groupId>
             <artifactId>jbossws-spi</artifactId>
         </dependency>
