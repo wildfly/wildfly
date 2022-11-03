@@ -9,15 +9,20 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
+[NOTE]
+=====
+MicroProfile OpenTracing has been removed from the MicroProfile Platform specification, and has been replaced by MicroProfile Telemetry.
+=====
+
 Support for https://microprofile.io/project/eclipse/microprofile-opentracing[MicroProfile OpenTracing] is
 provided as a Tech Preview feature by the _microprofile-opentracing-smallrye_ subsystem.
 
 [[required-extension-microprofile-opentracing-smallrye]]
 == Required Extension
 
-This extension is included in the standard configurations included in the WildFly distribution.
+This extension is *_no longer_* included in the standard configurations included in the WildFly distribution.
 
-You can also add the extension to a configuration without it either by adding
+You can add the extension to a configuration without it either by adding
 an `<extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>`
 element to the xml or by using the following CLI operation:
 

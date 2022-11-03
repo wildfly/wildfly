@@ -9,6 +9,7 @@
         <include name="microprofile-jwt"/>
         <include name="microprofile-openapi"/>
         <include name="microprofile-opentracing"/>
+        <include name="microprofile-telemetry"/>
         <include name="elytron-oidc-client"/>
     </layers>
     <!-- TODO WFLY-15021 Add an undertow-https layer -->

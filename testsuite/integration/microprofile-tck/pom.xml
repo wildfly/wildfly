@@ -95,6 +95,7 @@
         <module>rest-client</module>
         <module>reactive-messaging</module>
         <module>reactive-streams-operators</module>
+        <module>telemetry</module>
         <module>certification</module>
     </modules>
 

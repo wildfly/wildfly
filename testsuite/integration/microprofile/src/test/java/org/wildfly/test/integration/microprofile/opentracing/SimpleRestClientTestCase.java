@@ -11,6 +11,8 @@ import org.eclipse.microprofile.opentracing.ClientTracingRegistrar;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.junit.BeforeClass;
 import org.wildfly.test.integration.microprofile.opentracing.application.MockTracerFactory;
 import org.wildfly.test.integration.microprofile.opentracing.application.OpenTracingApplication;
 import org.wildfly.test.integration.microprofile.opentracing.application.TracedEndpoint;
@@ -36,6 +38,13 @@ import java.util.List;
 
 @RunWith(Arquillian.class)
 public class SimpleRestClientTestCase {
+
+    // TODO: Addressed by https://issues.redhat.com/browse/WFLY-17774
+    @BeforeClass
+    public static void securityManagerNotSupported() {
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
+    }
+
     @Inject
     Tracer tracer;
 

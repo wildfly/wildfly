@@ -92,6 +92,7 @@
                 <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.metrics-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.telemetry</extension>
                 <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-messaging-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-streams-operators-smallrye</extension>
@@ -141,6 +142,7 @@
                 <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.metrics-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.telemetry</extension>
                 <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-messaging-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-streams-operators-smallrye</extension>

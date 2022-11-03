@@ -19,87 +19,59 @@
 
 package org.wildfly.test.integration.observability.opentelemetry;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
-import java.net.SocketPermission;
-import java.security.SecurityPermission;
-
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.trace.Tracer;
 import jakarta.inject.Inject;
-import javax.management.MBeanPermission;
-import javax.management.MBeanServerPermission;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
-
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.Tracer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @ServerSetup(OpenTelemetrySetupTask.class)
-public class BasicOpenTelemetryTestCase {
+public class BasicOpenTelemetryTestCase extends BaseOpenTelemetryTest {
     @Inject
     private Tracer tracer;
 
     @Inject
     private OpenTelemetry openTelemetry;
 
-    private static final String WEB_XML
-            = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            + "<web-app xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://java.sun.com/xml/ns/javaee\"\n"
-            + "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n"
-            + "         metadata-complete=\"false\" version=\"3.0\">\n"
-            + "    <servlet-mapping>\n"
-            + "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n"
-            + "        <url-pattern>/*</url-pattern>\n"
-            + "    </servlet-mapping>"
-            + "</web-app>";
+    @Inject
+    private Baggage baggage;
 
     @Deployment
-    public static Archive<?> deploy() {
-        return ShrinkWrap.create(WebArchive.class, BasicOpenTelemetryTestCase.class.getSimpleName() + ".war")
-                .addClasses(OpenTelemetrySetupTask.class, ServerSetupTask.class)
-                .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsManifestResource(createPermissionsXmlAsset(
-                        // Required for the client to connect
-                        new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" +
-                                TestSuiteEnvironment.getHttpPort(), "connect,resolve"),
-                        new SecurityPermission("insertProvider"),
-                        new MBeanServerPermission("createMBeanServer"),
-                        new MBeanPermission("*", "registerMBean, unregisterMBean, invoke"),
-                        new RuntimePermission("getClassLoader"),
-                        new RuntimePermission("modifyThread"),
-                        new RuntimePermission("setContextClassLoader")
-                ), "permissions.xml");
+    public static Archive getDeployment() {
+        return buildBaseArchive(BasicOpenTelemetryTestCase.class.getSimpleName());
     }
 
     @Test
-    public void hasDefaultInjectedOpenTelemetry() {
+    public void openTelemetryInjection() {
         Assert.assertNotNull(openTelemetry);
     }
 
     @Test
-    public void hasDefaultInjectedTracer() {
+    public void traceInjection() {
         Assert.assertNotNull(tracer);
     }
 
     @Test
-    public void restClientHasFilterAdded() {
-        Client client = ClientBuilder.newClient();
-        org.wildfly.common.Assert.assertTrue(client.getConfiguration().getClasses().stream()
-                .map(c -> c.getCanonicalName())
-                .anyMatch(n -> "org.wildfly.extension.opentelemetry.api.OpenTelemetryClientRequestFilter".equals(n)));
+    public void baggageInjection() {
+        Assert.assertNotNull(baggage);
+    }
+
+    @Test
+    public void restClientHasFilterAdded() throws ClassNotFoundException {
+        try (Client client = ClientBuilder.newClient()) {
+            Assert.assertTrue(
+                    client.getConfiguration().isRegistered(
+                            Class.forName("io.smallrye.opentelemetry.implementation.rest.OpenTelemetryClientFilter"))
+            );
+        }
     }
 }
