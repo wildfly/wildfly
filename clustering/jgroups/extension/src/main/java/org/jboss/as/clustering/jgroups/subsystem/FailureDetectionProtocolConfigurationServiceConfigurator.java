@@ -53,15 +53,18 @@ public class FailureDetectionProtocolConfigurationServiceConfigurator extends So
     public void accept(FD_SOCK2 protocol) {
         SocketBinding protocolBinding = this.getSocketBinding();
         SocketBinding transportBinding = this.getTransport().getSocketBinding();
-        SocketBinding binding = (protocolBinding != null) ? protocolBinding : transportBinding;
 
-        InetSocketAddress socketAddress = binding.getSocketAddress();
-        protocol.setBindAddress(socketAddress.getAddress());
-        if (protocolBinding != null) {
-            protocol.setValue("offset", socketAddress.getPort() - transportBinding.getSocketAddress().getPort());
+        InetSocketAddress protocolBindAddress = (protocolBinding != null) ? protocolBinding.getSocketAddress() : null;
+        InetSocketAddress transportBindAddress = transportBinding.getSocketAddress();
+        protocol.setBindAddress(((protocolBindAddress != null) ? protocolBindAddress : transportBindAddress).getAddress());
+        // If protocol has no socket-binding, configure offset such that FD_SOCK2 binds to random available ephemeral port
+        protocol.setOffset(((protocolBindAddress != null) ? protocolBindAddress.getPort() : 0) - transportBinding.getSocketAddress().getPort());
+        if (protocolBindAddress == null) {
+            // Force FD_SOCK2 to allow 0 bind port
+            protocol.setValue("min_port", 0);
         }
 
-        List<ClientMapping> clientMappings = binding.getClientMappings();
+        List<ClientMapping> clientMappings = ((protocolBinding != null) ? protocolBinding : transportBinding).getClientMappings();
         if (!clientMappings.isEmpty()) {
             // JGroups cannot select a client mapping based on the source address, so just use the first one
             ClientMapping mapping = clientMappings.get(0);
