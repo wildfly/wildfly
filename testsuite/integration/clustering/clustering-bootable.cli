@@ -30,6 +30,7 @@
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-3:add(host=${node2},port=7800)
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4:add(host=${node3},port=7900)
 /subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=1,socket-bindings=[node-1,node-2,node-3,node-4])
+/subsystem=jgroups/stack=tcp/protocol=FD_SOCK2:undefine-attribute(name=socket-binding)
 
 # TCP bridge stack configuration for XSite
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-1-bridge:add(host=${node0},port=7601)
@@ -43,7 +44,7 @@
 /subsystem=jgroups/stack=tcp-bridge/protocol=RED:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=TCPPING:add(socket-bindings=[node-1-bridge,node-2-bridge,node-3-bridge,node-4-bridge])
 /subsystem=jgroups/stack=tcp-bridge/protocol=MERGE3:add
-/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK2:add(socket-binding=jgroups-tcp-fd-bridge)
+/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK2:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=FD_ALL3:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=VERIFY_SUSPECT2:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.NAKACK2:add
