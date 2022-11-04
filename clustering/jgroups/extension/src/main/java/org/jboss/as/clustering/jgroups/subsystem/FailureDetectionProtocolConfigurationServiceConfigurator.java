@@ -53,23 +53,24 @@ public class FailureDetectionProtocolConfigurationServiceConfigurator extends So
     public void accept(FD_SOCK2 protocol) {
         SocketBinding protocolBinding = this.getSocketBinding();
         SocketBinding transportBinding = this.getTransport().getSocketBinding();
-        SocketBinding binding = (protocolBinding != null) ? protocolBinding : transportBinding;
 
-        InetSocketAddress socketAddress = binding.getSocketAddress();
-        protocol.setBindAddress(socketAddress.getAddress());
+        InetSocketAddress protocolBindAddress = (protocolBinding != null) ? protocolBinding.getSocketAddress() : null;
+        InetSocketAddress transportBindAddress = transportBinding.getSocketAddress();
+        protocol.setBindAddress(((protocolBindAddress != null) ? protocolBindAddress : transportBindAddress).getAddress());
+
         if (protocolBinding != null) {
-            protocol.setValue("offset", socketAddress.getPort() - transportBinding.getSocketAddress().getPort());
-        }
+            protocol.setOffset(protocolBindAddress.getPort() - transportBindAddress.getPort());
 
-        List<ClientMapping> clientMappings = binding.getClientMappings();
-        if (!clientMappings.isEmpty()) {
-            // JGroups cannot select a client mapping based on the source address, so just use the first one
-            ClientMapping mapping = clientMappings.get(0);
-            try {
-                protocol.setExternalAddress(InetAddress.getByName(mapping.getDestinationAddress()));
-                protocol.setExternalPort(mapping.getDestinationPort());
-            } catch (UnknownHostException e) {
-                throw new IllegalArgumentException(e);
+            List<ClientMapping> clientMappings = protocolBinding.getClientMappings();
+            if (!clientMappings.isEmpty()) {
+                // JGroups cannot select a client mapping based on the source address, so just use the first one
+                ClientMapping mapping = clientMappings.get(0);
+                try {
+                    protocol.setExternalAddress(InetAddress.getByName(mapping.getDestinationAddress()));
+                    protocol.setExternalPort(mapping.getDestinationPort());
+                } catch (UnknownHostException e) {
+                    throw new IllegalArgumentException(e);
+                }
             }
         }
 
