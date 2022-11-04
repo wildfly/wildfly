@@ -47,58 +47,63 @@ public class ManagedSocketFactory implements SocketFactory {
 
     private final SocketBindingManager manager;
     // Maps a JGroups service name its associated SocketBinding
-    private final Map<String, SocketBinding> socketBindings;
+    private final Map<String, SocketBinding> bindings;
     // Store references to managed socket-binding registrations
     private final Map<SocketChannel, Closeable> channels = Collections.synchronizedMap(new IdentityHashMap<>());
     private final Map<ServerSocketChannel, Closeable> serverChannels = Collections.synchronizedMap(new IdentityHashMap<>());
 
     public ManagedSocketFactory(SocketBindingManager manager, Map<String, SocketBinding> socketBindings) {
         this.manager = manager;
-        this.socketBindings = socketBindings;
-    }
-
-    private String getSocketBindingName(String name) {
-        SocketBinding socketBinding = this.socketBindings.get(name);
-        return (socketBinding != null) ? socketBinding.getName() : name;
+        this.bindings = socketBindings;
     }
 
     @Override
     public Socket createSocket(String name) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getSocketFactory().createSocket(socketBindingName);
+        SocketBinding binding = this.bindings.get(name);
+        org.jboss.as.network.ManagedSocketFactory factory = this.manager.getSocketFactory();
+        return (binding != null) ? factory.createSocket(binding.getName()) : factory.createSocket();
     }
 
     @Override
     public ServerSocket createServerSocket(String name) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getServerSocketFactory().createServerSocket(socketBindingName);
+        SocketBinding binding = this.bindings.get(name);
+        org.jboss.as.network.ManagedServerSocketFactory factory = this.manager.getServerSocketFactory();
+        return (binding != null) ? factory.createServerSocket(binding.getName()) : factory.createServerSocket();
     }
 
     @Override
     public DatagramSocket createDatagramSocket(String name, SocketAddress bindAddress) throws SocketException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return (bindAddress != null) ? this.manager.createDatagramSocket(socketBindingName, bindAddress) : this.manager.createDatagramSocket(socketBindingName);
+        SocketBinding binding = this.bindings.get(name);
+        if (bindAddress == null) {
+            // Creates unbound socket
+            return (binding != null) ? this.manager.createDatagramSocket(binding.getName()) : this.manager.createDatagramSocket();
+        }
+        return (binding != null) ? this.manager.createDatagramSocket(binding.getName(), bindAddress) : this.manager.createDatagramSocket(bindAddress);
     }
 
     @Override
     public MulticastSocket createMulticastSocket(String name, SocketAddress bindAddress) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return (bindAddress != null) ? this.manager.createMulticastSocket(socketBindingName, bindAddress) : this.manager.createMulticastSocket(socketBindingName);
+        SocketBinding binding = this.bindings.get(name);
+        if (bindAddress == null) {
+            // Creates unbound socket
+            return (binding != null) ? this.manager.createMulticastSocket(binding.getName()) : this.manager.createMulticastSocket();
+        }
+        return (binding != null) ? this.manager.createMulticastSocket(binding.getName(), bindAddress) : this.manager.createMulticastSocket(bindAddress);
     }
 
     @Override
     public SocketChannel createSocketChannel(String name) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
+        SocketBinding binding = this.bindings.get(name);
         SocketChannel channel = SocketChannel.open();
-        this.channels.put(channel, this.manager.getNamedRegistry().registerChannel(socketBindingName, channel));
+        this.channels.put(channel, (binding != null) ? this.manager.getNamedRegistry().registerChannel(binding.getName(), channel) : this.manager.getUnnamedRegistry().registerChannel(channel));
         return channel;
     }
 
     @Override
     public ServerSocketChannel createServerSocketChannel(String name) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
+        SocketBinding binding = this.bindings.get(name);
         ServerSocketChannel channel = ServerSocketChannel.open();
-        this.serverChannels.put(channel, this.manager.getNamedRegistry().registerChannel(socketBindingName, channel));
+        this.serverChannels.put(channel, (binding != null) ? this.manager.getNamedRegistry().registerChannel(binding.getName(), channel) : this.manager.getUnnamedRegistry().registerChannel(channel));
         return channel;
     }
 

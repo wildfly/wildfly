@@ -42,6 +42,7 @@ import org.jboss.as.network.SocketBindingManager;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 
 /**
  * @author Paul Ferraro
@@ -60,7 +61,7 @@ public class ManagedSocketFactoryTestCase {
     @Test
     public void createSocket() throws IOException {
         this.createSocket("known-service", "binding");
-        this.createSocket("unknown-service", "unknown-service");
+        this.createSocket("unknown-service", null);
     }
 
     private void createSocket(String serviceName, String bindingName) throws IOException {
@@ -68,7 +69,11 @@ public class ManagedSocketFactoryTestCase {
         Socket socket = mock(Socket.class);
 
         when(this.manager.getSocketFactory()).thenReturn(factory);
-        when(factory.createSocket(bindingName)).thenReturn(socket);
+        if (bindingName != null) {
+            when(factory.createSocket(bindingName)).thenReturn(socket);
+        } else {
+            when(factory.createSocket()).thenReturn(socket);
+        }
 
         try (Socket result = this.subject.createSocket(serviceName)) {
             assertSame(socket, result);
@@ -147,7 +152,7 @@ public class ManagedSocketFactoryTestCase {
     @Test
     public void createServerSocket() throws IOException {
         this.createServerSocket("known-service", "binding");
-        this.createServerSocket("unknown-service", "unknown-service");
+        this.createServerSocket("unknown-service", null);
     }
 
     private void createServerSocket(String serviceName, String bindingName) throws IOException {
@@ -155,7 +160,11 @@ public class ManagedSocketFactoryTestCase {
         ServerSocket socket = mock(ServerSocket.class);
 
         when(this.manager.getServerSocketFactory()).thenReturn(factory);
-        when(factory.createServerSocket(bindingName)).thenReturn(socket);
+        if (bindingName != null) {
+            when(factory.createServerSocket(bindingName)).thenReturn(socket);
+        } else {
+            when(factory.createServerSocket()).thenReturn(socket);
+        }
 
         try (ServerSocket result = this.subject.createServerSocket(serviceName)) {
             assertSame(socket, result);
@@ -207,19 +216,27 @@ public class ManagedSocketFactoryTestCase {
     @Test
     public void createDatagramSocket() throws IOException {
         this.createDatagramSocket("known-service", "binding");
-        this.createDatagramSocket("unknown-service", "unknown-service");
+        this.createDatagramSocket("unknown-service", null);
     }
 
     private void createDatagramSocket(String serviceName, String bindingName) throws IOException {
         DatagramSocket socket = mock(DatagramSocket.class);
 
-        when(this.manager.createDatagramSocket(eq(bindingName), any())).thenReturn(socket);
+        if (bindingName != null) {
+            when(this.manager.createDatagramSocket(eq(bindingName), any())).thenReturn(socket);
+        } else {
+            when(this.manager.createDatagramSocket(ArgumentMatchers.<SocketAddress>any())).thenReturn(socket);
+        }
 
         try (DatagramSocket result = this.subject.createDatagramSocket(serviceName)) {
             assertSame(socket, result);
 
             ArgumentCaptor<InetSocketAddress> capturedAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
-            verify(this.manager).createDatagramSocket(eq(bindingName), capturedAddress.capture());
+            if (bindingName != null) {
+                verify(this.manager).createDatagramSocket(eq(bindingName), capturedAddress.capture());
+            } else {
+                verify(this.manager).createDatagramSocket(capturedAddress.capture());
+            }
 
             InetSocketAddress address = capturedAddress.getValue();
             assertTrue(address.getAddress().isAnyLocalAddress());
@@ -228,13 +245,21 @@ public class ManagedSocketFactoryTestCase {
         reset(socket, this.manager);
 
         int bindPort = 1;
-        when(this.manager.createDatagramSocket(eq(bindingName), any())).thenReturn(socket);
+        if (bindingName != null) {
+            when(this.manager.createDatagramSocket(eq(bindingName), any())).thenReturn(socket);
+        } else {
+            when(this.manager.createDatagramSocket(ArgumentMatchers.<SocketAddress>any())).thenReturn(socket);
+        }
 
         try (DatagramSocket result = this.subject.createDatagramSocket(serviceName, bindPort)) {
             assertSame(socket, result);
 
             ArgumentCaptor<InetSocketAddress> capturedAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
-            verify(this.manager).createDatagramSocket(eq(bindingName), capturedAddress.capture());
+            if (bindingName != null) {
+                verify(this.manager).createDatagramSocket(eq(bindingName), capturedAddress.capture());
+            } else {
+                verify(this.manager).createDatagramSocket(capturedAddress.capture());
+            }
 
             InetSocketAddress address = capturedAddress.getValue();
             assertTrue(address.getAddress().isAnyLocalAddress());
@@ -243,13 +268,21 @@ public class ManagedSocketFactoryTestCase {
         reset(socket, this.manager);
 
         InetAddress bindAddress = InetAddress.getLocalHost();
-        when(this.manager.createDatagramSocket(eq(bindingName), any())).thenReturn(socket);
+        if (bindingName != null) {
+            when(this.manager.createDatagramSocket(eq(bindingName), any())).thenReturn(socket);
+        } else {
+            when(this.manager.createDatagramSocket(ArgumentMatchers.<SocketAddress>any())).thenReturn(socket);
+        }
 
         try (DatagramSocket result = this.subject.createDatagramSocket(serviceName, bindPort, bindAddress)) {
             assertSame(socket, result);
 
             ArgumentCaptor<InetSocketAddress> capturedAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
-            verify(this.manager).createDatagramSocket(eq(bindingName), capturedAddress.capture());
+            if (bindingName != null) {
+                verify(this.manager).createDatagramSocket(eq(bindingName), capturedAddress.capture());
+            } else {
+                verify(this.manager).createDatagramSocket(capturedAddress.capture());
+            }
 
             InetSocketAddress address = capturedAddress.getValue();
             assertSame(bindAddress, address.getAddress());
@@ -257,7 +290,11 @@ public class ManagedSocketFactoryTestCase {
         }
         reset(socket, this.manager);
 
-        when(this.manager.createDatagramSocket(eq(bindingName))).thenReturn(socket);
+        if (bindingName != null) {
+            when(this.manager.createDatagramSocket(eq(bindingName))).thenReturn(socket);
+        } else {
+            when(this.manager.createDatagramSocket()).thenReturn(socket);
+        }
 
         try (DatagramSocket result = this.subject.createDatagramSocket(serviceName, null)) {
             assertSame(socket, result);
@@ -265,13 +302,21 @@ public class ManagedSocketFactoryTestCase {
         reset(socket, this.manager);
 
         SocketAddress socketAddress = new InetSocketAddress(bindAddress, bindPort);
-        when(this.manager.createDatagramSocket(eq(bindingName), any())).thenReturn(socket);
+        if (bindingName != null) {
+            when(this.manager.createDatagramSocket(eq(bindingName), any())).thenReturn(socket);
+        } else {
+            when(this.manager.createDatagramSocket(ArgumentMatchers.<SocketAddress>any())).thenReturn(socket);
+        }
 
         try (DatagramSocket result = this.subject.createDatagramSocket(serviceName, socketAddress)) {
             assertSame(socket, result);
 
             ArgumentCaptor<SocketAddress> capturedAddress = ArgumentCaptor.forClass(SocketAddress.class);
-            verify(this.manager).createDatagramSocket(eq(bindingName), capturedAddress.capture());
+            if (bindingName != null) {
+                verify(this.manager).createDatagramSocket(eq(bindingName), capturedAddress.capture());
+            } else {
+                verify(this.manager).createDatagramSocket(capturedAddress.capture());
+            }
 
             assertSame(socketAddress, capturedAddress.getValue());
         }
@@ -280,19 +325,27 @@ public class ManagedSocketFactoryTestCase {
     @Test
     public void createMulticastSocket() throws IOException {
         this.createMulticastSocket("known-service", "binding");
-        this.createMulticastSocket("unknown-service", "unknown-service");
+        this.createMulticastSocket("unknown-service", null);
     }
 
     private void createMulticastSocket(String serviceName, String bindingName) throws IOException {
         MulticastSocket socket = mock(MulticastSocket.class);
 
-        when(this.manager.createMulticastSocket(eq(bindingName), any())).thenReturn(socket);
+        if (bindingName != null) {
+            when(this.manager.createMulticastSocket(eq(bindingName), any())).thenReturn(socket);
+        } else {
+            when(this.manager.createMulticastSocket(ArgumentMatchers.<SocketAddress>any())).thenReturn(socket);
+        }
 
         try (MulticastSocket result = this.subject.createMulticastSocket(serviceName)) {
             assertSame(socket, result);
 
             ArgumentCaptor<InetSocketAddress> capturedAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
-            verify(this.manager).createMulticastSocket(eq(bindingName), capturedAddress.capture());
+            if (bindingName != null) {
+                verify(this.manager).createMulticastSocket(eq(bindingName), capturedAddress.capture());
+            } else {
+                verify(this.manager).createMulticastSocket(capturedAddress.capture());
+            }
 
             InetSocketAddress address = capturedAddress.getValue();
             assertTrue(address.getAddress().isAnyLocalAddress());
@@ -301,13 +354,21 @@ public class ManagedSocketFactoryTestCase {
         reset(socket, this.manager);
 
         int bindPort = 1;
-        when(this.manager.createMulticastSocket(eq(bindingName), any())).thenReturn(socket);
+        if (bindingName != null) {
+            when(this.manager.createMulticastSocket(eq(bindingName), any())).thenReturn(socket);
+        } else {
+            when(this.manager.createMulticastSocket(ArgumentMatchers.<SocketAddress>any())).thenReturn(socket);
+        }
 
         try (MulticastSocket result = this.subject.createMulticastSocket(serviceName, bindPort)) {
             assertSame(socket, result);
 
             ArgumentCaptor<InetSocketAddress> capturedAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
-            verify(this.manager).createMulticastSocket(eq(bindingName), capturedAddress.capture());
+            if (bindingName != null) {
+                verify(this.manager).createMulticastSocket(eq(bindingName), capturedAddress.capture());
+            } else {
+                verify(this.manager).createMulticastSocket(capturedAddress.capture());
+            }
 
             InetSocketAddress address = capturedAddress.getValue();
             assertTrue(address.getAddress().isAnyLocalAddress());
@@ -316,13 +377,21 @@ public class ManagedSocketFactoryTestCase {
         reset(socket, this.manager);
 
         InetAddress bindAddress = InetAddress.getLocalHost();
-        when(this.manager.createMulticastSocket(eq(bindingName), any())).thenReturn(socket);
+        if (bindingName != null) {
+            when(this.manager.createMulticastSocket(eq(bindingName), any())).thenReturn(socket);
+        } else {
+            when(this.manager.createMulticastSocket(ArgumentMatchers.<SocketAddress>any())).thenReturn(socket);
+        }
 
         try (MulticastSocket result = this.subject.createMulticastSocket(serviceName, bindPort, bindAddress)) {
             assertSame(socket, result);
 
             ArgumentCaptor<InetSocketAddress> capturedAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
-            verify(this.manager).createMulticastSocket(eq(bindingName), capturedAddress.capture());
+            if (bindingName != null) {
+                verify(this.manager).createMulticastSocket(eq(bindingName), capturedAddress.capture());
+            } else {
+                verify(this.manager).createMulticastSocket(capturedAddress.capture());
+            }
 
             InetSocketAddress address = capturedAddress.getValue();
             assertSame(bindAddress, address.getAddress());
@@ -330,7 +399,11 @@ public class ManagedSocketFactoryTestCase {
         }
         reset(socket, this.manager);
 
-        when(this.manager.createMulticastSocket(eq(bindingName))).thenReturn(socket);
+        if (bindingName != null) {
+            when(this.manager.createMulticastSocket(eq(bindingName))).thenReturn(socket);
+        } else {
+            when(this.manager.createMulticastSocket()).thenReturn(socket);
+        }
 
         try (MulticastSocket result = this.subject.createMulticastSocket(serviceName, null)) {
             assertSame(socket, result);
@@ -338,13 +411,21 @@ public class ManagedSocketFactoryTestCase {
         reset(socket, this.manager);
 
         SocketAddress socketAddress = new InetSocketAddress(bindAddress, bindPort);
-        when(this.manager.createMulticastSocket(eq(bindingName), any())).thenReturn(socket);
+        if (bindingName != null) {
+            when(this.manager.createMulticastSocket(eq(bindingName), any())).thenReturn(socket);
+        } else {
+            when(this.manager.createMulticastSocket(ArgumentMatchers.<SocketAddress>any())).thenReturn(socket);
+        }
 
         try (MulticastSocket result = this.subject.createMulticastSocket(serviceName, socketAddress)) {
             assertSame(socket, result);
 
             ArgumentCaptor<SocketAddress> capturedAddress = ArgumentCaptor.forClass(SocketAddress.class);
-            verify(this.manager).createMulticastSocket(eq(bindingName), capturedAddress.capture());
+            if (bindingName != null) {
+                verify(this.manager).createMulticastSocket(eq(bindingName), capturedAddress.capture());
+            } else {
+                verify(this.manager).createMulticastSocket(capturedAddress.capture());
+            }
 
             assertSame(socketAddress, capturedAddress.getValue());
         }
