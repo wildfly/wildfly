@@ -6,6 +6,6 @@ include::jgroups/JGroups_Subsystem.adoc[leveloffset=+1]
 
 include::jgroups/Kubernetes.adoc[]
 
-// TODO Discovery in AWS
+include::jgroups/AWS-Discovery.adoc[]
 
 // TODO Discovery in Azure

@@ -313,6 +313,8 @@
          -->
         <legacy.version.antlr>2.7.7</legacy.version.antlr>
         <version.antlr>4.10</version.antlr>
+        <version.com.amazon.aws>1.12.284</version.com.amazon.aws>
+        <version.com.amazon.ion>1.0.2</version.com.amazon.ion>
         <version.com.beust>1.78</version.com.beust>
         <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
         <version.org.elasticsearch.client.rest-client>7.16.3</version.org.elasticsearch.client.rest-client>
@@ -580,6 +582,7 @@
         <version.org.jctools.jctools-core>2.1.2</version.org.jctools.jctools-core>
         <version.org.jetbrains.kotlin>1.7.10</version.org.jetbrains.kotlin>
         <version.org.jgroups>5.2.9.Final</version.org.jgroups>
+        <version.org.jgroups.aws>2.0.1.Final</version.org.jgroups.aws>
         <version.org.jgroups.azure>2.0.2.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>2.0.1.Final</version.org.jgroups.kubernetes>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>

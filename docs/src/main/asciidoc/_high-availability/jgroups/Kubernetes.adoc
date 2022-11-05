@@ -13,7 +13,7 @@ labels and stack name (`tcp`) with the target stack:
 ----
 batch
 /subsystem=jgroups/stack=tcp/protocol=MPING:remove()
-/subsystem=jgroups/stack=tcp/protocol=kubernetes.KUBE_PING:add(add-index=0,properties={namespace="production",labels="cluster=nyc"})
+/subsystem=jgroups/stack=tcp/protocol=kubernetes.KUBE_PING:add(add-index=1, properties={namespace="production", labels="cluster=nyc"})
 run-batch
 ----
 
