@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -32,11 +33,14 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.util.SocketFactory;
+import org.jgroups.util.Util;
 
 /**
  * Manages registration of all JGroups sockets with a {@link SocketBindingManager}.
@@ -47,6 +51,9 @@ public class ManagedSocketFactory implements SocketFactory {
     private final SocketBindingManager manager;
     // Maps a JGroups service name its associated SocketBinding
     private final Map<String, SocketBinding> socketBindings;
+    // Store references to managed socket-binding registrations
+    private final Map<SocketChannel, Closeable> channels = Collections.synchronizedMap(new IdentityHashMap<>());
+    private final Map<ServerSocketChannel, Closeable> serverChannels = Collections.synchronizedMap(new IdentityHashMap<>());
 
     public ManagedSocketFactory(SocketBindingManager manager, Map<String, SocketBinding> socketBindings) {
         this.manager = manager;
@@ -155,15 +162,17 @@ public class ManagedSocketFactory implements SocketFactory {
 
     @Override
     public SocketChannel createSocketChannel(String name) throws IOException {
+        String socketBindingName = this.getSocketBindingName(name);
         SocketChannel channel = SocketChannel.open();
-        this.manager.getNamedRegistry().registerChannel(name, channel);
+        this.channels.put(channel, this.manager.getNamedRegistry().registerChannel(socketBindingName, channel));
         return channel;
     }
 
     @Override
     public ServerSocketChannel createServerSocketChannel(String name) throws IOException {
+        String socketBindingName = this.getSocketBindingName(name);
         ServerSocketChannel channel = ServerSocketChannel.open();
-        this.manager.getNamedRegistry().registerChannel(name, channel);
+        this.serverChannels.put(channel, this.manager.getNamedRegistry().registerChannel(socketBindingName, channel));
         return channel;
     }
 
@@ -186,5 +195,17 @@ public class ManagedSocketFactory implements SocketFactory {
         if (socket != null) {
             socket.close();
         }
+    }
+
+    @Override
+    public void close(SocketChannel channel) {
+        Util.close(this.channels.remove(channel));
+        Util.close(channel);
+    }
+
+    @Override
+    public void close(ServerSocketChannel channel) {
+        Util.close(this.serverChannels.remove(channel));
+        Util.close(channel);
     }
 }
