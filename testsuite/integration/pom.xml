@@ -48,9 +48,6 @@
         <ts.skipTests>${skipTests}</ts.skipTests>
 
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
-
-        <!-- Artifact id of the wildfly-testsuite-shared variant to use. Override to use the javax variant -->
-        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared</wildfly-testsuite-shared.artifactId>
     </properties>
 
     <profiles>
@@ -465,7 +462,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>${wildfly-testsuite-shared.artifactId}</artifactId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>

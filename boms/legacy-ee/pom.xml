@@ -727,18 +727,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>jboss-transaction-spi</artifactId>
-                <version>${version.org.jboss.jboss-transaction-spi}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.activemq.artemis.integration</groupId>
                 <artifactId>artemis-wildfly-integration</artifactId>
                 <version>${version.org.jboss.activemq.artemis.integration}</version>
@@ -1263,12 +1251,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.ejb</groupId>
-                <artifactId>jboss-ejb-api_3.2_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec}</version>
             </dependency>
 
             <dependency>
