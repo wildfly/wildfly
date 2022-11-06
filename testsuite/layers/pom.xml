@@ -38,6 +38,11 @@
             <artifactId>wildfly-launcher</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-testsuite-shared</artifactId>
             <exclusions>
