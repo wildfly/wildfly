@@ -102,6 +102,7 @@
         <module>servlet-feature-pack</module>
         <module>weld</module>
         <module>testsuite/test-feature-pack</module>
+        <module>testsuite/shared</module>
         <module>testsuite</module>
     </modules>
 
@@ -926,13 +927,6 @@
                 <artifactId>wildfly-standard-expansion-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-testsuite-shared-legacy-namespace</artifactId>
-                <version>${ee.maven.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>
@@ -2048,8 +2042,6 @@
                 <module>webservices</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>xts</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>testsuite/shared</module>
             </modules>
         </profile>
         <profile>

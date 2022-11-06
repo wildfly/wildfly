@@ -36,7 +36,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.elytron.ElytronExtension;
 
 /**
  * Utility methods to create/remove simple security domains
@@ -45,6 +44,7 @@ import org.wildfly.extension.elytron.ElytronExtension;
  */
 public class EjbElytronDomainSetup implements ServerSetupTask {
 
+    private static final String SUBSYSTEM_NAME = "elytron";
     private static final String DEFAULT_SECURITY_DOMAIN_NAME = "elytron-tests";
 
     private PathAddress saslAuthenticationAddress;
@@ -89,7 +89,7 @@ public class EjbElytronDomainSetup implements ServerSetupTask {
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
         saslAuthenticationAddress = PathAddress.pathAddress()
-                .append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)
+                .append(SUBSYSTEM, SUBSYSTEM_NAME)
                 .append("sasl-authentication-factory", getSaslAuthenticationName());
 
         remotingConnectorAddress = PathAddress.pathAddress()

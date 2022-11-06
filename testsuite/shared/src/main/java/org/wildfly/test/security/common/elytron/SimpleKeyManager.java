@@ -24,7 +24,6 @@ package org.wildfly.test.security.common.elytron;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 import java.util.Objects;
-
 import javax.net.ssl.KeyManagerFactory;
 
 import org.jboss.as.test.integration.management.util.CLIWrapper;

@@ -58,7 +58,6 @@
         <module>jpa/subsystem</module>
         <module>jsf</module>
         <module>microprofile</module>
-        <module>shared</module>
         <module>web-common</module>
         <module>weld/bean-validation</module>
         <module>weld/common</module>

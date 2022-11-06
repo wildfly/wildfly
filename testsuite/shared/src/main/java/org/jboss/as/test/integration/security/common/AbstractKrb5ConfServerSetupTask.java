@@ -78,8 +78,8 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
      * @param managementClient
      * @param containerId
      * @throws Exception
-     * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
-     *      java.lang.String)
+     * @see ServerSetupTask#setup(ManagementClient,
+     *      String)
      */
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         LOGGER.trace("(Re)Creating workdir: " + WORK_DIR.getAbsolutePath());
@@ -116,8 +116,8 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
      * @param managementClient
      * @param containerId
      * @throws Exception
-     * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
-     *      java.lang.String)
+     * @see ServerSetupTask#tearDown(ManagementClient,
+     *      String)
      */
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         FileUtils.deleteDirectory(WORK_DIR);
