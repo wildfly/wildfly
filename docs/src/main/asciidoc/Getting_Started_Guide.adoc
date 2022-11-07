@@ -32,7 +32,7 @@ server configuration profiles.
 [cols=",,,,",options="header"]
 |=======================================================================
 |Jakarta EE Platform Technology |Jakarta EE Full Platform |Jakarta EE Web
-Profile |WildFly {wildflyVersion} Full profile |WildFly {wildflyVersion} Web profile
+Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} Default Configuration
 
 |Jakarta Activation 2.1 |X |-- |X |X
 
@@ -97,6 +97,34 @@ Profile |WildFly {wildflyVersion} Full profile |WildFly {wildflyVersion} Web pro
 |Jakarta XML Web Services 4.0 |Optional |-- |X |X
 |=======================================================================
 
+WildFly {wildflyVersion} also provides support for a number of MicroProfile technologies:
+
+[cols=",,",options="header"]
+|=======================================================================
+|MicroProfile Technology |WildFly {wildflyVersion} Default Configuration |WildFly {wildflyVersion} MicroProfile Configuration
+
+|MicroProfile Config 3.0 |X |X
+
+|MicroProfile Fault Tolerance 4.0 |-- |X
+
+|MicroProfile Health 4.0 |-- |X
+
+|MicroProfile JWT Authentication 2.0 |X |X
+
+|MicroProfile Metrics 4.0 (deprecated in WildFly; will be replaced by link:Admin_Guide{outfilesuffix}#Micrometer_Metrics[Micrometer]) |-- |X
+
+|MicroProfile OpenAPI 3.0 |-- |X
+
+|MicroProfile OpenTracing 3.0 (deprecated; use link:Admin_Guide{outfilesuffix}#Observability_Tracing[OpenTelemetry]) |X |X
+
+|MicroProfile Reactive Messaging 3.0 |-- |--
+
+|MicroProfile Streams Operators 3.0 |-- |--
+
+|MicroProfile Rest Client 3.0|X |X
+
+|=======================================================================
+
 Missing ActiveMQ Artemis and Jakarta Messaging?
 
 [WARNING]
@@ -116,7 +144,7 @@ content on administrative features, refer to the WildFly {wildflyVersion} link:A
 [[requirements]]
 == Requirements
 
-* Java SE 8 or later. We recommend that you use the latest available update
+* Java SE 11 or later. We recommend that you use the latest available update
 of the current long-term support Java release.
 
 
