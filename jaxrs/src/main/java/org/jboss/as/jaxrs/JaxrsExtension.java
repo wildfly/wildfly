@@ -47,7 +47,7 @@ public class JaxrsExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jaxrs";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
     private static final String RESOURCE_NAME = JaxrsExtension.class.getPackage().getName() + ".LocalDescriptions";
     static PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
@@ -72,7 +72,7 @@ public class JaxrsExtension implements Extension {
         registerAttributes(registration);
         ManagementResourceRegistration jaxrsResReg = subsystem.registerDeploymentModel(new JaxrsDeploymentDefinition());
         jaxrsResReg.registerSubModel(new DeploymentRestResourcesDefintion());
-        subsystem.registerXMLElementWriter(JaxrsSubsystemParser_2_0::new);
+        subsystem.registerXMLElementWriter(JaxrsSubsystemParser_3_0::new);
     }
 
     /**
@@ -82,6 +82,7 @@ public class JaxrsExtension implements Extension {
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, "urn:jboss:domain:jaxrs:1.0", JaxrsSubsystemParser_1_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, "urn:jboss:domain:jaxrs:2.0", JaxrsSubsystemParser_2_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, "urn:jboss:domain:jaxrs:3.0", JaxrsSubsystemParser_3_0::new);
     }
 
     private static void registerAttributes(ManagementResourceRegistration registration) {

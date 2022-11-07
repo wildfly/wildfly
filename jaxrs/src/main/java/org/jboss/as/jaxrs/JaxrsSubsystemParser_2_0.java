@@ -32,24 +32,18 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:rsigal@redhat.com">Ron Sigal</a>
  */
-public class JaxrsSubsystemParser_2_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-
-    private static final String NAMESPACE = "urn:jboss:domain:jaxrs:2.0";
+public class JaxrsSubsystemParser_2_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
@@ -151,19 +145,6 @@ public class JaxrsSubsystemParser_2_0 implements XMLStreamConstants, XMLElementR
                     throw unexpectedElement(reader);
             }
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void writeContent(final XMLExtendedStreamWriter streamWriter, final SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(NAMESPACE, false);
-        ModelNode subsystem = context.getModelNode();
-        for (AttributeDefinition attr : JaxrsAttribute.ATTRIBUTES) {
-            attr.marshallAsElement(subsystem, true, streamWriter);
-        }
-        streamWriter.writeEndElement();
     }
 
     protected void handleSimpleElement(final XMLExtendedStreamReader reader,
