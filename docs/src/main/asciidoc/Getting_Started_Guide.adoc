@@ -144,7 +144,7 @@ content on administrative features, refer to the WildFly {wildflyVersion} link:A
 [[requirements]]
 == Requirements
 
-* Java SE 8 or later. We recommend that you use the latest available update
+* Java SE 11 or later. We recommend that you use the latest available update
 of the current long-term support Java release.
 
 
