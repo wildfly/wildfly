@@ -222,11 +222,6 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-jpa-legacy-namespace</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-weld-spi-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
