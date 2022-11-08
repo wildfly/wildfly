@@ -152,6 +152,24 @@ public class JaxbJsonObjectMapperProvider implements ContextResolver<ObjectMappe
 }
 ----
 
+== Using the Tracing Feature
+
+The tracing feature provides more internal states of the Jakarta RESTful Web Services container. For example, it could
+be able to show what filters a request is going through, or how long time a request is processed and other kinds of information.
+
+The tracing feature can be enabled by setting the `tracing-type` attribute to `ALL` or `ON_DEMAND`. You can also control
+the threshold with the `tracing-threshold` attribute. The following is an example of enabling tracing using CLI:
+
+----
+/subsystem=jaxrs:write-attribute(name=tracing-type, value=ALL)
+:reload
+----
+
+You can also configure the tracing feature with the context parameters `resteasy.server.tracing.type` and
+`resteasy.server.tracing.threshold` in your deployments `web.xml` file.
+
+IMPORTANT: The tracing feature should not be used in production environments. Data can be exposed to clients via HTTP headers.
+
 == RESTEasy Spring Framework Integration
 
 WildFly generally includes support for Jakarta Context and Dependency Injection (CDI). The Spring Framework, however,

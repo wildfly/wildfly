@@ -35,4 +35,6 @@
     <resteasy-use-builtin-providers>false</resteasy-use-builtin-providers>
     <resteasy-use-container-form-params>true</resteasy-use-container-form-params>
     <resteasy-wider-request-matching>true</resteasy-wider-request-matching>
+    <tracing-type>ALL</tracing-type>
+    <tracing-threshold>VERBOSE</tracing-threshold>
 </subsystem>

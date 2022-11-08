@@ -35,4 +35,6 @@
     <resteasy-use-builtin-providers>${test.use.builtin.providers:false}</resteasy-use-builtin-providers>
     <resteasy-use-container-form-params>${test.use.container.form.params:true}</resteasy-use-container-form-params>
     <resteasy-wider-request-matching>${test.wider.request.matching:true}</resteasy-wider-request-matching>
+    <tracing-type>${test.tracing.type:ON_DEMAND}</tracing-type>
+    <tracing-threshold>${test.tracing.threshold:TRACE}</tracing-threshold>
 </subsystem>

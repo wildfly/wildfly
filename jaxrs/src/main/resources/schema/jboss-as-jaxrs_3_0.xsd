@@ -68,6 +68,24 @@
                         default="false"/>
             <xs:element name="resteasy-wider-request-matching" type="xs:boolean" minOccurs="0" maxOccurs="1"
                         default="false"/>
+            <xs:element name="tracing-type" minOccurs="0" maxOccurs="1" default="OFF">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="OFF"/>
+                        <xs:enumeration value="ON_DEMAND"/>
+                        <xs:enumeration value="ALL"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="tracing-threshold" minOccurs="0" maxOccurs="1" default="SUMMARY">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="SUMMARY"/>
+                        <xs:enumeration value="TRACE"/>
+                        <xs:enumeration value="VERBOSE"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
         </xs:all>
     </xs:complexType>
 

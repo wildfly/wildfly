@@ -219,6 +219,17 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             managementAdded = true;
         }
 
+        // Check for the existence of the "resteasy.server.tracing.type" context parameter. If set to ALL or ON_DEMAND
+        // log a warning message.
+        final String value = webdata.getContextParams().stream()
+                .filter(contextValue -> "resteasy.server.tracing.type".equals(contextValue.getParamName()))
+                .map(ParamValueMetaData::getParamValue)
+                .findFirst()
+                .orElse(null);
+        if (value != null && !"OFF".equals(value)) {
+            JAXRS_LOGGER.tracingEnabled(deploymentUnit.getName());
+        }
+
         if (resteasy.hasBootClasses() || resteasy.isDispatcherCreated())
             return;
 
@@ -556,6 +567,9 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (isTransmittable(JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING, modelNode = config.isResteasyWiderRequestMatching())) {
             setContextParameter(webdata, JaxrsConstants.RESTEASY_WIDER_REQUEST_MATCHING, modelNode.asString());
         }
+
+        // Add the context parameters
+        config.getContextParameters().forEach((key, value) -> setContextParameter(webdata, key, value));
     }
 
     /**
