@@ -5,7 +5,7 @@
 
     <feature spec="domain.socket-binding-group">
         <param name="socket-binding-group" value="ha-sockets"/>
-        <param name="default-interface" value="public" />
+        <param name="default-interface" value="public"/>
         <feature-group name="domain-sockets"/>
         <feature-group name="domain-ha-sockets"/>
         <feature-group name="domain-mail-sockets"/>
@@ -34,6 +34,9 @@
                         <param name="socket-binding" value="jgroups-tcp"/>
                     </feature>
                     <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="RED"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
                         <param name="protocol" value="org.jgroups.protocols.aws.S3_PING"/>
                         <param name="module" value="org.jgroups.aws"/>
                         <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;}"/>
@@ -41,53 +44,14 @@
                     <feature spec="subsystem.jgroups.stack.protocol">
                         <param name="protocol" value="MERGE3"/>
                     </feature>
-                    <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK">
+                    <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK2">
                         <param name="socket-binding" value="jgroups-tcp-fd"/>
                     </feature>
                     <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="FD_ALL"/>
+                        <param name="protocol" value="FD_ALL3"/>
                     </feature>
                     <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="VERIFY_SUSPECT"/>
-                    </feature>
-                    <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="pbcast.NAKACK2"/>
-                    </feature>
-                    <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="UNICAST3"/>
-                    </feature>
-                    <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="pbcast.STABLE"/>
-                    </feature>
-                    <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="pbcast.GMS"/>
-                    </feature>
-                    <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="FRAG3"/>
-                    </feature>
-                </feature>
-                <feature spec="subsystem.jgroups.stack">
-                    <param name="stack" value="udp"/>
-                    <feature spec="subsystem.jgroups.stack.transport">
-                        <param name="transport" value="UDP"/>
-                        <param name="socket-binding" value="jgroups-udp"/>
-                    </feature>
-                    <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="org.jgroups.protocols.aws.S3_PING"/>
-                        <param name="module" value="org.jgroups.aws"/>
-                        <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;}"/>
-                    </feature>
-                    <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="MERGE3"/>
-                    </feature>
-                    <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK">
-                        <param name="socket-binding" value="jgroups-udp-fd"/>
-                    </feature>
-                    <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="FD_ALL"/>
-                    </feature>
-                    <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="VERIFY_SUSPECT"/>
+                        <param name="protocol" value="VERIFY_SUSPECT2"/>
                     </feature>
                     <feature spec="subsystem.jgroups.stack.protocol">
                         <param name="protocol" value="pbcast.NAKACK2"/>
@@ -105,7 +69,58 @@
                         <param name="protocol" value="UFC"/>
                     </feature>
                     <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="FRAG3"/>
+                        <param name="protocol" value="MFC"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="FRAG4"/>
+                    </feature>
+                </feature>
+                <feature spec="subsystem.jgroups.stack">
+                    <param name="stack" value="udp"/>
+                    <feature spec="subsystem.jgroups.stack.transport">
+                        <param name="transport" value="UDP"/>
+                        <param name="socket-binding" value="jgroups-udp"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="RED"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="org.jgroups.protocols.aws.S3_PING"/>
+                        <param name="module" value="org.jgroups.aws"/>
+                        <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;}"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="MERGE3"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK2">
+                        <param name="socket-binding" value="jgroups-udp-fd"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="FD_ALL3"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="VERIFY_SUSPECT2"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="pbcast.NAKACK2"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="UNICAST3"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="pbcast.STABLE"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="pbcast.GMS"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="UFC"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="MFC"/>
+                    </feature>
+                    <feature spec="subsystem.jgroups.stack.protocol">
+                        <param name="protocol" value="FRAG4"/>
                     </feature>
                 </feature>
             </feature>
