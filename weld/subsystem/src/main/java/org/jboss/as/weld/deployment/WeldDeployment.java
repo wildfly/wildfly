@@ -30,9 +30,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.el.ELResolver;
-import javax.el.ExpressionFactory;
-import javax.enterprise.inject.spi.Extension;
+import jakarta.el.ELResolver;
+import jakarta.el.ExpressionFactory;
+import jakarta.enterprise.inject.spi.Extension;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.WeldModuleResourceLoader;

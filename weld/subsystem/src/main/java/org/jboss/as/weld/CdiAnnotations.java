@@ -27,7 +27,7 @@ import org.jboss.as.weld.discovery.AnnotationType;
 import org.jboss.jandex.DotName;
 import org.jboss.weld.util.collections.ImmutableSet;
 
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 /**
  * Class that stores the {@link DotName}s of CDI annotations.
@@ -35,83 +35,83 @@ import javax.enterprise.inject.spi.BeanManager;
  */
 public enum CdiAnnotations {
     /**
-     * javax.decorator.Decorator CDI annotation.
+     * jakarta.decorator.Decorator CDI annotation.
      */
     DECORATOR(Constants.JAVAX_DECORATOR, "Decorator"),
     /**
-     * javax.decorator.Delegate CDI annotation.
+     * jakarta.decorator.Delegate CDI annotation.
      */
     DELEGATE(Constants.JAVAX_DECORATOR, "Delegate"),
     /**
-     * javax.enterprise.context.ApplicationScoped CDI annotation.
+     * jakarta.enterprise.context.ApplicationScoped CDI annotation.
      */
     APP_SCOPED(Constants.JAVAX_ENT_CONTEXT, "ApplicationScoped"),
     /**
-     * javax.enterprise.context.ConversationScoped CDI annotation.
+     * jakarta.enterprise.context.ConversationScoped CDI annotation.
      */
     CONV_SCOPED(Constants.JAVAX_ENT_CONTEXT, "ConversationScoped"),
     /**
-     * javax.enterprise.context.RequestScoped CDI annotation.
+     * jakarta.enterprise.context.RequestScoped CDI annotation.
      */
     REQ_SCOPED(Constants.JAVAX_ENT_CONTEXT, "RequestScoped"),
     /**
-     * javax.enterprise.context.SessionScoped CDI annotation.
+     * jakarta.enterprise.context.SessionScoped CDI annotation.
      */
     SESS_SCOPED(Constants.JAVAX_ENT_CONTEXT, "SessionScoped"),
     /**
-     * javax.enterprise.context.NormalScope CDI annotation.
+     * jakarta.enterprise.context.NormalScope CDI annotation.
      */
     NORM_SCOPE(Constants.JAVAX_ENT_CONTEXT, "NormalScope"),
     /**
-     * javax.enterprise.context.Dependent CDI annotation.
+     * jakarta.enterprise.context.Dependent CDI annotation.
      */
     DEPENDENT(Constants.JAVAX_ENT_CONTEXT, "Dependent"),
     /**
-     * javax.inject.Singleton annotation.
+     * jakarta.inject.Singleton annotation.
      */
     SINGLETON(Constants.JAVAX_INJ, "Singleton"),
     /**
-     * javax.enterprise.event.Observes CDI annotation.
+     * jakarta.enterprise.event.Observes CDI annotation.
      */
     OBSERVES(Constants.JAVAX_ENT_EVT, "Observes"),
     /**
-     * javax.enterprise.inject.Alternative CDI annotation.
+     * jakarta.enterprise.inject.Alternative CDI annotation.
      */
     ALTERNATIVE(Constants.JAVAX_ENT_INJ, "Alternative"),
     /**
-     * javax.enterprise.inject.Any CDI annotation.
+     * jakarta.enterprise.inject.Any CDI annotation.
      */
     ANY(Constants.JAVAX_ENT_INJ, "Any"),
     /**
-     * javax.enterprise.inject.Default CDI annotation.
+     * jakarta.enterprise.inject.Default CDI annotation.
      */
     DEFAULT(Constants.JAVAX_ENT_INJ, "Default"),
     /**
-     * javax.enterprise.inject.Disposes CDI annotation.
+     * jakarta.enterprise.inject.Disposes CDI annotation.
      */
     DISPOSES(Constants.JAVAX_ENT_INJ, "Disposes"),
     /**
-     * javax.enterprise.inject.Model CDI annotation.
+     * jakarta.enterprise.inject.Model CDI annotation.
      */
     MODEL(Constants.JAVAX_ENT_INJ, "Model"),
     /**
-     * javax.enterprise.inject.New CDI annotation.
+     * jakarta.enterprise.inject.New CDI annotation.
      */
     NEW(Constants.JAVAX_ENT_INJ, "New"),
     /**
-     * javax.enterprise.inject.Produces CDI annotation.
+     * jakarta.enterprise.inject.Produces CDI annotation.
      */
     PRODUCES(Constants.JAVAX_ENT_INJ, "Produces"),
     /**
-     * javax.enterprise.inject.Specializes CDI annotation.
+     * jakarta.enterprise.inject.Specializes CDI annotation.
      */
     SPECIALIZES(Constants.JAVAX_ENT_INJ, "Specializes"),
     /**
-     * javax.enterprise.inject.Stereotype CDI annotation.
+     * jakarta.enterprise.inject.Stereotype CDI annotation.
      */
     STEREOTYPE(Constants.JAVAX_ENT_INJ, "Stereotype"),
     /**
-     * javax.enterprise.inject.Typed CDI annotation.
+     * jakarta.enterprise.inject.Typed CDI annotation.
      */
     TYPED(Constants.JAVAX_ENT_INJ, "Typed");
 
@@ -149,12 +149,12 @@ public enum CdiAnnotations {
         public static final DotName JAVAX = DotName.createComponentized(null, EE_NAMESPACE);
 
         /**
-         * javax.interceptor package.
+         * jakarta.interceptor package.
         */
         public static final DotName JAVAX_INTERCEPTOR = DotName.createComponentized(JAVAX, "interceptor");
 
         /**
-         * javax.decorator package.
+         * jakarta.decorator package.
          */
         public static final DotName JAVAX_DECORATOR = DotName.createComponentized(JAVAX, "decorator");
 
@@ -164,22 +164,22 @@ public enum CdiAnnotations {
         public static final DotName JAVAX_ENT = DotName.createComponentized(JAVAX, "enterprise");
 
         /**
-         * javax.enterprise.context package.
+         * jakarta.enterprise.context package.
          */
         public static final DotName JAVAX_ENT_CONTEXT = DotName.createComponentized(JAVAX_ENT, "context");
 
         /**
-         * javax.enterprise.event package.
+         * jakarta.enterprise.event package.
          */
         public static final DotName JAVAX_ENT_EVT = DotName.createComponentized(JAVAX_ENT, "event");
 
         /**
-         * javax.enterprise.inject package.
+         * jakarta.enterprise.inject package.
          */
         public static final DotName JAVAX_ENT_INJ = DotName.createComponentized(JAVAX_ENT, "inject");
 
         /**
-         * javax.inject package.
+         * jakarta.inject package.
          */
         public static final DotName JAVAX_INJ = DotName.createComponentized(JAVAX, "inject");
     }

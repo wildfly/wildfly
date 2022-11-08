@@ -36,7 +36,7 @@ import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.Extension;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.structure.DeploymentType;

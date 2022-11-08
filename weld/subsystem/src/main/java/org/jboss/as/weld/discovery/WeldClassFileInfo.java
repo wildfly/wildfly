@@ -32,8 +32,8 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.weld.resources.spi.ClassFileInfo;
 import org.jboss.weld.util.cache.ComputingCache;
 
-import javax.enterprise.inject.Vetoed;
-import javax.inject.Inject;
+import jakarta.enterprise.inject.Vetoed;
+import jakarta.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;

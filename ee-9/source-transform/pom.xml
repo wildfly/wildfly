@@ -63,7 +63,6 @@
         <module>weld/bean-validation</module>
         <module>weld/common</module>
         <module>weld/spi</module>
-        <module>weld/subsystem</module>
         <module>undertow</module>
         <module>messaging-activemq/injection</module>
         <module>messaging-activemq/subsystem</module>
