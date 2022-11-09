@@ -114,6 +114,28 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
     }
 
     @Override
+    protected void addOperationReplyValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+        final ModelNode valueTypeNode = node.get(ModelDescriptionConstants.VALUE_TYPE);
+        addAttributeValueTypeDescription(resolver, locale, bundle, valueTypeNode, ModelType.LONG,  TIME_REMAINING);
+        addAttributeValueTypeDescription(resolver, locale, bundle, valueTypeNode, ModelType.LONG,  NEXT_TIMEOUT);
+        addAttributeValueTypeDescription(resolver, locale, bundle, valueTypeNode, ModelType.BOOLEAN, null, CALENDAR_TIMER);
+        addAttributeValueTypeDescription(resolver, locale, bundle, valueTypeNode, ModelType.BOOLEAN, null, PERSISTENT);
+        addAttributeValueTypeDescription(resolver, locale, bundle, valueTypeNode, ModelType.STRING, null, INFO);
+        final ModelNode sched = addAttributeValueTypeDescription(resolver, locale, bundle, valueTypeNode, ModelType.OBJECT, null, SCHEDULE);
+        final ModelNode schedValType = sched.get(VALUE_TYPE);
+        addAttributeValueTypeDescription(resolver, locale, bundle, schedValType, ModelType.STRING, null, SCHEDULE, YEAR);
+        addAttributeValueTypeDescription(resolver, locale, bundle, schedValType, ModelType.STRING, null, SCHEDULE, MONTH);
+        addAttributeValueTypeDescription(resolver, locale, bundle, schedValType, ModelType.STRING, null, SCHEDULE, DAY_OF_MONTH);
+        addAttributeValueTypeDescription(resolver, locale, bundle, schedValType, ModelType.STRING, null, SCHEDULE, DAY_OF_WEEK);
+        addAttributeValueTypeDescription(resolver, locale, bundle, schedValType, ModelType.STRING, null, SCHEDULE, HOUR);
+        addAttributeValueTypeDescription(resolver, locale, bundle, schedValType, ModelType.STRING, null, SCHEDULE, MINUTE);
+        addAttributeValueTypeDescription(resolver, locale, bundle, schedValType, ModelType.STRING, null, SCHEDULE, SECOND);
+        addAttributeValueTypeDescription(resolver, locale, bundle, schedValType, ModelType.STRING, null, SCHEDULE, TIMEZONE);
+        addAttributeValueTypeDescription(resolver, locale, bundle, schedValType, ModelType.LONG, SCHEDULE, START);
+        addAttributeValueTypeDescription(resolver, locale, bundle, schedValType, ModelType.LONG, SCHEDULE, END);
+    }
+
+    @Override
     public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
         throw EjbLogger.ROOT_LOGGER.runtimeAttributeNotMarshallable(getName());
     }
@@ -150,6 +172,22 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
             valNode.get(UNIT).set(measurementUnit.getName());
         }
         return valNode;
+    }
+
+    private ModelNode addAttributeValueTypeDescription(final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle,
+                                                       final ModelNode node, final ModelType type, final String... suffixes){
+        final ModelNode valueTypeDescription = node.get(suffixes[suffixes.length -1]);
+        valueTypeDescription.get(ModelDescriptionConstants.TYPE).set(type);
+
+        try {
+            String description = resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, suffixes);
+            valueTypeDescription.get(ModelDescriptionConstants.DESCRIPTION).set(description);
+        }
+        catch (Exception e) {
+            // Value type description not found in the bundle.
+            // Fallback to "type" => ModelType for respective TimerAttribute instead.
+        }
+        return valueTypeDescription;
     }
 
     public static void addTimers(final EJBComponent ejb, final ModelNode response) {
