@@ -884,7 +884,6 @@ public class Constants {
             DRIVER_CLASS_NAME,
             DRIVER_DATASOURCE_CLASS_NAME,
             DRIVER_XA_DATASOURCE_CLASS_NAME,
-            XA_DATASOURCE_CLASS,
             DRIVER_MAJOR_VERSION,
             DRIVER_MINOR_VERSION,
             JDBC_COMPLIANT,
@@ -908,7 +907,7 @@ public class Constants {
             .setReadOnly()
             .setRuntimeOnly()
             .setParameters(DRIVER_NAME)
-            .setReplyParameters(DRIVER_MINOR_VERSION, DRIVER_MAJOR_VERSION, DEPLOYMENT_NAME, DRIVER_NAME, DRIVER_XA_DATASOURCE_CLASS_NAME, XA_DATASOURCE_CLASS, JDBC_COMPLIANT, MODULE_SLOT, DRIVER_CLASS_NAME, DRIVER_MODULE_NAME)
+            .setReplyParameters(DRIVER_MINOR_VERSION, DRIVER_MAJOR_VERSION, DEPLOYMENT_NAME, DRIVER_NAME, DRIVER_XA_DATASOURCE_CLASS_NAME, JDBC_COMPLIANT, MODULE_SLOT, DRIVER_CLASS_NAME, DRIVER_MODULE_NAME)
             .setAttributeResolver(DataSourcesExtension.getResourceDescriptionResolver("jdbc-driver"))
             .build();
     static final SimpleOperationDefinition DATASOURCE_ENABLE = new SimpleOperationDefinitionBuilder(ENABLE, DataSourcesExtension.getResourceDescriptionResolver()).setDeprecated(ModelVersion.create(3)).build();
