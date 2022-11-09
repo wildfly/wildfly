@@ -5,7 +5,6 @@ The WildFly BOMs project provides Maven BOM files, which includes dependency man
 The following BOMs are available:
 
 * EJB Client (Maven coordinates "org.wildfly:wildfly-ejb-client-bom", built by /clients/ejb-client/pom.xml)
-* EJB Legacy Client (Maven coordinates "org.wildfly:wildfly-ejb-client-legacy-bom", built by /clients/ejb-legacy-client/pom.xml)
 * JAXWS Client (Maven coordinates "org.wildfly:wildfly-jaxws-client-bom", built by /clients/jaxws-client/pom.xml)
 * JMS Client (Maven coordinates "org.wildfly:wildfly-jms-client-bom", built by /clients/jms-client/pom.xml)
 * EE (Maven coordinates "org.wildfly.bom:wildfly-ee", built by /ee/pom.xml)
