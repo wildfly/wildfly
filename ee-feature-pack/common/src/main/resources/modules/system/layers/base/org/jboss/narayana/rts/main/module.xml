@@ -31,6 +31,7 @@
     </resources>
 
     <dependencies>
+        <module name="org.jboss.resteasy.resteasy-client"/>
         <module name="org.jboss.resteasy.resteasy-core-spi"/>
         <module name="org.jboss.resteasy.resteasy-core"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
