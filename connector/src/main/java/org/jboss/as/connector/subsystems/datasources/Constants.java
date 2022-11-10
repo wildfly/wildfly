@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.metadata.api.common.Security;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
@@ -42,6 +43,7 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
@@ -56,6 +58,9 @@ import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * Defines contants and attributes for datasources subsystem.
@@ -834,11 +839,13 @@ public class Constants {
             .setAllowExpression(true)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition DRIVER_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_NAME_NAME, ModelType.STRING)
             .setXmlName(Driver.Attribute.NAME.getLocalName())
-            .setRequired(true)
+            .setRequired(false)
                     //.setResourceOnly()
             .setRestartAllServices()
+            .setDeprecated(ModelVersion.create(7))
             .build();
 
     static final SimpleAttributeDefinition DRIVER_MODULE_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_MODULE_NAME_NAME, ModelType.STRING)
@@ -884,7 +891,6 @@ public class Constants {
 
     static final SimpleAttributeDefinition[] JDBC_DRIVER_ATTRIBUTES = {
             DEPLOYMENT_NAME,
-            DRIVER_NAME,
             DRIVER_MODULE_NAME,
             MODULE_SLOT,
             DRIVER_CLASS_NAME,
@@ -897,8 +903,14 @@ public class Constants {
             PROFILE
     };
 
+    static final SimpleAttributeDefinition INSTALLED_DRIVER_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_NAME_NAME, ModelType.STRING)
+            .setValidator(new StringLengthValidator(1))
+            .build();
 
-    static final ObjectTypeAttributeDefinition INSTALLED_DRIVER = ObjectTypeAttributeDefinition.Builder.of("installed-driver", JDBC_DRIVER_ATTRIBUTES).build();
+    private static final AttributeDefinition[] INSTALLED_DRIVER_ATTRIBUTES = Stream.concat(Arrays.stream(JDBC_DRIVER_ATTRIBUTES), Stream.of(INSTALLED_DRIVER_NAME, DATASOURCE_CLASS_INFO))
+            .toArray(AttributeDefinition[]::new);
+
+    static final ObjectTypeAttributeDefinition INSTALLED_DRIVER = ObjectTypeAttributeDefinition.Builder.of("installed-driver", INSTALLED_DRIVER_ATTRIBUTES).build();
     static final ObjectListAttributeDefinition INSTALLED_DRIVERS = ObjectListAttributeDefinition.Builder.of("installed-drivers", INSTALLED_DRIVER)
             .setResourceOnly().setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
@@ -908,13 +920,14 @@ public class Constants {
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.LIST)
-            .setReplyParameters(JDBC_DRIVER_ATTRIBUTES)
+            .setReplyParameters(INSTALLED_DRIVER_ATTRIBUTES)
             .build();
+
     static final SimpleOperationDefinition GET_INSTALLED_DRIVER = new SimpleOperationDefinitionBuilder("get-installed-driver", DataSourcesExtension.getResourceDescriptionResolver())
             .setReadOnly()
             .setRuntimeOnly()
-            .setParameters(DRIVER_NAME)
-            .setReplyParameters(DRIVER_MINOR_VERSION, DRIVER_MAJOR_VERSION, DEPLOYMENT_NAME, DRIVER_NAME, DRIVER_XA_DATASOURCE_CLASS_NAME, XA_DATASOURCE_CLASS, JDBC_COMPLIANT, MODULE_SLOT, DRIVER_CLASS_NAME, DRIVER_MODULE_NAME)
+            .setParameters(INSTALLED_DRIVER_NAME)
+            .setReplyParameters(INSTALLED_DRIVER_ATTRIBUTES)
             .setAttributeResolver(DataSourcesExtension.getResourceDescriptionResolver("jdbc-driver"))
             .build();
     static final SimpleOperationDefinition DATASOURCE_ENABLE = new SimpleOperationDefinitionBuilder(ENABLE, DataSourcesExtension.getResourceDescriptionResolver()).setDeprecated(ModelVersion.create(3)).build();

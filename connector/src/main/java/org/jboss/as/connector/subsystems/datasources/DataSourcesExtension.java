@@ -61,7 +61,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DAT
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
@@ -237,7 +236,7 @@ public class DataSourcesExtension implements Extension {
                 for (String driverName : drivers.keys()) {
                     ModelNode driver = drivers.get(driverName);
                     writer.writeStartElement(DataSources.Tag.DRIVER.getLocalName());
-                    writer.writeAttribute(Driver.Attribute.NAME.getLocalName(), driver.require(DRIVER_NAME.getName()).asString());
+                    writer.writeAttribute(Driver.Attribute.NAME.getLocalName(), driverName);
                     if (has(driver, DRIVER_MODULE_NAME.getName())) {
                         String moduleName = driver.get(DRIVER_MODULE_NAME.getName()).asString();
                         if (has(driver, MODULE_SLOT.getName())) {
