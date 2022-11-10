@@ -68,14 +68,14 @@ public class MixedDomainTestSuite {
             return getSupport(testClass, Profile.FULL_HA, false);
     }
 
-    protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean withMasterServers) {
-            return getSupport(testClass, Profile.FULL_HA, withMasterServers);
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean withPrimaryServers) {
+            return getSupport(testClass, Profile.FULL_HA, withPrimaryServers);
     }
 
-    protected static MixedDomainTestSupport getSupport(Class<?> testClass, Profile profile, boolean withMasterServers) {
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass, Profile profile, boolean withPrimaryServers) {
         if (support == null) {
             final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile();
-            return getSupport(testClass, copiedDomainXml, profile, true, false, withMasterServers);
+            return getSupport(testClass, copiedDomainXml, profile, true, false, withPrimaryServers);
         }
         return support;
     }
@@ -85,12 +85,12 @@ public class MixedDomainTestSuite {
      *
      * @param testClass the test/suite class
      */
-    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String masterConfig, String slaveConfig, Profile profile, boolean withMasterServers) {
-        return getSupport(testClass, masterConfig, slaveConfig, profile, true, false, withMasterServers);
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String primaryConfig, String secondaryConfig, Profile profile, boolean withPrimaryServers) {
+        return getSupport(testClass, primaryConfig, secondaryConfig, profile, true, false, withPrimaryServers);
     }
 
-    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String masterConfig, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) {
-        return getSupport(testClass, masterConfig, null, Profile.FULL_HA, adjustDomain, legacyConfig, withMasterServers);
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String primaryConfig, boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers) {
+        return getSupport(testClass, primaryConfig, null, Profile.FULL_HA, adjustDomain, legacyConfig, withPrimaryServers);
     }
 
     /**
@@ -98,18 +98,18 @@ public class MixedDomainTestSuite {
      *
      * @param testClass the test/suite class
      */
-    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String masterConfig, String slaveConfig, Profile profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) {
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String primaryConfig, String secondaryConfig, Profile profile, boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers) {
         if (support == null) {
             final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile();
-            return getSupport(testClass, copiedDomainXml, masterConfig, slaveConfig, profile, adjustDomain, legacyConfig, withMasterServers);
+            return getSupport(testClass, copiedDomainXml, primaryConfig, secondaryConfig, profile, adjustDomain, legacyConfig, withPrimaryServers);
         }
         return support;
     }
 
-    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String masterConfig, String slaveConfig) {
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String primaryConfig, String secondaryConfig) {
         if (support == null) {
             final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile();
-            return getSupport(testClass, copiedDomainXml, masterConfig, slaveConfig, Profile.FULL_HA, true, false, false);
+            return getSupport(testClass, copiedDomainXml, primaryConfig, secondaryConfig, Profile.FULL_HA, true, false, false);
         }
         return support;
     }
@@ -118,7 +118,7 @@ public class MixedDomainTestSuite {
      * Call this from a @BeforeClass method
      *
      * @param testClass the test/suite class
-     * @param version the version of the legacy slave.
+     * @param version the version of the legacy secondary.
      */
     protected static MixedDomainTestSupport getSupportForLegacyConfig(Class<?> testClass, Version.AsVersion version) {
         if (support == null) {
@@ -129,21 +129,21 @@ public class MixedDomainTestSuite {
         return support;
     }
 
-    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, Profile profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) {
-        return getSupport(testClass, domainConfig, null, null, profile, adjustDomain, legacyConfig, withMasterServers);
+    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, Profile profile, boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers) {
+        return getSupport(testClass, domainConfig, null, null, profile, adjustDomain, legacyConfig, withPrimaryServers);
     }
 
-    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, String masterConfig, String slaveConfig, Profile profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) {
+    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, String primaryConfig, String secondaryConfig, Profile profile, boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers) {
 
         if (support == null) {
             final Version.AsVersion version = getVersion(testClass);
             final MixedDomainTestSupport testSupport;
             try {
                 if (domainConfig != null) {
-                    if(masterConfig != null || slaveConfig != null) {
-                        testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, masterConfig, slaveConfig, profile.getProfile(),  adjustDomain, legacyConfig, withMasterServers);
+                    if(primaryConfig != null || secondaryConfig != null) {
+                        testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, primaryConfig, secondaryConfig, profile.getProfile(),  adjustDomain, legacyConfig, withPrimaryServers);
                     } else {
-                        testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, profile.getProfile(), adjustDomain, legacyConfig, withMasterServers);
+                        testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, profile.getProfile(), adjustDomain, legacyConfig, withPrimaryServers);
                     }
                 } else {
                     testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version);

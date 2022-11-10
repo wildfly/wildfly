@@ -64,7 +64,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Base class for tests of the ability of a DC to exclude resources from visibility to a slave.
+ * Base class for tests of the ability of a DC to exclude resources from visibility to a secondary.
  *
  * @author Brian Stansberry
  */
@@ -89,7 +89,7 @@ public abstract class DomainHostExcludesTest {
     private static Version.AsVersion version;
 
     /** Subclasses call from a @BeforeClass method */
-    protected static void setup(Class<?> clazz, String hostRelease, ModelVersion slaveApiVersion) throws IOException, MgmtOperationException, TimeoutException, InterruptedException {
+    protected static void setup(Class<?> clazz, String hostRelease, ModelVersion secondaryApiVersion) throws IOException, MgmtOperationException, TimeoutException, InterruptedException {
         version = clazz.getAnnotation(Version.class).value();
 
         testSupport = MixedDomainTestSuite.getSupport(clazz);
@@ -101,7 +101,7 @@ public abstract class DomainHostExcludesTest {
         //Unset the ignore-unused-configuration flag
         ModelNode dc = DomainTestUtils.executeForResult(
                 Util.getReadAttributeOperation(PathAddress.pathAddress(HOST), DOMAIN_CONTROLLER),
-                testSupport.getDomainSlaveLifecycleUtil().getDomainClient());
+                testSupport.getDomainSecondaryLifecycleUtil().getDomainClient());
 
         dc = dc.get("remote");
 
@@ -109,27 +109,27 @@ public abstract class DomainHostExcludesTest {
         dc.get(OP).set("write-remote-domain-controller");
         dc.get(OP_ADDR).set(PathAddress.pathAddress(HOST).toModelNode());
 
-        DomainTestUtils.executeForResult(dc, testSupport.getDomainSlaveLifecycleUtil().getDomainClient());
+        DomainTestUtils.executeForResult(dc, testSupport.getDomainSecondaryLifecycleUtil().getDomainClient());
 
-        stopSlave();
+        stopSecondary();
 
-        // restarting the slave will recopy the testing-host.xml file over the top, clobbering the ignore-unused-configuration above,
+        // restarting the secondary will recopy the testing-host.xml file over the top, clobbering the ignore-unused-configuration above,
         // so use setRewriteConfigFiles(false) to prevent this.
-        WildFlyManagedConfiguration slaveCfg = testSupport.getDomainSlaveConfiguration();
-        slaveCfg.setRewriteConfigFiles(false);
+        WildFlyManagedConfiguration secondaryCfg = testSupport.getDomainSecondaryConfiguration();
+        secondaryCfg.setRewriteConfigFiles(false);
 
-        // Setup a host exclude for the slave ignoring some extensions
-        ModelControllerClient client = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-        setupExclude(client, hostRelease, slaveApiVersion);
+        // Setup a host exclude for the secondary ignoring some extensions
+        ModelControllerClient client = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
+        setupExclude(client, hostRelease, secondaryApiVersion);
 
         // Now, add some ignored extensions to verify they are ignored due to the host-excluded configured before
         addExtensions(true, client);
 
-        startSlave();
+        startSecondary();
     }
 
-    private static void stopSlave() throws IOException, MgmtOperationException, InterruptedException {
-        ModelControllerClient client = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
+    private static void stopSecondary() throws IOException, MgmtOperationException, InterruptedException {
+        ModelControllerClient client = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
         executeForResult(Util.createEmptyOperation(SHUTDOWN, PathAddress.pathAddress(HOST)), client);
         boolean gone = false;
         long timeout = TimeoutUtil.adjust(30000);
@@ -145,8 +145,8 @@ public abstract class DomainHostExcludesTest {
                 }
             }
         } while (!gone && System.currentTimeMillis() < deadline);
-        Assert.assertTrue("Slave was not removed within " + timeout + " ms", gone);
-        testSupport.getDomainSlaveLifecycleUtil().stop();
+        Assert.assertTrue("Secondary was not removed within " + timeout + " ms", gone);
+        testSupport.getDomainSecondaryLifecycleUtil().stop();
     }
 
     private static void setupExclude(ModelControllerClient client, String hostRelease, ModelVersion hostVersion) throws IOException, MgmtOperationException {
@@ -183,9 +183,9 @@ public abstract class DomainHostExcludesTest {
         }
     }
 
-    private static void startSlave() throws TimeoutException, InterruptedException {
+    private static void startSecondary() throws TimeoutException, InterruptedException {
 
-        DomainLifecycleUtil legacyUtil = testSupport.getDomainSlaveLifecycleUtil();
+        DomainLifecycleUtil legacyUtil = testSupport.getDomainSecondaryLifecycleUtil();
         long start = System.currentTimeMillis();
         legacyUtil.start();
         legacyUtil.awaitServers(start);
@@ -195,40 +195,40 @@ public abstract class DomainHostExcludesTest {
     @AfterClass
     public static void tearDown() throws IOException, MgmtOperationException, TimeoutException, InterruptedException {
         try {
-            executeForResult(createRemoveOperation(HOST_EXCLUDE), testSupport.getDomainMasterLifecycleUtil().getDomainClient());
+            executeForResult(createRemoveOperation(HOST_EXCLUDE), testSupport.getDomainPrimaryLifecycleUtil().getDomainClient());
         } finally {
-            restoreSlave();
+            restoreSecondary();
         }
     }
 
 
     @Test
-    public void test001SlaveBoot() throws Exception {
+    public void test001SecondaryBoot() throws Exception {
 
-        ModelControllerClient slaveClient = testSupport.getDomainSlaveLifecycleUtil().getDomainClient();
+        ModelControllerClient secondaryClient = testSupport.getDomainSecondaryLifecycleUtil().getDomainClient();
 
-        checkExtensions(slaveClient);
-        checkProfiles(slaveClient);
-        checkSocketBindingGroups(slaveClient);
+        checkExtensions(secondaryClient);
+        checkProfiles(secondaryClient);
+        checkSocketBindingGroups(secondaryClient);
 
-        checkSockets(slaveClient, PathAddress.pathAddress(SOCKET_BINDING_GROUP, "full-sockets"));
-        checkSockets(slaveClient, PathAddress.pathAddress(SOCKET_BINDING_GROUP, "full-ha-sockets"));
+        checkSockets(secondaryClient, PathAddress.pathAddress(SOCKET_BINDING_GROUP, "full-sockets"));
+        checkSockets(secondaryClient, PathAddress.pathAddress(SOCKET_BINDING_GROUP, "full-ha-sockets"));
     }
 
     @Test
     public void test002ServerBoot() throws IOException, MgmtOperationException, InterruptedException, OperationFailedException {
 
-        ModelControllerClient masterClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
+        ModelControllerClient primaryClient = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
 
         PathAddress serverCfgAddr = PathAddress.pathAddress(HOST,
                 PathElement.pathElement(SERVER_CONFIG, "server-one"));
         ModelNode op = Util.createEmptyOperation("start", serverCfgAddr);
-        executeForResult(op, masterClient);
+        executeForResult(op, primaryClient);
 
         PathAddress serverAddr = PathAddress.pathAddress(HOST,
                 PathElement.pathElement(RUNNING_SERVER, "server-one"));
-        awaitServerLaunch(masterClient, serverAddr);
-        checkSockets(masterClient, serverAddr.append(PathElement.pathElement(SOCKET_BINDING_GROUP, "full-ha-sockets")));
+        awaitServerLaunch(primaryClient, serverAddr);
+        checkSockets(primaryClient, serverAddr.append(PathElement.pathElement(SOCKET_BINDING_GROUP, "full-ha-sockets")));
 
     }
 
@@ -255,19 +255,19 @@ public abstract class DomainHostExcludesTest {
     @Test
     public void test003PostBootUpdates() throws IOException, MgmtOperationException {
 
-        ModelControllerClient masterClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-        ModelControllerClient slaveClient = testSupport.getDomainSlaveLifecycleUtil().getDomainClient();
+        ModelControllerClient primaryClient = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
+        ModelControllerClient secondaryClient = testSupport.getDomainSecondaryLifecycleUtil().getDomainClient();
 
-        // Tweak an ignored profile and socket-binding-group to prove slave doesn't see it
-        updateExcludedProfile(masterClient);
-        updateExcludedSocketBindingGroup(masterClient);
+        // Tweak an ignored profile and socket-binding-group to prove secondary doesn't see it
+        updateExcludedProfile(primaryClient);
+        updateExcludedSocketBindingGroup(primaryClient);
 
         // Verify profile cloning is ignored when the cloned profile is excluded
-        testProfileCloning(masterClient, slaveClient);
+        testProfileCloning(primaryClient, secondaryClient);
 
-        // Add more ignored extensions to verify slave doesn't see the ops
-        addExtensions(false, masterClient);
-        checkExtensions(slaveClient);
+        // Add more ignored extensions to verify secondary doesn't see the ops
+        addExtensions(false, primaryClient);
+        checkExtensions(secondaryClient);
 
     }
 
@@ -332,18 +332,18 @@ public abstract class DomainHostExcludesTest {
         return executeForResult(op, client);
     }
 
-    private void testProfileCloning(ModelControllerClient masterClient, ModelControllerClient slaveClient) throws IOException, MgmtOperationException {
-        ModelNode profiles = readChildrenNames(masterClient, PathAddress.EMPTY_ADDRESS, PROFILE);
+    private void testProfileCloning(ModelControllerClient primaryClient, ModelControllerClient secondaryClient) throws IOException, MgmtOperationException {
+        ModelNode profiles = readChildrenNames(primaryClient, PathAddress.EMPTY_ADDRESS, PROFILE);
         Assert.assertTrue(profiles.isDefined());
         Assert.assertTrue(profiles.toString(), profiles.asInt() > 0);
 
         for (ModelNode mn : profiles.asList()) {
             String profile = mn.asString();
-            cloneProfile(masterClient, profile);
+            cloneProfile(primaryClient, profile);
             try {
-                checkProfiles(slaveClient);
+                checkProfiles(secondaryClient);
             } finally {
-                executeForResult(Util.createRemoveOperation(CLONE_PROFILE), masterClient);
+                executeForResult(Util.createRemoveOperation(CLONE_PROFILE), primaryClient);
             }
         }
     }
@@ -354,10 +354,10 @@ public abstract class DomainHostExcludesTest {
         executeForResult(op, client);
     }
 
-    private static void restoreSlave() throws TimeoutException, InterruptedException {
-        DomainLifecycleUtil slaveUtil = testSupport.getDomainSlaveLifecycleUtil();
-        if (!slaveUtil.isHostControllerStarted()) {
-            startSlave();
+    private static void restoreSecondary() throws TimeoutException, InterruptedException {
+        DomainLifecycleUtil secondaryUtil = testSupport.getDomainSecondaryLifecycleUtil();
+        if (!secondaryUtil.isHostControllerStarted()) {
+            startSecondary();
         }
     }
 

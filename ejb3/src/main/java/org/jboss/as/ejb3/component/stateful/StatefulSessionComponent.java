@@ -30,12 +30,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import javax.ejb.ConcurrentAccessException;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.EJBException;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
-import javax.ejb.RemoveException;
+import jakarta.ejb.ConcurrentAccessException;
+import jakarta.ejb.ConcurrentAccessTimeoutException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.EJBLocalObject;
+import jakarta.ejb.EJBObject;
+import jakarta.ejb.RemoveException;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -218,7 +218,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     /**
-     * Returns the {@link javax.ejb.AccessTimeout} applicable to given method
+     * Returns the {@link jakarta.ejb.AccessTimeout} applicable to given method
      */
     public AccessTimeoutDetails getAccessTimeout(Method method) {
         final EJBBusinessMethod ejbMethod = new EJBBusinessMethod(method);

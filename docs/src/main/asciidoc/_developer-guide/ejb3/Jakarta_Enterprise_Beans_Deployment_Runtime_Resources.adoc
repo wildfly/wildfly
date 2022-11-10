@@ -65,7 +65,7 @@ The following is a sample output for a stateless session bean named `ManagedStat
         "pool-remove-count" => 0,
         "run-as-role" => "Role3",
         "security-domain" => "other",
-        "timeout-method" => "public void sample.ManagedStatelessBean.timeout(javax.ejb.Timer)",
+        "timeout-method" => "public void sample.ManagedStatelessBean.timeout(jakarta.ejb.Timer)",
         "timers" => [{
             "time-remaining" => 4735224L,
             "next-timeout" => 1577768415000L,
@@ -221,7 +221,7 @@ The following is a sample output for a singleton bean named `ManagedSingletonBea
         "peak-concurrent-invocations" => 1L,
         "run-as-role" => "Role3",
         "security-domain" => "other",
-        "timeout-method" => "public void sample.ManagedSingletonBean.timeout(javax.ejb.Timer)",
+        "timeout-method" => "public void sample.ManagedSingletonBean.timeout(jakarta.ejb.Timer)",
         "timers" => [{
             "time-remaining" => 4304279L,
             "next-timeout" => 1577768415000L,
@@ -267,7 +267,7 @@ The following is a sample output for a message-driven bean named `ManagedMDB` in
     "outcome" => "success",
     "result" => {
         "activation-config" => [
-            ("destinationType" => "javax.jms.Queue"),
+            ("destinationType" => "jakarta.jms.Queue"),
             ("destination" => "java:/queue/ManagedMDB-queue")
         ],
         "component-class-name" => "sample.ManagedMDB",
@@ -281,7 +281,7 @@ The following is a sample output for a message-driven bean named `ManagedMDB` in
         "invocations" => 0L,
         "message-destination-link" => undefined,
         "message-destination-type" => undefined,
-        "messaging-type" => "javax.jms.MessageListener",
+        "messaging-type" => "jakarta.jms.MessageListener",
         "methods" => {},
         "peak-concurrent-invocations" => 0L,
         "pool-available-count" => 16,
@@ -292,7 +292,7 @@ The following is a sample output for a message-driven bean named `ManagedMDB` in
         "pool-remove-count" => 0,
         "run-as-role" => "Role3",
         "security-domain" => "other",
-        "timeout-method" => "public void sample.ManagedMDB.timeout(javax.ejb.Timer)",
+        "timeout-method" => "public void sample.ManagedMDB.timeout(jakarta.ejb.Timer)",
         "timers" => [{
             "time-remaining" => 4213581L,
             "next-timeout" => 1577768415000L,

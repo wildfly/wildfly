@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.Init;
+import jakarta.ejb.Init;
 
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;

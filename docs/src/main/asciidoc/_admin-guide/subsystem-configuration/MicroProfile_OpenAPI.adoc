@@ -20,7 +20,7 @@ You can also add the subsystem manually to any profile via the CLI:
 
 == Configuration
 
-The microprofile-openapi-smallrye subsytem obtains all of its configuration via MicroProfile Config.  Thus the subsystem itself defines no attributes.
+The microprofile-openapi-smallrye subsystem obtains all of its configuration via MicroProfile Config.  Thus the subsystem itself defines no attributes.
 
 In addition to the https://download.eclipse.org/microprofile/microprofile-open-api-1.1.2/microprofile-openapi-spec.html#_core_configurations[standard Open API configuration] properties, WildFly supports the following additional MicroProfile Config properties:
 

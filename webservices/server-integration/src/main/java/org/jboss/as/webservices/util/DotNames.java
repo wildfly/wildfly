@@ -22,18 +22,18 @@
 
 package org.jboss.as.webservices.util;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.Singleton;
-import javax.ejb.Stateless;
-import javax.jws.HandlerChain;
-import javax.jws.WebService;
-import javax.servlet.Servlet;
-import javax.xml.ws.Service;
-import javax.xml.ws.WebServiceProvider;
-import javax.xml.ws.WebServiceRef;
-import javax.xml.ws.WebServiceRefs;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Stateless;
+import jakarta.jws.HandlerChain;
+import jakarta.jws.WebService;
+import jakarta.servlet.Servlet;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.WebServiceProvider;
+import jakarta.xml.ws.WebServiceRef;
+import jakarta.xml.ws.WebServiceRefs;
 
 import org.jboss.jandex.DotName;
 import org.jboss.ws.api.annotation.WebContext;

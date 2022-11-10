@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2021 Red Hat, Inc., and individual contributors
+ * Copyright 2022 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.wildfly.extension.micrometer;
 
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.EXPORTED_MODULES;
@@ -31,7 +30,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
-public class MicrometerDependencyProcessor implements DeploymentUnitProcessor {
+class MicrometerDependencyProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
         addDependencies(phaseContext.getDeploymentUnit());
@@ -49,8 +48,7 @@ public class MicrometerDependencyProcessor implements DeploymentUnitProcessor {
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, false, true, false));
         }
         for (String module : EXPORTED_MODULES) {
-            ModuleDependency modDep = new ModuleDependency(moduleLoader, module, false, true, true, false);
-            moduleSpecification.addSystemDependency(modDep);
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, true, true, false));
         }
     }
 }

@@ -59,19 +59,21 @@ public class DistributableSession implements io.undertow.server.session.Session 
     private final Batch batch;
     private final Consumer<HttpServerExchange> closeTask;
     private final Instant startTime;
+    private final RecordableSessionManagerStatistics statistics;
 
     private volatile Map.Entry<Session<Map<String, Object>>, SessionConfig> entry;
     // The following references are only used to create an OOB session
     private volatile String id = null;
     private volatile Map<String, Object> localContext = null;
 
-    public DistributableSession(UndertowSessionManager manager, Session<Map<String, Object>> session, SessionConfig config, Batch batch, Consumer<HttpServerExchange> closeTask) {
+    public DistributableSession(UndertowSessionManager manager, Session<Map<String, Object>> session, SessionConfig config, Batch batch, Consumer<HttpServerExchange> closeTask, RecordableSessionManagerStatistics statistics) {
         this.manager = manager;
         this.id = session.getId();
         this.entry = Map.entry(session, config);
         this.batch = batch;
         this.closeTask = closeTask;
         this.startTime = session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
+        this.statistics = statistics;
     }
 
     private Map.Entry<Session<Map<String, Object>>, SessionConfig> getSessionEntry() {
@@ -269,6 +271,9 @@ public class DistributableSession implements io.undertow.server.session.Session 
             for (String name : attributes.getAttributeNames()) {
                 Object value = attributes.getAttribute(name);
                 this.manager.getSessionListeners().attributeRemoved(this, name, value);
+            }
+            if (this.statistics != null) {
+                this.statistics.getInactiveSessionRecorder().record(session.getMetaData());
             }
         }
         try (BatchContext context = this.resumeBatch()) {

@@ -209,7 +209,7 @@ through the configured CXF interceptors). The way a bus is internally
 selected for serving a given JAXWS client is very important, especially
 for in-container clients; for this reason, JBossWS users can choose the
 preferred Bus selection strategy. The strategy is enforced in the
-`javax.xml.ws.spi.Provider` implementation from the JBossWS integration,
+`jakarta.xml.ws.spi.Provider` implementation from the JBossWS integration,
 being that called whenever a JAXWS `Service` (client) is requested.
 
 [[thread-bus-strategy-thread_bus]]
@@ -295,7 +295,7 @@ be associated to the thread at the end of the client creation.
 
 Users can request a given Bus selection strategy to be used for the
 client being built by specifying one of the following JBossWS features
-(which extend `javax` `.` `xml` `.` `ws` `.` `WebServiceFeature`):
+(which extend `jakarta` `.` `xml` `.` `ws` `.` `WebServiceFeature`):
 
 [cols=",",options="header"]
 |==============================================================
@@ -338,7 +338,7 @@ customizations.
 === Deployment descriptor properties
 
 The `jboss-webservices.xml` descriptor can be used to
-<<JAX_WS_Advanced_User_Guide,provide property values>>.
+<<Jakarta_XML_Web_Services_Advanced_User_Guide,provide property values>>.
 
 [source,xml,options="nowrap"]
 ----

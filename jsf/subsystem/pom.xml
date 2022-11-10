@@ -28,15 +28,15 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-jsf-parent</artifactId>
+        <artifactId>wildfly-jsf-parent-legacy-namespace</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-jsf</artifactId>
+    <artifactId>wildfly-jsf-legacy-namespace</artifactId>
 
     <name>WildFly: JSF Subsystem</name>
 
@@ -49,17 +49,17 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <artifactId>wildfly-ee-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common</artifactId>
+            <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-bean-validation</artifactId>
+            <artifactId>wildfly-bean-validation-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>
@@ -76,7 +76,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common</artifactId>
+            <artifactId>wildfly-web-common-legacy-namespace</artifactId>
         </dependency>
 
         <dependency>

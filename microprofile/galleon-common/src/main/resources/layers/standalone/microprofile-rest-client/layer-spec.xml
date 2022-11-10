@@ -26,5 +26,6 @@
     </dependencies>
     <packages>
         <package name="org.jboss.resteasy.resteasy-client-microprofile"/>
+        <package name="org.jboss.resteasy.microprofile.config" optional="true"/>
     </packages>
 </layer-spec>

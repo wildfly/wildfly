@@ -45,18 +45,6 @@ public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/elytron-oidc-client.xml",
-        };
-    }
-
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        //
-    }
-
-    @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         //
     }

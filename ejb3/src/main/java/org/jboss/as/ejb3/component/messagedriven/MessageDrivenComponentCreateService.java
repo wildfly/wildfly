@@ -29,9 +29,9 @@ import java.util.Set;
 import java.util.List;
 import java.util.Properties;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.ResourceAdapter;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.ResourceAdapter;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.ee.component.BasicComponent;

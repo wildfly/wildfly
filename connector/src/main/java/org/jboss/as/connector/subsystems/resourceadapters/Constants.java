@@ -84,15 +84,11 @@ public class Constants {
 
     static final String POOL_NAME_NAME = "pool-name";
 
-    private static final String USE_JAVA_CONTEXT_NAME = "use-java-context";
-
     private static final String ENABLED_NAME = "enabled";
 
     private static final String CONNECTABLE_NAME = "connectable";
 
     private static final String TRACKING_NAME = "tracking";
-
-    private static final String JNDINAME_NAME = "jndi-name";
 
     private static final String ALLOCATION_RETRY_NAME = "allocation-retry";
 
@@ -214,12 +210,6 @@ public class Constants {
 
     static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinitionBuilder(CLASS_NAME_NAME, ModelType.STRING, false)
             .setXmlName(ConnectionDefinition.Attribute.CLASS_NAME.getLocalName())
-            .setAllowExpression(true)
-            .setRestartAllServices()
-            .build();
-
-    static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinitionBuilder(JNDINAME_NAME, ModelType.STRING, true)
-            .setXmlName(ConnectionDefinition.Attribute.JNDI_NAME.getLocalName())
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -393,13 +383,6 @@ public class Constants {
     static final SimpleAttributeDefinition BEANVALIDATIONGROUP = new SimpleAttributeDefinitionBuilder(BEANVALIDATIONGROUPS_NAME, ModelType.STRING, true)
             .setXmlName(Activation.Tag.BEAN_VALIDATION_GROUP.getLocalName())
             .setAllowExpression(true)
-            .build();
-
-    static SimpleAttributeDefinition USE_JAVA_CONTEXT = new SimpleAttributeDefinitionBuilder(USE_JAVA_CONTEXT_NAME, ModelType.BOOLEAN, true)
-            .setXmlName(DataSource.Attribute.USE_JAVA_CONTEXT.getLocalName())
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(Defaults.USE_JAVA_CONTEXT))
-            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ENABLED_NAME, ModelType.BOOLEAN, true)

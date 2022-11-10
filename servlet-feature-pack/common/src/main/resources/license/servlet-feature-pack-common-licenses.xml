@@ -140,7 +140,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-ee-jakarta</artifactId>
+      <artifactId>wildfly-ee</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -173,7 +173,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-undertow-jakarta</artifactId>
+      <artifactId>wildfly-undertow</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -184,7 +184,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-web-common-jakarta</artifactId>
+      <artifactId>wildfly-web-common</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -282,7 +282,7 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-client-common-jakarta</artifactId>
+      <artifactId>wildfly-http-client-common</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>

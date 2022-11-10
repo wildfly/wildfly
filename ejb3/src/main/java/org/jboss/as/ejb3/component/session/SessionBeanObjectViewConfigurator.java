@@ -24,8 +24,8 @@ package org.jboss.as.ejb3.component.session;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBLocalObject;
+import jakarta.ejb.EJBObject;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentStartService;

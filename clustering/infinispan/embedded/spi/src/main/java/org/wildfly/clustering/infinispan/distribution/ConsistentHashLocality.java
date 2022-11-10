@@ -40,7 +40,7 @@ public class ConsistentHashLocality implements Locality {
         this(cache.getAdvancedCache().getComponentRegistry().getLocalComponent(KeyPartitioner.class), hash, cache.getAdvancedCache().getDistributionManager().getCacheTopology().getLocalAddress());
     }
 
-    private ConsistentHashLocality(KeyPartitioner partitioner, ConsistentHash hash, Address localAddress) {
+    public ConsistentHashLocality(KeyPartitioner partitioner, ConsistentHash hash, Address localAddress) {
         this(new ConsistentHashKeyDistribution(partitioner, hash), localAddress);
     }
 

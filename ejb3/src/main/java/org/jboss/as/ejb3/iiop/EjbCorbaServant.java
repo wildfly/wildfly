@@ -31,12 +31,12 @@ import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ejb.EJBMetaData;
-import javax.ejb.HomeHandle;
+import jakarta.ejb.EJBMetaData;
+import jakarta.ejb.HomeHandle;
 import javax.management.MBeanException;
-import javax.transaction.Status;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.Status;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;

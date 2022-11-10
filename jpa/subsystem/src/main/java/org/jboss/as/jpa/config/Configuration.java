@@ -196,12 +196,6 @@ public class Configuration {
     public static final String HIBERNATE_SEARCH_MODULE = "wildfly.jpa.hibernate.search.module";
 
     /**
-     * name of the legacy Hibernate Search module providing the ORM mapper
-     * only useful for Hibernate Search 5.x.
-     */
-    public static final String HIBERNATE_SEARCH_MODULE_MAPPER_ORM_LEGACY = "org.hibernate.search.orm";
-
-    /**
      * name of the Hibernate Search module providing the ORM mapper
      */
     public static final String HIBERNATE_SEARCH_MODULE_MAPPER_ORM = "org.hibernate.search.mapper.orm";

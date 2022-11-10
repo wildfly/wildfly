@@ -31,13 +31,13 @@ import java.util.Date;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import javax.ejb.EJBException;
-import javax.ejb.NoMoreTimeoutsException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.TimerHandle;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.NoMoreTimeoutsException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.TimerHandle;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.TimerHandleImpl;

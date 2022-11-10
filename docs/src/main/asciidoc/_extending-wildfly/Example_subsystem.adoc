@@ -564,11 +564,11 @@ TrackerService and install that into the `service target` of the context
 and add the created `service controller` to the `newControllers` list.
 
 The tracker service is quite simple. All services installed into WildFly
-must implement the `org.jboss.msc.service.Service` interface.
+must implement the `org.jboss.msc.Service` interface.
 
 [source,java,options="nowrap"]
 ----
-public class TrackerService implements Service<TrackerService>{
+public class TrackerService implements Service {
 ----
 
 We then have some fields to keep the tick count and a thread which when

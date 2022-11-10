@@ -28,7 +28,7 @@ import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.invocation.InterceptorContext;
 
-import javax.enterprise.concurrent.ContextService;
+import jakarta.enterprise.concurrent.ContextService;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

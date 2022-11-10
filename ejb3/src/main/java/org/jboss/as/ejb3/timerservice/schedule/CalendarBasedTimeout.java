@@ -29,7 +29,7 @@ import java.util.GregorianCalendar;
 import java.util.Objects;
 import java.util.TimeZone;
 
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 
 import org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfMonth;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfWeek;
@@ -52,49 +52,49 @@ public class CalendarBasedTimeout {
     private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
 
     /**
-     * The {@link javax.ejb.ScheduleExpression} from which this {@link CalendarBasedTimeout}
+     * The {@link jakarta.ejb.ScheduleExpression} from which this {@link CalendarBasedTimeout}
      * was created
      */
     private ScheduleExpression scheduleExpression;
 
     /**
-     * The {@link Second} created out of the {@link javax.ejb.ScheduleExpression#getSecond()} value
+     * The {@link Second} created out of the {@link jakarta.ejb.ScheduleExpression#getSecond()} value
      */
     private final Second second;
 
     /**
-     * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.Minute} created out of the {@link javax.ejb.ScheduleExpression#getMinute()} value
+     * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.Minute} created out of the {@link jakarta.ejb.ScheduleExpression#getMinute()} value
      */
     private final Minute minute;
 
     /**
-     * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.Hour} created out of the {@link javax.ejb.ScheduleExpression#getHour()} value
+     * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.Hour} created out of the {@link jakarta.ejb.ScheduleExpression#getHour()} value
      */
     private final Hour hour;
 
     /**
-     * The {@link DayOfWeek} created out of the {@link javax.ejb.ScheduleExpression#getDayOfWeek()} value
+     * The {@link DayOfWeek} created out of the {@link jakarta.ejb.ScheduleExpression#getDayOfWeek()} value
      */
     private final DayOfWeek dayOfWeek;
 
     /**
-     * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfMonth} created out of the {@link javax.ejb.ScheduleExpression#getDayOfMonth()} value
+     * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfMonth} created out of the {@link jakarta.ejb.ScheduleExpression#getDayOfMonth()} value
      */
     private final DayOfMonth dayOfMonth;
 
     /**
-     * The {@link Month} created out of the {@link javax.ejb.ScheduleExpression#getMonth()} value
+     * The {@link Month} created out of the {@link jakarta.ejb.ScheduleExpression#getMonth()} value
      */
     private final Month month;
 
     /**
-     * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.Year} created out of the {@link javax.ejb.ScheduleExpression#getYear()} value
+     * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.Year} created out of the {@link jakarta.ejb.ScheduleExpression#getYear()} value
      */
     private final Year year;
 
     /**
      * The first timeout relative to the time when this {@link CalendarBasedTimeout} was created
-     * from a {@link javax.ejb.ScheduleExpression}
+     * from a {@link jakarta.ejb.ScheduleExpression}
      */
     private final Calendar firstTimeout;
 
@@ -109,7 +109,7 @@ public class CalendarBasedTimeout {
     /**
      * Creates a {@link CalendarBasedTimeout} from the passed <code>schedule</code>.
      * <p>
-     * This constructor parses the passed {@link javax.ejb.ScheduleExpression} and sets up
+     * This constructor parses the passed {@link jakarta.ejb.ScheduleExpression} and sets up
      * its internal representation of the same.
      * </p>
      *
@@ -204,7 +204,7 @@ public class CalendarBasedTimeout {
     }
 
     /**
-     * Returns the original {@link javax.ejb.ScheduleExpression} from which this {@link CalendarBasedTimeout}
+     * Returns the original {@link jakarta.ejb.ScheduleExpression} from which this {@link CalendarBasedTimeout}
      * was created.
      *
      * @return

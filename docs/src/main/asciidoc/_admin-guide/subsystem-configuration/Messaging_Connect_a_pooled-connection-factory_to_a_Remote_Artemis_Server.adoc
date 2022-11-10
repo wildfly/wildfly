@@ -133,7 +133,7 @@ requiring any JNDI lookup.
 @MessageDriven(name = "MyMDB", activationConfig = {
     @ActivationConfigProperty(propertyName = "useJNDI",         propertyValue = "false"),
     @ActivationConfigProperty(propertyName = "destination",     propertyValue = "myQueue"),
-    @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"), 
+    @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue"), 
     @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
 })
 public class MyMDB implements MessageListener {
@@ -166,7 +166,7 @@ Please note that the destination is created remotely but won't be removed once t
     // explicitly mention a resourceAdapter corresponding to a pooled-connection-factory resource to the remote server
     resourceAdapter = "activemq-ra",
     name="java:global/env/myQueue2",
-    interfaceName="javax.jms.Queue",
+    interfaceName="jakarta.jms.Queue",
     destinationName="myQueue2",
         properties = {
             "management-address=my.management.queue",
@@ -183,7 +183,7 @@ You can also configure destinations not to enable the Artemis 1.x prefixes by ad
     // explicitly mention a resourceAdapter corresponding to a pooled-connection-factory resource to the remote server
     resourceAdapter = "activemq-ra",
     name="java:global/env/myQueue2",
-    interfaceName="javax.jms.Queue",
+    interfaceName="jakarta.jms.Queue",
     destinationName="myQueue2",
     properties = {
         "enable-amq1-prefix=false"

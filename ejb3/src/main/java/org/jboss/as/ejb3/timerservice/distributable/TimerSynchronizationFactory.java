@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.timerservice.distributable;
 
 import java.util.function.Consumer;
 
-import javax.transaction.Synchronization;
+import jakarta.transaction.Synchronization;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;

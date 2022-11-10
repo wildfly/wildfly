@@ -33,11 +33,11 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-rts-jakarta</artifactId>
-    <name>WildFly: RTS Subsystem (Jakarta Namespace)</name>
+    <artifactId>wildfly-rts</artifactId>
+    <name>WildFly: RTS Subsystem</name>
 
     <properties>
         <transformer-input-dir>${project.basedir}/../../../rts</transformer-input-dir>
@@ -108,7 +108,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-undertow-jakarta</artifactId>
+            <artifactId>wildfly-undertow</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
@@ -129,7 +129,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-transaction-client</artifactId>
         </dependency>
         <!-- skip java.xml -->
         <dependency>

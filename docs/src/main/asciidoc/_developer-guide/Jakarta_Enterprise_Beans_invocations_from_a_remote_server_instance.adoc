@@ -57,8 +57,8 @@ public interface Greeter {
 ----
 package org.myapp.ejb;
  
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
  
 @Stateless
 @Remote (Greeter.class)
@@ -97,7 +97,7 @@ questions/output as follows:
 
 .add-user
 
-[source,java,options="nowrap"]
+[source,shell,options="nowrap"]
 ----
 jpai@jpai-laptop:bin$ ./add-user.sh
  
@@ -200,91 +200,39 @@ the "Destination Server". We have copied the entire server installation
 to a different folder and while starting the "Client Server" we'll use a
 port-offset (of 100 in this example) to avoid port conflicts:
 
-[source,options="nowrap"]
+[source,shell,options="nowrap"]
 ----
 ./standalone.sh -server-config=standalone-full.xml -Djboss.socket.binding.port-offset=100
 ----
 
-[[create-a-security-realm-on-the-client-server]]
-== Create a security realm on the client server
+[[create-authentication-context-on-the-client-server]]
+== Creating an Authentication Context on the Client Server
 
-Remember that we need to communicate with a secure destination server.
-In order to do that the client server has to pass the user credentials
-to the destination server. Earlier we created a user on the destination
-server who'll be allowed to communicate with that server. Now on the
-"client server" we'll create a security-realm which will be used to pass
-the user information.
-
-In this example we'll use a security realm which stores a Base64 encoded
-password and then passes on that credentials when asked for. Earlier we
-created a user named `ejb` and password `test`. So our first task here
-would be to create the base64 encoded version of the password `test`.
-You can use any utility which generates you a base64 version for a
-string. I used http://www.base64encode.org/[this online site] which
-generates the base64 encoded string. So for the `test` password, the
-base64 encoded version is `dGVzdA==`
-
-[TIP]
-
-While generating the base64 encoded string make sure that you don't have
-any trailing or leading spaces for the original password. That can lead
-to incorrect encoded versions being generated.
-
-[TIP]
-
-With new versions the add-user script will show the base64 password if
-you type 'y' if you've been ask
-
-[source,java,options="nowrap"]
-----
-Is this new user going to be used for one AS process to connect to another AS process?
-e.g. for a secondary host controller connecting to the primary or for a Remoting connection for server to server Jakarta Enterprise Beans calls.
-yes/no?
-----
-
-Now that we have generated that base64 encoded password, let's use in
-the in the security realm that we are going to configure on the "client
-server". I'll first shutdown the client server and edit the
-standalone-full.xml file to add the following in the `<management>`
-section
-
-Now let's create a " _security-realm_" for the base64 encoded password.
+The following CLI operations will create a configured authentication context.
 
 [source,options="nowrap"]
 ----
-/core-service=management/security-realm=ejb-security-realm:add()
-/core-service=management/security-realm=ejb-security-realm/server-identity=secret:add(value=dGVzdA==)
+/subsystem=elytron/authentication-configuration=ejb-user:add(authentication-name=ejb, credential-reference={clear-text=test})
+/subsystem=elytron/authentication-context=ejb-context:add(match-rules=[{authentication-configuration=ejb-user}])
 ----
 
-[NOTE]
 
-Notice that the CLI show the message _"process-state" =>
-"reload-required"_, so you have to restart the server before you can use
-this change.
-
-upon successful invocation of this command, the following configuration
-will be created in the _management_ section:
+Upon successful invocation of this command, the following configuration
+will be created in the _elytron_ subsystem:
 
 .standalone-full.xml
 
 [source,xml,options="nowrap"]
 ----
-<management>
-        <security-realms>
-            ...
-            <security-realm name="ejb-security-realm">
-                <server-identities>
-                    <secret value="dGVzdA=="/>
-                </server-identities>
-            </security-realm>
-        </security-realms>
-...
+<authentication-client>
+    <authentication-configuration name="ejb-user" authentication-name="ejb">
+        <credential-reference clear-text="test"/>
+    </authentication-configuration>
+    <authentication-context name="ejb-context">
+        <match-rule authentication-configuration="ejb-user"/>
+    </authentication-context>
+</authentication-client>
 ----
-
-As you can see I have created a security realm named
-"ejb-security-realm" (you can name it anything) with the base64 encoded
-password. So that completes the security realm configuration for the
-client server. Now let's move on to the next step.
 
 [[create-a-outbound-socket-binding-on-the-client-server]]
 == Create a outbound-socket-binding on the "Client Server"
@@ -330,7 +278,7 @@ create this configuration:
 
 [source,options="nowrap"]
 ----
-/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:add(outbound-socket-binding-ref=remote-ejb, protocol=http-remoting, security-realm=ejb-security-realm, username=ejb)
+/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:add(outbound-socket-binding-ref=remote-ejb, authentication-context=ejb-context)
 ----
 
 The above command creates a remote-outbound-connection, named "
@@ -338,19 +286,14 @@ _remote-ejb-connection_" (we can name it anything), in the remoting
 subsystem and uses the previously created " _remote-ejb_"
 outbound-socket-binding (notice the outbound-socket-binding-ref in that
 command) with the http-remoting protocol. Furthermore, we also set the
-security-realm attribute to point to the security-realm that we created
-in the previous step. Also notice that we have set the username
-attribute to use the user name who is allowed to communicate with the
-destination server.
+authentication-context attribute to point to the authentication-context that we created
+in the previous step.
 
 What this step does is, it creates a outbound connection, on the client
-server, to the remote destination server and sets up the username to the
-user who allowed to communicate with that destination server and also
-sets up the security-realm to a pre-configured security-realm capable of
-passing along the user credentials (in this case the password). This way
-when a connection has to be established from the client server to the
-destination server, the connection creation logic will have the
-necessary security credentials to pass along and setup a successful
+server, to the remote destination server and sets up the authentication-context which
+will be used for authentication. This way when a connection has to be established 
+from the client server to the destination server, the connection creation logic will 
+have the necessary security credentials to pass along and setup a successful
 secured connection.
 
 Now let's run the following two operations to set some default
@@ -374,7 +317,7 @@ configuration will be created in the remoting subsystem:
 <subsystem xmlns="urn:jboss:domain:remoting:1.1">
 ....
             <outbound-connections>
-                <remote-outbound-connection name="remote-ejb-connection" outbound-socket-binding-ref="remote-ejb" protocol="http-remoting" security-realm="ejb-security-realm" username="ejb">
+                <remote-outbound-connection name="remote-ejb-connection" outbound-socket-binding-ref="remote-ejb" authentication-context="ejb-context">
                     <properties>
                         <property name="SASL_POLICY_NOANONYMOUS" value="false"/>
                         <property name="SSL_ENABLED" value="false"/>

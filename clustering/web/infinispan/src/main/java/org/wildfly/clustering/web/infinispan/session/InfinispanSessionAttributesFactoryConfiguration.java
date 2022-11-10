@@ -22,10 +22,8 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.concurrent.Executor;
 import java.util.function.Function;
 
-import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactoryConfiguration;
@@ -39,13 +37,6 @@ import org.wildfly.clustering.web.cache.session.SessionAttributesFactoryConfigur
  * @author Paul Ferraro
  */
 public interface InfinispanSessionAttributesFactoryConfiguration<S, C, L, V, SV> extends InfinispanConfiguration, SessionAttributesFactoryConfiguration<S, C, L, V, SV> {
-
-    @Override
-    default CacheProperties getCacheProperties() {
-        return InfinispanConfiguration.super.getCacheProperties();
-    }
-
-    Executor getExecutor();
 
     Function<String, SessionAttributeActivationNotifier> getActivationNotifierFactory();
 }

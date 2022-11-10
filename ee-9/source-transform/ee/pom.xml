@@ -31,13 +31,13 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-ee-jakarta</artifactId>
+    <artifactId>wildfly-ee</artifactId>
 
-    <name>WildFly: EE subsystem (Jakarta Namespace)</name>
+    <name>WildFly: EE subsystem</name>
 
     <packaging>jar</packaging>
 
@@ -76,7 +76,7 @@
 
         <dependency>
             <groupId>org.jboss.invocation</groupId>
-            <artifactId>jboss-invocation-jakarta</artifactId>
+            <artifactId>jboss-invocation</artifactId>
         </dependency>
 
         <dependency>
@@ -150,7 +150,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-transaction-client</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

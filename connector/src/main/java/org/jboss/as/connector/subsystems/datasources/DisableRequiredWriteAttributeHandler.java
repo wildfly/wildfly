@@ -40,7 +40,7 @@ public class DisableRequiredWriteAttributeHandler extends AbstractWriteAttribute
         ModelNode submodel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
         //do the job
         return (submodel.hasDefined(Constants.ENABLED.getName()) && submodel.get(Constants.ENABLED.getName()).asBoolean()) ||
-                Constants.JNDI_NAME.getName().equals(attributeName);
+                org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME.getName().equals(attributeName);
     }
 
     @Override

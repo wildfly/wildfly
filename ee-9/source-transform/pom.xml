@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -49,32 +49,22 @@
     <modules>
         <module>bean-validation</module>
         <module>connector</module>
-        <module>datasources-agroal</module>
         <module>ee</module>
-        <module>ejb3</module>
         <module>iiop-openjdk</module>
         <module>transactions</module>
-        <module>xts</module>
         <module>rts</module>
         <module>jpa/spi</module>
         <module>jpa/eclipselink</module>
         <module>jpa/subsystem</module>
         <module>jsf</module>
-        <module>mail</module>
         <module>microprofile</module>
         <module>shared</module>
         <module>web-common</module>
-        <module>webservices</module>
         <module>weld/bean-validation</module>
         <module>weld/common</module>
-        <module>weld/ejb</module>
-        <module>weld/jpa</module>
         <module>weld/spi</module>
         <module>weld/subsystem</module>
         <module>weld/transactions</module>
-        <module>weld/webservices</module>
-        <module>observability/opentelemetry-api</module>
-        <module>observability/opentelemetry</module>
         <module>undertow</module>
         <module>messaging-activemq/injection</module>
         <module>messaging-activemq/subsystem</module>

@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -50,7 +50,7 @@
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
 
         <!-- Artifact id of the wildfly-testsuite-shared variant to use. Override to use the javax variant -->
-        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared-jakarta</wildfly-testsuite-shared.artifactId>
+        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared</wildfly-testsuite-shared.artifactId>
     </properties>
 
     <profiles>

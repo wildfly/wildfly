@@ -4,25 +4,60 @@
    <modelVersion>4.0.0</modelVersion>
 
    <parent>
+      <!--move back to weld-parent when other weld components moves to jakarta namespace-->
       <groupId>org.wildfly</groupId>
       <artifactId>wildfly-weld-parent</artifactId>
       <!--
-        Maintain separation between the artifact id and the version to help prevent
-        merge conflicts between commits changing the GA and those changing the V.
-        -->
-      <version>27.0.0.Final-SNAPSHOT</version>
+      Maintain separation between the artifact id and the version to help prevent
+      merge conflicts between commits changing the GA and those changing the V.
+      -->
+      <version>28.0.0.Beta1-SNAPSHOT</version>
+      <relativePath>../pom.xml</relativePath>
    </parent>
 
    <artifactId>wildfly-weld-webservices</artifactId>
    <name>WildFly: Weld Webservices</name>
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-standard-ee-bom</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
 
    <dependencies>
 
+      <!-- Jakarta-namespace specific deps -->
+
+      <dependency>
+         <groupId>jakarta.enterprise</groupId>
+         <artifactId>jakarta.enterprise.cdi-api</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
+         <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>wildfly-ee</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>wildfly-naming</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>wildfly-webservices-server-integration</artifactId>
+      </dependency>
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-weld-spi</artifactId>
       </dependency>
-
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-weld-common</artifactId>
@@ -34,24 +69,28 @@
       </dependency>
 
       <dependency>
-         <groupId>org.jboss.logging</groupId>
-         <artifactId>jboss-logging-annotations</artifactId>
-         <scope>provided</scope>
+         <groupId>org.jboss.weld</groupId>
+         <artifactId>weld-core-impl</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.jboss.spec.javax.xml.ws</groupId>
-         <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
+         <groupId>org.jboss.weld</groupId>
+         <artifactId>weld-spi</artifactId>
       </dependency>
 
       <dependency>
-         <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-webservices-server-integration</artifactId>
-         <exclusions>
-            <exclusion>
-               <artifactId>wildfly-ejb3</artifactId>
-               <groupId>${project.groupId}</groupId>
-            </exclusion>
-         </exclusions>
+         <groupId>org.jboss.ws</groupId>
+         <artifactId>jbossws-common</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.wildfly.core</groupId>
+         <artifactId>wildfly-server</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-annotations</artifactId>
+         <scope>provided</scope>
       </dependency>
 
    </dependencies>

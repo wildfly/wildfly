@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-integration-mixed-domain</artifactId>
@@ -46,7 +46,7 @@
         <jboss.dist>${project.basedir}/../../${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
-        <!-- Don't set the modular.jdk.args args so the slaves can use a different JVM -->
+        <!-- Don't set the modular.jdk.args args so the secondarys can use a different JVM -->
         <modular.jdk.args/>
         <modular.jdk.testsuite.args/>
 

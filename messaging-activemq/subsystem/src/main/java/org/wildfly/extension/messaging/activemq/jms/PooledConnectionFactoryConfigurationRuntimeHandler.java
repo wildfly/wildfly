@@ -33,9 +33,13 @@ import org.jboss.dmr.ModelNode;
  */
 public class PooledConnectionFactoryConfigurationRuntimeHandler extends AbstractJMSRuntimeHandler<ModelNode> {
 
-    public static final PooledConnectionFactoryConfigurationRuntimeHandler INSTANCE = new PooledConnectionFactoryConfigurationRuntimeHandler();
+    public static final PooledConnectionFactoryConfigurationRuntimeHandler INSTANCE = new PooledConnectionFactoryConfigurationRuntimeHandler(false);
+    public static final PooledConnectionFactoryConfigurationRuntimeHandler EXTERNAL_INSTANCE = new PooledConnectionFactoryConfigurationRuntimeHandler(true);
 
-    private PooledConnectionFactoryConfigurationRuntimeHandler() {
+    private final boolean external;
+
+    private PooledConnectionFactoryConfigurationRuntimeHandler(final boolean external) {
+        this.external = external;
     }
 
     @Override
@@ -43,8 +47,8 @@ public class PooledConnectionFactoryConfigurationRuntimeHandler extends Abstract
         if (connectionFactory.hasDefined(attributeName)) {
             context.getResult().set(connectionFactory.get(attributeName));
         } else {
-            ConnectionFactoryAttribute attribute = PooledConnectionFactoryDefinition.getAttributesMap().get(attributeName);
-            if (attribute.getDefinition().getDefaultValue() != null && attribute.getDefinition().getDefaultValue().isDefined()) {
+            ConnectionFactoryAttribute attribute = external ? ExternalPooledConnectionFactoryDefinition.getAttributesMap().get(attributeName) : PooledConnectionFactoryDefinition.getAttributesMap().get(attributeName);
+            if (attribute != null && attribute.getDefinition().getDefaultValue() != null && attribute.getDefinition().getDefaultValue().isDefined()) {
                 context.getResult().set(attribute.getDefinition().getDefaultValue());
             }
         }

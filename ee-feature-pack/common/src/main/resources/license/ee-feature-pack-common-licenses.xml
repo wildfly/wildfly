@@ -2,6 +2,50 @@
 <licenseSummary>
   <dependencies>
     <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-core</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-kms</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-s3</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>jmespath-java</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>com.carrotsearch</groupId>
       <artifactId>hppc</artifactId>
       <licenses>
@@ -48,6 +92,17 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-cbor</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -2386,7 +2441,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss</groupId>
-      <artifactId>jboss-ejb-client-jakarta</artifactId>
+      <artifactId>jboss-ejb-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -2430,7 +2485,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>jipijapa-eclipselink-jakarta</artifactId>
+      <artifactId>jipijapa-eclipselink</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2452,7 +2507,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>jipijapa-spi-jakarta</artifactId>
+      <artifactId>jipijapa-spi</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -2485,7 +2540,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-bean-validation-jakarta</artifactId>
+      <artifactId>wildfly-bean-validation</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3035,7 +3090,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-connector-jakarta</artifactId>
+      <artifactId>wildfly-connector</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3046,7 +3101,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-datasources-agroal-jakarta</artifactId>
+      <artifactId>wildfly-datasources-agroal</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3068,7 +3123,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-ejb3-jakarta</artifactId>
+      <artifactId>wildfly-ejb3</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3090,7 +3145,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-iiop-openjdk-jakarta</artifactId>
+      <artifactId>wildfly-iiop-openjdk</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3134,7 +3189,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-jpa-jakarta</artifactId>
+      <artifactId>wildfly-jpa</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3145,7 +3200,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-jsf-jakarta</artifactId>
+      <artifactId>wildfly-jsf</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3156,7 +3211,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-jsf-injection-jakarta</artifactId>
+      <artifactId>wildfly-jsf-injection</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3189,7 +3244,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-mail-jakarta</artifactId>
+      <artifactId>wildfly-mail</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3211,7 +3266,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-messaging-activemq-injection-jakarta</artifactId>
+      <artifactId>wildfly-messaging-activemq-injection</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3222,7 +3277,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-messaging-activemq-subsystem-jakarta</artifactId>
+      <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3266,7 +3321,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-opentelemetry-api-jakarta</artifactId>
+      <artifactId>wildfly-opentelemetry-api</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3277,7 +3332,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-opentelemetry-jakarta</artifactId>
+      <artifactId>wildfly-opentelemetry</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3310,7 +3365,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-rts-jakarta</artifactId>
+      <artifactId>wildfly-rts</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3343,7 +3398,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-transactions-jakarta</artifactId>
+      <artifactId>wildfly-transactions</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3365,7 +3420,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-bean-validation-jakarta</artifactId>
+      <artifactId>wildfly-weld-bean-validation</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3376,7 +3431,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-common-jakarta</artifactId>
+      <artifactId>wildfly-weld-common</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3387,7 +3442,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-ejb-jakarta</artifactId>
+      <artifactId>wildfly-weld-ejb</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3398,7 +3453,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-jakarta</artifactId>
+      <artifactId>wildfly-weld</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3409,7 +3464,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-jpa-jakarta</artifactId>
+      <artifactId>wildfly-weld-jpa</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3420,7 +3475,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-spi-jakarta</artifactId>
+      <artifactId>wildfly-weld-spi</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3431,7 +3486,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-transactions-jakarta</artifactId>
+      <artifactId>wildfly-weld-transactions</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3442,7 +3497,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-weld-webservices-jakarta</artifactId>
+      <artifactId>wildfly-weld-webservices</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3453,7 +3508,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-xts-jakarta</artifactId>
+      <artifactId>wildfly-xts</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3491,7 +3546,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.invocation</groupId>
-      <artifactId>jboss-invocation-jakarta</artifactId>
+      <artifactId>jboss-invocation</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -4034,17 +4089,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.weld.probe</groupId>
-      <artifactId>weld-probe-core</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.ws</groupId>
       <artifactId>jbossws-api</artifactId>
       <licenses>
@@ -4234,6 +4278,17 @@
     <dependency>
       <groupId>org.jgroups</groupId>
       <artifactId>jgroups</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jgroups.aws</groupId>
+      <artifactId>jgroups-aws</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -4480,7 +4535,7 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.core</groupId>
-      <artifactId>wildfly-elytron-integration-jakarta</artifactId>
+      <artifactId>wildfly-elytron-integration</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -4577,7 +4632,7 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-client-common-jakarta</artifactId>
+      <artifactId>wildfly-http-client-common</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -4588,7 +4643,7 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+      <artifactId>wildfly-http-ejb-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -4599,7 +4654,7 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-naming-client-jakarta</artifactId>
+      <artifactId>wildfly-http-naming-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -4610,7 +4665,18 @@
     </dependency>
     <dependency>
       <groupId>org.wildfly.wildfly-http-client</groupId>
-      <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
+      <artifactId>wildfly-http-transaction-client</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.ion</groupId>
+      <artifactId>ion-java</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>

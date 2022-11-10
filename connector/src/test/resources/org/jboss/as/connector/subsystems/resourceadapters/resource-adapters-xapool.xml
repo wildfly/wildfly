@@ -6,16 +6,16 @@
       <!--Optional:-->
       <archive>archive</archive>
       <!--Optional:-->
-      <bootstrap-context>bootstrapContext</bootstrap-context>
-      <!--Optional:-->
       <bean-validation-groups>
         <!--1 or more repetitions:-->
         <bean-validation-group>group</bean-validation-group>
       </bean-validation-groups>
       <!--Optional:-->
-      <transaction-support>XATransaction</transaction-support>
+      <bootstrap-context>bootstrapContext</bootstrap-context>
       <!--Zero or more repetitions:-->
       <config-property name="config1">value</config-property>
+      <!--Optional:-->
+      <transaction-support>XATransaction</transaction-support>
       <!--Optional:-->
       <connection-definitions>
         <!--1 or more repetitions:-->

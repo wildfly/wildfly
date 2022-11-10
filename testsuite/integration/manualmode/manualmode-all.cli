@@ -26,7 +26,7 @@ embed-server --server-config=standalone-ha.xml
 /subsystem=jgroups/stack=tcp/protocol=MPING:remove
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-1:add(host=${node0:localhost},port=7600)
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-2:add(host=${node1:localhost},port=7700)
-/subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0,socket-bindings=[node-1,node-2])
+/subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=1,socket-bindings=[node-1,node-2])
 
 # UDP stack configuration
 /subsystem=jgroups/stack=udp/transport=UDP:map-put(name=properties,key=ip_ttl,value=0)
@@ -43,7 +43,7 @@ embed-server --server-config=standalone-full-ha.xml
 /subsystem=jgroups/stack=tcp/protocol=MPING:remove
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-1:add(host=${node0:localhost},port=7600)
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-2:add(host=${node1:localhost},port=7700)
-/subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0,socket-bindings=[node-1,node-2])
+/subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=1,socket-bindings=[node-1,node-2])
 
 # UDP stack configuration
 /subsystem=jgroups/stack=udp/transport=UDP:map-put(name=properties,key=ip_ttl,value=0)

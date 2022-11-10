@@ -53,7 +53,8 @@ public class EnlistmentTraceAttributeWriteHandler extends AbstractWriteAttribute
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                            final String parameterName, final ModelNode newValue,
                                            final ModelNode currentValue, final HandbackHolder<List<ConnectionManager>> handbackHolder) throws OperationFailedException {
-        final String jndiName = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get(Constants.JNDINAME.getName()).asString();
+        final String jndiName = context.readResource(PathAddress.EMPTY_ADDRESS).getModel()
+                .get(org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME.getName()).asString();
 
         final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
                 ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE);

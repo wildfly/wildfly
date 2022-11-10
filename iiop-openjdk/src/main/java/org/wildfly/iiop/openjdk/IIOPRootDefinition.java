@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -165,6 +166,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .setAlternatives(Constants.SERVER_SSL_CONTEXT, Constants.CLIENT_SSL_CONTEXT)
             .setCapabilityReference(Capabilities.LEGACY_SECURITY_DOMAIN_CAPABILITY, IIOP_CAPABILITY)
+            .setDeprecated(ModelVersion.create(3))
             .build();
 
     public static final AttributeDefinition SERVER_SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(
@@ -364,6 +366,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .setAllowExpression(true)
+            .setDeprecated(ModelVersion.create(3))
             .build();
 
     protected static final AttributeDefinition REQUIRED = new SimpleAttributeDefinitionBuilder(

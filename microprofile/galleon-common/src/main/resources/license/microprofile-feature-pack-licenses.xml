@@ -690,7 +690,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-health-smallrye-jakarta</artifactId>
+      <artifactId>wildfly-microprofile-health-smallrye</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -701,7 +701,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-jwt-smallrye-jakarta</artifactId>
+      <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -734,7 +734,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-opentracing-extension-jakarta</artifactId>
+      <artifactId>wildfly-microprofile-opentracing-extension</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -745,7 +745,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-opentracing-smallrye-jakarta</artifactId>
+      <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -811,7 +811,7 @@
     </dependency>
     <dependency>
       <groupId>${full.maven.groupId}</groupId>
-      <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-jakarta</artifactId>
+      <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>

@@ -2,14 +2,13 @@
             <resource-adapters>
                 <resource-adapter id="myRA">
                     <archive>some.rar</archive>
-            <bootstrap-context>someContext</bootstrap-context>
-
             <bean-validation-groups>
-              <bean-validation-group>Class0</bean-validation-group>
-              <bean-validation-group>Class00</bean-validation-group>
+               <bean-validation-group>Class0</bean-validation-group>
+               <bean-validation-group>Class00</bean-validation-group>
             </bean-validation-groups>
-            <transaction-support>XATransaction</transaction-support>
+            <bootstrap-context>someContext</bootstrap-context>
             <config-property name="Property">A</config-property>
+            <transaction-support>XATransaction</transaction-support>
                     <connection-definitions>
                         <connection-definition
                                 class-name="Class1"

@@ -48,7 +48,7 @@ import org.wildfly.iiop.openjdk.service.CorbaORBService;
  * Processor responsible for binding IIOP related resources to JNDI.
  * </p>
  * Unlike other resource injections this binding happens for all eligible components,
- * regardless of the presence of the {@link javax.annotation.Resource} annotation.
+ * regardless of the presence of the {@link jakarta.annotation.Resource} annotation.
  *
  * @author Stuart Douglas
  */

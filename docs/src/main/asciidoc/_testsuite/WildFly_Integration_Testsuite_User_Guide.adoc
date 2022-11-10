@@ -167,14 +167,13 @@ operations.
 
 Single test is run using *-Dtest=...* . Examples:
 
-* `./integration-tests.sh install -Dtest='` `*` `Clustered` `*`
-`' -Dintegration.module` `-Dts.clustering`
+* `./integration-tests.sh install` `+-Dtest='*Clustered*'+` `-Dintegration.module` `-Dts.clustering`
 * `./integration-tests.sh clean install -Dtest=org` `/` `jboss` `/` `as`
 `/` `test` `/` `integration` `/` `ejb/async/*TestCase.java`
 `-Dintegration.module` `-Dts.basic`
-* `cd testsuite; mvn install` `-Dtest='` `*Clustered` `*` `'`
-`-Dts.basic #`
-`No need for -Dintegration.module - integration module is active by default.`
+* `cd testsuite; mvn install` `+-Dtest='*Clustered*'+`
+`-Dts.basic`
+`# No need for -Dintegration.module - integration module is active by default.`
 
 The same shortcuts listed in "Test groups" may be used to activate the
 module and group profile.

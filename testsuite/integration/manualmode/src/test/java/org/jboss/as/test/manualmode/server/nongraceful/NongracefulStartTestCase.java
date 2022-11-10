@@ -67,10 +67,7 @@ public class NongracefulStartTestCase {
                         // Required for the TimeoutUtil.adjust call when determining how long DEPLOYMENTB should poll
                         new PropertyPermission("ts.timeout.factor", "read"),
                         // Required for the client to connect
-                        new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve"),
-                        // These two permissions can be removed once RESTEASY-3229 is resolved
-                        new RuntimePermission("getenv.dev.resteasy.exception.mapper"),
-                        new PropertyPermission("dev.resteasy.exception.mapper", "read")
+                        new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")
                 ), "permissions.xml");
     }
 

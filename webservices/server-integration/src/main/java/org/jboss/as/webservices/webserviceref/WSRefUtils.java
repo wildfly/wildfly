@@ -36,10 +36,10 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
-import javax.xml.ws.WebServiceRef;
-import javax.xml.ws.WebServiceRefs;
-import javax.xml.ws.soap.MTOM;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.WebServiceRef;
+import jakarta.xml.ws.WebServiceRefs;
+import jakarta.xml.ws.soap.MTOM;
 
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.metadata.javaee.jboss.JBossPortComponentRef;
@@ -220,7 +220,7 @@ final class WSRefUtils {
     }
 
     private static void processAddressingAnnotation(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {
-         final javax.xml.ws.soap.Addressing addressingAnnotation = getAnnotation(anElement, javax.xml.ws.soap.Addressing.class);
+         final jakarta.xml.ws.soap.Addressing addressingAnnotation = getAnnotation(anElement, jakarta.xml.ws.soap.Addressing.class);
 
          if (addressingAnnotation != null) {
              serviceRefUMDM.setAddressingMedadata(new AddressingMetadata(true,
@@ -239,7 +239,7 @@ final class WSRefUtils {
       }
 
       private static void processRespectBindingAnnotation(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {
-         final javax.xml.ws.RespectBinding respectBindingAnnotation = getAnnotation(anElement, javax.xml.ws.RespectBinding.class);
+         final jakarta.xml.ws.RespectBinding respectBindingAnnotation = getAnnotation(anElement, jakarta.xml.ws.RespectBinding.class);
 
          if (respectBindingAnnotation != null) {
             serviceRefUMDM.setRespectBindingMetadata(new RespectBindingMetadata(true, respectBindingAnnotation.enabled()));
@@ -274,7 +274,7 @@ final class WSRefUtils {
       }
 
       private static void processHandlerChainAnnotation(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {
-         final javax.jws.HandlerChain handlerChainAnnotation = getAnnotation(anElement, javax.jws.HandlerChain.class);
+         final jakarta.jws.HandlerChain handlerChainAnnotation = getAnnotation(anElement, jakarta.jws.HandlerChain.class);
 
          if (handlerChainAnnotation != null) {
             // Set the handlerChain from @HandlerChain on the annotated element

@@ -42,6 +42,7 @@ import org.jboss.as.ejb3.remote.RemoteViewInjectionSource;
 import org.jboss.as.ejb3.remote.RemoteViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.server.deployment.DelegatingSupplier;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -52,7 +53,6 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
 import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker;
@@ -227,22 +227,22 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
 
     private void registerRemoteBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName) {
         final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
-        final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<ClassLoader>();
+        final DelegatingSupplier<ClassLoader> viewClassLoader = new DelegatingSupplier<>();
         moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader, appclient)));
         componentDescription.getConfigurators().add(new ComponentConfigurator() {
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                viewClassLoader.setValue(new ImmediateValue(configuration.getModuleClassLoader()));
+                viewClassLoader.set(() -> configuration.getModuleClassLoader());
             }
         });
     }
     private void registerControlPointBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName, final DeploymentUnit deploymentUnit) {
         final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
-        final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<ClassLoader>();
+        final DelegatingSupplier<ClassLoader> viewClassLoader = new DelegatingSupplier<>();
         final InjectedValue<ControlPoint> controlPointInjectedValue = new InjectedValue<>();
         final RemoteViewInjectionSource delegate = new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader, appclient);
         final ServiceName depName = ControlPointService.serviceName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName(), EJBComponentSuspendDeploymentUnitProcessor.ENTRY_POINT_NAME + deploymentUnit.getName() + "." + componentDescription.getComponentName());
         componentDescription.getConfigurators().add((context, description, configuration) -> {
-            viewClassLoader.setValue(new ImmediateValue(configuration.getModuleClassLoader()));
+            viewClassLoader.set(() -> configuration.getModuleClassLoader());
             configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.addDependency(depName, ControlPoint.class, controlPointInjectedValue));
         });
         //we need to wrap the injection source to allow graceful shutdown to function, although this is not ideal

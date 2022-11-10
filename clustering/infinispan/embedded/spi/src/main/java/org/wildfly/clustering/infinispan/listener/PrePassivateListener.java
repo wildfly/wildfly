@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,40 +22,29 @@
 
 package org.wildfly.clustering.infinispan.listener;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Executor;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.function.BiConsumer;
+import java.util.function.Function;
 
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
+import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 
 /**
- * Generic non-blocking passivation listener that consumes a passivation event.
+ * Generic non-blocking pre-passivation listener that delegates to a generic cache event listener.
  * @author Paul Ferraro
  */
 @Listener(observation = Listener.Observation.PRE)
 public class PrePassivateListener<K, V> {
-    private final BiConsumer<K, V> consumer;
-    private final Executor executor;
 
-    public PrePassivateListener(BiConsumer<K, V> consumer, Executor executor) {
-        this.consumer = consumer;
-        this.executor = executor;
+    private final Function<CacheEntryEvent<K, V>, CompletionStage<Void>> listener;
+
+    public PrePassivateListener(Function<CacheEntryEvent<K, V>, CompletionStage<Void>> listener) {
+        this.listener = listener;
     }
 
     @CacheEntryPassivated
-    public CompletionStage<Void> passivated(CacheEntryPassivatedEvent<K, V> event) {
-        if (event.isPre()) {
-            try {
-                return CompletableFuture.runAsync(() -> this.consumer.accept(event.getKey(), event.getValue()), this.executor);
-            } catch (RejectedExecutionException e) {
-                // Executor was shutdown
-            }
-        }
-        return CompletableFutures.completedNull();
+    public CompletionStage<Void> prePassivate(CacheEntryPassivatedEvent<K, V> event) {
+        return this.listener.apply(event);
     }
 }

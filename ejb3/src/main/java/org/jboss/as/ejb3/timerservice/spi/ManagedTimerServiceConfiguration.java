@@ -25,7 +25,7 @@ package org.jboss.as.ejb3.timerservice.spi;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-import javax.ejb.TimerConfig;
+import jakarta.ejb.TimerConfig;
 
 import org.jboss.msc.service.ServiceName;
 

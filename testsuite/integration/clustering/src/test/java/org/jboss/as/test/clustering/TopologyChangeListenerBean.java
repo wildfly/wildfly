@@ -22,6 +22,7 @@
 package org.jboss.as.test.clustering;
 
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,12 +33,15 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.LocalizedCacheTopology;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.Listener.Observation;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
+import org.infinispan.util.concurrent.BlockingManager;
 import org.jboss.logging.Logger;
 
 /**
@@ -46,8 +50,8 @@ import org.jboss.logging.Logger;
  */
 @Stateless
 @Remote(TopologyChangeListener.class)
-@Listener(sync = false)
-public class TopologyChangeListenerBean implements TopologyChangeListener {
+@Listener(observation = Observation.POST)
+public class TopologyChangeListenerBean implements TopologyChangeListener, Runnable {
 
     private static final Logger logger = Logger.getLogger(TopologyChangeListenerBean.class);
 
@@ -103,11 +107,17 @@ public class TopologyChangeListenerBean implements TopologyChangeListener {
     }
 
     @TopologyChanged
-    public void topologyChanged(TopologyChangedEvent<?, ?> event) {
-        if (!event.isPre()) {
-            synchronized (this) {
-                this.notify();
-            }
+    public CompletionStage<Void> topologyChanged(TopologyChangedEvent<?, ?> event) {
+        @SuppressWarnings("deprecation")
+        BlockingManager blocking = event.getCache().getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
+        blocking.asExecutor(this.getClass().getName()).execute(this);
+        return CompletableFutures.completedNull();
+    }
+
+    @Override
+    public void run() {
+        synchronized (this) {
+            this.notify();
         }
     }
 }

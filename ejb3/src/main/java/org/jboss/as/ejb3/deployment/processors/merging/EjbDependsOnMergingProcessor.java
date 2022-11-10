@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 
 import java.util.Set;
 
-import javax.ejb.DependsOn;
+import jakarta.ejb.DependsOn;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;

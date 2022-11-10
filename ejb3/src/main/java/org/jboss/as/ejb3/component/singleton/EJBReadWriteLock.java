@@ -31,7 +31,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.as.ejb3.logging.EjbLogger;
 
 /**
- * An implementation of {@link java.util.concurrent.locks.ReadWriteLock} which throws an {@link javax.ejb.IllegalLoopbackException}
+ * An implementation of {@link java.util.concurrent.locks.ReadWriteLock} which throws an {@link jakarta.ejb.IllegalLoopbackException}
  * when a thread holding a read lock tries to obtain a write lock.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -144,7 +144,7 @@ public class EJBReadWriteLock implements ReadWriteLock, Serializable {
     /**
      * An implementation of lock which first checks the number of {@link ReadLock}
      * held by this thread. If the thread already holds a {@link ReadLock}, then
-     * this implementation throws an {@link javax.ejb.IllegalLoopbackException} when a lock
+     * this implementation throws an {@link jakarta.ejb.IllegalLoopbackException} when a lock
      * is requested
      *
      * @author Jaikiran Pai
@@ -155,7 +155,7 @@ public class EJBReadWriteLock implements ReadWriteLock, Serializable {
 
         /**
          * Ensures that the current thread doesn't hold any read locks. If
-         * the thread holds any read locks, this method throws a {@link javax.ejb.IllegalLoopbackException}.
+         * the thread holds any read locks, this method throws a {@link jakarta.ejb.IllegalLoopbackException}.
          * If no read locks are held, then this method delegates the call to the
          * internal delegate {@link java.util.concurrent.locks.ReentrantReadWriteLock}
          */
@@ -167,7 +167,7 @@ public class EJBReadWriteLock implements ReadWriteLock, Serializable {
 
         /**
          * Ensures that the current thread doesn't hold any read locks. If
-         * the thread holds any read locks, this method throws a {@link javax.ejb.IllegalLoopbackException}.
+         * the thread holds any read locks, this method throws a {@link jakarta.ejb.IllegalLoopbackException}.
          * If no read locks are held, then this method delegates the call to the
          * internal delegate {@link java.util.concurrent.locks.ReentrantReadWriteLock}
          */
@@ -189,7 +189,7 @@ public class EJBReadWriteLock implements ReadWriteLock, Serializable {
 
         /**
          * Ensures that the current thread doesn't hold any read locks. If
-         * the thread holds any read locks, this method throws a {@link javax.ejb.IllegalLoopbackException}.
+         * the thread holds any read locks, this method throws a {@link jakarta.ejb.IllegalLoopbackException}.
          * If no read locks are held, then this method delegates the call to the
          * internal delegate {@link java.util.concurrent.locks.ReentrantReadWriteLock}
          */
@@ -201,7 +201,7 @@ public class EJBReadWriteLock implements ReadWriteLock, Serializable {
 
         /**
          * Ensures that the current thread doesn't hold any read locks. If
-         * the thread holds any read locks, this method throws a {@link javax.ejb.IllegalLoopbackException}.
+         * the thread holds any read locks, this method throws a {@link jakarta.ejb.IllegalLoopbackException}.
          * If no read locks are held, then this method delegates the call to the
          * internal delegate {@link java.util.concurrent.locks.ReentrantReadWriteLock}
          */
@@ -223,7 +223,7 @@ public class EJBReadWriteLock implements ReadWriteLock, Serializable {
 
     /**
      * Ensures that the current thread doesn't hold any read locks. If
-     * the thread holds any read locks, this method throws a {@link javax.ejb.IllegalLoopbackException}.
+     * the thread holds any read locks, this method throws a {@link jakarta.ejb.IllegalLoopbackException}.
      */
     private void checkLoopback() {
         Integer current = readLockCount.get();

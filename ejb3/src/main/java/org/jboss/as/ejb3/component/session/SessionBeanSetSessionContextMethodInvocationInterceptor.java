@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.component.session;
 
-import javax.ejb.SessionBean;
+import jakarta.ejb.SessionBean;
 
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.interceptors.InvocationType;
@@ -31,7 +31,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
 /**
- * Interceptor that invokes the {@link SessionBean#setSessionContext(javax.ejb.SessionContext)} on session beans
+ * Interceptor that invokes the {@link SessionBean#setSessionContext(jakarta.ejb.SessionContext)} on session beans
  * which implement the {@link SessionBean} interface.
  *
  * @author Stuart Douglas

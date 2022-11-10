@@ -28,7 +28,7 @@ import java.util.Date;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * A timer task which will be invoked at appropriate intervals based on a {@link javax.ejb.Timer}
+ * A timer task which will be invoked at appropriate intervals based on a {@link jakarta.ejb.Timer}
  * schedule.
  * <p/>
  * <p>
@@ -159,10 +159,15 @@ public class TimerTask implements Runnable {
                         return;
                     }
 
-                    if (!timer.isActive()) {
+                    // ensure timer service is started, and the timer has not expired or been cancelled.
+                    // Execution got here after this TimerTask instance has been scheduled on TimerServiceImpl#timer,
+                    // and TimerTask instance saved in TimerServiceImpl#scheduledTimerFutures
+                    if (timer.timerState == TimerState.CANCELED || timer.timerState == TimerState.EXPIRED || !timer.timerService.isStarted()) {
                         EJB3_TIMER_LOGGER.debug("Timer is not active, skipping this scheduled execution at: " + now + "for " + timer);
                         return;
                     }
+
+                    // timer state is now either CREATED or ACTIVE
                     // set the current date as the "previous run" of the timer.
                     timer.setPreviousRun(new Date());
                     Date nextTimeout = this.calculateNextTimeout(timer);

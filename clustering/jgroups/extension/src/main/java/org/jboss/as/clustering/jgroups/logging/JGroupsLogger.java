@@ -25,6 +25,7 @@ package org.jboss.as.clustering.jgroups.logging;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 
@@ -36,6 +37,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jgroups.View;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -164,4 +166,20 @@ public interface JGroupsLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 31, value = "Ignoring unrecognized %s property: %s")
     void unrecognizedProtocolProperty(String protocol, String property);
+
+    @LogMessage(level = INFO)
+    @Message(id = 32, value = "Connecting '%s' channel. '%s' joining cluster '%s' via %s")
+    void connecting(String channelName, String nodeName, String clusterName, InetSocketAddress address);
+
+    @LogMessage(level = INFO)
+    @Message(id = 33, value = "Connected '%s' channel. '%s' joined cluster '%s' with view: %s")
+    void connected(String channelName, String nodeName, String clusterName, View view);
+
+    @LogMessage(level = INFO)
+    @Message(id = 34, value = "Disconnecting '%s' channel. '%s' leaving cluster '%s' with view: %s")
+    void disconnecting(String channelName, String nodeName, String clusterName, View view);
+
+    @LogMessage(level = INFO)
+    @Message(id = 35, value = "Disconnected '%s' channel. '%s' left cluster '%s'")
+    void disconnected(String channelName, String nodeName, String clusterName);
 }

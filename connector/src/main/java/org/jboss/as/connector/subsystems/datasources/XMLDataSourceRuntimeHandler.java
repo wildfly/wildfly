@@ -78,7 +78,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             setStringIfNotNull(context, dataSource.getDriverClass());
         } else if (attributeName.equals(Constants.DATASOURCE_CLASS.getName())) {
             setStringIfNotNull(context, dataSource.getDataSourceClass());
-        } else if (attributeName.equals(Constants.JNDI_NAME.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME.getName())) {
             setStringIfNotNull(context, dataSource.getJndiName());
         } else if (attributeName.equals(Constants.DATASOURCE_DRIVER.getName())) {
             setStringIfNotNull(context, dataSource.getDriver());
@@ -88,7 +88,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             setStringIfNotNull(context, dataSource.getUrlDelimiter());
         } else if (attributeName.equals(Constants.URL_SELECTOR_STRATEGY_CLASS_NAME.getName())) {
             setStringIfNotNull(context, dataSource.getUrlSelectorStrategyClassName());
-        } else if (attributeName.equals(Constants.USE_JAVA_CONTEXT.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.jndi.Constants.USE_JAVA_CONTEXT.getName())) {
             setBooleanIfNotNull(context, dataSource.isUseJavaContext());
         } else if (attributeName.equals(Constants.JTA.getName())) {
             setBooleanIfNotNull(context, dataSource.isJTA());

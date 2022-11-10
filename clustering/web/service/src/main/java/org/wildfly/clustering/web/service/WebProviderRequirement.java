@@ -35,6 +35,7 @@ import org.wildfly.clustering.service.Requirement;
 public enum WebProviderRequirement implements DefaultableUnaryRequirement, DefaultableUnaryServiceNameFactoryProvider {
     SESSION_MANAGEMENT_PROVIDER("org.wildfly.clustering.web.session-management-provider", WebDefaultProviderRequirement.SESSION_MANAGEMENT_PROVIDER),
     SSO_MANAGEMENT_PROVIDER("org.wildfly.clustering.web.single-sign-on-management-provider", WebDefaultProviderRequirement.SSO_MANAGEMENT_PROVIDER),
+    AFFINITY("org.wildfly.clustering.web.session-affinity", WebDefaultProviderRequirement.AFFINITY),
     ;
     private final String name;
     private final UnaryServiceNameFactory factory;

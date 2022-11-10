@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -63,7 +63,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-eclipselink-jakarta</artifactId>
+                <artifactId>jipijapa-eclipselink</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -87,7 +87,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-spi-jakarta</artifactId>
+                <artifactId>jipijapa-spi</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -111,7 +111,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-bean-validation-jakarta</artifactId>
+                <artifactId>wildfly-bean-validation</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -216,7 +216,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-connector-jakarta</artifactId>
+                <artifactId>wildfly-connector</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -228,7 +228,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-datasources-agroal-jakarta</artifactId>
+                <artifactId>wildfly-datasources-agroal</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -247,7 +247,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-jakarta</artifactId>
+                <artifactId>wildfly-ee</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -271,7 +271,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ejb3-jakarta</artifactId>
+                <artifactId>wildfly-ejb3</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -283,7 +283,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-iiop-openjdk-jakarta</artifactId>
+                <artifactId>wildfly-iiop-openjdk</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -307,7 +307,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jpa-jakarta</artifactId>
+                <artifactId>wildfly-jpa</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -319,7 +319,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jsf-injection-jakarta</artifactId>
+                <artifactId>wildfly-jsf-injection</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -331,7 +331,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jsf-jakarta</artifactId>
+                <artifactId>wildfly-jsf</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -343,7 +343,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-mail-jakarta</artifactId>
+                <artifactId>wildfly-mail</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -355,7 +355,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-messaging-activemq-injection-jakarta</artifactId>
+                <artifactId>wildfly-messaging-activemq-injection</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -367,7 +367,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-messaging-activemq-subsystem-jakarta</artifactId>
+                <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -379,7 +379,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-opentelemetry-api-jakarta</artifactId>
+                <artifactId>wildfly-opentelemetry-api</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -391,7 +391,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-opentelemetry-jakarta</artifactId>
+                <artifactId>wildfly-opentelemetry</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -403,7 +403,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-rts-jakarta</artifactId>
+                <artifactId>wildfly-rts</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -415,7 +415,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-testsuite-shared-jakarta</artifactId>
+                <artifactId>wildfly-testsuite-shared</artifactId>
                 <version>${ee.maven.version}</version>
                 <scope>test</scope>
                 <exclusions>
@@ -428,7 +428,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-transactions-jakarta</artifactId>
+                <artifactId>wildfly-transactions</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -440,7 +440,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-undertow-jakarta</artifactId>
+                <artifactId>wildfly-undertow</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -452,7 +452,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-web-common-jakarta</artifactId>
+                <artifactId>wildfly-web-common</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -474,7 +474,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-webservices-server-integration-jakarta</artifactId>
+                <artifactId>wildfly-webservices-server-integration</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -485,19 +485,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-bean-validation-jakarta</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-common-jakarta</artifactId>
+                <artifactId>wildfly-weld-bean-validation</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -509,7 +497,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-ejb-jakarta</artifactId>
+                <artifactId>wildfly-weld-common</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -521,7 +509,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-jakarta</artifactId>
+                <artifactId>wildfly-weld-ejb</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -533,7 +521,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-jpa-jakarta</artifactId>
+                <artifactId>wildfly-weld</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -545,7 +533,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-spi-jakarta</artifactId>
+                <artifactId>wildfly-weld-jpa</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -557,7 +545,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-transactions-jakarta</artifactId>
+                <artifactId>wildfly-weld-spi</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -569,7 +557,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-webservices-jakarta</artifactId>
+                <artifactId>wildfly-weld-transactions</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -581,7 +569,19 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-xts-jakarta</artifactId>
+                <artifactId>wildfly-weld-webservices</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-xts</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -1756,7 +1756,7 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>eclipselink</artifactId>
-                <version>${version.org.eclipselink.version}</version>
+                <version>${version.org.eclipse.persistence.eclipselink}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2173,7 +2173,7 @@
 
             <dependency>
                 <groupId>org.jboss</groupId>
-                <artifactId>jboss-ejb-client-jakarta</artifactId>
+                <artifactId>jboss-ejb-client</artifactId>
                 <version>${version.org.jboss.ejb-client}</version>
                 <exclusions>
                     <exclusion>
@@ -2252,7 +2252,7 @@
 
             <dependency>
                 <groupId>org.jboss.invocation</groupId>
-                <artifactId>jboss-invocation-jakarta</artifactId>
+                <artifactId>jboss-invocation</artifactId>
                 <version>${version.org.jboss.invocation}</version>
                 <exclusions>
                     <exclusion>
@@ -2784,18 +2784,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.weld.probe</groupId>
-                <artifactId>weld-probe-core</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-api</artifactId>
                 <version>${version.org.jboss.ws.api}</version>
@@ -3031,7 +3019,7 @@
 
             <dependency>
                 <groupId>org.wildfly.transaction</groupId>
-                <artifactId>wildfly-transaction-client-jakarta</artifactId>
+                <artifactId>wildfly-transaction-client</artifactId>
                 <version>${version.org.wildfly.transaction.client}</version>
                 <exclusions>
                     <exclusion>
@@ -3043,7 +3031,7 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-naming-client-jakarta</artifactId>
+                <artifactId>wildfly-naming-client</artifactId>
                 <version>${version.org.wildfly.naming-client}</version>
                 <exclusions>
                     <exclusion>
@@ -3055,7 +3043,7 @@
 
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
-                <artifactId>wildfly-http-client-common-jakarta</artifactId>
+                <artifactId>wildfly-http-client-common</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
                 <exclusions>
                     <exclusion>
@@ -3067,7 +3055,7 @@
 
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
-                <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+                <artifactId>wildfly-http-ejb-client</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
                 <exclusions>
                     <exclusion>
@@ -3079,7 +3067,7 @@
 
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
-                <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
+                <artifactId>wildfly-http-transaction-client</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
                 <exclusions>
                     <exclusion>

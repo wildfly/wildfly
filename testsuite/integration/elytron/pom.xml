@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -56,7 +56,6 @@
              Remove pinning with WFLY-15867 upgrading org.xipki.pki tests
              and change to org.bouncycastle:*-jdk18on -->
         <version.org.bouncycastle>1.69</version.org.bouncycastle>
-        <version.org.hsqldb.hsqldb>2.5.0</version.org.hsqldb.hsqldb>
         <version.org.mock-server.mockserver>5.6.1</version.org.mock-server.mockserver>
         <version.org.mock-server.mockserver-netty>5.6.1</version.org.mock-server.mockserver-netty>
         <version.org.xipki.pki.ocsp-server>3.0.0</version.org.xipki.pki.ocsp-server>
@@ -138,7 +137,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client-jakarta</artifactId>
+            <artifactId>jboss-ejb-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -169,7 +168,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-transaction-client</artifactId>
             <scope>test</scope>
         </dependency>
         
@@ -272,7 +271,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-elytron-integration-jakarta</artifactId>
+            <artifactId>wildfly-elytron-integration</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Required for Java 11 -->
@@ -372,13 +371,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>${version.org.hsqldb.hsqldb}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.github.fge</groupId>
             <artifactId>jackson-coreutils</artifactId>
         </dependency>
@@ -392,6 +384,13 @@
             <artifactId>${wildfly-testsuite-shared.artifactId}</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>failureaccess</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
@@ -407,7 +406,7 @@
         <!-- TODO confirm if this is needed -->
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client-jakarta</artifactId>
+            <artifactId>wildfly-naming-client</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -1015,25 +1014,6 @@
                                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
                             </system-properties>
                         </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>server-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>generate-resources</phase>
-                                <configuration>
-                                    <plugin-options combine.self="append">
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${maven.local.repo}</jboss-maven-provisioning-repo>
-                                    </plugin-options>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

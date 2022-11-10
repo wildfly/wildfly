@@ -25,7 +25,6 @@ package org.jboss.as.mail.extension;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import javax.mail.Session;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -39,6 +38,8 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import jakarta.mail.Session;
 
 /**
  * @author Tomaz Cerar

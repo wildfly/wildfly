@@ -56,8 +56,8 @@ public interface RemoteCalculator {
 ----
 package org.jboss.as.quickstarts.ejb.remote.stateless;
  
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
  
 /**
  * @author Jaikiran Pai
@@ -99,8 +99,8 @@ public interface RemoteCounter {
 ----
 package org.jboss.as.quickstarts.ejb.remote.stateful;
  
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateful;
  
 /**
  * @author Jaikiran Pai
@@ -313,14 +313,14 @@ the following syntax:
 
 *For stateless beans:*
 
-[source,java,options="nowrap"]
+[source,options="nowrap"]
 ----
 ejb:<app-name>/<module-name>/<distinct-name>/<bean-name>!<fully-qualified-classname-of-the-remote-interface>
 ----
 
 *For stateful beans:*
 
-[source,java,options="nowrap"]
+[source,options="nowrap"]
 ----
 ejb:<app-name>/<module-name>/<distinct-name>/<bean-name>!<fully-qualified-classname-of-the-remote-interface>?stateful
 ----

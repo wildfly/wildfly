@@ -34,7 +34,7 @@
     </exports>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-connector@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-connector}"/>
     </resources>
 
     <dependencies>

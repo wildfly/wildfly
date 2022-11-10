@@ -11,9 +11,6 @@ follows:
 [source,xml,options="nowrap"]
 ----
     <management>
-        <security-realms>
-...
-        </security-realms>
         <audit-log>
             <formatters>
                 <json-formatter name="json-formatter"/>

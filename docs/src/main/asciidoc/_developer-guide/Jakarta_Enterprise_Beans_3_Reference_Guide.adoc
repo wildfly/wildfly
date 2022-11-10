@@ -4,7 +4,7 @@
 This chapter details the extensions that are available when developing
 Enterprise Java Beans ^tm^ on WildFly {wildflyVersion}.
 
-Currently there is no support for configuring the extensions using an
+Currently, there is no support for configuring the extensions using an
 implementation specific descriptor file.
 
 [[resource-adapter-for-message-driven-beans]]

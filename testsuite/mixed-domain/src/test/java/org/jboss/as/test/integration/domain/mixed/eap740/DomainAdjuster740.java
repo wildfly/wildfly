@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelNode;
 public class DomainAdjuster740 extends DomainAdjuster {
 
     @Override
-    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) {
+    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withPrimaryServers) {
         final List<ModelNode> ops = new ArrayList<>();
 
         adjustRemoting(ops, profileAddress.append(SUBSYSTEM, "remoting"));

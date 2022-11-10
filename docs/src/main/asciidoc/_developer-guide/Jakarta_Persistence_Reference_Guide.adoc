@@ -4,12 +4,12 @@
 [[introduction]]
 == Introduction
 
-The WildFly JPA subsystem implements the JPA 2.2 container-managed
+The WildFly JPA subsystem implements the Jakarta Persistence 3.1 container-managed
 requirements. Deploys the persistence unit definitions, the persistence
 unit/context annotations and persistence unit/context references in the
 deployment descriptor. JPA Applications use the Hibernate (version 5.3)
 persistence provider, which is included with WildFly. The JPA subsystem
-uses the standard SPI (javax.persistence.spi.PersistenceProvider) to
+uses the standard SPI (jakarta.persistence.spi.PersistenceProvider) to
 access the Hibernate persistence provider and some additional extensions
 as well.
 
@@ -19,13 +19,13 @@ dependencies into the application deployment. This makes it easy to
 deploy JPA applications.
 
 In the remainder of this documentation, "entity manager" refers to an
-instance of the _javax.persistence.EntityManager_ class.
+instance of the _jakarta.persistence.EntityManager_ class.
 https://javaee.github.io/javaee-spec/javadocs/overview-summary.html[Javadoc
 for the JPA interfaces]and https://jcp.org/en/jsr/detail?id=338[JPA 2.2
 specification].
 
 The index of the Hibernate documentation is at
-http://hibernate.org/orm/documentation/5.3/
+https://hibernate.org/orm/documentation/6.1/
 
 [[update-your-persistence.xml-for-hibernate]]
 == Update your Persistence.xml for Hibernate
@@ -43,7 +43,7 @@ Or remove the persistence provider class name from your persistence.xml
 [[entity-manager]]
 == Entity manager
 
-The entity manager (javax.persistence.EntityManager class) is similar to
+The entity manager (jakarta.persistence.EntityManager class) is similar to
 the Hibernate Session class; applications use it to
 create/read/update/delete data (and related operations). Applications
 can use application-managed or container-managed entity managers. Keep
@@ -68,7 +68,7 @@ EntityManager instance, if not found, a new EntityManager instance is
 created and associated with the current JTA transaction, to be reused
 for the next EntityManager invocation. Use the @PersistenceContext
 annotation, to inject a container-managed entity manager into a
-javax.persistence.EntityManager variable.
+jakarta.persistence.EntityManager variable.
 
 [[application-managed-entity-manager]]
 == Application-managed entity manager
@@ -77,7 +77,7 @@ An application-managed entity manager is kept around until the
 application closes it. The scope of the application-managed entity
 manager is from when the application creates it and lasts until the
 application closes it. Use the _@PersistenceUnit_ annotation, to inject
-a persistence unit into a _javax.persistence.EntityManagerFactory
+a persistence unit into a _jakarta.persistence.EntityManagerFactory
 variable_. The EntityManagerFactory can return an application-managed
 entity manager.
 
@@ -527,46 +527,10 @@ version="1.0"> +
 </persistence>
 ----
 
-[[migrating-from-openjpa]]
-== Migrating from OpenJPA
-
-You need to copy the OpenJPA jar (e.g. openjpa-all.jar) into
-the WildFly modules/org/apache/openjpa/main folder and update
-modules/org/apache/openjpa/main/module.xml to include the same jar file
-name that you copied in. This will help you get your application that
-depends on OpenJPA, to deploy on WildFly.
-
-[source,java,options="nowrap"]
-----
- <module xmlns="urn:jboss:module:1.9" name="org.apache.openjpa">
-    <resources>
-        <resource-root path="jipijapa-openjpa-1.0.1.Final.jar"/>
-        <resource-root path="openjpa-all.jar">
-           <filter>
-              <exclude path="javax/**" />
-           </filter>
-        </resource-root>
-    </resources>
- 
-    <dependencies>
-        <module name="javax.annotation.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.persistence.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="javax.validation.api"/>
-        <module name="javax.xml.bind.api"/>
-        <module name="org.jboss.as.jpa.spi"/>
-        <module name="org.jboss.logging"/>
-        <module name="io.smallrye.jandex"/>
-    </dependencies>
-</module>
-----
-
 [[migrating-from-eclipselink]]
 == Migrating from EclipseLink
 
-You need to copy the EclipseLink jar (e.g. eclipselink-2.6.0.jar or
-eclipselink.jar as in the example below) into the WildFly
+You need to copy the EclipseLink (3.0 or newer) jar into the WildFly
 modules/org/eclipse/persistence/main folder and update
 modules/org/eclipse/persistence/main/module.xml to include the
 EclipseLink jar (take care to use the jar name that you copied in). If
@@ -578,25 +542,25 @@ that depends on EclipseLink, to deploy on WildFly.
 ----
  <module xmlns="urn:jboss:module:1.9" name="org.eclipse.persistence">
     <resources>
-        <resource-root path="jipijapa-eclipselink-10.0.0.Final.jar"/>
+        <resource-root path="jipijapa-eclipselink-jakarta-27.0.0.Final.jar"/>
         <resource-root path="eclipselink.jar">           <filter>
-              <exclude path="javax/**" />
+              <exclude path="jakarta/**" />
            </filter>
         </resource-root>
     </resources>
  
     <dependencies>
-        <module name="asm.asm"/>
-        <module name="javax.api"/>
-        <module name="javax.annotation.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.persistence.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="javax.validation.api"/>
-        <module name="javax.xml.bind.api"/>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.json.api" optional="true"/>
+        <module name="jakarta.persistence.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.validation.api"/>
+        <module name="jakarta.xml.bind.api"/>
         <module name="org.antlr"/>
-        <module name="org.apache.commons.collections"/>
-        <module name="org.dom4j"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
@@ -698,32 +662,19 @@ Updated `jboss-deployment-structure.xml`:
 [[hibernate-properties]]
 == Hibernate properties
 
-WildFly automatically sets the following Hibernate properties (if
+WildFly automatically sets or checks the following Hibernate properties (if
 not already set in persistence unit definition):
 
 [cols=",",options="header"]
 |=======================================================================
 |Property |Purpose
 
-|hibernate.id.new_generator_mappings =true |New applications should let
-this default to true, older applications with existing data might need
-to set to false (see note below). It really depends on whether your
-application uses the @GeneratedValue(AUTO) which will generates new key
-values for newly created entities. The application can override this
-value (in the persistence.xml).
+|hibernate.id.new_generator_mappings| Can no longer be set to false by applications as per the Hibernate 6 change to only support hibernate.id.new_generator_mappings=true.
 
 |hibernate.transaction.jta.platform= instance of
 org.hibernate.service.jta.platform.spi.JtaPlatform interface |The
 transaction manager, user transaction and transaction synchronization
 registry is passed into Hibernate via this class.
-
-|hibernate.ejb.resource_scanner = instance of
-org.hibernate.ejb.packaging.Scanner interface |Instance of entity
-scanning class is passed in that knows how to use the AS annotation
-indexer (for faster deployment).
-
-|hibernate.transaction.manager_lookup_class |This property is removed if
-found in the persistence.xml (could conflict with JtaPlatform)
 
 |hibernate.session_factory_name = qualified persistence unit name |Is
 set to the application name + persistence unit name (application can
@@ -733,10 +684,11 @@ application deployments on the AS instance).
 |hibernate.session_factory_name_is_jndi = false |only set if the
 application didn't specify a value for hibernate.session_factory_name.
 
-|hibernate.ejb.entitymanager_factory_name = qualified persistence unit
+|hibernate.entitymanager_factory_name = qualified persistence unit
 name |Is set to the application name + persistence unit name
 (application can specify a different value but it needs to be unique
-across all application deployments on the AS instance).
+across all application deployments on the AS instance).  
+This replaces the `hibernate.ejb.entitymanager_factory_name` property which is no longer supported.
 
 |hibernate.query.jpaql_strict_compliance=true | 
 
@@ -746,39 +698,12 @@ across all application deployments on the AS instance).
 
 |hibernate.model.generator_name_as_sequence_name=true |
 
-|hibernate.jpa.compliance.transaction=true |
-
-|hibernate.jpa.compliance.closed=true |
-
-|hibernate.jpa.compliance.query=true |
-
-|hibernate.jpa.compliance.list=true |
-
-|hibernate.jpa.compliance.caching=true |
-
-|hibernate.jpa.compliance.proxy=true |
+|hibernate.jpa.compliance=true | Sets all of the various hibernate.jpa.* properties to true (hibernate.jpa.compliance.transaction, hibernate.jpa.compliance.closed,hibernate.jpa.compliance.query, hibernate.jpa.compliance.list, hibernate.jpa.compliance.caching, hibernate.jpa.compliance.proxy
 
 |hibernate.enable_lazy_load_no_trans=false |
 
-|hibernate.jpa.compliance.global_id_generators=true |
 
 |=======================================================================
-
-if *hibernate.id.new_generator_mappings* is *true*:
-
-* @GeneratedValue(AUTO) maps to
-org.hibernate.id.enhanced.SequenceStyleGenerator
-* @GeneratedValue(TABLE) maps to
-org.hibernate.id.enhanced.TableGenerator
-* @GeneratedValue(SEQUENCE) maps to
-org.hibernate.id.enhanced.SequenceStyleGenerator
-
-if *hibernate.id.new_generator_mappings* is *false*:
-
-* @GeneratedValue(AUTO) maps to Hibernate "native"
-* @GeneratedValue(TABLE) maps to
-org.hibernate.id.MultipleHiLoPerTableGenerator
-* @GeneratedValue(SEQUENCE) to Hibernate "seqhilo"
 
 [[persistence-unit-properties]]
 == Persistence unit properties
@@ -955,16 +880,12 @@ persistence.xml
 public class ExampleSFSB {
   public void createSomeEntityWithTransactionScopedEM(String name) {
     Context context = new InitialContext();
-    javax.persistence.EntityManager entityManager = (javax.persistence.EntityManager) context.lookup("java:/myEntityManager");
+    jakarta.persistence.EntityManager entityManager = (jakarta.persistence.EntityManager) context.lookup("java:/myEntityManager");
     SomeEntity someEntity = new SomeEntity();
     someEntity.setName(name);    entityManager.persist(name);
   }
 }
 ----
-
-== Tips for using the latest Hibernate ORM
-
-http://docs.jboss.org/hibernate/stable/orm/topical/html_single/wildfly/Wildfly.html[Read about using Hibernate ORM feature packs on WildFly].
 
 NOTE: References in this document to Java Transaction API(JTA) refer to Jakarta Transactions unless otherwise noted.
       References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.

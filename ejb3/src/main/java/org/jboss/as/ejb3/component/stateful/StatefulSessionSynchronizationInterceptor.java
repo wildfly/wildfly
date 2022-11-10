@@ -30,11 +30,11 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.ejb.EJBException;
-import javax.ejb.TransactionManagementType;
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.TransactionManagementType;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;

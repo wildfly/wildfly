@@ -40,27 +40,27 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.EJBAccessException;
-import javax.ejb.EJBException;
-import javax.ejb.EJBTransactionRequiredException;
-import javax.ejb.EJBTransactionRolledbackException;
-import javax.ejb.IllegalLoopbackException;
-import javax.ejb.LockType;
-import javax.ejb.NoMoreTimeoutsException;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.RemoveException;
-import javax.ejb.Timer;
-import javax.ejb.TransactionAttributeType;
-import javax.interceptor.InvocationContext;
+import jakarta.ejb.ConcurrentAccessTimeoutException;
+import jakarta.ejb.EJBAccessException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.EJBTransactionRequiredException;
+import jakarta.ejb.EJBTransactionRolledbackException;
+import jakarta.ejb.IllegalLoopbackException;
+import jakarta.ejb.LockType;
+import jakarta.ejb.NoMoreTimeoutsException;
+import jakarta.ejb.NoSuchEJBException;
+import jakarta.ejb.NoSuchObjectLocalException;
+import jakarta.ejb.RemoveException;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.interceptor.InvocationContext;
 import javax.naming.Context;
-import javax.resource.ResourceException;
-import javax.resource.spi.UnavailableException;
-import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.Transaction;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.UnavailableException;
+import jakarta.resource.spi.endpoint.MessageEndpoint;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Transaction;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
@@ -533,10 +533,10 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 57, value = "%s annotation is only valid on method targets")
     IllegalArgumentException annotationApplicableOnlyForMethods(String annotationName);
 
-    @Message(id = 58, value = "Method %s, on class %s, annotated with @javax.interceptor.AroundTimeout is expected to accept a single param of type javax.interceptor.InvocationContext")
+    @Message(id = 58, value = "Method %s, on class %s, annotated with @jakarta.interceptor.AroundTimeout is expected to accept a single param of type jakarta.interceptor.InvocationContext")
     IllegalArgumentException aroundTimeoutMethodExpectedWithInvocationContextParam(String methodName, String className);
 
-    @Message(id = 59, value = "Method %s, on class %s, annotated with @javax.interceptor.AroundTimeout must return Object type")
+    @Message(id = 59, value = "Method %s, on class %s, annotated with @jakarta.interceptor.AroundTimeout must return Object type")
     IllegalArgumentException aroundTimeoutMethodMustReturnObjectType(String methodName, String className);
 
     @Message(id = 60, value = "Wrong tx on thread: expected %s, actual %s")
@@ -3201,7 +3201,7 @@ public interface EjbLogger extends BasicLogger {
     RuntimeException cannotLoadServerInterceptorModule(String moduleId, @Cause Exception e);
 
     @LogMessage(level = WARN)
-    @Message(id = 515, value = "[Jakarta Enterprise Beans 3.2 spec, section 4.9.2] Singleton session beans are not allowed to implement 'javax.ejb.SessionBean' interface. This interface on bean '%s' is going to be ignored and should be removed.")
+    @Message(id = 515, value = "[Jakarta Enterprise Beans 3.2 spec, section 4.9.2] Singleton session beans are not allowed to implement 'jakarta.ejb.SessionBean' interface. This interface on bean '%s' is going to be ignored and should be removed.")
     void singletonCantImplementSessionBean(String className);
 
     @LogMessage(level = INFO)

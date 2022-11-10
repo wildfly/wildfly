@@ -27,7 +27,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
 /**
- * Represents the value of a minute constructed out of a {@link javax.ejb.ScheduleExpression#getMinute()}
+ * Represents the value of a minute constructed out of a {@link jakarta.ejb.ScheduleExpression#getMinute()}
  * <p/>
  * <p>
  * A {@link Minute} can hold only {@link Integer} as its value. The only exception to this being the wildcard (*)

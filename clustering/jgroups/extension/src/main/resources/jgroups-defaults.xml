@@ -31,7 +31,6 @@
         ucast_send_buf_size="1m"
         port_range="0"
         bundler_type="transfer-queue"
-        bundler.max_size="64k"
     />
     <TCP
         send_buf_size="640k"
@@ -42,7 +41,6 @@
     <TCP_NIO2
         send_buf_size="640k"
         sock_conn_timeout="300"
-        port_range="0"
         bundler_type="transfer-queue"
     />
     <TCPPING
@@ -61,7 +59,7 @@
         timeout_check_interval="5000"
     />
     <FD_SOCK port_range="0"/>
-    <FD_SOCK2 port_range="1" offset="1"/>
+    <FD_SOCK2 offset="1"/>
     <VERIFY_SUSPECT timeout="1000"/>
     <VERIFY_SUSPECT2 timeout="1000"/>
     <pbcast.NAKACK2

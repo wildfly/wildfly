@@ -32,9 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import javax.mail.Session;
 import javax.net.ssl.SSLContext;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -61,6 +59,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.security.credential.store.CredentialStore;
+
+import jakarta.mail.Session;
 
 /**
  * @author Tomaz Cerar (c) 2017 Red Hat Inc.

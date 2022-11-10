@@ -25,10 +25,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
-import javax.ejb.EJBException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
 
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
@@ -92,7 +92,7 @@ public class NonFunctionalTimerService implements ManagedTimerService {
     }
 
     @Override
-    public Collection<javax.ejb.Timer> getAllTimers() throws IllegalStateException, EJBException {
+    public Collection<jakarta.ejb.Timer> getAllTimers() throws IllegalStateException, EJBException {
         this.validateInvocationContext();
 
         return this.timerServiceRegistry.getAllTimers();

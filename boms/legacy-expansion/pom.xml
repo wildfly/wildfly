@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -72,31 +72,31 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-health-smallrye</artifactId>
+                <artifactId>wildfly-microprofile-health-smallrye-legacy-namespace</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
+                <artifactId>wildfly-microprofile-jwt-smallrye-legacy-namespace</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-opentracing-extension</artifactId>
+                <artifactId>wildfly-microprofile-opentracing-extension-legacy-namespace</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
+                <artifactId>wildfly-microprofile-opentracing-smallrye-legacy-namespace</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
+                <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-legacy-namespace</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

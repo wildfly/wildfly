@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -66,6 +66,7 @@
                         <appservername>${full.dist.product.release.name}</appservername>
                         <javaee_version>8</javaee_version>
                         <oracle-javadoc>https://docs.oracle.com/en/java/javase/11/docs/api</oracle-javadoc>
+                        <resteasyversion>${version.org.jboss.resteasy}</resteasyversion>
                         <wildflyversion>${product.docs.server.version}</wildflyversion>
 
                         <!-- Default asciidoc setting attributes -->

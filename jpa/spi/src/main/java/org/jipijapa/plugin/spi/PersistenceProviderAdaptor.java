@@ -47,7 +47,7 @@ public interface PersistenceProviderAdaptor {
     void injectPlatform(Platform platform);
 
     /**
-     * Adds any provider specific properties (e.g. hibernate.transaction.manager_lookup_class)
+     * Adds any provider specific properties
      *
      * @param properties
      * @param pu

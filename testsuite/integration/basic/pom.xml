@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -379,7 +379,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client-jakarta</artifactId>
+            <artifactId>jboss-ejb-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -551,31 +551,31 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jipijapa-spi-jakarta</artifactId>
+            <artifactId>jipijapa-spi</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- This is not desired, however the Jakarta Connectors tests seem to require this -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-connector-jakarta</artifactId>
+            <artifactId>wildfly-connector</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- This is not desired, however the HungTasksTerminationTestCase test seems to require this -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-jakarta</artifactId>
+            <artifactId>wildfly-ee</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- This is not desired, however the UncheckedStatelessBean requires this -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ejb3-jakarta</artifactId>
+            <artifactId>wildfly-ejb3</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- This is required for the JmsTestCase which uses CLI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq-subsystem-jakarta</artifactId>
+            <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -605,17 +605,17 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-jsf-jakarta</artifactId>
+            <artifactId>wildfly-jsf</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-undertow-jakarta</artifactId>
+            <artifactId>wildfly-undertow</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client-jakarta</artifactId>
+            <artifactId>wildfly-naming-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -640,7 +640,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-transaction-client</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- To be able to start a 'remote' broker -->
@@ -810,11 +810,11 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-client-common-jakarta</artifactId>
+            <artifactId>wildfly-http-client-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+            <artifactId>wildfly-http-ejb-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
@@ -822,7 +822,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-http-transaction-client</artifactId>
         </dependency>
         <dependency>
             <groupId>xom</groupId>
@@ -1184,7 +1184,6 @@
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>
@@ -1219,7 +1218,6 @@
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>
@@ -1896,7 +1894,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1936,7 +1933,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -1976,7 +1972,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2017,7 +2012,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2058,7 +2052,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2102,7 +2095,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2147,7 +2139,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2187,7 +2178,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2230,7 +2220,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2270,7 +2259,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2312,7 +2300,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2353,7 +2340,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2396,7 +2382,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2437,7 +2422,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2478,7 +2462,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2519,7 +2502,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2559,7 +2541,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2600,7 +2581,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2640,7 +2620,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -2680,7 +2659,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
@@ -3285,6 +3263,9 @@
                                         <exclude>org/jboss/as/test/integration/messaging/security/SecurityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/security/DeserializationBlockListTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/jms/deployment/DependentMessagingDeploymentTestCase.java</exclude>
+                                        <!-- exclude tests sending messages -->
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/localtransaction/LocalTransactionTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/naming/JndiLookupMessagingDeploymentTestCase.java</exclude>
                                     </excludes>
                                     <!-- Starting and stopping the remote broker -->
                                     <properties>
@@ -3607,28 +3588,6 @@
             </properties>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>bootable-jar-cloud-profile-packaging</id>
-                                <configuration>
-                                    <plugin-options combine-children="append">
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                    </plugin-options>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>bootable-jar-jpa-packaging</id>
-                                <configuration>
-                                    <plugin-options combine-children="append">
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                    </plugin-options>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <!-- Disable the standard copy-based provisioning -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -3800,10 +3759,6 @@
                                         <!-- Requires the Arquillian Servlet 3.0 protocol to be overridden to Servlet 5.0 -->
                                         <exclude>org/jboss/as/test/integration/logging/config/LoggingProfileSharedTestCase.java</exclude>
 
-                                        <!-- Differences in the API changes for EE 8/9 and EE 10. -->
-                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingPropertiesTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingServicesTestCase.java</exclude>
-
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -3884,9 +3839,6 @@
                                              adapted to rely on Hibernate Search 6 APIs,
                                              so we still test Hibernate Search with EE9. -->
                                         <exclude>org/jboss/as/test/integration/hibernate/search/**</exclude>
-                                        <!-- Differences in the API changes for EE 8/9 and EE 10. -->
-                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingPropertiesTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingServicesTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>

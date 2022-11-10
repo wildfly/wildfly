@@ -31,13 +31,13 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-weld-transactions-jakarta</artifactId>
+    <artifactId>wildfly-weld-transactions</artifactId>
 
-    <name>WildFly: Weld Transactions (Jakarta Namespace)</name>
+    <name>WildFly: Weld Transactions</name>
 
     <packaging>jar</packaging>
 
@@ -67,17 +67,17 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common-jakarta</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-spi-jakarta</artifactId>
+            <artifactId>wildfly-weld-spi</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-transaction-client</artifactId>
         </dependency>
 
         <!-- Other deps consistent with the javax.* mail module -->

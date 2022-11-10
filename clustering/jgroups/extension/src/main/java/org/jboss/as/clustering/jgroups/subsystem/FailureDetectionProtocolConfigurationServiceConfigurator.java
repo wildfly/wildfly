@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.ClientMapping;
@@ -42,26 +43,34 @@ public class FailureDetectionProtocolConfigurationServiceConfigurator extends So
     }
 
     @Override
+    public Map<String, SocketBinding> getSocketBindings() {
+        // Socket binding is optional
+        SocketBinding binding = this.getSocketBinding();
+        return (binding != null) ? Map.of("jgroups.nio.server.fd_sock", binding) : Map.of();
+    }
+
+    @Override
     public void accept(FD_SOCK2 protocol) {
         SocketBinding protocolBinding = this.getSocketBinding();
         SocketBinding transportBinding = this.getTransport().getSocketBinding();
-        SocketBinding binding = (protocolBinding != null) ? protocolBinding : transportBinding;
 
-        InetSocketAddress socketAddress = binding.getSocketAddress();
-        protocol.setBindAddress(socketAddress.getAddress());
+        InetSocketAddress protocolBindAddress = (protocolBinding != null) ? protocolBinding.getSocketAddress() : null;
+        InetSocketAddress transportBindAddress = transportBinding.getSocketAddress();
+        protocol.setBindAddress(((protocolBindAddress != null) ? protocolBindAddress : transportBindAddress).getAddress());
+
         if (protocolBinding != null) {
-            protocol.setValue("offset", socketAddress.getPort() - transportBinding.getSocketAddress().getPort());
-        }
+            protocol.setOffset(protocolBindAddress.getPort() - transportBindAddress.getPort());
 
-        List<ClientMapping> clientMappings = binding.getClientMappings();
-        if (!clientMappings.isEmpty()) {
-            // JGroups cannot select a client mapping based on the source address, so just use the first one
-            ClientMapping mapping = clientMappings.get(0);
-            try {
-                protocol.setExternalAddress(InetAddress.getByName(mapping.getDestinationAddress()));
-                protocol.setExternalPort(mapping.getDestinationPort());
-            } catch (UnknownHostException e) {
-                throw new IllegalArgumentException(e);
+            List<ClientMapping> clientMappings = protocolBinding.getClientMappings();
+            if (!clientMappings.isEmpty()) {
+                // JGroups cannot select a client mapping based on the source address, so just use the first one
+                ClientMapping mapping = clientMappings.get(0);
+                try {
+                    protocol.setExternalAddress(InetAddress.getByName(mapping.getDestinationAddress()));
+                    protocol.setExternalPort(mapping.getDestinationPort());
+                } catch (UnknownHostException e) {
+                    throw new IllegalArgumentException(e);
+                }
             }
         }
 

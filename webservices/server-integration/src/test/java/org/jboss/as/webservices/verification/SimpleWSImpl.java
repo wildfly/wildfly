@@ -22,7 +22,7 @@
 
 package org.jboss.as.webservices.verification;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 /**
  * @author sfcoy

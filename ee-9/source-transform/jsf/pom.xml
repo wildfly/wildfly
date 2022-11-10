@@ -33,13 +33,13 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-jsf-parent-jakarta</artifactId>
+    <artifactId>wildfly-jsf-parent</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly: Jakarta Faces integration modules (Jakarta Namespace)</name>
+    <name>WildFly: Jakarta Faces integration modules</name>
 
     <modules>
         <module>subsystem</module>

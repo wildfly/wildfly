@@ -21,8 +21,8 @@
  */
 package org.jboss.as.ejb3.component.interceptors;
 
-import javax.ejb.EJBHome;
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBObject;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.ejb.client.EJBClient;

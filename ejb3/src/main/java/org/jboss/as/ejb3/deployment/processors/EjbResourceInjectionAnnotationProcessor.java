@@ -49,8 +49,8 @@ import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBs;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBs;
 import java.util.List;
 import java.util.Locale;
 

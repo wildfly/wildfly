@@ -27,14 +27,14 @@ import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.ejb.EJBException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.TimerService;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
 
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
@@ -45,7 +45,7 @@ import org.wildfly.clustering.ee.Restartable;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
- * Interface for managed {@link javax.ejb.TimerService} implementations.
+ * Interface for managed {@link jakarta.ejb.TimerService} implementations.
  * @author Paul Ferraro
  */
 public interface ManagedTimerService extends TimerService, Restartable {
@@ -156,7 +156,7 @@ public interface ManagedTimerService extends TimerService, Restartable {
      * The absence of a method indicates a lifecycle callback.</li>
      * <li>If the context is <i>not</i> available, then this method returns false (i.e.
      * it doesn't consider the current invocation as a lifecycle callback). This is
-     * for convenience, to allow the invocation of {@link javax.ejb.TimerService} methods
+     * for convenience, to allow the invocation of {@link jakarta.ejb.TimerService} methods
      * in the absence of {@link CurrentInvocationContext}</li>
      * </ul>
      * <p/>

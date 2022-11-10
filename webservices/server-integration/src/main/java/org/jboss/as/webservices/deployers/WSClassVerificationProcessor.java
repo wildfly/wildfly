@@ -29,7 +29,7 @@ import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -93,7 +93,7 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
             final WebService webServiceAnnotation = endpointClass.getAnnotation(WebService.class);
             if (webServiceAnnotation != null) {
                 verifyJwsEndpoint(endpointClass, webServiceAnnotation, moduleClassLoader, deploymentReflectionIndex);
-            } // otherwise it's probably a javax.xml.ws.Provider implementation
+            } // otherwise it's probably a jakarta.xml.ws.Provider implementation
         } catch (ClassNotFoundException e) {
             throw WSLogger.ROOT_LOGGER.endpointClassNotFound(pojoEndpoint.getClassName());
         }

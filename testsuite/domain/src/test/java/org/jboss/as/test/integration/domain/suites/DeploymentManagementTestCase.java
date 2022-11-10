@@ -191,13 +191,13 @@ public class DeploymentManagementTestCase {
         assertEquals("Deployments are removed from the domain", 0, deploymentList.size());
 
         try {
-            performHttpCall(DomainTestSupport.masterAddress, 8080);
+            performHttpCall(DomainTestSupport.primaryAddress, 8080);
             fail(TEST + " is available on main-one");
         } catch (IOException good) {
             // good
         }
         try {
-            performHttpCall(DomainTestSupport.slaveAddress, 8630);
+            performHttpCall(DomainTestSupport.secondaryAddress, 8630);
             fail(TEST + " is available on other-three");
         } catch (IOException good) {
             // good
@@ -231,10 +231,10 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get("url").set(url);
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(composite);
+        executeOnPrimary(composite);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -245,10 +245,10 @@ public class DeploymentManagementTestCase {
         OperationBuilder builder = new OperationBuilder(composite, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
 
@@ -258,7 +258,7 @@ public class DeploymentManagementTestCase {
         ModelNode op = getEmptyOperation(UPLOAD_DEPLOYMENT_URL, ROOT_ADDRESS);
         op.get("url").set(url);
 
-        byte[] hash = executeOnMaster(op).asBytes();
+        byte[] hash = executeOnPrimary(op).asBytes();
 
         testDeploymentViaHash(hash);
     }
@@ -271,7 +271,7 @@ public class DeploymentManagementTestCase {
         OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
-        byte[] hash = executeOnMaster(builder.build()).asBytes();
+        byte[] hash = executeOnPrimary(builder.build()).asBytes();
 
         testDeploymentViaHash(hash);
     }
@@ -280,10 +280,10 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get("hash").set(hash);
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(composite);
+        executeOnPrimary(composite);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -293,12 +293,12 @@ public class DeploymentManagementTestCase {
         OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
-        byte[] hash = executeOnMaster(builder.build()).asBytes();
+        byte[] hash = executeOnPrimary(builder.build()).asBytes();
 
         ModelNode content = new ModelNode();
         content.get("hash").set(hash);
         ModelNode composite = createDeploymentOperation(content);
-        executeOnMaster(composite);
+        executeOnPrimary(composite);
     }
 
     @Test
@@ -307,10 +307,10 @@ public class DeploymentManagementTestCase {
         content.get("archive").set(true);
         content.get("path").set(new File(tmpDir, "archives/" + TEST).getAbsolutePath());
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(composite);
+        executeOnPrimary(composite);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -320,10 +320,10 @@ public class DeploymentManagementTestCase {
         content.get("path").set(new File(tmpDir, "exploded/" + TEST).getAbsolutePath());
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
 
-        executeOnMaster(composite);
+        executeOnPrimary(composite);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -353,12 +353,12 @@ public class DeploymentManagementTestCase {
 
     private void undeployTest() throws Exception {
         ModelNode op = getEmptyOperation("undeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         // Thread.sleep(1000);
 
         try {
-            performHttpCall(DomainTestSupport.slaveAddress, 8630);
+            performHttpCall(DomainTestSupport.secondaryAddress, 8630);
             fail("Webapp still accessible following undeploy");
         } catch (IOException good) {
             // desired result
@@ -391,9 +391,9 @@ public class DeploymentManagementTestCase {
 
     private void redeployTest() throws IOException {
         ModelNode op = getEmptyOperation("redeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -407,12 +407,12 @@ public class DeploymentManagementTestCase {
         OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
         // Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -425,12 +425,12 @@ public class DeploymentManagementTestCase {
         content.get("path").set(new File(tmpDir, "archives/" + TEST).getAbsolutePath());
         ModelNode op = createDeploymentReplaceOperation(content, MAIN_SERVER_GROUP_ADDRESS, OTHER_SERVER_GROUP_ADDRESS);
 
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         // Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -443,12 +443,12 @@ public class DeploymentManagementTestCase {
         content.get("path").set(new File(tmpDir, "exploded/" + TEST).getAbsolutePath());
         ModelNode op = createDeploymentReplaceOperation(content, MAIN_SERVER_GROUP_ADDRESS, OTHER_SERVER_GROUP_ADDRESS);
 
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         // Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -461,12 +461,12 @@ public class DeploymentManagementTestCase {
         content.get("path").set(new File(tmpDir, "archives/" + TEST).getAbsolutePath());
         ModelNode op = createDeploymentReplaceOperation(content, MAIN_SERVER_GROUP_ADDRESS, OTHER_SERVER_GROUP_ADDRESS);
 
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         // Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -479,12 +479,12 @@ public class DeploymentManagementTestCase {
         content.get("path").set(new File(tmpDir, "exploded/" + TEST).getAbsolutePath());
         ModelNode op = createDeploymentReplaceOperation(content, MAIN_SERVER_GROUP_ADDRESS, OTHER_SERVER_GROUP_ADDRESS);
 
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         //Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -498,12 +498,12 @@ public class DeploymentManagementTestCase {
         OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
         // Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
     @Test
     public void testFullReplaceViaStream() throws Exception {
@@ -516,12 +516,12 @@ public class DeploymentManagementTestCase {
         OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
         // Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
 
@@ -535,12 +535,12 @@ public class DeploymentManagementTestCase {
         content.get("url").set(url);
         ModelNode op = createDeploymentFullReplaceOperation(content);
 
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         //Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -553,22 +553,22 @@ public class DeploymentManagementTestCase {
         ModelNode op = getEmptyOperation(UPLOAD_DEPLOYMENT_URL, ROOT_ADDRESS);
         op.get("url").set(url);
 
-        byte[] hash = executeOnMaster(op).asBytes();
+        byte[] hash = executeOnPrimary(op).asBytes();
 
         ModelNode content = new ModelNode();
         content.get("hash").set(hash);
         op = createDeploymentFullReplaceOperation(content);
 
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         // Check that the original content got removed!
-        testRemovedContent(testSupport.getDomainMasterLifecycleUtil(), original);
-        testRemovedContent(testSupport.getDomainSlaveLifecycleUtil(), original);
+        testRemovedContent(testSupport.getDomainPrimaryLifecycleUtil(), original);
+        testRemovedContent(testSupport.getDomainSecondaryLifecycleUtil(), original);
 
         //Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -582,12 +582,12 @@ public class DeploymentManagementTestCase {
         OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive2.as(ZipExporter.class).exportAsInputStream());
 
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
         //Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
 
@@ -601,12 +601,12 @@ public class DeploymentManagementTestCase {
         content.get("path").set(new File(tmpDir, "archives/" + TEST).getAbsolutePath());
         ModelNode op = createDeploymentFullReplaceOperation(content);
 
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         //Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -619,12 +619,12 @@ public class DeploymentManagementTestCase {
         content.get("path").set(new File(tmpDir, "exploded/" + TEST).getAbsolutePath());
         ModelNode op = createDeploymentFullReplaceOperation(content);
 
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         //Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -637,12 +637,12 @@ public class DeploymentManagementTestCase {
         content.get("path").set(new File(tmpDir, "archives/" + TEST).getAbsolutePath());
         ModelNode op = createDeploymentFullReplaceOperation(content);
 
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         //Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -655,12 +655,12 @@ public class DeploymentManagementTestCase {
         content.get("path").set(new File(tmpDir, "exploded/" + TEST).getAbsolutePath());
         ModelNode op = createDeploymentFullReplaceOperation(content);
 
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         //Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -674,12 +674,12 @@ public class DeploymentManagementTestCase {
         OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
         //Thread.sleep(1000);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -693,8 +693,8 @@ public class DeploymentManagementTestCase {
         OperationBuilder builder = new OperationBuilder(composite, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
-        executeOnMaster(builder.build());
-        performHttpCall(DomainTestSupport.slaveAddress, 8630, "test1");
+        executeOnPrimary(builder.build());
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630, "test1");
     }
 
     @Test
@@ -705,11 +705,11 @@ public class DeploymentManagementTestCase {
         OperationBuilder builder = new OperationBuilder(composite, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
         try {
-            performHttpCall(DomainTestSupport.masterAddress, 8080);
+            performHttpCall(DomainTestSupport.primaryAddress, 8080);
             fail("Webapp deployed to unselected server group");
         } catch (IOException ioe) {
             // good
@@ -763,22 +763,22 @@ public class DeploymentManagementTestCase {
         }
         LocalMethods localMethods = new LocalMethods();
         try {
-            executeOnMaster(localMethods.createDeploymentOperation(ROOT_DEPLOYMENT_ADDRESS, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS));
+            executeOnPrimary(localMethods.createDeploymentOperation(ROOT_DEPLOYMENT_ADDRESS, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS));
             try {
-                executeOnMaster(localMethods.createDeploymentOperation(rootDeploymentAddress2, otherServerGroupDeploymentAddress2));
+                executeOnPrimary(localMethods.createDeploymentOperation(rootDeploymentAddress2, otherServerGroupDeploymentAddress2));
             } finally {
-                executeOnMaster(localMethods.createRemoveOperation(rootDeploymentAddress2, otherServerGroupDeploymentAddress2));
+                executeOnPrimary(localMethods.createRemoveOperation(rootDeploymentAddress2, otherServerGroupDeploymentAddress2));
             }
 
             ModelNode undeploySg = getEmptyOperation(REMOVE, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-            executeOnMaster(undeploySg);
+            executeOnPrimary(undeploySg);
 
             ModelNode deploySg = getEmptyOperation(ADD, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS);
             deploySg.get(ENABLED).set(true);
-            executeOnMaster(deploySg);
+            executeOnPrimary(deploySg);
 
         } finally {
-            executeOnMaster(localMethods.createRemoveOperation(ROOT_DEPLOYMENT_ADDRESS, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS));
+            executeOnPrimary(localMethods.createRemoveOperation(ROOT_DEPLOYMENT_ADDRESS, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS));
         }
     }
 
@@ -804,19 +804,19 @@ public class DeploymentManagementTestCase {
 //        OperationBuilder builder = OperationBuilder.Factory.create(composite);
 //        builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 //
-//        executeOnMaster(builder.build());
+//        executeOnPrimary(builder.build());
 //
-//        performHttpCall(DomainTestSupport.masterAddress, 8080);
-//        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+//        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+//        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
 //
 //    }
 
-    private static ModelNode executeOnMaster(ModelNode op) throws IOException {
-        return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+    private static ModelNode executeOnPrimary(ModelNode op) throws IOException {
+        return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
-    private static ModelNode executeOnMaster(Operation op) throws IOException {
-        return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+    private static ModelNode executeOnPrimary(Operation op) throws IOException {
+        return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
     private static ModelNode createDeploymentOperation(ModelNode content, ModelNode... serverGroupAddressses) {
@@ -864,7 +864,7 @@ public class DeploymentManagementTestCase {
         ModelNode op = getEmptyOperation("read-children-names", address);
         op.get("child-type").set("deployment");
 
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         ModelNode result = validateResponse(response);
         return result.isDefined() ? result.asList() : Collections.<ModelNode>emptyList();
     }
@@ -874,7 +874,7 @@ public class DeploymentManagementTestCase {
         deplAddr.set(address);
         deplAddr.add("deployment", deploymentName);
         ModelNode op = getEmptyOperation(REMOVE, deplAddr);
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         validateResponse(response);
     }
 
@@ -898,7 +898,7 @@ public class DeploymentManagementTestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set(CONTENT);
 
-        return executeOnMaster(operation).get(0).get("hash").asBytes();
+        return executeOnPrimary(operation).get(0).get("hash").asBytes();
     }
 
     private static void performHttpCall(String host, int port) throws IOException {

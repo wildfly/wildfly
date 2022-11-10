@@ -1,0 +1,176 @@
+[[Micrometer_Metrics]]
+= Micrometer Metrics Subsystem (Preview) Configuration
+
+[IMPORTANT]
+====
+This subsystem is currently enabled only for WildFly Preview. It replaces the existing metrics subsystem in WildFly, and administrators should not attempt to enable both subsystems concurrently. Attempts to do so will result in a configuration that prevents the server from starting.
+
+Standard WildFly continues to use the existing metrics subsystem.
+====
+
+[[micrometer-required-extension-metrics]]
+== Extension
+
+This `org.wildfly.extension.micrometer` extension is included in all the standalone configurations included in the
+WildFly Preview distribution as well as the `micrometer` layer.
+
+You can also add the extension to any other configuration by adding an
+`<extension module="org.wildfly.extension.micrometer"/>` element as well as
+`<subsystem xmlns="urn:wildfly:micrometer:1.0" security-enabled="false" exposed-subsystems="*"/>` to the configuration's
+xml file or by using the following CLI operation:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.micrometer:add
+[standalone@localhost:9990 /] /subsystem=micrometer:add
+----
+
+This subsystem exposes metrics from the WildFly Management Model and JVM MBeans, as well as end-user applications via
+the Micrometer API now exposed to applications deployed to the server. Note that this replaces the existing WildFly
+Metrics extension, so if you have a reporting dashboard set up to consume these metrics, you carefully read the
+link:#breaking-changes[Breaking Changes] section below for more details.
+
+[NOTE]
+====
+This subsystem should not be enabled concurrently with the
+link:MicroProfile_Metrics{outfilesuffix}[MicroProfile Metrics Subsystem] subsystem, as they both perform the same function.
+====
+
+== Management Model
+
+The `/subsystem=micrometer` resource defines two attributes:
+
+* `security-enabled` - a boolean to indicate whether authentication is required to access the HTTP metrics endpoint
+(described below). By default, it is `true`. The standalone configurations explicitly sets it to `false` to accept
+unauthenticated access to the HTTP endpoints.
+* `exposed-subsystems` - a list of strings corresponding to the names of subsystems that exposes their metrics in the
+HTTP metrics endpoints. By default, it is not defined (there will be no metrics exposed by subsystem. The special
+wildcard "{asterisk}" can be used to expose metrics from _all_ subsystems. The standalone configuration sets this
+attribute to "{asterisk}".
+
+[[micrometer-metrics-http-endpoint]]
+== HTTP Endpoint
+
+The Micrometer HTTP endpoint is accessible on WildFly HTTP management interface http://localhost:9990/metrics[].
+
+Secured access to the HTTP endpoint is controlled by the `security-enabled` attribute of the `/subsystem=micrometer` resource.
+If it is set to `true`, the HTTP client must be authenticated.
+
+If security is disabled, the HTTP endpoint returns a `200 OK` response:
+
+----
+$ curl -v http://localhost:9990/metrics
+< HTTP/1.1 200 OK
+...
+# HELP jvm_uptime_seconds Displays the uptime of the Java virtual machine
+# TYPE jvm_uptime_seconds gauge
+jvm_uptime_seconds 215.505
+...
+----
+
+If security has been enabled, the HTTP client must pass the credentials corresponding to a management user
+created by the `add-user` script. For example:
+
+----
+$ curl -v --digest -u myadminuser:myadminpassword http://localhost:9990/metrics
+< HTTP/1.1 200 OK
+...
+# HELP jvm_uptime_seconds Displays the uptime of the Java virtual machine
+# TYPE jvm_uptime_seconds gauge
+jvm_uptime_seconds 215.505
+...
+----
+
+If the authentication fails, the server will reply with a `401 NOT AUTHORIZED` response.
+
+== Exposed Metrics
+
+The HTTP endpoint exposes the following metrics:
+
+* Metrics from JVM MBeans (read directly from the JMX MBeans)
+* WildFly metrics from the management model subsystem and deployment subtrees.
+* Any application-specific metrics provided via the injected Micrometer `MeterRegistry` instance.
+
+The HTTP endpoint exposes the metrics in the Prometheus format only.
+
+=== WildFly Metrics Description
+
+WildFly metrics names are based on the subsystem that provides them, as well as the name of the attribute from the
+management model.
+
+For example Undertow exposes a metric attribute `request-count` for every Servlet in an application deployment.
+This attribute will be exposed with the name `undertow_request_count`. Other information such as the name
+of the `Servlet` are added to the tags of the metric.
+
+The https://github.com/wildfly/quickstart/tree/master/helloworld-rs[helloworld-rs quickstart] creates a Jakarta RESTful
+Web Services application that can be deployed in WildFly. A corresponding metric will be exposed for it with the name and
+tags:
+
+-----
+undertow_request_count_total{app="helloworld-rs.war",deployment="helloworld-rs.war",name="org.jboss.as.quickstarts.rshelloworld.JAXActivator",subdeployment="helloworld-rs.war",type="servlet",} 4.0
+-----
+
+[NOTE]
+Some subsystems (such as `undertow` or `messaging-activemq`) do not enable their statistics by default
+as they have an impact on performance and memory usage. These subsystems provide a `statistics-enabled` attribute that must
+be set to `true` to enable them. For convenience, WildFly standalone configuration provides expressions to enable the
+statistics by setting a System property `-Dwildfly.statistics-enabled=true` to enable statistics on the subsystems
+provided by the configuration.
+
+== Use in Applications
+
+Unlike the previous metrics system, this new extension exposes an API (that of https://micrometer.io[Micrometer]) to
+applications in order to allow developers to record and export metrics out of the box. To do so, application developers
+will need to inject a `MeterRegistry` instance:
+
+[source,java]
+-----
+package com.redhat.wildfly.micrometerdemo;
+
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import io.micrometer.core.instrument.MeterRegistry;
+
+@RequestScoped
+@Path("/endpoint")
+public class Endpoint {
+    @Inject
+    private MeterRegistry registry;
+
+    @GET
+    public String method() {
+        registry.counter("dummy").increment();
+        return "Counter is " + registry.counter("dummy").count();
+    }
+}
+-----
+
+This provides the application with a `MeterRegistry` instance that will have any recorded metrics exported with the
+system metrics WildFly already exposes. There is no need for an application to include the Micrometer dependencies in the
+application archive, as they are provided by the server out-of-the-box:
+
+[source,xml]
+-----
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-core</artifactId>
+    <version>${version.micrometer}</version>
+    <scope>provided</scope>
+</dependency>
+-----
+
+[[breaking-changes]]
+== Breaking Changes
+
+This new subsystem does bring some breaking changes in order to provide metrics in a manner more consistent with general industry standards.
+
+=== No more prefixes
+This new extension removes the `base` and `vendor` prefixes, in accordance with
+Prometheus conventions. For example, metrics such as `base_classloader_loadedClasses` will now simply be `classloader_loaded_classes`.
+
+Likewise, the `prefix` configuration property has been removed, as the prefixing of meter names is inconsistent with Prometheus best practices. Tags are the preferred way to handle differentiating metrics of the same name.
+
+=== More consistent name formatting
+In previous releases, one might see a meter named `base_classloader_loadedClasses` or `vendor_BufferPool_used_memory`. These have been renamed to `classload_loaded_classes` and `buffer_pool_used_memory` respectively. The "snake casing" of the names should now be consistent across all the meter names.

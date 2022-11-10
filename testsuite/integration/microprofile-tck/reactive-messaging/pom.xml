@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-reactive-messaging</artifactId>
@@ -54,8 +54,6 @@
         <!-- These properties control what layers are provisioned if galleon provision occurs -->
         <ts.microprofile-tck-provisioning.base.layer>cloud-server</ts.microprofile-tck-provisioning.base.layer>
         <ts.microprofile-tck-provisioning.decorator.layer>microprofile-reactive-messaging</ts.microprofile-tck-provisioning.decorator.layer>
-
-        <reactive-messaging.configure-weld-subsystem.phase>process-test-resources</reactive-messaging.configure-weld-subsystem.phase>
 
         <!-- Temporary property until we are fully aligned with Jakarta -->
         <version.eclipse.mp.rm.for.jakarta>3.0-RC2</version.eclipse.mp.rm.for.jakarta>
@@ -141,41 +139,6 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
-            <!-- Enable legacy empty beans.xml treatment otherwise the TCKs will fail -->
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-                <version>${version.org.wildfly.plugin}</version>
-                <executions>
-                    <execution>
-                        <id>configure-weld-subsystem</id>
-                        <phase>${reactive-messaging.configure-weld-subsystem.phase}</phase>
-                        <goals>
-                            <goal>execute-commands</goal>
-                        </goals>
-                        <configuration>
-                            <commands>
-                                <command>embed-server --server-config=standalone-microprofile.xml</command>
-                                <command>/subsystem=weld:write-attribute(name=legacy-empty-beans-xml-treatment,value=true)</command>
-                                <command>stop-embedded-server</command>
-                            </commands>
-                            <system-properties combine.children="append">
-                                <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
-                            </system-properties>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <offline>true</offline>
-                    <jboss-home>${basedir}/target/wildfly</jboss-home>
-                    <stdout>${project.build.directory}/wildfly/standalone/log/weld-configuration.log</stdout>
-                    <java-opts>${modular.jdk.args}</java-opts>
-                    <system-properties>
-                        <maven.repo.local>${maven.repo.local}</maven.repo.local>
-                        <module.path>${project.build.directory}/wildfly/modules</module.path>
-                    </system-properties>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
@@ -203,31 +166,7 @@
                 <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
-                <!-- Disable 'configure-weld-subsystem' since that is for a standalone server -->
-                <reactive-messaging.configure-weld-subsystem.phase>none</reactive-messaging.configure-weld-subsystem.phase>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>bootable-jar-microprofile-tck-packaging</id>
-                                <configuration>
-                                    <cli-sessions>
-                                        <cli-session>
-                                            <script-files>
-                                                <script>${basedir}/src/test/resources/configure-weld-subsystem.cli</script>
-                                            </script-files>
-                                        </cli-session>
-                                    </cli-sessions>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <profile>
@@ -242,31 +181,7 @@
                 <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
-                <!-- Disable 'configure-weld-subsystem' since that is for a standalone server -->
-                <reactive-messaging.configure-weld-subsystem.phase>none</reactive-messaging.configure-weld-subsystem.phase>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>bootable-jar-microprofile-tck-packaging</id>
-                                <configuration>
-                                    <cli-sessions>
-                                        <cli-session>
-                                            <script-files>
-                                                <script>${basedir}/src/test/resources/configure-weld-subsystem.cli</script>
-                                            </script-files>
-                                        </cli-session>
-                                    </cli-sessions>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <profile>

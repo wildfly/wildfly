@@ -23,6 +23,8 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME;
+import static org.jboss.as.connector.subsystems.common.jndi.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -53,7 +55,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABL
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MCP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
@@ -73,7 +74,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECUR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -177,7 +177,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 }
                 case JNDI_NAME: {
                     jndiName = value;
-                    JNDINAME.parseAndSetParameter(jndiName, connectionDefinitionNode, reader);
+                    JNDI_NAME.parseAndSetParameter(jndiName, connectionDefinitionNode, reader);
                     break;
                 }
                 case POOL_NAME: {
@@ -342,7 +342,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 }
                 case JNDI_NAME: {
                     jndiName = value;
-                    JNDINAME.parseAndSetParameter(jndiName, connectionDefinitionNode, reader);
+                    JNDI_NAME.parseAndSetParameter(jndiName, connectionDefinitionNode, reader);
                     break;
                 }
                 case POOL_NAME: {
@@ -504,7 +504,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 }
                 case JNDI_NAME: {
                     jndiName = value;
-                    JNDINAME.parseAndSetParameter(jndiName, connectionDefinitionNode, reader);
+                    JNDI_NAME.parseAndSetParameter(jndiName, connectionDefinitionNode, reader);
                     break;
                 }
                 case POOL_NAME: {
@@ -688,7 +688,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     }
                     case JNDI_NAME: {
                         jndiName = value;
-                        JNDINAME.parseAndSetParameter(jndiName, connectionDefinitionNode, reader);
+                        JNDI_NAME.parseAndSetParameter(jndiName, connectionDefinitionNode, reader);
                         break;
                     }
                     case POOL_NAME: {
@@ -932,9 +932,9 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     break;
                 }
                 case JNDI_NAME: {
-                    jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
+                    jndiName = rawAttributeText(reader, JNDI_NAME.getXmlName());
                     if (jndiName != null) {
-                        JNDINAME.parseAndSetParameter(jndiName, adminObjectNode, reader);
+                        JNDI_NAME.parseAndSetParameter(jndiName, adminObjectNode, reader);
                     }
                     break;
                 }

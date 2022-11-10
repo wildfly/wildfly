@@ -88,9 +88,10 @@ public class CacheGroupServiceConfigurator extends SimpleServiceNameProvider imp
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Cache<?, ?> getCache() {
-        return this.cache.get();
+    public <K, V> Cache<K, V> getCache() {
+        return (Cache<K, V>) this.cache.get();
     }
 
     @Override

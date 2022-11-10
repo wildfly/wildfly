@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-legacy-ejb-client</artifactId>
@@ -28,7 +28,7 @@
             It MUST be excluded to function properly! See the HACK comment in pom.xml</version.org.jboss.ejb-client>
 
         <!-- Use the legacy javax.* testsuite/shared as it's used client-side and client-side is currently javax.* -->
-        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared</wildfly-testsuite-shared.artifactId>
+        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared-legacy-namespace</wildfly-testsuite-shared.artifactId>
 
         <!-- Tell the server to run in javax<->jakarta interop mode -->
         <extra.server.jvm.args>-Dorg.wildfly.ee.namespace.interop=true</extra.server.jvm.args>
@@ -94,7 +94,7 @@
         <!-- TODO confirm if this is needed -->
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client-jakarta</artifactId>
+            <artifactId>wildfly-naming-client</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

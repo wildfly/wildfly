@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-infinispan-extension</artifactId>
@@ -145,7 +145,7 @@
         </dependency>
         <!--dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-transactions-jakarta</artifactId>
+            <artifactId>wildfly-transactions</artifactId>
         </dependency-->
 
         <!-- External dependencies -->
@@ -220,7 +220,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
-            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <artifactId>wildfly-transaction-client</artifactId>
         </dependency>
 
         <!-- Test dependencies -->
@@ -250,7 +250,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-connector-jakarta</artifactId>
+            <artifactId>wildfly-connector</artifactId>
             <scope>test</scope>
         </dependency>
 

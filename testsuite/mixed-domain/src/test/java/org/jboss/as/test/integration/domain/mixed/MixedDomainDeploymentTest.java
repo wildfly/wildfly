@@ -144,13 +144,13 @@ public abstract class MixedDomainDeploymentTest {
         assertEquals("Deployments are removed from the domain", 0, deploymentList.size());
 
         try {
-            performHttpCall(DomainTestSupport.masterAddress, 8080);
+            performHttpCall(DomainTestSupport.primaryAddress, 8080);
             fail(TEST + " is available on main-one");
         } catch (IOException good) {
             // good
         }
         try {
-            performHttpCall(DomainTestSupport.slaveAddress, 8630);
+            performHttpCall(DomainTestSupport.secondaryAddress, 8630);
             fail(TEST + " is available on other-three");
         } catch (IOException good) {
             // good
@@ -163,9 +163,9 @@ public abstract class MixedDomainDeploymentTest {
         ModelNode content = new ModelNode();
         content.get("url").set(url);
         ModelNode composite = createDeploymentOperation(content, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(composite);
+        executeOnPrimary(composite);
 
-        performHttpCall(DomainTestSupport.slaveAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8080);
     }
 
     @Test
@@ -176,9 +176,9 @@ public abstract class MixedDomainDeploymentTest {
         OperationBuilder builder = new OperationBuilder(composite, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
-        performHttpCall(DomainTestSupport.slaveAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8080);
 
     }
 
@@ -188,9 +188,9 @@ public abstract class MixedDomainDeploymentTest {
         content.get("archive").set(true);
         content.get("path").set(new File(tmpDir, "archives/" + TEST).getAbsolutePath());
         ModelNode composite = createDeploymentOperation(content, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(composite);
+        executeOnPrimary(composite);
 
-        performHttpCall(DomainTestSupport.slaveAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8080);
     }
 
     @Test
@@ -200,9 +200,9 @@ public abstract class MixedDomainDeploymentTest {
         content.get("path").set(new File(tmpDir, "exploded/" + TEST).getAbsolutePath());
         ModelNode composite = createDeploymentOperation(content, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS);
 
-        executeOnMaster(composite);
+        executeOnPrimary(composite);
 
-        performHttpCall(DomainTestSupport.slaveAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8080);
     }
 
     protected boolean supportManagedExplodedDeployment() {
@@ -215,9 +215,9 @@ public abstract class MixedDomainDeploymentTest {
         empty.get(EMPTY).set(true);
         ModelNode composite = createDeploymentOperation(empty, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS);
         if (supportManagedExplodedDeployment()) {
-            executeOnMaster(composite);
+            executeOnPrimary(composite);
         } else {
-            ModelNode failure = executeForFailureOnMaster(composite);
+            ModelNode failure = executeForFailureOnPrimary(composite);
             assertTrue(failure.toJSONString(true), failure.toJSONString(true).contains("WFLYCTL0421:"));
         }
     }
@@ -257,10 +257,10 @@ public abstract class MixedDomainDeploymentTest {
         builder.addInputStream(tccl.getResourceAsStream("helloWorld/index.html"));
         builder.addInputStream(tccl.getResourceAsStream("helloWorld/index2.html"));
         if (supportManagedExplodedDeployment()) {
-            executeOnMaster(builder.build());
-            performHttpCall(DomainTestSupport.slaveAddress, 8080);
+            executeOnPrimary(builder.build());
+            performHttpCall(DomainTestSupport.secondaryAddress, 8080);
         } else {
-            ModelNode failure = executeForFailureOnMaster(builder.build());
+            ModelNode failure = executeForFailureOnPrimary(builder.build());
             assertTrue(failure.toJSONString(true), failure.toJSONString(true).contains("WFLYCTL0421:"));
         }
     }
@@ -324,27 +324,27 @@ public abstract class MixedDomainDeploymentTest {
         OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
-        performHttpCall(DomainTestSupport.slaveAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8080);
     }
 
     private void redeployTest() throws IOException {
         ModelNode op = createEmptyOperation("redeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
-        performHttpCall(DomainTestSupport.slaveAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8080);
     }
 
 
     private void undeployTest() throws Exception {
         ModelNode op = createEmptyOperation("undeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         // Thread.sleep(1000);
 
         try {
-            performHttpCall(DomainTestSupport.slaveAddress, 8080);
+            performHttpCall(DomainTestSupport.secondaryAddress, 8080);
             fail("Webapp still accessible following undeploy");
         } catch (IOException good) {
             // desired result
@@ -371,20 +371,20 @@ public abstract class MixedDomainDeploymentTest {
         }
     }
 
-    private ModelNode executeOnMaster(ModelNode op) throws IOException {
-        return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+    private ModelNode executeOnPrimary(ModelNode op) throws IOException {
+        return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
-    private ModelNode executeOnMaster(Operation op) throws IOException {
-        return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+    private ModelNode executeOnPrimary(Operation op) throws IOException {
+        return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
-    private ModelNode executeForFailureOnMaster(ModelNode op) throws IOException {
-        return validateFailedResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+    private ModelNode executeForFailureOnPrimary(ModelNode op) throws IOException {
+        return validateFailedResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
-    private ModelNode executeForFailureOnMaster(Operation op) throws IOException {
-        return validateFailedResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+    private ModelNode executeForFailureOnPrimary(Operation op) throws IOException {
+        return validateFailedResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
     private ModelNode createDeploymentOperation(ModelNode content, PathAddress... serverGroupAddressses) {
@@ -425,7 +425,7 @@ public abstract class MixedDomainDeploymentTest {
         ModelNode op = createEmptyOperation("read-children-names", address);
         op.get("child-type").set("deployment");
 
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         ModelNode result = validateResponse(response);
         return result.isDefined() ? result.asList() : Collections.<ModelNode>emptyList();
     }
@@ -459,7 +459,7 @@ public abstract class MixedDomainDeploymentTest {
 
     private void removeDeployment(String deploymentName, PathAddress address) throws IOException {
         ModelNode op = createRemoveOperation(address.append(DEPLOYMENT, deploymentName));
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         validateResponse(response);
     }
 }

@@ -108,8 +108,8 @@ web service definition.
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.actas;
  
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
  
 @WebService
 (
@@ -148,10 +148,10 @@ import org.apache.cxf.ws.security.trust.STSClient;
 import org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service.ServiceIface;
 import org.jboss.test.ws.jaxws.samples.wsse.policy.trust.shared.WSTrustAppUtils;
  
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.Service;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
@@ -465,7 +465,7 @@ Dependencies: org.jboss.ws.cxf.jbossws-cxf-client, org.apache.cxf.impl
 [[security-token-service-actas-ws-trust]]
 == Security Token Service
 
-This section examines the STS elements from the basic WS-Trust scenario
+This section examines the STS elements from the <<a-basic-ws-trust-scenario,basic WS-Trust scenario>>
 that have been changed to address the needs of the ActAs example. The
 components are.
 
@@ -476,7 +476,7 @@ components are.
 === STS Implementation class
 
 The initial description of SampleSTS can be found
-<<sts-implementation-class,here>>.
+<<sts-implementation,here>>.
 
 The declaration of the set of allowed token recipients by address has
 been extended to accept ActAs addresses and OnBehalfOf addresses. The
@@ -495,7 +495,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
  
-import javax.xml.ws.WebServiceProvider;
+import jakarta.xml.ws.WebServiceProvider;
  
 import org.apache.cxf.annotations.EndpointProperties;
 import org.apache.cxf.annotations.EndpointProperty;

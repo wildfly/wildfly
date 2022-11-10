@@ -28,9 +28,6 @@ import org.infinispan.remoting.transport.Address;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryFactory;
@@ -53,7 +50,7 @@ public class CacheRegistryFactoryServiceConfigurator<K, V> extends FunctionalReg
     private final String cacheName;
 
     private volatile SupplierDependency<Group<Address>> group;
-    private volatile SupplierDependency<Cache<Address, Map.Entry<K, V>>> cache;
+    private volatile SupplierDependency<Cache<?, ?>> cache;
 
     public CacheRegistryFactoryServiceConfigurator(ServiceName name, String containerName, String cacheName) {
         super(name);
@@ -79,17 +76,13 @@ public class CacheRegistryFactoryServiceConfigurator<K, V> extends FunctionalReg
     }
 
     @Override
-    public Batcher<? extends Batch> getBatcher() {
-        return new InfinispanBatcher(this.getCache());
-    }
-
-    @Override
     public Group<Address> getGroup() {
         return this.group.get();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Cache<Address, Map.Entry<K, V>> getCache() {
-        return this.cache.get();
+    public <KK, VV> Cache<KK, VV> getCache() {
+        return (Cache<KK, VV>) this.cache.get();
     }
 }

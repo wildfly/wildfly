@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import javax.ejb.LockType;
+import jakarta.ejb.LockType;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;

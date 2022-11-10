@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-mail-jakarta}"/>
+        <artifact name="${org.wildfly:wildfly-mail}"/>
     </resources>
 
     <dependencies>

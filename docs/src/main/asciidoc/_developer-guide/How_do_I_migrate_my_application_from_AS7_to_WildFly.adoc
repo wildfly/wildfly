@@ -819,7 +819,7 @@ org.jboss.resteasy.core.NoMessageBodyWriterFoundFailure: Could not find MessageB
 ==== REST Client API
 
 Some REST Client API classes and methods are deprecated or removed, for example: `org.jboss.resteasy.client.ClientRequest` and `org.jboss.resteasy.client.ClientResponse` have been removed. Instead, use
-https://jakarta.ee/specifications/restful-ws/2.1/apidocs/javax/ws/rs/client/Client.html[`javax.ws.rs.client.Client`] and `javax.ws.rs.core.Response`. See the `resteasy-jaxrs-client` quickstart for an example of an external Jakarta RESTful Web Services RESTEasy client that interacts with a Jakarta RESTful Web Services.
+https://jakarta.ee/specifications/restful-ws/3.1/apidocs/jakarta.ws.rs/jakarta/ws/rs/client/client[`jakarta.ws.rs.client.Client`] and `jakarta.ws.rs.core.Response`. See the `resteasy-jaxrs-client` quickstart for an example of an external Jakarta RESTful Web Services RESTEasy client that interacts with a Jakarta RESTful Web Services.
 
 [[application-clustering]]
 === Application Clustering

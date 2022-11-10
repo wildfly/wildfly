@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Final-SNAPSHOT</version>
+        <version>28.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -65,7 +65,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-eclipselink</artifactId>
+                <artifactId>jipijapa-eclipselink-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
@@ -109,22 +109,17 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-bean-validation</artifactId>
+                <artifactId>wildfly-bean-validation-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-connector</artifactId>
+                <artifactId>wildfly-connector-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-datasources-agroal</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee</artifactId>
+                <artifactId>wildfly-ee-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
                 <!-- TODO eliminate uses of transitive deps from this artifact -->
                 <!--
@@ -138,28 +133,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ejb3</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
-                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>${project.groupId}</groupId>
-                        <artifactId>wildfly-clustering-spi</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-iiop-openjdk</artifactId>
+                <artifactId>wildfly-iiop-openjdk-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
@@ -169,17 +143,17 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jpa</artifactId>
+                <artifactId>wildfly-jpa-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jsf</artifactId>
+                <artifactId>wildfly-jsf-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jsf-injection</artifactId>
+                <artifactId>wildfly-jsf-injection-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -195,42 +169,37 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-messaging-activemq-injection</artifactId>
+                <artifactId>wildfly-messaging-activemq-injection-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
+                <artifactId>wildfly-messaging-activemq-subsystem-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-rts</artifactId>
+                <artifactId>wildfly-rts-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-transactions</artifactId>
+                <artifactId>wildfly-transactions-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-undertow</artifactId>
+                <artifactId>wildfly-undertow-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-web-common</artifactId>
+                <artifactId>wildfly-web-common-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-webservices-server-integration</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld</artifactId>
+                <artifactId>wildfly-weld-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
@@ -243,32 +212,22 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-bean-validation</artifactId>
+                <artifactId>wildfly-weld-bean-validation-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-common</artifactId>
+                <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-ejb</artifactId>
+                <artifactId>wildfly-weld-spi-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-jpa</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-spi</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-transactions</artifactId>
+                <artifactId>wildfly-weld-transactions-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -276,26 +235,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-webservices</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-xts</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-opentelemetry</artifactId>
-                <version>${full.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-opentelemetry-api</artifactId>
-                <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
@@ -360,35 +299,7 @@
                 </exclusions>
             </dependency>
 
-            <dependency>
-                <groupId>io.agroal</groupId>
-                <artifactId>agroal-api</artifactId>
-                <version>${legacy.version.io.agroal}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.agroal</groupId>
-                <artifactId>agroal-narayana</artifactId>
-                <version>${legacy.version.io.agroal}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-transaction-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-transaction-spi-jakarta</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>io.agroal</groupId>
-                <artifactId>agroal-pool</artifactId>
-                <version>${legacy.version.io.agroal}</version>
-            </dependency>
-
-            <dependency>
+                <dependency>
                 <groupId>io.undertow</groupId>
                 <artifactId>undertow-core</artifactId>
                 <version>${legacy.version.io.undertow}</version>
@@ -677,7 +588,7 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>eclipselink</artifactId>
-                <version>${legacy.version.org.eclipselink.version}</version>
+                <version>${legacy.version.org.eclipse.persistence.eclipselink}</version>
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
@@ -721,42 +632,6 @@
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>${legacy.version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-entitymanager</artifactId>
-                <version>${legacy.version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate.common</groupId>
-                <artifactId>hibernate-commons-annotations</artifactId>
-                <version>${legacy.version.org.hibernate.commons.annotations}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -829,21 +704,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-hibernate-cache-v53</artifactId>
-                <version>${legacy.version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-ejb-client</artifactId>
-                <version>${version.org.jboss.ejb-client}</version>
+                <version>${legacy.version.org.jboss.ejb-client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -885,7 +748,7 @@
             <dependency>
                 <groupId>org.jboss.invocation</groupId>
                 <artifactId>jboss-invocation</artifactId>
-                <version>${version.org.jboss.invocation}</version>
+                <version>${legacy.version.org.jboss.invocation}</version>
             </dependency>
 
             <dependency>
@@ -2053,7 +1916,7 @@
             <dependency>
                 <groupId>org.wildfly.transaction</groupId>
                 <artifactId>wildfly-transaction-client</artifactId>
-                <version>${version.org.wildfly.transaction.client}</version>
+                <version>${legacy.version.org.wildfly.transaction.client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2065,7 +1928,7 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-naming-client</artifactId>
-                <version>${version.org.wildfly.naming-client}</version>
+                <version>${legacy.version.org.wildfly.naming-client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.remoting3</groupId>
@@ -2077,7 +1940,7 @@
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-client-common</artifactId>
-                <version>${version.org.wildfly.http-client}</version>
+                <version>${legacy.version.org.wildfly.http-client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2089,7 +1952,7 @@
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-ejb-client</artifactId>
-                <version>${version.org.wildfly.http-client}</version>
+                <version>${legacy.version.org.wildfly.http-client}</version>
                 <exclusions>
                     <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
                     <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
@@ -2103,7 +1966,7 @@
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-transaction-client</artifactId>
-                <version>${version.org.wildfly.http-client}</version>
+                <version>${legacy.version.org.wildfly.http-client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

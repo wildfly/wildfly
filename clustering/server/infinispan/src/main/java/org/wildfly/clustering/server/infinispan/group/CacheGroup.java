@@ -27,8 +27,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -38,6 +38,7 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.notifications.Listener.Observation;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
@@ -47,6 +48,7 @@ import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddressCache;
+import org.infinispan.util.concurrent.BlockingManager;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
@@ -55,24 +57,27 @@ import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.NodeFactory;
 import org.wildfly.clustering.server.group.Group;
-import org.wildfly.clustering.server.infinispan.ClusteringServerLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * {@link Group} implementation based on the topology of a cache.
  * @author Paul Ferraro
  */
-@org.infinispan.notifications.Listener
+@org.infinispan.notifications.Listener(observation = Observation.POST)
 public class CacheGroup implements Group<Address>, AutoCloseable, Function<GroupListener, ExecutorService> {
 
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<?, ?> cache;
     private final NodeFactory<org.jgroups.Address> nodeFactory;
     private final SortedMap<Integer, Boolean> views = Collections.synchronizedSortedMap(new TreeMap<>());
+    private final BlockingManager blocking;
+    private final Executor executor;
 
     public CacheGroup(CacheGroupConfiguration config) {
         this.cache = config.getCache();
         this.nodeFactory = config.getMemberFactory();
+        this.blocking = config.getBlockingManager();
+        this.executor = this.blocking.asExecutor(this.getClass().getName());
         this.cache.getCacheManager().addListener(this);
         this.cache.addListener(this);
     }
@@ -148,64 +153,31 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
     public CompletionStage<Void> viewChanged(ViewChangedEvent event) {
         if (this.cache.getAdvancedCache().getDistributionManager() != null) {
             // Record view status for use by @TopologyChanged event
-            this.views.put(event.getViewId(), event.isMergeView());
-        } else {
-            Membership previousMembership = new CacheMembership(event.getLocalAddress(), event.getOldMembers(), this);
-            Membership membership = new CacheMembership(event.getLocalAddress(), event.getNewMembers(), this);
-            for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
-                GroupListener listener = entry.getKey();
-                ExecutorService executor = entry.getValue();
-                Runnable listenerTask = new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            listener.membershipChanged(previousMembership, membership, event.isMergeView());
-                        } catch (Throwable e) {
-                            ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-                        }
-                    }
-                };
-                try {
-                    executor.submit(listenerTask);
-                } catch (RejectedExecutionException e) {
-                    // Listener was unregistered
-                }
-            }
+            return this.blocking.runBlocking(() -> this.views.put(event.getViewId(), event.isMergeView()), event.getViewId());
+        }
+
+        Membership previousMembership = new CacheMembership(event.getLocalAddress(), event.getOldMembers(), this);
+        Membership membership = new CacheMembership(event.getLocalAddress(), event.getNewMembers(), this);
+        if (!this.listeners.isEmpty()) {
+            this.executor.execute(new GroupListenerNotificationTask(this.listeners.entrySet(), previousMembership, membership, event.isMergeView()));
         }
         return CompletableFutures.completedNull();
     }
 
     @TopologyChanged
     public CompletionStage<Void> topologyChanged(TopologyChangedEvent<?, ?> event) {
-        if (!event.isPre()) {
-            int viewId = event.getCache().getAdvancedCache().getRpcManager().getTransport().getViewId();
-            Address localAddress = event.getCache().getCacheManager().getAddress();
-            Membership previousMembership = new CacheMembership(localAddress, event.getWriteConsistentHashAtStart(), this);
-            Membership membership = new CacheMembership(localAddress, event.getWriteConsistentHashAtEnd(), this);
+        int viewId = event.getCache().getAdvancedCache().getRpcManager().getTransport().getViewId();
+        Address localAddress = event.getCache().getCacheManager().getAddress();
+        Membership previousMembership = new CacheMembership(localAddress, event.getWriteConsistentHashAtStart(), this);
+        Membership membership = new CacheMembership(localAddress, event.getWriteConsistentHashAtEnd(), this);
+
+        this.executor.execute(() -> {
             Boolean status = this.views.get(viewId);
             boolean merged = (status != null) ? status : false;
-            for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
-                GroupListener listener = entry.getKey();
-                ExecutorService executor = entry.getValue();
-                Runnable listenerTask = new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            listener.membershipChanged(previousMembership, membership, merged);
-                        } catch (Throwable e) {
-                            ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-                        }
-                    }
-                };
-                try {
-                    executor.submit(listenerTask);
-                } catch (RejectedExecutionException e) {
-                    // Listener was unregistered
-                }
-            }
+            new GroupListenerNotificationTask(this.listeners.entrySet(), previousMembership, membership, merged).run();
             // Purge obsolete views
             this.views.headMap(viewId).clear();
-        }
+        });
         return CompletableFutures.completedNull();
     }
 

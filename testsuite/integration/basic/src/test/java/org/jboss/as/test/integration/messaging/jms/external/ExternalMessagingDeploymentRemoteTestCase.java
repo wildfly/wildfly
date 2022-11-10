@@ -19,9 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.messaging.jms.external;
-
 
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -42,6 +40,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -62,7 +61,7 @@ import org.junit.runner.RunWith;
  * Test that invoking a management operation that removes a JMS resource that is used by a deployed archive must fail:
  * the resource must not be removed and any depending services must be recovered.
  * The deployment must still be operating after the failing management operation.
-
+ *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
 @RunWith(Arquillian.class)
@@ -80,6 +79,9 @@ public class ExternalMessagingDeploymentRemoteTestCase {
     @ArquillianResource
     private URL url;
 
+    @ArquillianResource
+    private ManagementClient managementClient;
+
     static class SetupTask extends SnapshotRestoreSetupTask {
 
         private static final Logger logger = Logger.getLogger(ExternalMessagingDeploymentRemoteTestCase.SetupTask.class);
@@ -94,9 +96,9 @@ public class ExternalMessagingDeploymentRemoteTestCase {
             } else {
                 ops.createJmsQueue(QUEUE_NAME, "/queue/" + QUEUE_NAME);
                 ops.createJmsTopic(TOPIC_NAME, "/topic/" + TOPIC_NAME);
-                execute(managementClient, addSocketBinding("legacy-messaging", 5445) , true);
+                execute(managementClient, addSocketBinding("legacy-messaging", 5445), true);
                 ops.addExternalRemoteConnector("legacy-broker-connector", "legacy-messaging");
-                execute(managementClient, addRemoteAcceptor(ops.getServerAddress(), "legacy-broker-acceptor", "legacy-messaging") , true);
+                execute(managementClient, addRemoteAcceptor(ops.getServerAddress(), "legacy-broker-acceptor", "legacy-messaging"), true);
             }
             ModelNode op = Operations.createRemoveOperation(getInitialPooledConnectionFactoryAddress(ops.getServerAddress()));
             managementClient.getControllerClient().execute(op);
@@ -141,14 +143,12 @@ public class ExternalMessagingDeploymentRemoteTestCase {
             return address;
         }
 
-
         ModelNode getExternalTopicAddress() {
             ModelNode address = new ModelNode();
             address.add("subsystem", "messaging-activemq");
             address.add("external-jms-topic", TOPIC_NAME);
             return address;
         }
-
 
         ModelNode getExternalQueueAddress() {
             ModelNode address = new ModelNode();
@@ -201,7 +201,7 @@ public class ExternalMessagingDeploymentRemoteTestCase {
     @Deployment
     public static WebArchive createArchive() {
         return create(WebArchive.class, "ClientMessagingDeploymentTestCase.war")
-                .addClasses(MessagingServlet.class, TimeoutUtil.class)
+                .addClasses(RemoteMessagingServlet.class, TimeoutUtil.class)
                 .addClasses(DefaultResourceAdapterQueueMDB.class, TopicMDB.class)
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
                         new SocketPermission("localhost", "resolve"),
@@ -212,17 +212,19 @@ public class ExternalMessagingDeploymentRemoteTestCase {
     @Test
     public void testSendMessageInClientQueue() throws Exception {
         sendAndReceiveMessage(true);
+        checkCreatedPooledConnectionFactory();
     }
 
     @Test
     public void testSendMessageInClientTopic() throws Exception {
         sendAndReceiveMessage(false);
+        checkCreatedPooledConnectionFactory();
     }
 
     private void sendAndReceiveMessage(boolean sendToQueue) throws Exception {
         String destination = sendToQueue ? "queue" : "topic";
         String text = UUID.randomUUID().toString();
-       String serverUrl = this.url.toExternalForm();
+        String serverUrl = this.url.toExternalForm();
         if (!serverUrl.endsWith("/")) {
             serverUrl = serverUrl + "/";
         }
@@ -231,5 +233,17 @@ public class ExternalMessagingDeploymentRemoteTestCase {
 
         assertNotNull(reply);
         assertEquals(text, reply);
+    }
+
+    private void checkCreatedPooledConnectionFactory() throws IOException {
+        ModelNode op = Operations.createReadResourceOperation(
+                PathAddress.pathAddress("deployment", "ClientMessagingDeploymentTestCase.war")
+                        .append("subsystem", "messaging-activemq")
+                        .append("pooled-connection-factory", "ClientMessagingDeploymentTestCase_ClientMessagingDeploymentTestCase_java_global/definedFactory")
+                        .toModelNode());
+        op.get("recursive").set(true);
+        op.get("include-runtime").set(true);
+        ModelNode response = managementClient.getControllerClient().execute(op);
+        assertEquals(response.toString(), "success", response.get("outcome").asString());
     }
 }

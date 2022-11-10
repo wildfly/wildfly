@@ -44,7 +44,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import javax.ejb.HomeHandle;
+import jakarta.ejb.HomeHandle;
 
 /**
  * @author Stuart Douglas

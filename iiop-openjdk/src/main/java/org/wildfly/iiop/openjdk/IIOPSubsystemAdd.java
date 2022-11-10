@@ -44,7 +44,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.InitialContext;
-import org.jboss.as.naming.service.DefaultNamespaceContextSelectorService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -188,8 +187,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // if a security domain has been specified, add a dependency to the domain service.
         String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
         if (securityDomain != null) {
-            builder.requires(context.getCapabilityServiceName(Capabilities.LEGACY_SECURITY_DOMAIN_CAPABILITY, securityDomain, null));
-            builder.requires(DefaultNamespaceContextSelectorService.SERVICE_NAME);
+            throw ROOT_LOGGER.runtimeSecurityDomainUnsupported();
         }
 
         // add dependencies to the ssl context services if needed.
@@ -401,7 +399,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final IORASContextMetaData asContextMetaData = new IORASContextMetaData();
         asContextMetaData.setAuthMethod(IIOPRootDefinition.AUTH_METHOD.resolveModelAttribute(context, resourceModel).asString());
         if (resourceModel.hasDefined(IIOPRootDefinition.REALM.getName())) {
-            asContextMetaData.setRealm(IIOPRootDefinition.REALM.resolveModelAttribute(context, resourceModel).asString());
+            throw ROOT_LOGGER.runtimeSecurityRealmUnsupported();
         }
         asContextMetaData.setRequired(IIOPRootDefinition.REQUIRED.resolveModelAttribute(context, resourceModel).asBoolean());
         securityConfigMetaData.setAsContext(asContextMetaData);

@@ -42,9 +42,9 @@ import org.jboss.narayana.compensations.api.TxCompensate;
 import org.jboss.narayana.compensations.api.TxConfirm;
 import org.jboss.narayana.compensations.api.TxLogged;
 
-import javax.ejb.TransactionAttribute;
-import javax.jws.WebService;
-import javax.transaction.Transactional;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.jws.WebService;
+import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 

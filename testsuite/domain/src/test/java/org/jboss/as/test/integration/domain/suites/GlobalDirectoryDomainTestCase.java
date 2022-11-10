@@ -250,8 +250,8 @@ public class GlobalDirectoryDomainTestCase {
         registerGlobalDirectory(GLOBAL_DIRECTORY_NAME, "default");
         registerGlobalDirectory(GLOBAL_DIRECTORY_NAME, "other");
 
-        reloadServerGroup(testSupport.getDomainMasterLifecycleUtil(), PathAddress.pathAddress(MAIN_SERVER_GROUP_ADDRESS));
-        reloadServerGroup(testSupport.getDomainMasterLifecycleUtil(), PathAddress.pathAddress(OTHER_SERVER_GROUP_ADDRESS));
+        reloadServerGroup(testSupport.getDomainPrimaryLifecycleUtil(), PathAddress.pathAddress(MAIN_SERVER_GROUP_ADDRESS));
+        reloadServerGroup(testSupport.getDomainPrimaryLifecycleUtil(), PathAddress.pathAddress(OTHER_SERVER_GROUP_ADDRESS));
 
         verifyProperlyRegistered(GLOBAL_DIRECTORY_NAME, GLOBAL_DIRECTORY_PATH.toString(), "default");
         verifyProperlyRegistered(GLOBAL_DIRECTORY_NAME, GLOBAL_DIRECTORY_PATH.toString(), "other");
@@ -260,12 +260,12 @@ public class GlobalDirectoryDomainTestCase {
         ModelNode content = new ModelNode();
         content.get("url").set(url);
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(composite);
+        executeOnPrimary(composite);
 
-        String response = performHttpCall(DomainTestSupport.masterAddress, 8080, "test/global-directory/library");
+        String response = performHttpCall(DomainTestSupport.primaryAddress, 8080, "test/global-directory/library");
         assertEquals("HELLO WORLD", response);
 
-        response = performHttpCall(DomainTestSupport.slaveAddress, 8630, "test/global-directory/library");
+        response = performHttpCall(DomainTestSupport.secondaryAddress, 8630, "test/global-directory/library");
         assertEquals("HELLO WORLD", response);
 
         removeGlobalDirectory(GLOBAL_DIRECTORY_NAME, "default");
@@ -274,8 +274,8 @@ public class GlobalDirectoryDomainTestCase {
         verifyDoesNotExist(GLOBAL_DIRECTORY_NAME, "default");
         verifyDoesNotExist(GLOBAL_DIRECTORY_NAME, "other");
 
-        reloadServerGroup(testSupport.getDomainMasterLifecycleUtil(), PathAddress.pathAddress(MAIN_SERVER_GROUP_ADDRESS));
-        reloadServerGroup(testSupport.getDomainMasterLifecycleUtil(), PathAddress.pathAddress(OTHER_SERVER_GROUP_ADDRESS));
+        reloadServerGroup(testSupport.getDomainPrimaryLifecycleUtil(), PathAddress.pathAddress(MAIN_SERVER_GROUP_ADDRESS));
+        reloadServerGroup(testSupport.getDomainPrimaryLifecycleUtil(), PathAddress.pathAddress(OTHER_SERVER_GROUP_ADDRESS));
     }
 
     private void copyLibraryToGlobalDirectory(String name) throws IOException {
@@ -319,7 +319,7 @@ public class GlobalDirectoryDomainTestCase {
         operation.get(INCLUDE_RUNTIME).set(true);
         operation.get(OP_ADDR).set(address);
 
-        return testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(operation);
+        return testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(operation);
     }
 
     /**
@@ -364,7 +364,7 @@ public class GlobalDirectoryDomainTestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(PATH).set(path);
 
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(operation);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(operation);
         ModelNode outcome = response.get(OUTCOME);
         if (expectSuccess) {
             assertThat("Registration of global directory " + name + " failure!", outcome.asString(), is(SUCCESS));
@@ -389,14 +389,14 @@ public class GlobalDirectoryDomainTestCase {
         operation.get(INCLUDE_RUNTIME).set(true);
         operation.get(OP_ADDR).set(address);
 
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(operation);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(operation);
         ModelNode outcome = response.get(OUTCOME);
         assertThat("Remove of global directory " + name + "  failure!", outcome.asString(), is(SUCCESS));
         return response;
     }
 
-    private static ModelNode executeOnMaster(ModelNode op) throws IOException {
-        return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+    private static ModelNode executeOnPrimary(ModelNode op) throws IOException {
+        return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
     private static ModelNode createDeploymentOperation(ModelNode content, ModelNode... serverGroupAddressses) {
@@ -418,7 +418,7 @@ public class GlobalDirectoryDomainTestCase {
         ModelNode op = getEmptyOperation("read-children-names", address);
         op.get("child-type").set("deployment");
 
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         ModelNode result = validateResponse(response);
         return result.isDefined() ? result.asList() : Collections.<ModelNode>emptyList();
     }
@@ -428,7 +428,7 @@ public class GlobalDirectoryDomainTestCase {
         deplAddr.set(address);
         deplAddr.add("deployment", deploymentName);
         ModelNode op = getEmptyOperation(REMOVE, deplAddr);
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         validateResponse(response);
     }
 
@@ -465,9 +465,9 @@ public class GlobalDirectoryDomainTestCase {
         }
     }
 
-    private void reloadServerGroup(DomainLifecycleUtil domainMasterLifecycleUtil, PathAddress address) {
+    private void reloadServerGroup(DomainLifecycleUtil domainPrimaryLifecycleUtil, PathAddress address) {
         ModelNode reload = Util.createEmptyOperation("reload-servers", address);
         reload.get("blocking").set("true");
-        domainMasterLifecycleUtil.executeForResult(reload);
+        domainPrimaryLifecycleUtil.executeForResult(reload);
     }
 }

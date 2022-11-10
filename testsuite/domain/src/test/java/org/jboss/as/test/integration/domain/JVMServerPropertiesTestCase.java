@@ -85,7 +85,7 @@ public class JVMServerPropertiesTestCase {
     protected static final PathElement SERVER_GROUP_TWO = PathElement.pathElement(SERVER_GROUP, "server-group-two");
     protected static final PathElement SERVER_GROUP_THREE = PathElement.pathElement(SERVER_GROUP, "server-group-three");
 
-    protected static final PathElement HOST_MASTER = PathElement.pathElement(HOST, "primary");
+    protected static final PathElement HOST_PRIMARY = PathElement.pathElement(HOST, "primary");
 
     protected static final PathElement SERVER_CONFIG_ONE = PathElement.pathElement(SERVER_CONFIG, "server-one");
     protected static final PathElement SERVER_CONFIG_TWO = PathElement.pathElement(SERVER_CONFIG, "server-two");
@@ -94,7 +94,7 @@ public class JVMServerPropertiesTestCase {
     public static final String BY_TYPE = "by-type";
 
     private static DomainTestSupport testSupport;
-    private static DomainLifecycleUtil masterLifecycleUtil;
+    private static DomainLifecycleUtil primaryLifecycleUtil;
 
     private static final String PROP_SERVLET_APP = "propertiesServletTestApp";
     private static final String PROP_SERVLET_APP_WAR = PROP_SERVLET_APP + ".war";
@@ -112,7 +112,7 @@ public class JVMServerPropertiesTestCase {
 
         testSupport = DomainTestSupport.create(configuration);
 
-        masterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
+        primaryLifecycleUtil = testSupport.getDomainPrimaryLifecycleUtil();
 
         // Prepares the application deployment file
         WebArchive deployment = createDeployment();
@@ -122,7 +122,7 @@ public class JVMServerPropertiesTestCase {
 
         testSupport.start();
 
-        masterLifecycleUtil.awaitServers(TimeoutUtil.adjust(30 * 1000));
+        primaryLifecycleUtil.awaitServers(TimeoutUtil.adjust(30 * 1000));
     }
 
     @AfterClass
@@ -130,31 +130,31 @@ public class JVMServerPropertiesTestCase {
         testSupport.close();
 
         testSupport = null;
-        masterLifecycleUtil = null;
+        primaryLifecycleUtil = null;
     }
 
     @Test
     public void testServerProperties() throws IOException, MgmtOperationException, InterruptedException, TimeoutException {
         ModelNode op = createDeploymentOperation(deploymentPath.resolve(PROP_SERVLET_APP_WAR), SERVER_GROUP_ONE, SERVER_GROUP_TWO, SERVER_GROUP_THREE);
-        DomainTestUtils.executeForResult(op, masterLifecycleUtil.createDomainClient());
+        DomainTestUtils.executeForResult(op, primaryLifecycleUtil.createDomainClient());
 
         validateProperties("server-one", 8080, BY_SERVER);
         validateProperties("server-two", 8180, BY_SERVER);
         validateProperties("server-three", 8280, BY_SERVER);
 
-        op = Util.getWriteAttributeOperation(PathAddress.pathAddress(HOST_MASTER), DIRECTORY_GROUPING, BY_TYPE);
-        DomainTestUtils.executeForResult(op, masterLifecycleUtil.createDomainClient());
+        op = Util.getWriteAttributeOperation(PathAddress.pathAddress(HOST_PRIMARY), DIRECTORY_GROUPING, BY_TYPE);
+        DomainTestUtils.executeForResult(op, primaryLifecycleUtil.createDomainClient());
 
-        op = Util.createEmptyOperation(RELOAD, PathAddress.pathAddress(HOST_MASTER));
+        op = Util.createEmptyOperation(RELOAD, PathAddress.pathAddress(HOST_PRIMARY));
         op.get(RESTART_SERVERS).set(true);
-        masterLifecycleUtil.executeAwaitConnectionClosed(op);
-        masterLifecycleUtil.connect();
-        masterLifecycleUtil.awaitHostController(System.currentTimeMillis());
+        primaryLifecycleUtil.executeAwaitConnectionClosed(op);
+        primaryLifecycleUtil.connect();
+        primaryLifecycleUtil.awaitHostController(System.currentTimeMillis());
 
-        DomainClient masterClient = masterLifecycleUtil.createDomainClient();
-        DomainTestUtils.waitUntilState(masterClient, PathAddress.pathAddress(HOST_MASTER, SERVER_CONFIG_ONE), ServerStatus.STARTED.toString());
-        DomainTestUtils.waitUntilState(masterClient, PathAddress.pathAddress(HOST_MASTER, SERVER_CONFIG_TWO), ServerStatus.STARTED.toString());
-        DomainTestUtils.waitUntilState(masterClient, PathAddress.pathAddress(HOST_MASTER, SERVER_CONFIG_THREE), ServerStatus.STARTED.toString());
+        DomainClient primaryClient = primaryLifecycleUtil.createDomainClient();
+        DomainTestUtils.waitUntilState(primaryClient, PathAddress.pathAddress(HOST_PRIMARY, SERVER_CONFIG_ONE), ServerStatus.STARTED.toString());
+        DomainTestUtils.waitUntilState(primaryClient, PathAddress.pathAddress(HOST_PRIMARY, SERVER_CONFIG_TWO), ServerStatus.STARTED.toString());
+        DomainTestUtils.waitUntilState(primaryClient, PathAddress.pathAddress(HOST_PRIMARY, SERVER_CONFIG_THREE), ServerStatus.STARTED.toString());
 
         validateProperties("server-one", 8080, BY_TYPE);
         validateProperties("server-two", 8180, BY_TYPE);
@@ -169,7 +169,7 @@ public class JVMServerPropertiesTestCase {
         final Path serverDataDir = BY_SERVER.equals(directoryGrouping) ? serverBaseDir.resolve("data") : serverHome.resolve("data").resolve("servers").resolve(server);
         final Path serverTmpDir = BY_SERVER.equals(directoryGrouping) ? serverBaseDir.resolve("tmp") : serverHome.resolve("tmp").resolve("servers").resolve(server);
 
-        String response = performHttpCall(DomainTestSupport.masterAddress, port, PROP_SERVLET_APP_URL);
+        String response = performHttpCall(DomainTestSupport.primaryAddress, port, PROP_SERVLET_APP_URL);
         Properties p = new Properties();
         try (StringReader isr = new StringReader(response.replace("\\", "\\\\"))) {
             p.load(isr);

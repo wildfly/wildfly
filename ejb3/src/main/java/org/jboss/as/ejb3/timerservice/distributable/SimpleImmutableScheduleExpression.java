@@ -29,7 +29,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Date;
 
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 
 import org.wildfly.clustering.ejb.timer.ImmutableScheduleExpression;
 

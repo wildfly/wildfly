@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.jboss;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidClassException;
+import java.io.InvalidObjectException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
@@ -73,6 +74,11 @@ public class JBossByteBufferMarshaller implements ByteBufferMarshaller {
                 return result;
             } catch (ClassNotFoundException e) {
                 InvalidClassException exception = new InvalidClassException(e.getMessage());
+                exception.initCause(e);
+                throw exception;
+            } catch (RuntimeException e) {
+                // Issues such as invalid lambda deserialization throw runtime exceptions
+                InvalidObjectException exception = new InvalidObjectException(e.getMessage());
                 exception.initCause(e);
                 throw exception;
             } finally {

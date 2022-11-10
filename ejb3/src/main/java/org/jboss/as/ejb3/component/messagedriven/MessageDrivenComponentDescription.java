@@ -24,9 +24,9 @@ package org.jboss.as.ejb3.component.messagedriven;
 import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT;
 
 import java.util.Properties;
-import javax.ejb.MessageDrivenBean;
-import javax.ejb.TransactionManagementType;
-import javax.resource.spi.ResourceAdapter;
+import jakarta.ejb.MessageDrivenBean;
+import jakarta.ejb.TransactionManagementType;
+import jakarta.resource.spi.ResourceAdapter;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -337,12 +337,12 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     }
 
     /**
-     * Adds an interceptor to invoke the {@link MessageDrivenBean#setMessageDrivenContext(javax.ejb.MessageDrivenContext)}
+     * Adds an interceptor to invoke the {@link MessageDrivenBean#setMessageDrivenContext(jakarta.ejb.MessageDrivenContext)}
      * if the MDB implements the {@link MessageDrivenBean} interface
      */
     private void addSetMessageDrivenContextMethodInvocationInterceptor() {
         // add the setMessageDrivenContext(MessageDrivenContext) method invocation interceptor for MDB
-        // implementing the javax.ejb.MessageDrivenBean interface
+        // implementing the jakarta.ejb.MessageDrivenBean interface
         this.getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {

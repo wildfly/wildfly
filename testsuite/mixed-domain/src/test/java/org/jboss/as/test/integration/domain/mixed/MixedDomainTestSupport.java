@@ -51,7 +51,7 @@ import org.junit.Assume;
  */
 public class MixedDomainTestSupport extends DomainTestSupport {
 
-    public static final String STANDARD_DOMAIN_CONFIG = "copied-master-config/domain.xml";
+    public static final String STANDARD_DOMAIN_CONFIG = "copied-primary-config/domain.xml";
     private static final String JBOSS_DOMAIN_SERVER_ARGS = "jboss.domain.server.args";
     private static final int TEST_VM_VERSION;
 
@@ -63,20 +63,20 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     private final Version.AsVersion version;
     private final boolean adjustDomain;
     private final boolean legacyConfig;
-    private final boolean withMasterServers;
+    private final boolean withPrimaryServers;
     private final String profile;
 
 
-    private MixedDomainTestSupport(Version.AsVersion version, String testClass, String domainConfig, String masterConfig, String slaveConfig,
-                                   String jbossHome, String profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers)
+    private MixedDomainTestSupport(Version.AsVersion version, String testClass, String domainConfig, String primaryConfig, String secondaryConfig,
+                                   String jbossHome, String profile, boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers)
             throws Exception {
-        super(testClass, domainConfig, masterConfig, slaveConfig, configWithDisabledAsserts(null), configWithDisabledAsserts(jbossHome));
+        super(testClass, domainConfig, primaryConfig, secondaryConfig, configWithDisabledAsserts(null), configWithDisabledAsserts(jbossHome));
         this.version = version;
         this.adjustDomain = adjustDomain;
         this.legacyConfig = legacyConfig;
-        this.withMasterServers = withMasterServers;
+        this.withPrimaryServers = withPrimaryServers;
         this.profile = profile;
-        configureSlaveJavaHome();
+        configureSecondaryJavaHome();
     }
 
     private static WildFlyManagedConfiguration configWithDisabledAsserts(String jbossHome){
@@ -86,35 +86,35 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {
-        return create(testClass, version, STANDARD_DOMAIN_CONFIG, "master-config/host.xml",
-                "slave-config/host-secondary.xml", "full-ha", true, false, false);
+        return create(testClass, version, STANDARD_DOMAIN_CONFIG, "primary-config/host.xml",
+                "secondary-config/host-secondary.xml", "full-ha", true, false, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
                                                 boolean adjustDomain, boolean legacyConfig) throws Exception {
-        return create(testClass, version, domainConfig, "master-config/host.xml",
-                "slave-config/host-secondary.xml", "full-ha", adjustDomain, legacyConfig, false);
+        return create(testClass, version, domainConfig, "primary-config/host.xml",
+                "secondary-config/host-secondary.xml", "full-ha", adjustDomain, legacyConfig, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String profile,
-                                                boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) throws Exception {
-        return create(testClass, version, domainConfig, "master-config/host.xml",
-                "slave-config/host-secondary.xml", profile, adjustDomain, legacyConfig, withMasterServers);
+                                                boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers) throws Exception {
+        return create(testClass, version, domainConfig, "primary-config/host.xml",
+                "secondary-config/host-secondary.xml", profile, adjustDomain, legacyConfig, withPrimaryServers);
     }
 
-    public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String masterConfig, String slaveConfig,
-                                                 String profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) throws Exception {
+    public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String primaryConfig, String secondaryConfig,
+                                                 String profile, boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers) throws Exception {
         final File dir = OldVersionCopier.getOldVersionDir(version).toFile();
-        return new MixedDomainTestSupport(version, testClass, domainConfig, masterConfig,
-                slaveConfig, dir.getAbsolutePath(), profile, adjustDomain, legacyConfig, withMasterServers);
+        return new MixedDomainTestSupport(version, testClass, domainConfig, primaryConfig,
+                secondaryConfig, dir.getAbsolutePath(), profile, adjustDomain, legacyConfig, withPrimaryServers);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
-                                                String masterConfig, String slaveConfig, boolean adjustDomain,
+                                                String primaryConfig, String secondaryConfig, boolean adjustDomain,
                                                 boolean legacyConfig) throws Exception {
         final File dir = OldVersionCopier.getOldVersionDir(version).toFile();
-        return new MixedDomainTestSupport(version, testClass, domainConfig, masterConfig,
-                slaveConfig, dir.getAbsolutePath(), "full-ha", adjustDomain, legacyConfig, false);
+        return new MixedDomainTestSupport(version, testClass, domainConfig, primaryConfig,
+                secondaryConfig, dir.getAbsolutePath(), "full-ha", adjustDomain, legacyConfig, false);
     }
 
     public void start() {
@@ -125,13 +125,13 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         }
 
         if (!legacyConfig) {
-            // The non-legacy config tests assume host=slave/server=server-one is auto-start and running
-            startSlaveServer();
+            // The non-legacy config tests assume host=secondary/server=server-one is auto-start and running
+            startSecondaryServer();
         }
     }
 
-    private void startSlaveServer() {
-        DomainClient client = getDomainMasterLifecycleUtil().getDomainClient();
+    private void startSecondaryServer() {
+        DomainClient client = getDomainPrimaryLifecycleUtil().getDomainClient();
         PathElement hostElement = PathElement.pathElement("host", "secondary");
 
         try {
@@ -163,10 +163,10 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             }
         } while (System.currentTimeMillis() < expired);
 
-        Assert.fail("Slave server-one did not start within " + timeout + " ms");
+        Assert.fail("Secondary server-one did not start within " + timeout + " ms");
     }
 
-    private void configureSlaveJavaHome() {
+    private void configureSecondaryJavaHome() {
         // Look for properties pointing to a java home to use for the legacy host.
         // Look for homes for the max JVM version the host can handle, working back to the min it can handle.
         // We could start with the oldest and work forward, but that would likely result in all versions testing
@@ -178,12 +178,12 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         }
 
         if (javaHome != null) {
-            WildFlyManagedConfiguration  cfg = getDomainSlaveConfiguration();
+            WildFlyManagedConfiguration  cfg = getDomainSecondaryConfiguration();
             cfg.setJavaHome(javaHome);
             cfg.setControllerJavaHome(javaHome);
             System.out.println("Set legacy host controller to use " + javaHome + " as JAVA_HOME");
         } else {
-            // Ignore the test if the slave cannot run using the current VM version
+            // Ignore the test if the secondary cannot run using the current VM version
             Assume.assumeTrue(TEST_VM_VERSION <= version.getMaxVMVersion());
             Assume.assumeTrue(TEST_VM_VERSION >= version.getMinVMVersion());
         }
@@ -193,31 +193,31 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
         String jbossDomainServerArgsValue = null;
         try {
-            //Start the master in admin only  and reconfigure the domain with what
+            //Start the primary in admin only  and reconfigure the domain with what
             //we want to test in the mixed domain and have the DomainAdjuster
             //strip down the domain model to something more workable. The domain
             //adjusters will also make adjustments for the legacy version being
             //tested.
-            DomainLifecycleUtil masterUtil = getDomainMasterLifecycleUtil();
-            masterUtil.getConfiguration().setAdminOnly(true);
-            //masterUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
-            masterUtil.start();
+            DomainLifecycleUtil primaryUtil = getDomainPrimaryLifecycleUtil();
+            primaryUtil.getConfiguration().setAdminOnly(true);
+            //primaryUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
+            primaryUtil.start();
             if (legacyConfig) {
-                LegacyConfigAdjuster.adjustForVersion(masterUtil.getDomainClient(), version);
+                LegacyConfigAdjuster.adjustForVersion(primaryUtil.getDomainClient(), version);
             } else {
-                DomainAdjuster.adjustForVersion(masterUtil.getDomainClient(), version, profile, withMasterServers);
+                DomainAdjuster.adjustForVersion(primaryUtil.getDomainClient(), version, profile, withPrimaryServers);
             }
 
-            //Now reload the master in normal mode
-            masterUtil.executeAwaitConnectionClosed(Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, "primary")));
-            masterUtil.connect();
-            masterUtil.awaitHostController(System.currentTimeMillis());
+            //Now reload the primary in normal mode
+            primaryUtil.executeAwaitConnectionClosed(Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, "primary")));
+            primaryUtil.connect();
+            primaryUtil.awaitHostController(System.currentTimeMillis());
 
             //Start the secondary hosts
-            DomainLifecycleUtil slaveUtil = getDomainSlaveLifecycleUtil();
-            if (slaveUtil != null) {
-                //slaveUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
-                slaveUtil.start();
+            DomainLifecycleUtil secondaryUtil = getDomainSecondaryLifecycleUtil();
+            if (secondaryUtil != null) {
+                //secondaryUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
+                secondaryUtil.start();
             }
 
         } catch (Exception e) {
@@ -232,7 +232,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     static String copyDomainFile(final Path originalDomainXml) {
 
-        final Path targetDirectory = createDirectory("target", "test-classes", "copied-master-config");
+        final Path targetDirectory = createDirectory("target", "test-classes", "copied-primary-config");
         final Path copiedDomainXml = targetDirectory.resolve("domain.xml");
 
         try {

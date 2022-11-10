@@ -24,23 +24,22 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.session.ActiveSessionStatistics;
-import org.wildfly.clustering.web.session.InactiveSessionStatistics;
-
-import io.undertow.server.session.Session;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * @author Paul Ferraro
  */
 public class DistributableSessionManagerStatistics implements RecordableSessionManagerStatistics {
 
-    private final InactiveSessionStatistics inactiveSessionStatistics;
+    private final RecordableInactiveSessionStatistics inactiveSessionStatistics;
     private final ActiveSessionStatistics activeSessionStatistics;
     private final Integer maxActiveSessions;
     private volatile long startTime = System.currentTimeMillis();
     private final AtomicLong createdSessionCount = new AtomicLong();
 
-    public DistributableSessionManagerStatistics(ActiveSessionStatistics activeSessionStatistics, InactiveSessionStatistics inactiveSessionStatistics, Integer maxActiveSessions) {
+    public DistributableSessionManagerStatistics(ActiveSessionStatistics activeSessionStatistics, RecordableInactiveSessionStatistics inactiveSessionStatistics, Integer maxActiveSessions) {
         this.activeSessionStatistics = activeSessionStatistics;
         this.inactiveSessionStatistics = inactiveSessionStatistics;
         this.maxActiveSessions = maxActiveSessions;
@@ -48,7 +47,12 @@ public class DistributableSessionManagerStatistics implements RecordableSessionM
     }
 
     @Override
-    public void record(Session object) {
+    public Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder() {
+        return this.inactiveSessionStatistics;
+    }
+
+    @Override
+    public void record(ImmutableSessionMetaData metaData) {
         this.createdSessionCount.incrementAndGet();
     }
 
@@ -56,6 +60,7 @@ public class DistributableSessionManagerStatistics implements RecordableSessionM
     public void reset() {
         this.createdSessionCount.set(0L);
         this.startTime = System.currentTimeMillis();
+        this.inactiveSessionStatistics.reset();
     }
 
     @Override

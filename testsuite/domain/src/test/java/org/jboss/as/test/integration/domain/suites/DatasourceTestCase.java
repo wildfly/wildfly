@@ -48,20 +48,20 @@ import org.junit.Test;
 public class DatasourceTestCase {
 
     private static DomainTestSupport testSupport;
-    private static DomainLifecycleUtil domainMasterLifecycleUtil;
-    private static DomainLifecycleUtil domainSlaveLifecycleUtil;
+    private static DomainLifecycleUtil domainPrimaryLifecycleUtil;
+    private static DomainLifecycleUtil domainSecondaryLifecycleUtil;
 
     private static final ModelNode ROOT_ADDRESS = new ModelNode().setEmptyList();
-    private static final ModelNode MASTER_ROOT_ADDRESS = new ModelNode().add(HOST, "primary");
-    private static final ModelNode SLAVE_ROOT_ADDRESS = new ModelNode().add(HOST, "secondary");
+    private static final ModelNode PRIMARY_ROOT_ADDRESS = new ModelNode().add(HOST, "primary");
+    private static final ModelNode SECONDARY_ROOT_ADDRESS = new ModelNode().add(HOST, "secondary");
     private static final ModelNode MAIN_RUNNING_SERVER_ADDRESS = new ModelNode().add(HOST, "primary").add(SERVER, "main-one");
     private static final ModelNode MAIN_RUNNING_SERVER_DS_ADDRESS = new ModelNode().add(HOST, "primary")
             .add(SERVER, "main-one").add(SUBSYSTEM, "datasources").add("data-source", "ExampleDS");
 
     static {
         ROOT_ADDRESS.protect();
-        MASTER_ROOT_ADDRESS.protect();
-        SLAVE_ROOT_ADDRESS.protect();
+        PRIMARY_ROOT_ADDRESS.protect();
+        SECONDARY_ROOT_ADDRESS.protect();
         MAIN_RUNNING_SERVER_ADDRESS.protect();
         MAIN_RUNNING_SERVER_DS_ADDRESS.protect();
     }
@@ -69,32 +69,32 @@ public class DatasourceTestCase {
     @BeforeClass
     public static void setupDomain() throws Exception {
         testSupport = DomainTestSuite.createSupport(DatasourceTestCase.class.getSimpleName());
-        domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
-        domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
+        domainPrimaryLifecycleUtil = testSupport.getDomainPrimaryLifecycleUtil();
+        domainSecondaryLifecycleUtil = testSupport.getDomainSecondaryLifecycleUtil();
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
         testSupport = null;
-        domainMasterLifecycleUtil = null;
-        domainSlaveLifecycleUtil = null;
+        domainPrimaryLifecycleUtil = null;
+        domainSecondaryLifecycleUtil = null;
         DomainTestSuite.stopSupport();
     }
 
-    private DomainClient masterClient;
-    private DomainClient slaveClient;
+    private DomainClient primaryClient;
+    private DomainClient secondaryClient;
 
     @Before
     public void setup() throws Exception {
-        masterClient = domainMasterLifecycleUtil.getDomainClient();
-        slaveClient = domainSlaveLifecycleUtil.getDomainClient();
+        primaryClient = domainPrimaryLifecycleUtil.getDomainClient();
+        secondaryClient = domainSecondaryLifecycleUtil.getDomainClient();
     }
 
     @Test
     public void testDatasourceConnection() throws IOException {
 
         // AS7-6062 -- validate that  ExampleDS works on a domain server
-        ModelNode response = masterClient.execute(getEmptyOperation("test-connection-in-pool", MAIN_RUNNING_SERVER_DS_ADDRESS));
+        ModelNode response = primaryClient.execute(getEmptyOperation("test-connection-in-pool", MAIN_RUNNING_SERVER_DS_ADDRESS));
         validateResponse(response);
     }
 

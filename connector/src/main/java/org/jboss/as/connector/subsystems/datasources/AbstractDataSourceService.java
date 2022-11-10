@@ -47,6 +47,7 @@ import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.security.ElytronSubjectFactory;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
+import org.jboss.as.connector.subsystems.common.jndi.Util;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -713,19 +714,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         // Override this method to change how dsName is build in AS7
         @Override
         protected String buildJndiName(String rawJndiName, Boolean javaContext) {
-            final String jndiName;
-            if (!rawJndiName.startsWith("java:") && javaContext) {
-                if (rawJndiName.startsWith("jboss/")) {
-                    // Bind to java:jboss/ namespace
-                    jndiName = "java:" + rawJndiName;
-                } else {
-                    // Bind to java:/ namespace
-                    jndiName= "java:/" + rawJndiName;
-                }
-            } else {
-                jndiName = rawJndiName;
-            }
-            return jndiName;
+            return Util.cleanJndiName(rawJndiName, javaContext);
         }
 
         @Override

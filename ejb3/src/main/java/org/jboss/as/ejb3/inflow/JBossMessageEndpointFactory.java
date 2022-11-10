@@ -25,9 +25,9 @@ import java.lang.reflect.Method;
 import java.security.PrivilegedAction;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.resource.spi.UnavailableException;
-import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
+import jakarta.resource.spi.UnavailableException;
+import jakarta.resource.spi.endpoint.MessageEndpoint;
+import jakarta.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.as.server.deployment.ModuleClassFactory;

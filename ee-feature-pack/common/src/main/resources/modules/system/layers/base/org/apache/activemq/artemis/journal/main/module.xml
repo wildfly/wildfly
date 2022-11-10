@@ -54,6 +54,6 @@
         <!-- WFLY-6301 This module can be used to load user-created classes that are
              used by Artemis resources (e.g. connector-service, transformers, etc.)
         -->
-        <module name="org.apache.activemq.artemis.addons" optional="true" />
+        <module name="org.apache.activemq.artemis.addons" optional="true" export="true"/>
     </dependencies>
 </module>

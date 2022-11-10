@@ -34,7 +34,7 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import javax.management.MBeanException;
-import javax.xml.ws.soap.SOAPFaultException;
+import jakarta.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;

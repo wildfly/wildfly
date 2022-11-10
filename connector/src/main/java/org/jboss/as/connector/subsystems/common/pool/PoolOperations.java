@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
-import org.jboss.as.connector.subsystems.datasources.Util;
+import org.jboss.as.connector.subsystems.common.jndi.Util;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
 
@@ -100,7 +100,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                             }
 
                         } catch (Exception e) {
-                            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToInvokeOperation(e.getLocalizedMessage()));
+                            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToInvokeOperation(concatenateExceptionCauses(e)));
                         }
                         if (operationResult != null) {
                             context.getResult().set(operationResult);
@@ -110,6 +110,17 @@ public abstract class PoolOperations implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
+    }
+
+    private String concatenateExceptionCauses(Exception e) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(e.toString());
+        Throwable t = e.getCause();
+        while (t != null) {
+            sb.append(" Caused by: ").append(t.toString());
+            t = t.getCause();
+        }
+        return sb.toString();
     }
 
     protected abstract ModelNode invokeCommandOn(Pool pool, Object... parameters) throws Exception;

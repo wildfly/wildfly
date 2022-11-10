@@ -10,13 +10,45 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-      <version>27.0.0.Final-SNAPSHOT</version>
+      <version>28.0.0.Beta1-SNAPSHOT</version>
    </parent>
 
    <artifactId>wildfly-weld-jpa</artifactId>
    <name>WildFly: Weld JPA</name>
 
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-standard-ee-bom</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
    <dependencies>
+
+      <dependency>
+         <groupId>jakarta.enterprise</groupId>
+         <artifactId>jakarta.enterprise.cdi-api</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>jakarta.persistence</groupId>
+         <artifactId>jakarta.persistence-api</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>jakarta.transaction</groupId>
+         <artifactId>jakarta.transaction-api</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.metadata</groupId>
+         <artifactId>jboss-metadata-common-jakarta</artifactId>
+      </dependency>
 
       <dependency>
          <groupId>org.jboss.metadata</groupId>
@@ -25,7 +57,17 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-weld-spi</artifactId>
+         <artifactId>wildfly-ee</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>jipijapa-spi</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>wildfly-jpa</artifactId>
       </dependency>
 
       <dependency>
@@ -35,7 +77,22 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-jpa</artifactId>
+         <artifactId>wildfly-weld-spi</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.wildfly.core</groupId>
+         <artifactId>wildfly-server</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.wildfly.transaction</groupId>
+         <artifactId>wildfly-transaction-client</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.weld</groupId>
+         <artifactId>weld-spi</artifactId>
       </dependency>
 
    </dependencies>

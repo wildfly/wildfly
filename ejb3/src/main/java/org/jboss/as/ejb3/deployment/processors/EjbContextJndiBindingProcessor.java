@@ -24,10 +24,10 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import java.util.Collection;
 
-import javax.ejb.EJBContext;
-import javax.ejb.EntityContext;
-import javax.ejb.MessageDrivenContext;
-import javax.ejb.SessionContext;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.EntityContext;
+import jakarta.ejb.MessageDrivenContext;
+import jakarta.ejb.SessionContext;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;

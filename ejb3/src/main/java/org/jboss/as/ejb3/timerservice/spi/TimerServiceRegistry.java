@@ -24,8 +24,8 @@ package org.jboss.as.ejb3.timerservice.spi;
 
 import java.util.Collection;
 
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
 
 /**
  * Registry of timer services for a given deployment, used to implement {@link TimerService#getAllTimers()}.

@@ -27,10 +27,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.ejb.EJBException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.TimerHandle;
-import javax.transaction.Transaction;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.TimerHandle;
+import jakarta.transaction.Transaction;
 
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.logging.EjbLogger;

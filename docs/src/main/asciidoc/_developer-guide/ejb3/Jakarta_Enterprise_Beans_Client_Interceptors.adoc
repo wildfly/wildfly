@@ -14,13 +14,13 @@ For more details about what can be modified refer to the Jakarta Enterprise Bean
 
 == Accessing invocation context data
 
-It is possible for client interceptors to access data from the invocation context context data map used in the server
+It is possible for client interceptors to access data from the invocation context data map used in the server
 invocation (i.e. `InvocationContext.getContextData()`). To access a specific key you must call
 `org.jboss.ejb.client.EJBClientInvocationContext.addReturnedContextDataKey(String key)` with
 the name of the key you are interested in. This method must be called from the `handleInvocation` method
 of the interceptor.
 
-If there is data in the context map under this specific key then it will be send back to the client
+If there is data in the context map under this specific key then it will be sent back to the client
 and will be available in the handleInvocationResult in the client invocations context data map.
 
 

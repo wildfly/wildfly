@@ -25,7 +25,6 @@ package org.jboss.as.mail.extension;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.mail.Session;
 
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.msc.inject.Injector;
@@ -35,8 +34,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import jakarta.mail.Session;
+
 /**
- * Service that provides a javax.mail.Session.
+ * Service that provides a jakarta.mail.Session.
  *
  * @author Tomaz Cerar
  * @created 27.7.11 0:14

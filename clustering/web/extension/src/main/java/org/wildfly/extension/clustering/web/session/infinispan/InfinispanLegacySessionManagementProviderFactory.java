@@ -28,6 +28,7 @@ import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -44,10 +45,12 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRe
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
+import org.wildfly.clustering.web.service.WebRequirement;
+import org.wildfly.clustering.web.service.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.service.session.LegacySessionManagementProviderFactory;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
-import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.routing.LocalRouteLocatorServiceConfigurator;
 import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRouteLocatorServiceConfigurator;
 
 /**
@@ -55,7 +58,7 @@ import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRoute
  */
 @MetaInfServices(LegacySessionManagementProviderFactory.class)
 @Deprecated
-public class InfinispanLegacySessionManagementProviderFactory implements LegacySessionManagementProviderFactory<InfinispanSessionManagementConfiguration<DeploymentUnit>>, RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration<DeploymentUnit>>, Function<DeploymentUnit, ByteBufferMarshaller> {
+public class InfinispanLegacySessionManagementProviderFactory implements LegacySessionManagementProviderFactory<InfinispanSessionManagementConfiguration<DeploymentUnit>>, Function<DeploymentUnit, ByteBufferMarshaller> {
 
     private enum JBossMarshallingVersion implements Function<Module, MarshallingConfiguration> {
 
@@ -83,7 +86,7 @@ public class InfinispanLegacySessionManagementProviderFactory implements LegacyS
     }
 
     @Override
-    public DistributableSessionManagementProvider<InfinispanSessionManagementConfiguration<DeploymentUnit>> createSessionManagerProvider(ReplicationConfig config) {
+    public DistributableSessionManagementProvider<InfinispanSessionManagementConfiguration<DeploymentUnit>> createSessionManagerProvider(DeploymentUnit unit, ReplicationConfig config) {
         // Determine container and cache names using legacy logic
         String replicationConfigCacheName = (config != null) ? config.getCacheName() : null;
         ServiceName replicationConfigServiceName = ServiceNameFactory.parseServiceName((replicationConfigCacheName != null) ? replicationConfigCacheName : "web");
@@ -116,18 +119,29 @@ public class InfinispanLegacySessionManagementProviderFactory implements LegacyS
                 return InfinispanLegacySessionManagementProviderFactory.this;
             }
         };
-        return new InfinispanSessionManagementProvider(configuration, this);
-    }
-
-    @Override
-    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(InfinispanSessionManagementConfiguration<DeploymentUnit> configuration, WebDeploymentConfiguration deploymentConfiguration) {
-        // Legacy session management was hard-coded to use primary owner routing
-        return new PrimaryOwnerRouteLocatorServiceConfigurator(configuration, deploymentConfiguration);
+        return new InfinispanSessionManagementProvider(configuration, new LegacyRouteLocatorServiceConfiguratorFactory(unit));
     }
 
     @Override
     public ByteBufferMarshaller apply(DeploymentUnit unit) {
         Module module = unit.getAttachment(Attachments.MODULE);
         return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(JBossMarshallingVersion.class, JBossMarshallingVersion.CURRENT, module), module.getClassLoader());
+    }
+
+    private static class LegacyRouteLocatorServiceConfiguratorFactory implements RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration<DeploymentUnit>> {
+        private final DeploymentUnit unit;
+
+        LegacyRouteLocatorServiceConfiguratorFactory(DeploymentUnit unit) {
+            this.unit = unit;
+        }
+
+        @Override
+        public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(InfinispanSessionManagementConfiguration<DeploymentUnit> configuration, WebDeploymentConfiguration deploymentConfiguration) {
+            CapabilityServiceSupport support = this.unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            // Legacy session management was hard-coded to use primary owner routing
+            // Detect case where distributable-web subsystem exists, but configuration is not compatible with legacy deployment and thus local routing is required
+            boolean forceLocalRouting = support.hasCapability(WebRequirement.ROUTING_PROVIDER.getName()) && !support.hasCapability(WebRequirement.INFINISPAN_ROUTING_PROVIDER.getName());
+            return forceLocalRouting ? new LocalRouteLocatorServiceConfigurator(deploymentConfiguration) : new PrimaryOwnerRouteLocatorServiceConfigurator(configuration, deploymentConfiguration);
+        }
     }
 }

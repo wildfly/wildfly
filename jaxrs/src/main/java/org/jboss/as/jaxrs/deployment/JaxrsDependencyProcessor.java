@@ -102,7 +102,6 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, RESTEASY_CRYPTO, true, false);
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JDK8, true, false);
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JSR310, true, false);
-        addDependency(moduleSpecification, moduleLoader, MP_REST_CLIENT, true, false);
 
         final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {
@@ -110,6 +109,10 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
             if (api.isPartOfWeldDeployment(deploymentUnit)) {
                 addDependency(moduleSpecification, moduleLoader, RESTEASY_CDI, true, false);
             }
+        }
+        if (support.hasCapability("org.wildfly.microprofile.config")) {
+            addDependency(moduleSpecification, moduleLoader, MP_REST_CLIENT, true, false);
+            addDependency(moduleSpecification, moduleLoader, "org.jboss.resteasy.microprofile.config", true, false);
         }
     }
 
@@ -129,6 +132,11 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                ModuleIdentifier moduleIdentifier, boolean optional, boolean deploymentBundelesClientBuilder) {
+        addDependency(moduleSpecification, moduleLoader, moduleIdentifier.toString(), optional, deploymentBundelesClientBuilder);
+    }
+
+    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
+                               String moduleIdentifier, boolean optional, boolean deploymentBundelesClientBuilder) {
         ModuleDependency dependency = new ModuleDependency(moduleLoader, moduleIdentifier, optional, false, true, false);
         if(deploymentBundelesClientBuilder) {
             dependency.addImportFilter(PathFilters.is(CLIENT_BUILDER), false);

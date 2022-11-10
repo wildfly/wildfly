@@ -22,7 +22,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-microprofile-opentracing-smallrye-jakarta}"/>
+        <artifact name="${org.wildfly:wildfly-microprofile-opentracing-smallrye}"/>
     </resources>
 
     <dependencies>

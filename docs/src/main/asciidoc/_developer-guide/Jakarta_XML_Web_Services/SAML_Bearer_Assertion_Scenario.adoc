@@ -247,22 +247,7 @@ components to SSL configuration.
 * declare an SSL connector in the Web subsystem of the JBoss server
 configuration file.
 
-Follow the directions in the, " _Using the pure Java implementation
-supplied by JSSE_" section in the
-https://docs.jboss.org/author/display/WFLY8/SSL+setup+guide[SSL Setup
-Guide].
-
-Here is an example of an SSL connector declaration.
-
-[source,xml,options="nowrap"]
-----
-<subsystem xmlns="urn:jboss:domain:web:1.4" default-virtual-server="default-host" native="false">
-  .....
-  <connector name="jbws-https-connector" protocol="HTTP/1.1" scheme="https" socket-binding="https" secure="true" enabled="true">
-    <ssl key-alias="tomcat" password="changeit" certificate-key-file="/myJbossHome/security/test.keystore" verify-client="false"/>
-  </connector>
-  ...
-----
+Follow the directions for setting up TLS in the <<WildFly_Elytron_Security.adoc#enable-one-way-ssltls-for-applications,WildFly Elytron Security Guide>>.
 
 [[web-service-interface-saml-bearer]]
 === Web service Interface
@@ -274,8 +259,8 @@ straight forward web service definition.
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.bearer;
  
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
  
 @WebService
 (
@@ -324,7 +309,7 @@ package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.bearer;
 import org.apache.cxf.annotations.EndpointProperties;
 import org.apache.cxf.annotations.EndpointProperty;
  
-import javax.jws.WebService;
+import jakarta.jws.WebService;
  
 @WebService
 (
@@ -409,20 +394,19 @@ configuration file.
 For this scenario the domain needs to contain user _alice_, password
 _clarinet_, and role _friend_. See the listings below for
 jbossws-users.properties and jbossws-roles.properties. In addition the
-following XML must be added to the JBoss security subsystem in the
+following XML elements must be added to the Elytron subsystem in the
 server configuration file. Replace " *SOME_PATH*" with appropriate
-information.
+information and then configure <<WildFly_Elytron_Security.adoc#set-up-and-configure-authentication-for-applications,authentication with this security domain>>.
 
 [source,xml,options="nowrap"]
 ----
-<security-domain name="JBossWS-trust-sts">
-  <authentication>
-    <login-module code="UsersRoles" flag="required">
-      <module-option name="usersProperties" value="/SOME_PATH/jbossws-users.properties"/>
-      <module-option name="unauthenticatedIdentity" value="anonymous"/>
-      <module-option name="rolesProperties" value="/SOME_PATH/jbossws-roles.properties"/>
-    </login-module>
-  </authentication>
+<properties-realm name="JBossWS-trust-sts">
+    <users-properties path="/SOME_PATH/usersProperties"/>
+    <groups-properties path="/SOME_PATH/rolesProperties"/>
+</properties-realm>
+...
+<security-domain name="JBossWS-trust-sts" default-realm="JBossWS-trust-sts" permission-mapper="default-permission-mapper">
+    <realm name="JBossWS-trust-sts" role-decoder="groups-to-roles"/>
 </security-domain>
 ----
 
@@ -880,7 +864,7 @@ annotation defines the service as a Provider-based endpoint, meaning it
 supports a more messaging-oriented approach to Web services. In
 particular, it signals that the exchanged messages will be XML documents
 of some type. SecurityTokenServiceProvider is an implementation of the
-javax.xml.ws.Provider interface. In comparison the WebService annotation
+jakarta.xml.ws.Provider interface. In comparison the WebService annotation
 defines a (service endpoint interface) SEI-based endpoint which supports
 message exchange via SOAP envelopes.
 
@@ -937,7 +921,7 @@ import org.apache.cxf.sts.service.StaticService;
 import org.apache.cxf.sts.token.provider.SAMLTokenProvider;
 import org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider;
  
-import javax.xml.ws.WebServiceProvider;
+import jakarta.xml.ws.WebServiceProvider;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;

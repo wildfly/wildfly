@@ -90,24 +90,24 @@ public class MixedDeploymentOverlayTestCase {
     private static final PathElement MAIN_SERVER_GROUP = PathElement.pathElement(SERVER_GROUP, "main-server-group");
     private static final PathElement OTHER_SERVER_GROUP = PathElement.pathElement(SERVER_GROUP, "other-server-group");
     private static MixedDomainTestSupport testSupport;
-    private static DomainClient masterClient;
-    private static DomainClient slaveClient;
+    private static DomainClient primaryClient;
+    private static DomainClient secondaryClient;
     private Path overlayPath;
 
 
     public static void setupDomain() {
         testSupport = MixedDomainTestSuite.getSupport(MixedDeploymentOverlayTestCase.class, false);
-        masterClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-        slaveClient = testSupport.getDomainSlaveLifecycleUtil().getDomainClient();
+        primaryClient = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
+        secondaryClient = testSupport.getDomainSecondaryLifecycleUtil().getDomainClient();
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
         testSupport = null;
-        masterClient.close();
-        masterClient = null;
-        slaveClient.close();
-        slaveClient = null;
+        primaryClient.close();
+        primaryClient = null;
+        secondaryClient.close();
+        secondaryClient = null;
         MixedDomainTestSuite.afterClass();
     }
 
@@ -120,7 +120,7 @@ public class MixedDeploymentOverlayTestCase {
         overlayPath = new File(tccl.getResource("helloWorld/index_fr.html").toURI()).toPath();
         ModelNode result;
         try (InputStream is = webArchive.as(ZipExporter.class).exportAsInputStream()){
-            AsyncFuture<ModelNode> future = masterClient.executeAsync(addDeployment(is), null);
+            AsyncFuture<ModelNode> future = primaryClient.executeAsync(addDeployment(is), null);
             result = awaitSimpleOperationExecution(future);
         }
         assertTrue(Operations.isSuccessfulOutcome(result));
@@ -140,127 +140,127 @@ public class MixedDeploymentOverlayTestCase {
     @Test
     public void testInstallAndOverlayDeploymentOnDC() throws IOException, MgmtOperationException {
         //Let's deploy it on main-server-group
-        executeAsyncForResult(masterClient, deployOnServerGroup(MAIN_SERVER_GROUP, MAIN_RUNTIME_NAME));
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Hello World");
+        executeAsyncForResult(primaryClient, deployOnServerGroup(MAIN_SERVER_GROUP, MAIN_RUNTIME_NAME));
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Hello World");
         if(isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Hello World");
         }
         try {
-            performHttpCall(DomainTestSupport.slaveAddress, 8380, "main-deployment/index.html", "Hello World");
-            fail("'test' is available on slave server-two");
+            performHttpCall(DomainTestSupport.secondaryAddress, 8380, "main-deployment/index.html", "Hello World");
+            fail("'test' is available on secondary server-two");
         } catch (IOException good) {
             // good
         }
-        executeAsyncForResult(masterClient, deployOnServerGroup(OTHER_SERVER_GROUP, OTHER_RUNTIME_NAME));
+        executeAsyncForResult(primaryClient, deployOnServerGroup(OTHER_SERVER_GROUP, OTHER_RUNTIME_NAME));
         try {
-            performHttpCall(DomainTestSupport.slaveAddress, 8280, "other-deployment/index.html", "Hello World");
-            fail("'test' is available on master server-one");
+            performHttpCall(DomainTestSupport.secondaryAddress, 8280, "other-deployment/index.html", "Hello World");
+            fail("'test' is available on primary server-one");
         } catch (IOException good) {
             // good
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
-        executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(DEPLOYMENT_OVERLAY_PATH).toModelNode()));
+        executeAsyncForResult(primaryClient, Operations.createOperation(ADD, PathAddress.pathAddress(DEPLOYMENT_OVERLAY_PATH).toModelNode()));
         //Add some content
-        executeAsyncForResult(masterClient, addOverlayContent(overlayPath));
+        executeAsyncForResult(primaryClient, addOverlayContent(overlayPath));
         //Add overlay on server-groups
-        executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode()));
-        executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, MAIN_RUNTIME_NAME)).toModelNode()));
-        executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode()));
-        executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode()));
-        executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode()));
+        executeAsyncForResult(primaryClient, Operations.createOperation(ADD, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode()));
+        executeAsyncForResult(primaryClient, Operations.createOperation(ADD, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, MAIN_RUNTIME_NAME)).toModelNode()));
+        executeAsyncForResult(primaryClient, Operations.createOperation(ADD, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode()));
+        executeAsyncForResult(primaryClient, Operations.createOperation(ADD, PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode()));
+        executeAsyncForResult(primaryClient, Operations.createOperation(ADD, PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode()));
         //No deployment have been redeployed so overlay isn't really active
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Hello World");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Hello World");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
         ModelNode redeployNothingOperation = Operations.createOperation("redeploy-links", PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode());
         redeployNothingOperation.get("deployments").setEmptyList();
         redeployNothingOperation.get("deployments").add(OTHER_RUNTIME_NAME);//Doesn't exist
         redeployNothingOperation.get("deployments").add("inexisting.jar");
-        executeAsyncForResult(masterClient, redeployNothingOperation);
+        executeAsyncForResult(primaryClient, redeployNothingOperation);
         //Check that nothing happened
         //Only main-server-group deployments have been redeployed so overlay isn't active for other-server-group deployments
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Hello World");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Hello World");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
-        executeAsyncForResult(masterClient, Operations.createOperation("redeploy-links", PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode()));
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
+        executeAsyncForResult(primaryClient, Operations.createOperation("redeploy-links", PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode()));
         //Only main-server-group deployments have been redeployed so overlay isn't active for other-server-group deployments
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
-        executeAsyncForResult(masterClient, Operations.createOperation(REMOVE, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, MAIN_RUNTIME_NAME)).toModelNode()));
-        executeAsyncForResult(masterClient, Operations.createOperation(REMOVE, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode()));
-        executeAsyncForResult(masterClient, Operations.createOperation("redeploy-links", PathAddress.pathAddress(DEPLOYMENT_OVERLAY_PATH).toModelNode()));
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
+        executeAsyncForResult(primaryClient, Operations.createOperation(REMOVE, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, MAIN_RUNTIME_NAME)).toModelNode()));
+        executeAsyncForResult(primaryClient, Operations.createOperation(REMOVE, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode()));
+        executeAsyncForResult(primaryClient, Operations.createOperation("redeploy-links", PathAddress.pathAddress(DEPLOYMENT_OVERLAY_PATH).toModelNode()));
         //Only other-server-group deployments have been redeployed because we have removed the overlay from main-server-group
         if(isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Bonjour le monde");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Bonjour le monde");
         //Falling call to redeploy-links
         redeployNothingOperation = Operations.createOperation("redeploy-links", PathAddress.pathAddress(DEPLOYMENT_OVERLAY_PATH).toModelNode());
         redeployNothingOperation.get("deployments").setEmptyList();
         redeployNothingOperation.get("deployments").add(OTHER_RUNTIME_NAME);
         redeployNothingOperation.get("deployments").add("inexisting.jar");
-        executeAsyncForResult(masterClient, redeployNothingOperation);
+        executeAsyncForResult(primaryClient, redeployNothingOperation);
         //Check that nothing happened
         redeployNothingOperation = Operations.createOperation("redeploy-links", PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode());
         redeployNothingOperation.get("deployments").setEmptyList();
         redeployNothingOperation.get("deployments").add(OTHER_RUNTIME_NAME);
-        executeAsyncForFailure(slaveClient, redeployNothingOperation, getUnknowOperationErrorCode());
+        executeAsyncForFailure(secondaryClient, redeployNothingOperation, getUnknowOperationErrorCode());
         //Removing overlay for other-server-group deployments with affected set to true so those will be redeployed but not the deployments of main-server-group
         ModelNode removeLinkOp = Operations.createOperation(REMOVE, PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode());
         removeLinkOp.get("redeploy-affected").set(true);
-        executeAsyncForResult(masterClient, removeLinkOp);
+        executeAsyncForResult(primaryClient, removeLinkOp);
         if(isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
         //Redeploying main-server-group deployment called main-deployment.war
-        executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode()));
-        executeAsyncForResult(masterClient, Operations.createOperation(ADD, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, MAIN_RUNTIME_NAME)).toModelNode()));
+        executeAsyncForResult(primaryClient, Operations.createOperation(ADD, PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, OTHER_RUNTIME_NAME)).toModelNode()));
+        executeAsyncForResult(primaryClient, Operations.createOperation(ADD, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH, PathElement.pathElement(DEPLOYMENT, MAIN_RUNTIME_NAME)).toModelNode()));
         ModelNode redeployOp = Operations.createOperation("redeploy-links", PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode());
         redeployOp.get("deployments").setEmptyList();
         redeployOp.get("deployments").add(MAIN_RUNTIME_NAME);
-        executeAsyncForResult(masterClient, redeployOp);
+        executeAsyncForResult(primaryClient, redeployOp);
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Hello World");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Hello World");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Hello World");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Hello World");
         //Redeploying main-server-group deployment called other-deployment.war
         redeployOp = Operations.createOperation("redeploy-links", PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode());
         redeployOp.get("deployments").setEmptyList();
         redeployOp.get("deployments").add(OTHER_RUNTIME_NAME);
-        executeAsyncForResult(masterClient, redeployOp);
+        executeAsyncForResult(primaryClient, redeployOp);
         if (isUndertowSupported()) {
-            performHttpCall(DomainTestSupport.masterAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
-            performHttpCall(DomainTestSupport.masterAddress, 8180, "other-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8080, "main-deployment/index.html", "Bonjour le monde");
+            performHttpCall(DomainTestSupport.primaryAddress, 8180, "other-deployment/index.html", "Bonjour le monde");
         }
-        performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
-        performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8380, "other-deployment/index.html", "Bonjour le monde");
 
         //Remove all CLI style "deployment-overlay remove --name=overlay-test "
         ModelNode cliRemoveOverlay = Operations.createCompositeOperation();
         cliRemoveOverlay.get(STEPS).add(Operations.createOperation(REMOVE, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode()));
         cliRemoveOverlay.get(STEPS).add(Operations.createOperation(REMOVE, PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode()));
         cliRemoveOverlay.get(STEPS).add(Operations.createOperation(REMOVE, PathAddress.pathAddress(DEPLOYMENT_OVERLAY_PATH).toModelNode()));
-        executeAsyncForResult(masterClient, cliRemoveOverlay);
+        executeAsyncForResult(primaryClient, cliRemoveOverlay);
     }
 
     private void executeAsyncForResult(DomainClient client, ModelNode op) {
@@ -303,7 +303,7 @@ public class MixedDeploymentOverlayTestCase {
         ModelNode operation = Operations.createReadResourceOperation(address.toModelNode());
         operation.get(INCLUDE_RUNTIME).set(true);
         operation.get(INCLUDE_DEFAULTS).set(true);
-        AsyncFuture<ModelNode> future = masterClient.executeAsync(operation, null);
+        AsyncFuture<ModelNode> future = primaryClient.executeAsync(operation, null);
         ModelNode result = awaitSimpleOperationExecution(future);
         assertTrue(Operations.isSuccessfulOutcome(result));
         return Operations.readResult(result);
@@ -356,7 +356,7 @@ public class MixedDeploymentOverlayTestCase {
     }
 
     private void cleanDeployment() throws IOException, MgmtOperationException {
-        DomainTestUtils.executeForResult(undeployAndRemoveOp(), masterClient);
+        DomainTestUtils.executeForResult(undeployAndRemoveOp(), primaryClient);
     }
 
     protected boolean isUndertowSupported() {

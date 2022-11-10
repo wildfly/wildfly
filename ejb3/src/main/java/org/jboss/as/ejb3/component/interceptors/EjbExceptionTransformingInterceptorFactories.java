@@ -24,17 +24,17 @@ package org.jboss.as.ejb3.component.interceptors;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.EJBTransactionRequiredException;
-import javax.ejb.EJBTransactionRolledbackException;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.NoSuchEntityException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.TransactionRequiredLocalException;
-import javax.ejb.TransactionRolledbackLocalException;
-import javax.transaction.TransactionRequiredException;
-import javax.transaction.TransactionRolledbackException;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.EJBTransactionRequiredException;
+import jakarta.ejb.EJBTransactionRolledbackException;
+import jakarta.ejb.NoSuchEJBException;
+import jakarta.ejb.NoSuchEntityException;
+import jakarta.ejb.NoSuchObjectLocalException;
+import jakarta.ejb.TransactionRequiredLocalException;
+import jakarta.ejb.TransactionRolledbackLocalException;
+import jakarta.transaction.TransactionRequiredException;
+import jakarta.transaction.TransactionRolledbackException;
 
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.invocation.ImmediateInterceptorFactory;

@@ -171,7 +171,7 @@ public class DistributableSessionManagerTestCase {
         verify(this.listener).sessionCreated(sessionAdapter, exchange);
         verify(config).setSessionId(exchange, sessionId);
         verify(batcher).suspendBatch();
-        verify(this.statistics).record(sessionAdapter);
+        verify(this.statistics).record(metaData);
 
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
@@ -204,7 +204,7 @@ public class DistributableSessionManagerTestCase {
 
         verify(this.listener).sessionCreated(sessionAdapter, exchange);
         verify(batcher).suspendBatch();
-        verify(this.statistics).record(sessionAdapter);
+        verify(this.statistics).record(metaData);
 
         String expected = "expected";
         when(session.getId()).thenReturn(expected);

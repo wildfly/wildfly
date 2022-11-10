@@ -26,9 +26,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.AccessTimeout;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
+import jakarta.ejb.AccessTimeout;
+import jakarta.ejb.Lock;
+import jakarta.ejb.LockType;
 
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
@@ -48,7 +48,7 @@ import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 
 /**
- * Class that can merge {@link javax.ejb.Lock} and {@link javax.ejb.AccessTimeout} metadata
+ * Class that can merge {@link jakarta.ejb.Lock} and {@link jakarta.ejb.AccessTimeout} metadata
  *
  * @author Stuart Douglas
  */
