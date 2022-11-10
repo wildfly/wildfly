@@ -35,6 +35,7 @@ import jakarta.batch.runtime.StepExecution;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.SharedCacheMode;
+import jakarta.persistence.ValidationMode;
 import jakarta.persistence.spi.PersistenceUnitTransactionType;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -130,6 +131,7 @@ public class JpaJobRepositoryService extends JobRepositoryService implements Ser
                 batchPersistenceUnitInfo.setSharedCacheMode(SharedCacheMode.ALL);
                 batchPersistenceUnitInfo.setExcludeUnlistedClasses(false);
                 batchPersistenceUnitInfo.setJarFileUrls(List.of(JpaRepository.class.getProtectionDomain().getCodeSource().getLocation()));
+                batchPersistenceUnitInfo.setValidationMode(ValidationMode.NONE);
                 this.entityManagerFactoryBuilder = Bootstrap.getEntityManagerFactoryBuilder(
                         batchPersistenceUnitInfo,
                         Map.of(
