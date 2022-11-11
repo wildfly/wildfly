@@ -106,6 +106,14 @@ public class LayersTestCase {
             "org.wildfly.extension.opentelemetry",
             "org.wildfly.extension.opentelemetry-api",
             "io.opentelemetry.trace",
+            // Unreferenced Infinispan modules
+            "org.infinispan.cdi.common",
+            "org.infinispan.cdi.embedded",
+            "org.infinispan.cdi.remote",
+            "org.infinispan.counter",
+            "org.infinispan.lock",
+            "org.infinispan.query",
+            "org.infinispan.query.core",
             // JGroups external protocols - AWS
             "com.amazon.aws.core",
             "com.amazon.aws.jmespath",
