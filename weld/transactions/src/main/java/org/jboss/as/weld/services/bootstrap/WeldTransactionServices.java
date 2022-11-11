@@ -23,11 +23,11 @@ package org.jboss.as.weld.services.bootstrap;
 
 import java.util.function.Consumer;
 
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.as.weld.ServiceNames;
 import org.jboss.msc.Service;
