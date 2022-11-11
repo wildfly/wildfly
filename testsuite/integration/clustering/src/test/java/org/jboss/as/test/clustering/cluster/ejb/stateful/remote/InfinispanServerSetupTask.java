@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.web.remote;
+package org.jboss.as.test.clustering.cluster.ejb.stateful.remote;
 
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 
@@ -31,6 +31,6 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 public class InfinispanServerSetupTask extends org.jboss.as.test.clustering.cluster.remote.InfinispanServerSetupTask {
 
     public InfinispanServerSetupTask() {
-        super(AbstractClusteringTestCase.NODE_1_2_3, "web", "org.wildfly.clustering.web.hotrod");
+        super(AbstractClusteringTestCase.NODE_1_2, "ejb", "org.wildfly.clustering.ejb.hotrod");
     }
 }

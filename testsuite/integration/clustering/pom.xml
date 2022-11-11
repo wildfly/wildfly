@@ -593,7 +593,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>ts.config-as.configure-wildfly</id>
@@ -835,7 +834,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${version.surefire.plugin}</version>
                         <executions combine.children="append">
                             <!-- Multi-node clustering tests -->
                             <execution>
@@ -854,16 +852,16 @@
                                     <!-- Skip byteman tests -->
                                     <excludes>
                                         <!-- These are run with full-ha server profile by ts.clustering.cluster.fullha.profile maven profile -->
-                                        <exclude>${test-group}/**/ejb/stateful/*TestCase.java</exclude>
-                                        <exclude>${test-group}/**/group/*TestCase.java</exclude>
-                                        <exclude>${test-group}/**/jms/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/ejb/stateful/**</exclude>
+                                        <exclude>${test-group}/**/group/**</exclude>
+                                        <exclude>${test-group}/**/jms/**</exclude>
                                         <!-- These are run by ts.clustering.cluster.ha-infinispan-server.profile -->
-                                        <exclude>${test-group}/**/ejb/timer/remote/*TestCase.java</exclude>
-                                        <exclude>${test-group}/**/infinispan/remote/*TestCase.java</exclude>
-                                        <exclude>${test-group}/**/web/remote/*TestCase.java</exclude>
-                                        <exclude>${test-group}/**/sso/remote/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/ejb/timer/remote/**</exclude>
+                                        <exclude>${test-group}/**/infinispan/remote/**</exclude>
+                                        <exclude>${test-group}/**/web/remote/**</exclude>
+                                        <exclude>${test-group}/**/sso/remote/**</exclude>
                                         <!-- These are run by ts.clustering.cluster.byteman.profile -->
-                                        <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/byteman/**</exclude>
                                         <exclude>%regex[${test-group}/(${ts.surefire.clustering.ha.additionalExcludes})/.*TestCase.class]</exclude>
                                     </excludes>
                                     <!-- Parameters to test cases. -->
@@ -912,7 +910,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${version.surefire.plugin}</version>
                         <executions combine.children="append">
                             <!-- Multi-node clustering tests -->
                             <execution>
@@ -926,10 +923,11 @@
                                     <runOrder>alphabetical</runOrder>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>${test-group}/**/ejb/timer/remote/*TestCase.java</include>
-                                        <include>${test-group}/**/infinispan/remote/*TestCase.java</include>
-                                        <include>${test-group}/**/web/remote/*TestCase.java</include>
-                                        <include>${test-group}/**/sso/remote/*TestCase.java</include>
+                                        <include>${test-group}/**/ejb/stateful/remote/**</include>
+                                        <include>${test-group}/**/ejb/timer/remote/**</include>
+                                        <include>${test-group}/**/infinispan/remote/**</include>
+                                        <include>${test-group}/**/web/remote/**</include>
+                                        <include>${test-group}/**/sso/remote/**</include>
                                     </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
@@ -950,7 +948,7 @@
                                         <mcast3>${mcast3}</mcast3>
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
                                         <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
@@ -977,7 +975,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${version.surefire.plugin}</version>
                         <executions combine.children="append">
                             <!-- Multi-node clustering tests -->
                             <execution>
@@ -991,9 +988,9 @@
                                     <runOrder>alphabetical</runOrder>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>${test-group}/**/ejb/stateful/*TestCase.java</include>
-                                        <include>${test-group}/**/group/*TestCase.java</include>
-                                        <include>${test-group}/**/jms/*TestCase.java</include>
+                                        <include>${test-group}/**/ejb/stateful/*</include>
+                                        <include>${test-group}/**/group/*</include>
+                                        <include>${test-group}/**/jms/*</include>
                                     </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
@@ -1041,7 +1038,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${version.surefire.plugin}</version>
                         <executions combine.children="append">
                             <!-- Single node clustering tests. -->
                             <execution>
@@ -1149,7 +1145,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${version.surefire.plugin}</version>
                         <executions>
                             <!-- Multi-node clustering tests (based on Byteman) for EJB tests -->
                             <execution>
@@ -2002,7 +1997,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>ts.config-as.configure-wildfly</id>
@@ -2504,7 +2498,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>ts.config-as.configure-wildfly</id>
@@ -2671,7 +2664,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>ts.config-as.configure-lb</id>
@@ -2834,7 +2826,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>ts.config-as.configure-lb</id>

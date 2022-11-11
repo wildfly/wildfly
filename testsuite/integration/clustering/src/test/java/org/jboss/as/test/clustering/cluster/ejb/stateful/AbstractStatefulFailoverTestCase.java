@@ -57,7 +57,7 @@ public abstract class AbstractStatefulFailoverTestCase extends AbstractClusterin
 
     private final String moduleName;
 
-    AbstractStatefulFailoverTestCase(String moduleName) {
+    protected AbstractStatefulFailoverTestCase(String moduleName) {
         this.moduleName = moduleName;
     }
 
