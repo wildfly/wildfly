@@ -126,12 +126,6 @@ public class WeldClassFileInfo implements ClassFileInfo {
         return isVetoed;
     }
 
-    // @Override unused except in a test and removed in Weld 5 so don't annotate it
-    // TODO to be removed once Weld 5 is a direct dependency of non-preview WFLY
-    public boolean isTopLevelClass() {
-        return classInfo.nestingType() == ClassInfo.NestingType.TOP_LEVEL;
-    }
-
     @Override
     public ClassFileInfo.NestingType getNestingType() {
         NestingType result = null;
