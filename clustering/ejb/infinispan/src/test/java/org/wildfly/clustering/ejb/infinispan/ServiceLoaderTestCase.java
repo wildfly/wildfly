@@ -27,7 +27,6 @@ import java.util.ServiceLoader;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.junit.Test;
-import org.wildfly.clustering.ejb.LegacyBeanManagementProviderFactory;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.server.service.DistributedCacheServiceConfiguratorProvider;
 import org.wildfly.clustering.server.service.IdentityCacheServiceConfiguratorProvider;
@@ -45,10 +44,11 @@ public class ServiceLoaderTestCase {
         ServiceLoader.load(targetClass, ServiceLoaderTestCase.class.getClassLoader()).forEach(object -> System.out.println("\t" + object.getClass().getName()));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void load() {
         load(Externalizer.class);
-        load(LegacyBeanManagementProviderFactory.class);
+        load(org.wildfly.clustering.ejb.bean.LegacyBeanManagementProviderFactory.class);
         load(DistributedCacheServiceConfiguratorProvider.class);
         load(LocalCacheServiceConfiguratorProvider.class);
         load(IdentityCacheServiceConfiguratorProvider.class);

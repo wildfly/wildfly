@@ -5,17 +5,6 @@ import "org.jboss.ejb.client.proto";
 
 // IDs: 310 - 319
 
-
-message InfinispanBeanKey {
-	required	org.jboss.ejb.client.SessionID	id	 = 1;
-}
-
-message InfinispanBeanEntry {
-	required	string	name	 = 1;
-	required	org.jboss.ejb.client.SessionID	group	 = 2;
-	required	java.time.Instant	lastAccessed	 = 3;
-}
-
 /**
  * @TypeId(310)
  */

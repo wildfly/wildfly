@@ -24,7 +24,6 @@ package org.wildfly.clustering.ejb.bean;
 import org.jboss.as.clustering.controller.RequirementServiceNameFactory;
 import org.jboss.as.clustering.controller.ServiceNameFactory;
 import org.jboss.as.clustering.controller.ServiceNameFactoryProvider;
-import org.wildfly.clustering.ejb.BeanManagementProvider;
 import org.wildfly.clustering.service.Requirement;
 
 /**

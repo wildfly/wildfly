@@ -23,9 +23,9 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import org.infinispan.protostream.SerializationContextInitializer;
+import org.wildfly.clustering.ejb.cache.bean.BeanSerializationContextInitializer;
 import org.wildfly.clustering.ejb.client.EJBClientSerializationContextInitializer;
-import org.wildfly.clustering.ejb.infinispan.bean.BeanSerializationContextInitializer;
-import org.wildfly.clustering.ejb.infinispan.group.BeanGroupSerializationContextInitializer;
+import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanSerializationContextInitializer;
 import org.wildfly.clustering.ejb.infinispan.network.NetworkEJBSerializationContextInitializer;
 import org.wildfly.clustering.ejb.infinispan.network.NetworkMarshallingProvider;
 import org.wildfly.clustering.ejb.infinispan.timer.TimerSerializationContextInitializer;
@@ -42,7 +42,7 @@ public enum EJBSerializationContextInitializerProvider implements SerializationC
     INFINISPAN_NETWORK(new NetworkEJBSerializationContextInitializer()),
     EJB_CLIENT(new EJBClientSerializationContextInitializer()),
     BEAN(new BeanSerializationContextInitializer()),
-    GROUP(new BeanGroupSerializationContextInitializer()),
+    INFINISPAN(new InfinispanBeanSerializationContextInitializer()),
     TIMER(new TimerSerializationContextInitializer()),
     ;
 
