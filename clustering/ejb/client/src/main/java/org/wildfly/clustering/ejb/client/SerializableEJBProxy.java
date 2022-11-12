@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.stateful;
+package org.wildfly.clustering.ejb.client;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -29,28 +29,20 @@ import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBLocator;
 
 /**
- * A serializable Jakarta Enterprise Beans proxy which serializes the {@link EJBLocator} and the associated with the Jakarta Enterprise Beans proxy
- *
- * @author Jaikiran Pai
+ * Serializes an EJB proxy via its serializable locator.
+ * @author Paul Ferraro
  */
-class SerializableEJBProxy implements Serializable {
+public class SerializableEJBProxy implements Serializable {
+    private static final long serialVersionUID = 2301976566323836449L;
 
-    private static final long serialVersionUID = 1L;
+    private final EJBLocator<? extends Object> locator;
 
-    private final EJBLocator<?> ejbLocator;
-
-    /**
-     * @param ejbProxy The Jakarta Enterprise Beans proxy
-     * @throws IllegalArgumentException If the passed proxy is not an Jakarta Enterprise Beans proxy
-     */
-    SerializableEJBProxy(final Object ejbProxy) {
-        // we hold on to the Jakarta Enterprise Beans locator and the Jakarta Enterprise Beans client context identifier
-        this.ejbLocator = EJBClient.getLocatorFor(ejbProxy);
+    SerializableEJBProxy(Object proxy) {
+        this.locator = EJBClient.getLocatorFor(proxy);
     }
 
     @SuppressWarnings("unused")
     private Object readResolve() throws ObjectStreamException {
-        // recreate the proxy using the locator and the Jakarta Enterprise Beans client context identifier
-        return EJBClient.createProxy(this.ejbLocator);
+        return EJBClient.createProxy(this.locator);
     }
 }

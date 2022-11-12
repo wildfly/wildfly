@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.ejb.EJBHome;
@@ -43,41 +44,42 @@ import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.ejb.client.SessionID;
-import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 
 /**
+ * Contributes to the JBoss Marshalling class table used when marshalling stateful session bean instances.
  * @author Paul Ferraro
  */
-public class StatefulSessionBeanClassTable extends SimpleClassTable {
+@MetaInfServices(ClassTableContributor.class)
+public class StatefulSessionBeanClassTableContributor implements ClassTableContributor {
 
-    private static Class<?>[] classes = new Class<?>[] {
-        SessionContext.class,
-        UserTransaction.class,
-        EntityManager.class,
-        EntityManagerFactory.class,
-        Timer.class,
-        SessionID.class,
-        SessionID.Serialized.class,
-        EJBHome.class,
-        EJBObject.class,
-        Handle.class,
-        HomeHandle.class,
-        EJBMetaData.class,
-        UUID.class,
-        StatefulSessionComponentInstance.class,
-        SessionBeanComponentInstance.class,
-        EjbComponentInstance.class,
-        BasicComponentInstance.class,
-        Serializable.class,
-        StatefulSerializedProxy.class,
-        ManagedReference.class,
-        ValueManagedReferenceFactory.ValueManagedReference.class,
-        SerializedCdiInterceptorsKey.class,
-        SerializedStatefulSessionComponent.class,
-        ImmediateManagedReference.class,
-    };
-
-    public StatefulSessionBeanClassTable() {
-        super(classes);
+    @Override
+    public List<Class<?>> getKnownClasses() {
+        return List.of(
+                SessionContext.class,
+                UserTransaction.class,
+                EntityManager.class,
+                EntityManagerFactory.class,
+                Timer.class,
+                SessionID.class,
+                SessionID.Serialized.class,
+                EJBHome.class,
+                EJBObject.class,
+                Handle.class,
+                HomeHandle.class,
+                EJBMetaData.class,
+                UUID.class,
+                StatefulSessionComponentInstance.class,
+                SessionBeanComponentInstance.class,
+                EjbComponentInstance.class,
+                BasicComponentInstance.class,
+                Serializable.class,
+                StatefulSerializedProxy.class,
+                ManagedReference.class,
+                ValueManagedReferenceFactory.ValueManagedReference.class,
+                SerializedCdiInterceptorsKey.class,
+                SerializedStatefulSessionComponent.class,
+                ImmediateManagedReference.class);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,27 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.stateful;
+package org.wildfly.clustering.ejb.client;
 
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.marshalling.ObjectResolver;
 
 /**
+ * Resolver for EJB proxies.
  * @author Paul Ferraro
  */
-public class EJBClientContextIdentifierResolver implements ObjectResolver {
+public class EJBProxyResolver implements ObjectResolver {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Object readResolve(Object replacement) {
         return replacement;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Object writeReplace(Object object) {
         return EJBClient.isEJBProxy(object) ? new SerializableEJBProxy(object) : object;

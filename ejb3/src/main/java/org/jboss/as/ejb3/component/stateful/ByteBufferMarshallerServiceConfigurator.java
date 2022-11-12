@@ -35,6 +35,8 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.ejb.client.EJBProxyResolver;
+import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
@@ -62,8 +64,8 @@ public class ByteBufferMarshallerServiceConfigurator extends SimpleServiceNamePr
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
                 config.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(deployment));
-                config.setClassTable(new StatefulSessionBeanClassTable());
-                config.setObjectTable(new EJBClientContextIdentifierObjectTable());
+                config.setClassTable(new DynamicClassTable(module.getClassLoader()));
+                config.setObjectTable(new org.wildfly.clustering.ejb.client.EJBProxyObjectTable());
                 return config;
             }
         },
@@ -75,8 +77,8 @@ public class ByteBufferMarshallerServiceConfigurator extends SimpleServiceNamePr
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
                 config.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(deployment));
-                config.setClassTable(new StatefulSessionBeanClassTable());
-                config.setObjectResolver(new EJBClientContextIdentifierResolver());
+                config.setClassTable(new DynamicClassTable(module.getClassLoader()));
+                config.setObjectResolver(new EJBProxyResolver());
                 config.setObjectTable(new DynamicExternalizerObjectTable(module.getClassLoader()));
                 return config;
             }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.stateful;
+package org.wildfly.clustering.ejb.client;
+
+import java.io.IOException;
 
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.ObjectTable;
 import org.jboss.marshalling.Unmarshaller;
-
-import java.io.IOException;
+import org.jboss.marshalling.ObjectTable.Writer;
 
 /**
- * By default, Jakarta Enterprise Beans proxies don't serialize the {@link org.jboss.ejb.client.EJBClientContextIdentifier} associated with them,
- * so this {@link ObjectTable} marshals such Jakarta Enterprise Beans proxies to serializable even the {@link org.jboss.ejb.client.EJBClientContextIdentifier} (if any)
- * associated with that proxy.
- *
- * @author Jaikiran Pai
+ * An {@link ObjectTable} for marshalling an EJB proxy.
+ * @author Paul Ferraro
+ * @deprecated Superseded by {@link EJBProxyResolver}.
  */
 @Deprecated
-public class EJBClientContextIdentifierObjectTable implements ObjectTable {
+public class EJBProxyObjectTable implements ObjectTable, Writer {
+
     @Override
     public Writer getObjectWriter(Object o) throws IOException {
         if (o == null) {
@@ -47,7 +47,7 @@ public class EJBClientContextIdentifierObjectTable implements ObjectTable {
         if (!EJBClient.isEJBProxy(o)) {
             return null;
         }
-        return EJBClientContextIdentifierWriter.INSTANCE;
+        return this;
     }
 
     @Override
@@ -55,17 +55,8 @@ public class EJBClientContextIdentifierObjectTable implements ObjectTable {
         return unmarshaller.readObject();
     }
 
-    /**
-     * A {@link Writer} which writes out a {@link SerializableEJBProxy} for a
-     * Jakarta Enterprise Beans proxy
-     */
-    private static class EJBClientContextIdentifierWriter implements Writer {
-
-        private static final EJBClientContextIdentifierWriter INSTANCE = new EJBClientContextIdentifierWriter();
-
-        @Override
-        public void writeObject(Marshaller marshaller, Object o) throws IOException {
-            marshaller.writeObject(new SerializableEJBProxy(o));
-        }
+    @Override
+    public void writeObject(Marshaller marshaller, Object object) throws IOException {
+        marshaller.writeObject(new SerializableEJBProxy(object));
     }
 }
