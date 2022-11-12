@@ -25,8 +25,8 @@ package org.jboss.as.ejb3.component.stateful.cache;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.ee.Restartable;
-import org.wildfly.clustering.ejb.AffinitySupport;
 import org.wildfly.clustering.ejb.bean.BeanStatistics;
+import org.wildfly.clustering.ejb.remote.AffinitySupport;
 
 /**
  * A stateful session bean cache.

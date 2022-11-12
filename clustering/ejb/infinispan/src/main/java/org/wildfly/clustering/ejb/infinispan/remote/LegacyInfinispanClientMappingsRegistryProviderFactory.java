@@ -20,21 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.infinispan.remote;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.List;
-
-import org.jboss.as.network.ClientMapping;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.remote.LegacyClientMappingsRegistryProviderFactory;
 
 /**
- * Registry entry for the client mappings registry.
- * @author Paul Ferraro
+ * Factory for creating legacy version of the InfinispanClientMappingsRegistryProvider
+ *
+ * @author Richard Achmatowicz
  */
-public class ClientMappingsRegistryEntry extends SimpleImmutableEntry<String, List<ClientMapping>> {
-    private static final long serialVersionUID = 2252091408161700077L;
+@Deprecated
+@MetaInfServices(LegacyClientMappingsRegistryProviderFactory.class)
+public class LegacyInfinispanClientMappingsRegistryProviderFactory implements LegacyClientMappingsRegistryProviderFactory {
 
-    public ClientMappingsRegistryEntry(String memberName, List<ClientMapping> mappings) {
-        super(memberName, mappings);
+    @Override
+    public ClientMappingsRegistryProvider createClientMappingsRegistryProvider(String clusterName) {
+        // need to create and return a configured client mappings registry factory
+        return new LegacyInfinispanClientMappingsRegistryProvider(clusterName);
     }
 }

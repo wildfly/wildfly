@@ -26,8 +26,8 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.network.ClientMapping;
-import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
-import org.wildfly.clustering.ejb.infinispan.ClientMappingsRegistryEntryServiceConfigurator;
+import org.wildfly.clustering.ejb.infinispan.network.ClientMappingsRegistryEntryServiceConfigurator;
+import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
 import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
 import org.wildfly.clustering.server.service.group.LocalCacheGroupServiceConfiguratorProvider;
 import org.wildfly.clustering.server.service.registry.LocalRegistryServiceConfiguratorProvider;

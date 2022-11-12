@@ -20,26 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.infinispan.network;
 
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.List;
+
+import org.jboss.as.network.ClientMapping;
 
 /**
+ * Registry entry for the client mappings registry.
  * @author Paul Ferraro
  */
-public enum NetworkMarshallingProvider implements ProtoStreamMarshallerProvider {
+public class ClientMappingsRegistryEntry extends SimpleImmutableEntry<String, List<ClientMapping>> {
+    private static final long serialVersionUID = 2252091408161700077L;
 
-    CLIENT_MAPPING(new ClientMappingMarshaller()),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
-
-    NetworkMarshallingProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
-    }
-
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
+    public ClientMappingsRegistryEntry(String memberName, List<ClientMapping> mappings) {
+        super(memberName, mappings);
     }
 }

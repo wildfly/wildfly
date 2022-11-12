@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb;
 
-import org.jboss.ejb.client.Affinity;
+package org.wildfly.clustering.ejb.infinispan.network;
+
+import org.infinispan.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 
 /**
- * Defines the affinity requirements for remote clients.
- *
+ * {@link SerializationContextInitializer} for this package.
  * @author Paul Ferraro
- *
- * @param <I> the bean type
  */
-public interface AffinitySupport<I> {
-    /**
-     * Returns the strong affinity for all invocations.
-     * Strong affinity indicates a strict load balancing requirement.
-     * @return an affinity
-     */
-    Affinity getStrongAffinity();
+public class NetworkEJBSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    /**
-     * Returns the weak affinity of the specified bean identifier.
-     * Weak affinity indicates a load balancing preference within the confines of the strong affinity.
-     * @param id a bean identifier
-     * @return an affinity
-     */
-    Affinity getWeakAffinity(I id);
+    @Override
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new ClientMappingsRegistryEntryMarshaller());
+    }
 }

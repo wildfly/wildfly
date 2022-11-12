@@ -20,19 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.infinispan.network;
 
-import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 
 /**
- * {@link SerializationContextInitializer} for this package.
+ * Provides marshallers for the <code>org.jboss.as.network</code> package.
  * @author Paul Ferraro
  */
-public class InfinispanEJBSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public enum NetworkMarshallingProvider implements ProtoStreamMarshallerProvider {
+
+    CLIENT_MAPPING(new ClientMappingMarshaller()),
+    ;
+    private final ProtoStreamMarshaller<?> marshaller;
+
+    NetworkMarshallingProvider(ProtoStreamMarshaller<?> marshaller) {
+        this.marshaller = marshaller;
+    }
 
     @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ClientMappingsRegistryEntryMarshaller());
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this.marshaller;
     }
 }

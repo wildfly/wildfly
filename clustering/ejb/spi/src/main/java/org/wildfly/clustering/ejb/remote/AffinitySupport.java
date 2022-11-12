@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.clustering.ejb.remote;
 
-package org.wildfly.clustering.ejb;
-
-import java.util.List;
-
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.network.ClientMapping;
-import org.wildfly.clustering.service.SupplierDependency;
+import org.jboss.ejb.client.Affinity;
 
 /**
- * interface defining ClientMappingsRegistryProvider instances, used to install configured ClientMappingsRegistry services.
+ * Defines the affinity requirements for remote clients.
  *
  * @author Paul Ferraro
+ *
+ * @param <I> the bean type
  */
-public interface ClientMappingsRegistryProvider {
+public interface AffinitySupport<I> {
+    /**
+     * Returns the strong affinity for all invocations.
+     * Strong affinity indicates a strict load balancing requirement.
+     * @return an affinity
+     */
+    Affinity getStrongAffinity();
 
-    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String connectorName, SupplierDependency<List<ClientMapping>> clientMappings);
+    /**
+     * Returns the weak affinity of the specified bean identifier.
+     * Weak affinity indicates a load balancing preference within the confines of the strong affinity.
+     * @param id a bean identifier
+     * @return an affinity
+     */
+    Affinity getWeakAffinity(I id);
 }

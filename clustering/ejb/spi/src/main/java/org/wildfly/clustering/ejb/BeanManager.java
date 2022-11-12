@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Restartable;
+import org.wildfly.clustering.ejb.remote.AffinitySupport;
 
 /**
  * A SPI for managing beans.

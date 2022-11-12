@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.infinispan.network;
 
 import java.util.List;
 import java.util.Map;
@@ -47,6 +47,7 @@ import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
 
 /**
+ * Configures a service that provides a client mappings registry entry for the local cluster member.
  * @author Paul Ferraro
  */
 public class ClientMappingsRegistryEntryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<Map.Entry<String, List<ClientMapping>>> {

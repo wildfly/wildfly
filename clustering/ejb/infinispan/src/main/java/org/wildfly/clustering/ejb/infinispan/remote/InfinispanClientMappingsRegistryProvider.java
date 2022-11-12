@@ -20,14 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.infinispan.remote;
 
 import java.util.List;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.network.ClientMapping;
-import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.infinispan.network.ClientMappingsRegistryEntryServiceConfigurator;
+import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
 import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;

@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.cache;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.ee.Restartable;
-import org.wildfly.clustering.ejb.AffinitySupport;
+import org.wildfly.clustering.ejb.remote.AffinitySupport;
 
 /**
  * Cache a stateful object and make sure any life cycle callbacks are

@@ -1,4 +1,4 @@
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.infinispan.network;
 
 import "org.jboss.as.network.proto";
 

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.infinispan.remote;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -38,7 +38,8 @@ import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.network.ClientMapping;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.infinispan.network.ClientMappingsRegistryEntryServiceConfigurator;
+import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
 import org.wildfly.clustering.infinispan.configuration.ConfigurationBuilderAttributesAccessor;
 import org.wildfly.clustering.infinispan.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,15 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb;
+
+package org.wildfly.clustering.ejb.remote;
+
+import java.util.List;
+
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.network.ClientMapping;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
- * interface for obtaining ClientMappingsRegistryProvider instances in the legacy case where no distributable-ejb subsystem is present.
+ * interface defining ClientMappingsRegistryProvider instances, used to install configured ClientMappingsRegistry services.
  *
  * @author Paul Ferraro
- * @author Richard Achmatowicz
  */
-@Deprecated
-public interface LegacyClientMappingsRegistryProviderFactory {
-    ClientMappingsRegistryProvider createClientMappingsRegistryProvider(String clusterName);
+public interface ClientMappingsRegistryProvider {
+
+    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String connectorName, SupplierDependency<List<ClientMapping>> clientMappings);
 }
