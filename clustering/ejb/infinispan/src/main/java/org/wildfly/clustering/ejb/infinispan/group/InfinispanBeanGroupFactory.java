@@ -69,7 +69,7 @@ public class InfinispanBeanGroupFactory<I, T, C> implements BeanGroupFactory<I, 
     private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> cache;
     private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> findCache;
     private final Cache<BeanKey<I>, BeanEntry<I>> beanCache;
-    private final Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter;
+    private final Predicate<Map.Entry<? super BeanKey<I>, ? super Object>> beanFilter;
     private final MarshalledValueFactory<C> factory;
     private final PassivationListener<T> passivationListener;
     private final MutatorFactory<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> mutatorFactory;
@@ -77,7 +77,7 @@ public class InfinispanBeanGroupFactory<I, T, C> implements BeanGroupFactory<I, 
     private final ListenerRegistration postActivateListenerRegistration;
     private final Executor executor;
 
-    public InfinispanBeanGroupFactory(Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> cache, Cache<BeanKey<I>, BeanEntry<I>> beanCache, Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter, MarshalledValueFactory<C> factory, CacheProperties properties, PassivationConfiguration<T> passivation) {
+    public InfinispanBeanGroupFactory(Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, C>> cache, Cache<BeanKey<I>, BeanEntry<I>> beanCache, Predicate<Map.Entry<? super BeanKey<I>, ? super Object>> beanFilter, MarshalledValueFactory<C> factory, CacheProperties properties, PassivationConfiguration<T> passivation) {
         this.cache = cache;
         this.findCache = properties.isLockOnRead() ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
         this.beanCache = beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_LISTENER_NOTIFICATION);

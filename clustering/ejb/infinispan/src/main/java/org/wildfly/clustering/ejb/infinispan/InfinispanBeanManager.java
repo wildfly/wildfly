@@ -71,7 +71,7 @@ import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
  */
 public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, TransactionBatch> {
 
-    private final Cache<BeanKey<I>, BeanEntry<I>> cache;
+    private final Cache<BeanKey<I>, Object> cache;
     private final CacheProperties properties;
     private final BeanFactory<I, T> beanFactory;
     private final BeanGroupFactory<I, T, C> groupFactory;
@@ -80,7 +80,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
     private final ExpirationConfiguration<T> expiration;
     private final PassivationConfiguration<T> passivation;
     private final Batcher<TransactionBatch> batcher;
-    private final Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> filter;
+    private final Predicate<Map.Entry<? super BeanKey<I>, ? super Object>> filter;
     private final Group group;
     private final Function<BeanKey<I>, Node> primaryOwnerLocator;
 
@@ -91,7 +91,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
         this.filter = configuration.getBeanFilter();
         this.groupFactory = groupConfiguration.getFactory();
         this.beanFactory = beanConfiguration.getFactory();
-        this.cache = beanConfiguration.getCache();
+        this.cache = (Cache<BeanKey<I>, Object>) (Cache<?, ?>) beanConfiguration.getCache();
         this.properties = configuration.getProperties();
         this.batcher = new InfinispanBatcher(this.cache);
         this.identifierFactory = new AffinityIdentifierFactory<>(identifierFactory, this.cache, configuration.getAffinityFactory());
@@ -213,7 +213,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
 
     @Override
     public int getActiveCount() {
-        try (Stream<Map.Entry<BeanKey<I>, BeanEntry<I>>> entries = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).entrySet().stream()) {
+        try (Stream<Map.Entry<BeanKey<I>, Object>> entries = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).entrySet().stream()) {
             return (int) entries.filter(this.filter).count();
         }
     }

@@ -81,7 +81,7 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
                 return passivationConfig;
             }
         };
-        Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter = new BeanFilter<>(beanName);
+        Predicate<Map.Entry<? super BeanKey<I>, ? super Object>> beanFilter = new BeanFilter<>(beanName);
         BeanGroupFactory<I, T, ByteBufferMarshaller> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, beanFilter, factory, properties, passivation);
         Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, ByteBufferMarshaller>, BeanGroupFactory<I, T, ByteBufferMarshaller>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
         BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, properties, this.configuration.getBeanConfiguration().getTimeout(), properties.isPersistent() ? passivationListener : null);
@@ -109,7 +109,7 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
             }
 
             @Override
-            public Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> getBeanFilter() {
+            public Predicate<Map.Entry<? super BeanKey<I>, ? super Object>> getBeanFilter() {
                 return beanFilter;
             }
 

@@ -37,7 +37,7 @@ import org.wildfly.clustering.server.group.Group;
  */
 public interface InfinispanBeanManagerConfiguration<I, T> {
     String getName();
-    Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> getBeanFilter();
+    Predicate<Map.Entry<? super BeanKey<I>, ? super Object>> getBeanFilter();
     KeyAffinityServiceFactory getAffinityFactory();
     Group<Address> getGroup();
     CommandDispatcherFactory getCommandDispatcherFactory();

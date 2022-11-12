@@ -30,7 +30,7 @@ import org.infinispan.util.function.SerializablePredicate;
  * Filters a cache for entries specific to a particular bean.
  * @author Paul Ferraro
  */
-public class BeanFilter<I> implements SerializablePredicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> {
+public class BeanFilter<I> implements SerializablePredicate<Map.Entry<? super BeanKey<I>, ? super Object>> {
     private static final long serialVersionUID = -1079989480899595045L;
 
     private final String beanName;
@@ -40,7 +40,7 @@ public class BeanFilter<I> implements SerializablePredicate<Map.Entry<? super Be
     }
 
     @Override
-    public boolean test(Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>> entry) {
+    public boolean test(Map.Entry<? super BeanKey<I>, ? super Object> entry) {
         if (entry.getKey() instanceof BeanKey) {
             Object value = entry.getValue();
             if (value instanceof BeanEntry) {
