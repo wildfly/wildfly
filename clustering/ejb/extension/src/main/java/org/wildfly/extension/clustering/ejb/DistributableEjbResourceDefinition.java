@@ -37,9 +37,9 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.ejb.bean.BeanProviderRequirement;
 import org.wildfly.clustering.ejb.bean.DefaultBeanProviderRequirement;
+import org.wildfly.clustering.service.Requirement;
 
 /**
  * Definition of the /subsystem=distributable-ejb resource.

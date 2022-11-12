@@ -42,6 +42,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.ejb.cache"/>
         <module name="org.wildfly.clustering.ejb.infinispan"/>
         <module name="org.wildfly.clustering.ejb.spi"/>
         <module name="org.wildfly.clustering.infinispan.embedded.service"/>
