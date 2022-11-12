@@ -38,7 +38,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.ejb.EjbProviderRequirement;
+import org.wildfly.clustering.ejb.bean.BeanProviderRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
@@ -59,7 +59,7 @@ public class InfinispanBeanManagementResourceDefinition extends ChildResourceDef
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     enum Capability implements CapabilityProvider, UnaryOperator<RuntimeCapability.Builder<Void>> {
-        BEAN_MANAGEMENT_PROVIDER(EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER),
+        BEAN_MANAGEMENT_PROVIDER(BeanProviderRequirement.BEAN_MANAGEMENT_PROVIDER),
         ;
         private final org.jboss.as.clustering.controller.Capability capability;
 

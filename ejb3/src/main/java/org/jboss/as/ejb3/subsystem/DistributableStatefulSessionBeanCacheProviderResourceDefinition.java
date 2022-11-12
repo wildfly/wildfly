@@ -26,9 +26,9 @@ import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderServiceConfigurator;
+import org.jboss.as.ejb3.component.stateful.cache.distributable.DistributableStatefulSessionBeanCacheProviderServiceConfigurator;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.ejb.EjbProviderRequirement;
+import org.wildfly.clustering.ejb.bean.BeanProviderRequirement;
 
 /**
  * Defines a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
@@ -37,11 +37,10 @@ import org.wildfly.clustering.ejb.EjbProviderRequirement;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class DistributableCacheFactoryResourceDefinition extends CacheFactoryResourceDefinition {
+public class DistributableStatefulSessionBeanCacheProviderResourceDefinition extends StatefulSessionBeanCacheProviderResourceDefinition {
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        BEAN_MANAGEMENT(EJB3SubsystemModel.BEAN_MANAGEMENT, ModelType.STRING,
-                new CapabilityReference(()->Capability.CACHE_FACTORY.getDefinition(), EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER))
+        BEAN_MANAGEMENT(EJB3SubsystemModel.BEAN_MANAGEMENT, ModelType.STRING, new CapabilityReference(Capability.CACHE_FACTORY, BeanProviderRequirement.BEAN_MANAGEMENT_PROVIDER))
         ;
         private final AttributeDefinition definition;
 
@@ -60,7 +59,7 @@ public class DistributableCacheFactoryResourceDefinition extends CacheFactoryRes
         }
     }
 
-    public DistributableCacheFactoryResourceDefinition() {
-        super(EJB3SubsystemModel.DISTRIBUTABLE_CACHE_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), DistributableCacheFactoryBuilderServiceConfigurator::new);
+    public DistributableStatefulSessionBeanCacheProviderResourceDefinition() {
+        super(EJB3SubsystemModel.DISTRIBUTABLE_CACHE_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), DistributableStatefulSessionBeanCacheProviderServiceConfigurator::new);
     }
 }

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb;
+package org.wildfly.clustering.ejb.bean;
 
 import org.jboss.as.clustering.controller.DefaultableUnaryServiceNameFactoryProvider;
 import org.jboss.as.clustering.controller.ServiceNameFactory;
@@ -33,14 +33,14 @@ import org.wildfly.clustering.service.Requirement;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public enum EjbProviderRequirement implements DefaultableUnaryRequirement, DefaultableUnaryServiceNameFactoryProvider {
-    BEAN_MANAGEMENT_PROVIDER("org.wildfly.clustering.ejb.bean-management-provider", EjbDefaultProviderRequirement.BEAN_MANAGEMENT_PROVIDER),
+public enum BeanProviderRequirement implements DefaultableUnaryRequirement, DefaultableUnaryServiceNameFactoryProvider {
+    BEAN_MANAGEMENT_PROVIDER("org.wildfly.clustering.ejb.bean-management-provider", DefaultBeanProviderRequirement.BEAN_MANAGEMENT_PROVIDER),
     ;
     private final String name;
     private final UnaryServiceNameFactory factory;
-    private final EjbDefaultProviderRequirement defaultRequirement;
+    private final DefaultBeanProviderRequirement defaultRequirement;
 
-    EjbProviderRequirement(String name, EjbDefaultProviderRequirement defaultRequirement) {
+    BeanProviderRequirement(String name, DefaultBeanProviderRequirement defaultRequirement) {
         this.name = name;
         this.factory = new UnaryRequirementServiceNameFactory(this);
         this.defaultRequirement = defaultRequirement;

@@ -26,9 +26,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanInstance;
-import org.jboss.as.ejb3.subsystem.DistributableCacheFactoryResourceDefinition;
+import org.jboss.as.ejb3.subsystem.DistributableStatefulSessionBeanCacheProviderResourceDefinition;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.ejb.EjbProviderRequirement;
+import org.wildfly.clustering.ejb.bean.BeanProviderRequirement;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 
@@ -47,8 +47,8 @@ public class DistributableStatefulSessionBeanCacheProviderServiceConfigurator<K,
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         // if the attribute is undefined, pass null when generating the service name to pick up the default bean management provider
-        String provider = DistributableCacheFactoryResourceDefinition.Attribute.BEAN_MANAGEMENT.resolveModelAttribute(context, model).asStringOrNull();
-        this.accept(new ServiceSupplierDependency<>(EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER.getServiceName(context, provider)));
+        String provider = DistributableStatefulSessionBeanCacheProviderResourceDefinition.Attribute.BEAN_MANAGEMENT.resolveModelAttribute(context, model).asStringOrNull();
+        this.accept(new ServiceSupplierDependency<>(BeanProviderRequirement.BEAN_MANAGEMENT_PROVIDER.getServiceName(context, provider)));
         return this;
     }
 }

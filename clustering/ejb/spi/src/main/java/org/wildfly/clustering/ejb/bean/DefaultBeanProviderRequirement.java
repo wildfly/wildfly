@@ -19,11 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb;
+package org.wildfly.clustering.ejb.bean;
 
 import org.jboss.as.clustering.controller.RequirementServiceNameFactory;
 import org.jboss.as.clustering.controller.ServiceNameFactory;
 import org.jboss.as.clustering.controller.ServiceNameFactoryProvider;
+import org.wildfly.clustering.ejb.BeanManagementProvider;
 import org.wildfly.clustering.service.Requirement;
 
 /**
@@ -31,14 +32,14 @@ import org.wildfly.clustering.service.Requirement;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public enum EjbDefaultProviderRequirement implements Requirement, ServiceNameFactoryProvider {
+public enum DefaultBeanProviderRequirement implements Requirement, ServiceNameFactoryProvider {
     BEAN_MANAGEMENT_PROVIDER("org.wildfly.clustering.ejb.default-bean-management-provider", BeanManagementProvider.class),
     ;
     private final String name;
     private final Class<?> type;
     private final ServiceNameFactory factory;
 
-    EjbDefaultProviderRequirement(String name, Class<?> type) {
+    DefaultBeanProviderRequirement(String name, Class<?> type) {
         this.name = name;
         this.type = type;
         this.factory = new RequirementServiceNameFactory(this);

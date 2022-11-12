@@ -19,7 +19,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.ejb.LegacyBeanManagementConfiguration;
+import org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
 

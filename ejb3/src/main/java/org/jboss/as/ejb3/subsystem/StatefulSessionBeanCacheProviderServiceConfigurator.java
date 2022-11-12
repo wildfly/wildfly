@@ -24,7 +24,9 @@ package org.jboss.as.ejb3.subsystem;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvider;
+import org.jboss.ejb.client.SessionID;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -46,19 +48,18 @@ import java.util.function.Supplier;
  *
  * Subclasses should implement the get() method to return the CacheFactoryBuilder.
  */
-public abstract class CacheFactoryResourceServiceConfigurator extends CapabilityServiceNameProvider
-        implements ResourceServiceConfigurator, Supplier<CacheFactoryBuilder> {
+public abstract class StatefulSessionBeanCacheProviderServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<StatefulSessionBeanCacheProvider<SessionID, StatefulSessionComponentInstance>> {
 
-    public CacheFactoryResourceServiceConfigurator(PathAddress address) {
-        super(CacheFactoryResourceDefinition.Capability.CACHE_FACTORY, address);
+    public StatefulSessionBeanCacheProviderServiceConfigurator(PathAddress address) {
+        super(StatefulSessionBeanCacheProviderResourceDefinition.Capability.CACHE_FACTORY, address);
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceName name = this.getServiceName();
         ServiceBuilder<?> builder = target.addService(name);
-        Consumer<CacheFactoryBuilder> cacheFactoryBuilder = builder.provides(name);
-        Service service = new FunctionalService<>(cacheFactoryBuilder, Function.identity(), this);
+        Consumer<StatefulSessionBeanCacheProvider<SessionID, StatefulSessionComponentInstance>> provider = builder.provides(name);
+        Service service = new FunctionalService<>(provider, Function.identity(), this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

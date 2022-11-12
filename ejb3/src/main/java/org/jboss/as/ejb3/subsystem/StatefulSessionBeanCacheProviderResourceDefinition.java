@@ -30,11 +30,11 @@ import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvider;
 
 import java.util.function.UnaryOperator;
 
-public class CacheFactoryResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class StatefulSessionBeanCacheProviderResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     public static final String CACHE_FACTORY_CAPABILTY_NAME = "jboss.ejb.cache.factory";
 
@@ -44,7 +44,7 @@ public class CacheFactoryResourceDefinition extends ChildResourceDefinition<Mana
         private final RuntimeCapability<Void> definition;
 
         Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(CACHE_FACTORY_CAPABILTY_NAME, true, CacheFactoryBuilder.class)
+            this.definition = RuntimeCapability.Builder.of(CACHE_FACTORY_CAPABILTY_NAME, true, StatefulSessionBeanCacheProvider.class)
                     .setAllowMultipleRegistrations(true)
                     .build();
         }
@@ -58,7 +58,7 @@ public class CacheFactoryResourceDefinition extends ChildResourceDefinition<Mana
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
 
-    public CacheFactoryResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
+    public StatefulSessionBeanCacheProviderResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
         super(path, EJB3Extension.getResourceDescriptionResolver(path.getKey()));
         this.configurator = configurator;
         this.serviceConfiguratorFactory = serviceConfiguratorFactory;

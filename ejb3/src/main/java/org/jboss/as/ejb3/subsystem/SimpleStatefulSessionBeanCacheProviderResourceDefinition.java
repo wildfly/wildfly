@@ -23,7 +23,7 @@ package org.jboss.as.ejb3.subsystem;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.ejb3.cache.simple.SimpleCacheFactoryBuilderServiceConfigurator;
+import org.jboss.as.ejb3.component.stateful.cache.simple.SimpleStatefulSessionBeanCacheProviderServiceConfigurator;
 
 /**
  * Defines a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
@@ -32,9 +32,9 @@ import org.jboss.as.ejb3.cache.simple.SimpleCacheFactoryBuilderServiceConfigurat
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class SimpleCacheFactoryResourceDefinition extends CacheFactoryResourceDefinition {
+public class SimpleStatefulSessionBeanCacheProviderResourceDefinition extends StatefulSessionBeanCacheProviderResourceDefinition {
 
-    public SimpleCacheFactoryResourceDefinition() {
-        super(EJB3SubsystemModel.SIMPLE_CACHE_PATH, UnaryOperator.identity(), SimpleCacheFactoryBuilderServiceConfigurator::new);
+    public SimpleStatefulSessionBeanCacheProviderResourceDefinition() {
+        super(EJB3SubsystemModel.SIMPLE_CACHE_PATH, UnaryOperator.identity(), SimpleStatefulSessionBeanCacheProviderServiceConfigurator::new);
     }
 }

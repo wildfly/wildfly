@@ -38,8 +38,8 @@ import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.Requirement;
-import org.wildfly.clustering.ejb.EjbDefaultProviderRequirement;
-import org.wildfly.clustering.ejb.EjbProviderRequirement;
+import org.wildfly.clustering.ejb.bean.BeanProviderRequirement;
+import org.wildfly.clustering.ejb.bean.DefaultBeanProviderRequirement;
 
 /**
  * Definition of the /subsystem=distributable-ejb resource.
@@ -51,7 +51,7 @@ public class DistributableEjbResourceDefinition extends SubsystemResourceDefinit
     static final PathElement PATH = pathElement(DistributableEjbExtension.SUBSYSTEM_NAME);
 
     enum Capability implements CapabilityProvider {
-        DEFAULT_BEAN_MANAGEMENT_PROVIDER(EjbDefaultProviderRequirement.BEAN_MANAGEMENT_PROVIDER),
+        DEFAULT_BEAN_MANAGEMENT_PROVIDER(DefaultBeanProviderRequirement.BEAN_MANAGEMENT_PROVIDER),
         ;
         private final org.jboss.as.clustering.controller.Capability capability;
 
@@ -66,7 +66,7 @@ public class DistributableEjbResourceDefinition extends SubsystemResourceDefinit
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DEFAULT_BEAN_MANAGEMENT("default-bean-management", ModelType.STRING, new CapabilityReference(Capability.DEFAULT_BEAN_MANAGEMENT_PROVIDER, EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER)),
+        DEFAULT_BEAN_MANAGEMENT("default-bean-management", ModelType.STRING, new CapabilityReference(Capability.DEFAULT_BEAN_MANAGEMENT_PROVIDER, BeanProviderRequirement.BEAN_MANAGEMENT_PROVIDER)),
         ;
         private final AttributeDefinition definition;
 
