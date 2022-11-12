@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,28 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.clustering.ejb.cache.bean;
 
-package org.wildfly.clustering.ejb.client;
+import java.util.List;
 
-import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
-import org.jboss.ejb.client.SessionID;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
-import org.wildfly.clustering.marshalling.protostream.Scalar;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ejb.client.EJBClientSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.CompositeSerializationContextInitializer;
 
 /**
- * {@link SerializationContextInitializer} service for this module
+ * A {@link SerializationContextInitializer} that registers the requisite marshallers for use by this module's marshalling tests.
  * @author Paul Ferraro
  */
-public class EJBClientSerializationContextInitializer extends AbstractSerializationContextInitializer {
+@MetaInfServices(SerializationContextInitializer.class)
+public class TestSerializationContextInitializer extends CompositeSerializationContextInitializer {
 
-    public EJBClientSerializationContextInitializer() {
-        super("org.jboss.ejb.client.proto");
-    }
-
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(SessionID.class, Scalar.BYTE_ARRAY.cast(byte[].class), SessionID::getEncodedForm, SessionID::createSessionID));
+    public TestSerializationContextInitializer() {
+        super(List.of(new EJBClientSerializationContextInitializer(), new BeanSerializationContextInitializer()));
     }
 }

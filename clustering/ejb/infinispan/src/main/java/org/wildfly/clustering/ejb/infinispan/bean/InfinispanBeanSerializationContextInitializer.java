@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,27 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.client;
+package org.wildfly.clustering.ejb.infinispan.bean;
 
 import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.ejb.client.SessionID;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
-import org.wildfly.clustering.marshalling.protostream.Scalar;
+import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 
 /**
- * {@link SerializationContextInitializer} service for this module
+ * A {@link SerializationContextInitializer} that registers marshallers for types in this package.
  * @author Paul Ferraro
  */
-public class EJBClientSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class InfinispanBeanSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    public EJBClientSerializationContextInitializer() {
-        super("org.jboss.ejb.client.proto");
-    }
-
+    @SuppressWarnings("unchecked")
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(SessionID.class, Scalar.BYTE_ARRAY.cast(byte[].class), SessionID::getEncodedForm, SessionID::createSessionID));
+        context.registerMarshaller(new FunctionalMarshaller<>((Class<InfinispanBeanCreationMetaDataKey<SessionID>>) (Class<?>) InfinispanBeanCreationMetaDataKey.class, SessionID.class, InfinispanBeanCreationMetaDataKey::getId, InfinispanBeanCreationMetaDataKey::new));
+        context.registerMarshaller(new FunctionalMarshaller<>((Class<InfinispanBeanAccessMetaDataKey<SessionID>>) (Class<?>) InfinispanBeanAccessMetaDataKey.class, SessionID.class, InfinispanBeanAccessMetaDataKey::getId, InfinispanBeanAccessMetaDataKey::new));
+        context.registerMarshaller(new FunctionalMarshaller<>((Class<InfinispanBeanGroupKey<SessionID>>) (Class<?>) InfinispanBeanGroupKey.class, SessionID.class, InfinispanBeanGroupKey::getId, InfinispanBeanGroupKey::new));
     }
 }

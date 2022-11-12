@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,27 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.client;
+package org.wildfly.clustering.ejb.cache.bean;
 
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
-import org.jboss.ejb.client.SessionID;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
-import org.wildfly.clustering.marshalling.protostream.Scalar;
+import java.time.Duration;
+
+import org.wildfly.clustering.ee.Mutator;
 
 /**
- * {@link SerializationContextInitializer} service for this module
+ * A {@link BeanAccessMetaData} implementation that triggers a mutator on modification.
  * @author Paul Ferraro
  */
-public class EJBClientSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class MutableBeanAccessMetaData implements BeanAccessMetaData {
 
-    public EJBClientSerializationContextInitializer() {
-        super("org.jboss.ejb.client.proto");
+    private final BeanAccessMetaData metaData;
+    private final Mutator mutator;
+
+    public MutableBeanAccessMetaData(BeanAccessMetaData metaData, Mutator mutator) {
+        this.metaData = metaData;
+        this.mutator = mutator;
     }
 
     @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(SessionID.class, Scalar.BYTE_ARRAY.cast(byte[].class), SessionID::getEncodedForm, SessionID::createSessionID));
+    public Duration getLastAccessDuration() {
+        return this.metaData.getLastAccessDuration();
+    }
+
+    @Override
+    public void setLastAccessDuration(Duration duration) {
+        this.metaData.setLastAccessDuration(duration);
+        this.mutator.mutate();
     }
 }

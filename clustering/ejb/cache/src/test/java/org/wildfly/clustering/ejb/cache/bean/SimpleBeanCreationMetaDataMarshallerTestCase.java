@@ -20,33 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan.network;
+package org.wildfly.clustering.ejb.cache.bean;
 
-import java.net.InetAddress;
+import java.io.IOException;
+import java.util.UUID;
 
-import org.jboss.as.network.ClientMapping;
+import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.UUIDSessionID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Unit test for {@link ClientMappingMarshaller}.
+ * Unit test for {@link SimpleBeanEntryMarshaller}.
  * @author Paul Ferraro
  */
-public class ClientMappingMarshallerTestCase {
+public class SimpleBeanCreationMetaDataMarshallerTestCase {
 
     @Test
-    public void test() throws Exception {
-        Tester<ClientMapping> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new ClientMapping(InetAddress.getByName("0.0.0.0"), 0, InetAddress.getLoopbackAddress().getHostName(), 8080), ClientMappingMarshallerTestCase::assertEquals);
-        tester.test(new ClientMapping(InetAddress.getLocalHost(), 16, InetAddress.getLocalHost().getHostName(), Short.MAX_VALUE), ClientMappingMarshallerTestCase::assertEquals);
+    public void test() throws IOException {
+        SessionID id = new UUIDSessionID(UUID.randomUUID());
+        BeanCreationMetaData<SessionID> metaData = new SimpleBeanCreationMetaData<>("foo", id);
+        Tester<BeanCreationMetaData<SessionID>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+        tester.test(metaData, SimpleBeanCreationMetaDataMarshallerTestCase::assertEquals);
     }
 
-    static void assertEquals(ClientMapping mapping1, ClientMapping mapping2) {
-        Assert.assertEquals(mapping1.getSourceNetworkAddress(), mapping2.getSourceNetworkAddress());
-        Assert.assertEquals(mapping1.getSourceNetworkMaskBits(), mapping2.getSourceNetworkMaskBits());
-        Assert.assertEquals(mapping1.getDestinationAddress(), mapping2.getDestinationAddress());
-        Assert.assertEquals(mapping1.getDestinationPort(), mapping2.getDestinationPort());
+    static void assertEquals(BeanCreationMetaData<SessionID> metaData1, BeanCreationMetaData<SessionID> metaData2) {
+        Assert.assertEquals(metaData1.getName(), metaData2.getName());
+        Assert.assertEquals(metaData1.getGroupId(), metaData2.getGroupId());
+        Assert.assertEquals(metaData1.getCreationTime(), metaData2.getCreationTime());
     }
 }

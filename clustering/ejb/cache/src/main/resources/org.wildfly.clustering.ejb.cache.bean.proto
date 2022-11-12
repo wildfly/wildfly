@@ -1,0 +1,22 @@
+package org.wildfly.clustering.ejb.cache.bean;
+
+import "java.time.proto";
+import "org.jboss.ejb.client.proto";
+
+// IDs: 320 - 329
+
+/**
+ * @TypeId(320)
+ */
+message SimpleBeanCreationMetaData {
+	optional	string	name	 = 1;
+	optional	org.jboss.ejb.client.SessionID	groupId	 = 2;
+	optional	java.time.Instant	creationTime	 = 3;
+}
+
+/**
+ * @TypeId(321)
+ */
+message SimpleBeanAccessMetaData {
+	optional	java.time.Duration	lastAccessed	 = 1;
+}

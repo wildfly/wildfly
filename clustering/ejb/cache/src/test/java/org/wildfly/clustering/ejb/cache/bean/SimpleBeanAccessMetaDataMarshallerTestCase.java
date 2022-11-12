@@ -20,33 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan.network;
+package org.wildfly.clustering.ejb.cache.bean;
 
-import java.net.InetAddress;
+import java.io.IOException;
+import java.time.Duration;
 
-import org.jboss.as.network.ClientMapping;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Unit test for {@link ClientMappingMarshaller}.
+ * Unit test for {@link SimpleBeanAccessMetaDataMarshaller}.
  * @author Paul Ferraro
  */
-public class ClientMappingMarshallerTestCase {
+public class SimpleBeanAccessMetaDataMarshallerTestCase {
 
     @Test
-    public void test() throws Exception {
-        Tester<ClientMapping> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new ClientMapping(InetAddress.getByName("0.0.0.0"), 0, InetAddress.getLoopbackAddress().getHostName(), 8080), ClientMappingMarshallerTestCase::assertEquals);
-        tester.test(new ClientMapping(InetAddress.getLocalHost(), 16, InetAddress.getLocalHost().getHostName(), Short.MAX_VALUE), ClientMappingMarshallerTestCase::assertEquals);
+    public void test() throws IOException {
+        BeanAccessMetaData metaData = new SimpleBeanAccessMetaData();
+        Tester<BeanAccessMetaData> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+        tester.test(metaData, SimpleBeanAccessMetaDataMarshallerTestCase::assertEquals);
+        metaData.setLastAccessDuration(Duration.ofSeconds(10));
+        tester.test(metaData, SimpleBeanAccessMetaDataMarshallerTestCase::assertEquals);
     }
 
-    static void assertEquals(ClientMapping mapping1, ClientMapping mapping2) {
-        Assert.assertEquals(mapping1.getSourceNetworkAddress(), mapping2.getSourceNetworkAddress());
-        Assert.assertEquals(mapping1.getSourceNetworkMaskBits(), mapping2.getSourceNetworkMaskBits());
-        Assert.assertEquals(mapping1.getDestinationAddress(), mapping2.getDestinationAddress());
-        Assert.assertEquals(mapping1.getDestinationPort(), mapping2.getDestinationPort());
+    static void assertEquals(BeanAccessMetaData metaData1, BeanAccessMetaData metaData2) {
+        Assert.assertEquals(metaData1.getLastAccessDuration(), metaData2.getLastAccessDuration());
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,27 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.client;
+package org.wildfly.clustering.ejb.infinispan.bean;
 
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
+import java.io.IOException;
+import java.util.UUID;
+
 import org.jboss.ejb.client.SessionID;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
-import org.wildfly.clustering.marshalling.protostream.Scalar;
+import org.jboss.ejb.client.UUIDSessionID;
+import org.junit.Test;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * {@link SerializationContextInitializer} service for this module
+ * Unit test for {@link InfinispanBeanCreationMetaDataKey} marshalling.
  * @author Paul Ferraro
  */
-public class EJBClientSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class InfinispanBeanCreationMetaDataKeyTestCase {
 
-    public EJBClientSerializationContextInitializer() {
-        super("org.jboss.ejb.client.proto");
-    }
+    @Test
+    public void test() throws IOException {
+        InfinispanBeanCreationMetaDataKey<SessionID> key = new InfinispanBeanCreationMetaDataKey<>(new UUIDSessionID(UUID.randomUUID()));
 
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(SessionID.class, Scalar.BYTE_ARRAY.cast(byte[].class), SessionID::getEncodedForm, SessionID::createSessionID));
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
     }
 }
