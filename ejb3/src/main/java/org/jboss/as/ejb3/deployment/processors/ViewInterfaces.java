@@ -43,10 +43,10 @@ class ViewInterfaces {
      */
     static Set<Class<?>> getPotentialViewInterfaces(Class<?> beanClass) {
         Class<?>[] interfaces = beanClass.getInterfaces();
-        if (interfaces == null) {
+        if (interfaces.length == 0) {
             return Collections.emptySet();
         }
-        final Set<Class<?>> potentialBusinessInterfaces = new HashSet<Class<?>>();
+        final Set<Class<?>> potentialBusinessInterfaces = new HashSet<>();
         for (Class<?> klass : interfaces) {
             // Enterprise Beans 3.1 FR 4.9.7 bullet 5.3
             if (klass.equals(Serializable.class) ||
@@ -71,7 +71,7 @@ class ViewInterfaces {
         if (interfaces.isEmpty()) {
             return Collections.emptySet();
         }
-        final Set<DotName> names = new HashSet<DotName>();
+        final Set<DotName> names = new HashSet<>();
         for (DotName dotName : interfaces) {
             String name = dotName.toString();
             // Enterprise Beans 3.1 FR 4.9.7 bullet 5.3
