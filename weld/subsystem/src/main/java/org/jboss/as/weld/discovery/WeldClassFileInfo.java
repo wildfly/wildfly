@@ -283,11 +283,9 @@ public class WeldClassFileInfo implements ClassFileInfo {
             return true;
         }
 
-        if (fromClassInfo.interfaces() != null) {
-            for (DotName interfaceName : fromClassInfo.interfaces()) {
-                if (isAssignableTo(interfaceName, to)) {
-                    return true;
-                }
+        for (DotName interfaceName : fromClassInfo.interfaceNames()) {
+            if (isAssignableTo(interfaceName, to)) {
+                return true;
             }
         }
         return false;

@@ -28,6 +28,7 @@ import java.io.Externalizable;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -66,8 +67,8 @@ class ViewInterfaces {
      * @return A collection of all potential view interfaces
      */
     static Set<DotName> getPotentialViewInterfaces(ClassInfo beanClass) {
-        DotName[] interfaces = beanClass.interfaces();
-        if (interfaces == null) {
+        List<DotName> interfaces = beanClass.interfaceNames();
+        if (interfaces.isEmpty()) {
             return Collections.emptySet();
         }
         final Set<DotName> names = new HashSet<DotName>();
