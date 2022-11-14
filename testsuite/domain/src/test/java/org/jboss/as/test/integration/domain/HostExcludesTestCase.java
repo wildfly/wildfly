@@ -63,7 +63,6 @@ import org.jboss.modules.Resource;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -82,7 +81,6 @@ import org.junit.Test;
  *
  * @author Yeray Borges
  */
-@Ignore("WFLY-17231")
 public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
     private static DomainLifecycleUtil primaryUtils;
@@ -92,7 +90,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
-    private static final String MAJOR = "27.";
+    private static final String MAJOR = "28.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -202,14 +200,15 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.jboss.as.jaxr",
                 "org.jboss.as.configadmin"
         )),
+        WILDFLY_27_0("WildFly27.0", WILDFLY_26_0, Arrays.asList(
+                "org.wildfly.extension.clustering.ejb",
+                "org.wildfly.extension.datasources-agroal"
+        )),
         // If an extension is added to this enum, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
         // to the internal mpExtensions Set defined on this class.
         // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
-        // of wildfly preview. In such a case, add them to previewExtensions
-        CURRENT(MAJOR, WILDFLY_26_0, Arrays.asList(
-                "org.wildfly.extension.clustering.ejb",
-                "org.wildfly.extension.datasources-agroal"
-        ), getCurrentRemovedExtensions());
+        // of wildfly preview. In such a case, add them to previewExtensions set defined below.
+        CURRENT(MAJOR, WILDFLY_27_0, null, getCurrentRemovedExtensions());
 
         private static List<String> getCurrentRemovedExtensions() {
             // TODO If we decide to remove these modules from WFP, uncomment this.
@@ -249,6 +248,11 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         ));
 
         // List of extensions added only by the WildFly Preview
+        // We do not track changes between different versions of WildFly Preview.
+        // From the point of view of this test, all extensions added in WildFly Preview are always extensions
+        // added in the latest release of WildFly Preview. It is out of the scope of Host Exclusion test
+        // to compute on which WildFly Preview was added such a new extension and track the Host Exclusions between
+        // different WildFly Preview releases.
         private Set<String> previewExtensions = new HashSet<>(Arrays.asList(
                 "org.wildfly.extension.micrometer"
         ));
@@ -447,7 +451,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     }
 
     /**
-     * Retrieve the list of all modules which export locally a resource that implements a org.jboss.as.controller.Extension.
+     * Retrieve the list of all modules which export locally a resource that implements org.jboss.as.controller.Extension.
      * This list is considered the list of all available extensions that can be added to a server.
      *
      * It is assumed that the module which is added as an extension has the org.jboss.as.controller.Extension service as
