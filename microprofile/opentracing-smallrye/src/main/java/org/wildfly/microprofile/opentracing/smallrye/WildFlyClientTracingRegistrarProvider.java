@@ -28,11 +28,11 @@ import io.smallrye.opentracing.SmallRyeClientTracingFeature;
 import org.eclipse.microprofile.opentracing.ClientTracingRegistrarProvider;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.CDI;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.ClientBuilder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
