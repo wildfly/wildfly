@@ -23,19 +23,20 @@ package org.wildfly.microprofile.opentracing.smallrye;
 
 import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.SMALLRYE_OPENTRACING_TRACER;
 
-import io.opentracing.Tracer;
-import io.opentracing.contrib.jaxrs2.server.OperationNameProvider;
-import io.opentracing.contrib.jaxrs2.server.OperationNameProvider.ClassNameOperationName;
-import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import java.util.Optional;
-import javax.inject.Inject;
 
-import javax.servlet.ServletContext;
-import javax.ws.rs.container.DynamicFeature;
-import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.FeatureContext;
-import javax.ws.rs.ext.Provider;
+import jakarta.inject.Inject;
+import jakarta.servlet.ServletContext;
+import jakarta.ws.rs.container.DynamicFeature;
+import jakarta.ws.rs.container.ResourceInfo;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.FeatureContext;
+import jakarta.ws.rs.ext.Provider;
+
+import io.opentracing.Tracer;
+import io.smallrye.opentracing.contrib.jaxrs2.server.OperationNameProvider;
+import io.smallrye.opentracing.contrib.jaxrs2.server.OperationNameProvider.ClassNameOperationName;
+import io.smallrye.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
