@@ -44,6 +44,7 @@
     <modules>
         <module>ejb</module>
         <module>jpa</module>
+        <module>subsystem</module>
         <module>transactions</module>
         <module>webservices</module>
     </modules>
@@ -74,8 +75,6 @@
                 <module>common</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>bean-validation</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>subsystem</module>
             </modules>
         </profile>
     </profiles>

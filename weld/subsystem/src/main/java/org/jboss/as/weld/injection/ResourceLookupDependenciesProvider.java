@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.naming.deployment.ContextNames;

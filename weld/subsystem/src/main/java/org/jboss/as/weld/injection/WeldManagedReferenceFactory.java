@@ -23,7 +23,7 @@ package org.jboss.as.weld.injection;
 
 import java.io.Serializable;
 
-import javax.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.context.spi.CreationalContext;
 
 import org.jboss.as.ee.component.ComponentFactory;
 import org.jboss.as.naming.ManagedReference;

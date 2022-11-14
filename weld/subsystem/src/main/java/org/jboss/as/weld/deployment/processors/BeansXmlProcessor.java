@@ -41,6 +41,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld._private.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadata;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadataContainer;
+import org.jboss.as.weld.deployment.PropertyReplacingBeansXmlParser;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.util.Utils;
@@ -70,7 +71,7 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        BeansXmlParser parser = BeansXmlParserFactory.getPropertyReplacingParser(deploymentUnit,
+        BeansXmlParser parser = new PropertyReplacingBeansXmlParser(deploymentUnit,
                 Utils.getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY)
                         .isLegacyEmptyBeansXmlTreatment());
 
