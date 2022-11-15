@@ -41,10 +41,7 @@
         <module>hibernate6</module>
         <module>subsystem</module>
         <module>spi</module>
-<!-- TODO enable eclipselink module after resolving 
-  
         <module>eclipselink</module>
--->
 
     </modules>
 </project>
