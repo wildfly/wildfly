@@ -82,17 +82,6 @@
             </exclusions>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-weld</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
 
         <!-- Other deps consistent with the jakarta.* from parent module -->
         <dependency>
