@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
@@ -288,13 +288,13 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
     }
 
     private TransportConfiguration[] translateTransportGroupConfigurations(Map<String, org.apache.activemq.artemis.api.core.TransportConfiguration> connectorConfigurations, List<String> connectors) throws StartException {
-        List<org.hornetq.api.core.TransportConfiguration> legacyConnectorConfigurations = new ArrayList<>();
+        List<TransportConfiguration> legacyConnectorConfigurations = new ArrayList<>();
 
         for (String connectorName : connectors) {
             org.apache.activemq.artemis.api.core.TransportConfiguration newTransportConfiguration = connectorConfigurations.get(connectorName);
             String legacyFactoryClassName = translateFactoryClassName(newTransportConfiguration.getFactoryClassName());
             Map legacyParams = translateParams(newTransportConfiguration.getParams());
-            org.hornetq.api.core.TransportConfiguration legacyTransportConfiguration = new org.hornetq.api.core.TransportConfiguration(
+            TransportConfiguration legacyTransportConfiguration = new TransportConfiguration(
                     legacyFactoryClassName,
                     legacyParams,
                     newTransportConfiguration.getName());
@@ -302,7 +302,7 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
             legacyConnectorConfigurations.add(legacyTransportConfiguration);
         }
 
-        return legacyConnectorConfigurations.toArray(new org.hornetq.api.core.TransportConfiguration[legacyConnectorConfigurations.size()]);
+        return legacyConnectorConfigurations.toArray(new TransportConfiguration[legacyConnectorConfigurations.size()]);
     }
 
     private String translateFactoryClassName(String newFactoryClassName) throws StartException {

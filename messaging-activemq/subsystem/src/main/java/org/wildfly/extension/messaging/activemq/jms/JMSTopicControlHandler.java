@@ -39,9 +39,9 @@ import static org.wildfly.extension.messaging.activemq.jms.JsonUtil.toJSON;
 
 import java.util.List;
 import java.util.Map;
-import javax.json.Json;
+import jakarta.json.Json;
 
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.Pair;
@@ -361,7 +361,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
     }
 
     private String listSubscribersInfosAsJSON(final DurabilityType durability, AddressControl addressControl, ManagementService managementService) {
-        javax.json.JsonArrayBuilder array = Json.createArrayBuilder();
+        jakarta.json.JsonArrayBuilder array = Json.createArrayBuilder();
         try {
             List<QueueControl> queues = JMSTopicReadAttributeHandler.getQueues(durability, addressControl, managementService);
             for (QueueControl queue : queues) {

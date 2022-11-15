@@ -73,7 +73,7 @@ import org.wildfly.extension.messaging.activemq.jms.JMSTopicControlHandler;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
 /**
- * {@link org.jboss.as.controller.transform.ExtensionTransformerRegistration} for the messaging-activemq subsystem.
+ * {@link ExtensionTransformerRegistration} for the messaging-activemq subsystem.
  *
  * @author Paul Ferraro
  */
