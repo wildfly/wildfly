@@ -16,6 +16,8 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
+import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS_PROP_NAME;
 
 import java.io.InputStream;
@@ -288,11 +290,11 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
         for (final String connectorSocketBinding : connectorsSocketBindings) {
             // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
             if (outbounds.get(connectorSocketBinding)) {
-                final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(connectorSocketBinding);
+                final ServiceName outboundSocketName = OUTBOUND_SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
                 Supplier<OutboundSocketBinding> outboundSocketBindingSupplier = serviceBuilder.requires(outboundSocketName);
                 service.outboundSocketBindings.put(connectorSocketBinding, outboundSocketBindingSupplier);
             } else {
-                final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding);
+                final ServiceName socketName = SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
                 Supplier<SocketBinding> socketBindingSupplier = serviceBuilder.requires(socketName);
                 service.socketBindings.put(connectorSocketBinding, socketBindingSupplier);
             }

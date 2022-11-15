@@ -94,7 +94,7 @@ public class Capabilities {
      *
      * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/network/socket-binding/capability.adoc">documentation</a>
      */
-    static final RuntimeCapability<Void> SOCKET_BINDING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.network.socket-binding", true, SocketBinding.class)
+    public static final RuntimeCapability<Void> SOCKET_BINDING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.network.socket-binding", true, SocketBinding.class)
             .build();
 
     /**
@@ -102,6 +102,6 @@ public class Capabilities {
      *
      * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/network/outbound-socket-binding/capability.adoc">Capability documentation</a>
      */
-    static final RuntimeCapability<Void> OUTBOUND_SOCKET_BINDING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.network.outbound-socket-binding", true, OutboundSocketBinding.class)
+    public static final RuntimeCapability<Void> OUTBOUND_SOCKET_BINDING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.network.outbound-socket-binding", true, OutboundSocketBinding.class)
             .build();
 }
