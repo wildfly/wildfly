@@ -517,7 +517,7 @@
         <version.org.javassist>3.27.0-GA</version.org.javassist>
         <version.org.jberet>2.1.1.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>1.0.6</version.org.jboss.activemq.artemis.integration>
-        <version.org.jboss.arquillian.core>1.7.0.Alpha12</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.7.0.Alpha13</version.org.jboss.arquillian.core>
         <version.org.jboss.common.jboss-common-beans>2.0.1.Final</version.org.jboss.common.jboss-common-beans>
         <legacy.version.org.jboss.ejb-client>4.0.49.Final</legacy.version.org.jboss.ejb-client>
         <version.org.jboss.ejb-client>5.0.1.Final</version.org.jboss.ejb-client>
@@ -602,7 +602,7 @@
         <version.org.springframework.kafka>2.9.1</version.org.springframework.kafka>
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>
-        <version.org.wildfly.arquillian>5.0.0.Alpha5</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>5.0.0.Alpha6</version.org.wildfly.arquillian>
         <version.org.wildfly.core>20.0.0.Beta2</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.http-client>1.1.15.Final</legacy.version.org.wildfly.http-client>
