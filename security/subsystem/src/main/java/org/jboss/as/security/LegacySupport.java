@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.ListAttributeDefinition;
@@ -128,7 +127,7 @@ class LegacySupport {
         }
 
         @Override
-        public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
+        public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) {
             throw SecurityLogger.ROOT_LOGGER.unsupportedOperation();
         }
 
@@ -212,7 +211,7 @@ class LegacySupport {
 
 
         @Override
-        public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
+        public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) {
             throw SecurityLogger.ROOT_LOGGER.unsupportedOperation();
         }
 
@@ -291,7 +290,7 @@ class LegacySupport {
         }
 
         @Override
-        public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
+        public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) {
             throw SecurityLogger.ROOT_LOGGER.unsupportedOperation();
         }
 
@@ -361,7 +360,7 @@ class LegacySupport {
 
 
         @Override
-        public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
+        public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) {
             throw SecurityLogger.ROOT_LOGGER.unsupportedOperation();
         }
 
@@ -387,7 +386,7 @@ class LegacySupport {
      */
 
     static class LegacyModulesAttributeReader implements OperationStepHandler {
-        private String newKeyName;
+        private final String newKeyName;
 
         LegacyModulesAttributeReader(String newKeyName) {
             this.newKeyName = newKeyName;
@@ -409,7 +408,7 @@ class LegacySupport {
     }
 
     static class LegacyModulesAttributeWriter implements OperationStepHandler {
-        private String newKeyName;
+        private final String newKeyName;
 
         LegacyModulesAttributeWriter(String newKeyName) {
             this.newKeyName = newKeyName;
@@ -421,7 +420,7 @@ class LegacySupport {
             OperationStepHandler addHandler = context.getResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS.append(newKeyName)).getOperationHandler(PathAddress.EMPTY_ADDRESS, "add");
             ModelNode value = operation.get(VALUE);
             if (value.isDefined()) {
-                List<ModelNode> modules = new ArrayList<ModelNode>(value.asList());
+                List<ModelNode> modules = new ArrayList<>(value.asList());
                 Collections.reverse(modules); //need to reverse it to make sure they are added in proper order
                 for (ModelNode module : modules) {
                     ModelNode addModuleOp = module.clone();
@@ -443,8 +442,8 @@ class LegacySupport {
     }
 
     static class LegacyModulesConverter implements OperationStepHandler {
-        private String newKeyName;
-        private ListAttributeDefinition oldAttribute;
+        private final String newKeyName;
+        private final ListAttributeDefinition oldAttribute;
 
         LegacyModulesConverter(String newKeyName, ListAttributeDefinition oldAttribute) {
             this.newKeyName = newKeyName;
@@ -461,7 +460,7 @@ class LegacySupport {
             Resource existing = context.readResource(PathAddress.EMPTY_ADDRESS);
             OperationStepHandler addHandler = context.getResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS.append(newKeyName)).getOperationHandler(PathAddress.EMPTY_ADDRESS, "add");
             oldAttribute.validateOperation(operation);
-            List<ModelNode> modules = new ArrayList<ModelNode>(operation.get(oldAttribute.getName()).asList());
+            List<ModelNode> modules = new ArrayList<>(operation.get(oldAttribute.getName()).asList());
             Collections.reverse(modules); //need to reverse it to make sure they are added in proper order
             for (ModelNode module : modules) {
                 ModelNode addModuleOp = module.clone();
