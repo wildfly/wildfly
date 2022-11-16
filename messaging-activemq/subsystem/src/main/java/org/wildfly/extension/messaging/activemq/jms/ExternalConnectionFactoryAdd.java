@@ -15,6 +15,8 @@
  */
 package org.wildfly.extension.messaging.activemq.jms;
 
+import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
@@ -125,11 +127,11 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             for (final String connectorSocketBinding : connectorsSocketBindings) {
                 // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
                 if (outbounds.get(connectorSocketBinding)) {
-                    final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(connectorSocketBinding);
+                    final ServiceName outboundSocketName = OUTBOUND_SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
                     Supplier<OutboundSocketBinding> outboundSupplier = builder.requires(outboundSocketName);
                     outboundSocketBindings.put(connectorSocketBinding, outboundSupplier);
                 } else {
-                    final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding);
+                    final ServiceName socketName = SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
                     Supplier<SocketBinding> socketBindingsSupplier = builder.requires(socketName);
                     socketBindings.put(connectorSocketBinding, socketBindingsSupplier);
                 }
