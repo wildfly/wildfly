@@ -58,7 +58,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
@@ -505,6 +504,25 @@ class LegacySupport {
         public ListAttributeDefinition build() {
             // This should not be called. We only use this class to carry properties to the AD constructors
             throw new UnsupportedOperationException();
+        }
+    }
+
+    private static class ParametersOfValidator implements ParameterValidator {
+        private final ParametersValidator delegate;
+
+        private ParametersOfValidator(final ParametersValidator delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+            try {
+                delegate.validate(value);
+            } catch (OperationFailedException e) {
+                final ModelNode failureDescription = new ModelNode().add(SecurityLogger.ROOT_LOGGER.validationFailed(parameterName));
+                failureDescription.add(e.getFailureDescription());
+                throw new OperationFailedException(e.getMessage(), e.getCause(), failureDescription);
+            }
         }
     }
 }
