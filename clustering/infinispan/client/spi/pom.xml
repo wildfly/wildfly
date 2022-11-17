@@ -54,5 +54,13 @@
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-client-hotrod-jakarta</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-commons-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
     </dependencies>
 </project>
