@@ -24,7 +24,7 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 import java.util.List;
 
-import javax.jms.Topic;
+import jakarta.jms.Topic;
 
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.jboss.as.controller.AbstractAddStepHandler;

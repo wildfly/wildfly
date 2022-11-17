@@ -87,7 +87,7 @@ public class ConnectorServiceDefinition extends PersistentResourceDefinition {
         @Override
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                 ModelNode resolvedValue, ModelNode currentValue,
-                org.jboss.as.controller.AbstractWriteAttributeHandler.HandbackHolder<Void> voidHandback)
+                HandbackHolder<Void> voidHandback)
                 throws OperationFailedException {
             if (CommonAttributes.FACTORY_CLASS.getName().equals(attributeName)) {
                 checkFactoryClass(resolvedValue.asString());

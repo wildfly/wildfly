@@ -253,6 +253,14 @@
                     <groupId>com.sun</groupId>
                     <artifactId>tools</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.arquillian.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

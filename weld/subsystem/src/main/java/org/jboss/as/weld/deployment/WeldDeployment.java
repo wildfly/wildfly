@@ -30,9 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.el.ELResolver;
-import javax.el.ExpressionFactory;
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.Extension;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.WeldModuleResourceLoader;
@@ -50,10 +48,6 @@ import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.bootstrap.spi.CDI11Deployment;
 import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
 import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.manager.BeanManagerImpl;
-import org.jboss.weld.module.ExpressionLanguageSupport;
-import org.jboss.weld.module.web.el.WeldELResolver;
-import org.jboss.weld.module.web.el.WeldExpressionFactory;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.serialization.spi.ContextualStore;
 import org.jboss.weld.serialization.spi.ProxyServices;
@@ -71,20 +65,7 @@ public class WeldDeployment implements CDI11Deployment {
 
     public static final String ADDITIONAL_CLASSES_BDA_SUFFIX = ".additionalClasses";
     public static final String BOOTSTRAP_CLASSLOADER_BDA_ID = "bootstrapBDA" + ADDITIONAL_CLASSES_BDA_SUFFIX;
-    static final Set<Class<?>> NON_OVERRIDABLE_SERVICES = Set.of(ContextualStore.class, ExpressionLanguageSupport.class);
-
-    private static final ExpressionLanguageSupport EL_SUPPORT = new ExpressionLanguageSupport() {
-        public void cleanup() {
-        }
-
-        public ExpressionFactory wrapExpressionFactory(ExpressionFactory expressionFactory) {
-            return new WildFlyWeldExpressionFactory(expressionFactory);
-        }
-
-        public ELResolver createElResolver(BeanManagerImpl manager) {
-            return new WeldELResolver(manager);
-        }
-    };
+    static final Set<Class<?>> NON_OVERRIDABLE_SERVICES = Set.of(ContextualStore.class);
 
     private final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives;
 
@@ -124,9 +105,6 @@ public class WeldDeployment implements CDI11Deployment {
                 }
             }
         };
-        // Work around flaw in WeldExpressionFactory.equals by using a WeldExpressionFactory subclass.
-        // Register this before exporting deployment so our service registration takes precedence
-        this.serviceRegistry.add(ExpressionLanguageSupport.class, EL_SUPPORT);
         this.additionalBeanDeploymentArchivesByClassloader = new ConcurrentHashMap<>();
         this.module = module;
         this.rootBeanDeploymentModule = rootBeanDeploymentModule;
@@ -294,21 +272,5 @@ public class WeldDeployment implements CDI11Deployment {
             return additionalBeanDeploymentArchivesByClassloader.get(moduleClassLoader);
         }
         return null;
-    }
-
-    private static class WildFlyWeldExpressionFactory extends WeldExpressionFactory {
-
-        private WildFlyWeldExpressionFactory(ExpressionFactory expressionFactory) {
-            super(expressionFactory);
-        }
-
-        // Override the superclass impl by recognizing that two instances of this class with the same delegate are equal.
-        // TODO move to the superclass
-        @Override
-        public boolean equals(Object obj) {
-            return super.equals(obj) ||
-                    (obj instanceof WildFlyWeldExpressionFactory
-                            && delegate().equals(((WildFlyWeldExpressionFactory) obj).delegate()));
-        }
     }
 }

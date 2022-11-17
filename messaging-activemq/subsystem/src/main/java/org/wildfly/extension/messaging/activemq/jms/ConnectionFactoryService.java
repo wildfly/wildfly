@@ -35,7 +35,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
- * {@code Service} responsible for creating and destroying a {@code javax.jms.ConnectionFactory}.
+ * {@code Service} responsible for creating and destroying a {@code jakarta.jms.ConnectionFactory}.
  *
  * @author Emanuel Muckenhuber
  */

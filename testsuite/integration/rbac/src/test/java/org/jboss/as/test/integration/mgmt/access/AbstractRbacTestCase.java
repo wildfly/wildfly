@@ -31,6 +31,7 @@ import java.util.Map;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClientConfiguration;
 import org.jboss.as.test.integration.management.rbac.RbacAdminCallbackHandler;
 import org.junit.AfterClass;
 
@@ -71,12 +72,15 @@ public class AbstractRbacTestCase {
         return result;
     }
 
-    private ModelControllerClient createClient(String userName) throws UnknownHostException {
-        return ModelControllerClient.Factory.create(managementClient.getMgmtProtocol(),
-                managementClient.getMgmtAddress(),
-                managementClient.getMgmtPort(),
-                new RbacAdminCallbackHandler(userName),
-                SASL_OPTIONS);
+    private ModelControllerClient createClient(String userName) {
+        return ModelControllerClient.Factory.create(
+                new ModelControllerClientConfiguration.Builder()
+                        .setHandler(new RbacAdminCallbackHandler(userName))
+                        .setProtocol(managementClient.getMgmtProtocol())
+                        .setHostName(managementClient.getMgmtAddress())
+                        .setPort(managementClient.getMgmtPort())
+                        .setSaslOptions(SASL_OPTIONS)
+                        .build());
     }
 
     public static void removeClientForUser(String userName) throws IOException {

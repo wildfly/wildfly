@@ -107,4 +107,9 @@
         <param name="host-release" value="WildFly26.0"/>
         <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.micrometer&quot;]"/>
     </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly27.0"/>
+        <param name="host-release" value="WildFly27.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.micrometer&quot;]"/>
+    </feature>
 </feature-group-spec>

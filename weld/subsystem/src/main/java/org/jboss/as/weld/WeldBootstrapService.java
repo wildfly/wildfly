@@ -45,7 +45,7 @@ import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeanManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;

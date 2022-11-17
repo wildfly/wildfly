@@ -16,6 +16,8 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
+import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS_PROP_NAME;
 
 import java.io.InputStream;
@@ -138,16 +140,16 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
     private static final String RAMANAGED_CONN_FACTORY = "org.apache.activemq.artemis.ra.ActiveMQRAManagedConnectionFactory";
     private static final String RA_CONN_FACTORY = "org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactory";
     private static final String RA_CONN_FACTORY_IMPL = "org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactoryImpl";
-    private static final String JMS_SESSION = "javax.jms.Session";
+    private static final String JMS_SESSION = "jakarta.jms.Session";
     private static final String ACTIVEMQ_RA_SESSION = "org.apache.activemq.artemis.ra.ActiveMQRASession";
     private static final String BASIC_PASS = "BasicPassword";
-    private static final String JMS_QUEUE = "javax.jms.Queue";
+    private static final String JMS_QUEUE = "jakarta.jms.Queue";
     private static final String STRING_TYPE = "java.lang.String";
     private static final String INTEGER_TYPE = "java.lang.Integer";
     private static final String LONG_TYPE = "java.lang.Long";
     private static final String SESSION_DEFAULT_TYPE = "SessionDefaultType";
     private static final String TRY_LOCK = "UseTryLock";
-    private static final String JMS_MESSAGE_LISTENER = "javax.jms.MessageListener";
+    private static final String JMS_MESSAGE_LISTENER = "jakarta.jms.MessageListener";
     private static final String DEFAULT_MAX_RECONNECTS = "5";
     public static final String GROUP_ADDRESS = "discoveryAddress";
     public static final String DISCOVERY_INITIAL_WAIT_TIMEOUT = "discoveryInitialWaitTimeout";
@@ -288,11 +290,11 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
         for (final String connectorSocketBinding : connectorsSocketBindings) {
             // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
             if (outbounds.get(connectorSocketBinding)) {
-                final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(connectorSocketBinding);
+                final ServiceName outboundSocketName = OUTBOUND_SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
                 Supplier<OutboundSocketBinding> outboundSocketBindingSupplier = serviceBuilder.requires(outboundSocketName);
                 service.outboundSocketBindings.put(connectorSocketBinding, outboundSocketBindingSupplier);
             } else {
-                final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding);
+                final ServiceName socketName = SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
                 Supplier<SocketBinding> socketBindingSupplier = serviceBuilder.requires(socketName);
                 service.socketBindings.put(connectorSocketBinding, socketBindingSupplier);
             }
