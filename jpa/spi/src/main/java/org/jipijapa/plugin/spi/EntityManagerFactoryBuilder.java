@@ -22,7 +22,7 @@
 
 package org.jipijapa.plugin.spi;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 
 /**
  * EntityManagerFactoryBuilder is based on org.hibernate.jpa.boot.spi.EntityManagerFactoryBuilder.

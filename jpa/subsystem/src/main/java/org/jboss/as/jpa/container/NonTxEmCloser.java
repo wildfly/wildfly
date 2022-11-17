@@ -27,7 +27,7 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.wildfly.common.function.ThreadLocalStack;
 

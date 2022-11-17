@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.management;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
 import org.jipijapa.management.spi.EntityManagerFactoryAccess;

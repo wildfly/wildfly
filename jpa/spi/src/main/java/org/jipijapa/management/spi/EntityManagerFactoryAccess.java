@@ -22,7 +22,7 @@
 
 package org.jipijapa.management.spi;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 
 /**
  * EntityManagerFactoryAccess
