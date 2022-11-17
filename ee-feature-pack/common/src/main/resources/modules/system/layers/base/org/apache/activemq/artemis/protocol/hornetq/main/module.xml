@@ -30,7 +30,6 @@
     <dependencies>
         <!-- required to load ActiveMQ protocol SPI -->
         <module name="org.apache.activemq.artemis"/>
-        <!--<module name="io.netty"/>-->
         <module name="io.netty.netty-buffer"/>
         <module name="io.netty.netty-transport"/>
         <module name="io.netty.netty-handler"/>
