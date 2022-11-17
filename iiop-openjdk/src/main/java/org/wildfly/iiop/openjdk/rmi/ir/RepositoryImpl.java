@@ -98,7 +98,7 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
 
     // Repository implementation -------------------------------------
 
-    public Contained lookup_id(java.lang.String search_id) {
+    public Contained lookup_id(String search_id) {
         LocalContained c = _lookup_id(search_id);
 
         if (c == null)
@@ -107,7 +107,7 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
         return ContainedHelper.narrow(c.getReference());
     }
 
-    public TypeCode get_canonical_typecode(org.omg.CORBA.TypeCode tc) {
+    public TypeCode get_canonical_typecode(TypeCode tc) {
         // TODO
         return null;
     }
@@ -178,7 +178,7 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
     Map sequenceIdMap = new HashMap();
 
 
-    LocalContained _lookup_id(java.lang.String search_id) {
+    LocalContained _lookup_id(String search_id) {
         // mapping of arrays are special
         if (search_id.startsWith("RMI:["))
             return (ValueBoxDefImpl) sequenceIdMap.get(search_id);

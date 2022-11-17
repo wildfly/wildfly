@@ -97,7 +97,7 @@ public interface Credential extends org.jboss.jca.common.api.metadata.common.Cre
       private static final java.util.Map<String, Tag> MAP;
 
       static {
-         final java.util.Map<String, Credential.Tag> map = new java.util.HashMap<>();
+         final java.util.Map<String, Tag> map = new java.util.HashMap<>();
          for (Tag element : values())
          {
             final String name = element.getLocalName();

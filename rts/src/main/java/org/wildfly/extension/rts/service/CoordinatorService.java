@@ -69,7 +69,7 @@ public final class CoordinatorService extends AbstractRTSService implements Serv
         undeployServlet();
 
         final Map<String, String> initialParameters = new HashMap<String, String>();
-        initialParameters.put("javax.ws.rs.Application", CoordinatorApplication.class.getName());
+        initialParameters.put("jakarta.ws.rs.Application", CoordinatorApplication.class.getName());
 
         final DeploymentInfo coordinatorDeploymentInfo = getDeploymentInfo(DEPLOYMENT_NAME, CONTEXT_PATH, initialParameters);
 

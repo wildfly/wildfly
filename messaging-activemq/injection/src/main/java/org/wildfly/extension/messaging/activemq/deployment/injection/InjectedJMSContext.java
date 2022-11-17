@@ -27,19 +27,19 @@ import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.R
 import java.io.Serializable;
 import java.util.UUID;
 
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.inject.Inject;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSConnectionFactory;
-import javax.jms.JMSContext;
-import javax.jms.JMSPasswordCredential;
-import javax.jms.JMSSessionMode;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.inject.Inject;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSConnectionFactory;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSPasswordCredential;
+import jakarta.jms.JMSSessionMode;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.Status;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.Status;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2016 Red Hat inc.

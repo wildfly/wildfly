@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.resource.spi.TransactionSupport;
+import jakarta.resource.spi.TransactionSupport;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Security;
@@ -60,14 +60,14 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
-public class DirectConnectionFactoryActivatorService implements org.jboss.msc.service.Service<org.jboss.as.naming.deployment.ContextNames.BindInfo> {
+public class DirectConnectionFactoryActivatorService implements org.jboss.msc.service.Service<ContextNames.BindInfo> {
 
     private static final ServiceName SECURITY_MANAGER_SERVICE = ServiceName.JBOSS.append("security", "simple-security-manager");
     private static final ServiceName SUBJECT_FACTORY_SERVICE = ServiceName.JBOSS.append("security", "subject-factory");
 
 
-    public static final org.jboss.msc.service.ServiceName SERVICE_NAME_BASE =
-            org.jboss.msc.service.ServiceName.JBOSS.append("connector").append("direct-connection-factory-activator");
+    public static final ServiceName SERVICE_NAME_BASE =
+            ServiceName.JBOSS.append("connector").append("direct-connection-factory-activator");
 
     protected final InjectedValue<AS7MetadataRepository> mdr = new InjectedValue<AS7MetadataRepository>();
 
@@ -234,7 +234,7 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
             activator.setCreateBinderService(false);
             activator.setBindInfo(bindInfo);
             org.jboss.msc.service.ServiceTarget serviceTarget = context.getChildTarget();
-            org.jboss.msc.service.ServiceName activatorServiceName = ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(serviceName);
+            ServiceName activatorServiceName = ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(serviceName);
             org.jboss.msc.service.ServiceBuilder connectionFactoryServiceBuilder = serviceTarget
                     .addService(activatorServiceName, activator)
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,

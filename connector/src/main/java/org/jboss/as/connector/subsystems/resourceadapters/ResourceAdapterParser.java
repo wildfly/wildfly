@@ -273,7 +273,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
 
                         case CONNECTION_DEFINITION: {
-                            switch (org.jboss.as.connector.subsystems.resourceadapters.Namespace.forUri(reader.getNamespaceURI())) {
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
                                 case RESOURCEADAPTERS_1_0:
                                 case RESOURCEADAPTERS_1_1:
                                 case RESOURCEADAPTERS_2_0:
@@ -377,7 +377,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                     switch (WorkManager.Tag.forName(reader.getLocalName())) {
                         case SECURITY: {
                             WM_SECURITY.parseAndSetParameter("true", operation, reader);
-                            switch (org.jboss.as.connector.subsystems.resourceadapters.Namespace.forUri(reader.getNamespaceURI())) {
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
                                 case RESOURCEADAPTERS_1_0:
                                 case RESOURCEADAPTERS_1_1:
                                 case RESOURCEADAPTERS_2_0:

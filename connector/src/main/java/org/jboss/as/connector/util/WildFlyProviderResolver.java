@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
-import javax.validation.ValidationProviderResolver;
-import javax.validation.spi.ValidationProvider;
+import jakarta.validation.ValidationProviderResolver;
+import jakarta.validation.spi.ValidationProvider;
 
 import org.wildfly.security.manager.WildFlySecurityManager;
 

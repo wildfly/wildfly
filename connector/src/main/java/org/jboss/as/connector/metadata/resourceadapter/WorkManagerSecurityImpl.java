@@ -146,10 +146,10 @@ public class WorkManagerSecurityImpl extends org.jboss.jca.common.metadata.resou
                 {
                     sb.append("<").append(WorkManagerSecurity.Tag.MAP);
 
-                    sb.append(" ").append(WorkManagerSecurity.Attribute.FROM).append("=\"");
+                    sb.append(" ").append(Attribute.FROM).append("=\"");
                     sb.append(entry.getKey()).append("\"");
 
-                    sb.append(" ").append(WorkManagerSecurity.Attribute.TO).append("=\"");
+                    sb.append(" ").append(Attribute.TO).append("=\"");
                     sb.append(entry.getValue()).append("\"");
 
                     sb.append("/>");
@@ -166,10 +166,10 @@ public class WorkManagerSecurityImpl extends org.jboss.jca.common.metadata.resou
                 {
                     sb.append("<").append(WorkManagerSecurity.Tag.MAP);
 
-                    sb.append(" ").append(WorkManagerSecurity.Attribute.FROM).append("=\"");
+                    sb.append(" ").append(Attribute.FROM).append("=\"");
                     sb.append(entry.getKey()).append("\"");
 
-                    sb.append(" ").append(WorkManagerSecurity.Attribute.TO).append("=\"");
+                    sb.append(" ").append(Attribute.TO).append("=\"");
                     sb.append(entry.getValue()).append("\"");
 
                     sb.append("/>");

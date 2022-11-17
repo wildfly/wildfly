@@ -280,7 +280,7 @@ class TransactionSubsystem13Parser implements XMLStreamConstants, XMLElementRead
      *
      * @param reader the stream reader
      * @param operation ModelNode for the core-environment add operation
-     * @throws javax.xml.stream.XMLStreamException
+     * @throws XMLStreamException
      *
      */
     static void parseCoreEnvironmentElement(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
@@ -330,7 +330,7 @@ class TransactionSubsystem13Parser implements XMLStreamConstants, XMLElementRead
      * @param reader the stream reader
      * @param coreEnvironmentAdd the add operation
      *
-     * @throws javax.xml.stream.XMLStreamException
+     * @throws XMLStreamException
      *
      */
     static void parseProcessIdEnvironmentElement(XMLExtendedStreamReader reader, ModelNode coreEnvironmentAdd) throws XMLStreamException {

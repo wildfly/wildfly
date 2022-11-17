@@ -51,7 +51,7 @@ import org.jboss.jca.core.api.management.DataSource;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.msc.service.ServiceController;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 public abstract class PoolOperations implements OperationStepHandler {
 
@@ -285,7 +285,7 @@ public abstract class PoolOperations implements OperationStepHandler {
 
     private static class DsPoolMatcher implements PoolMatcher {
         public List<Pool> match(String jndiName, ManagementRepository repository) {
-            ArrayList<org.jboss.jca.core.api.connectionmanager.pool.Pool> result = new ArrayList<Pool>(repository
+            ArrayList<Pool> result = new ArrayList<Pool>(repository
                     .getDataSources().size());
             if (repository.getDataSources() != null) {
                 for (DataSource ds : repository.getDataSources()) {

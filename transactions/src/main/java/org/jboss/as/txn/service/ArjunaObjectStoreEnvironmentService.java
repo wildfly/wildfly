@@ -81,7 +81,7 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
 
         if(useJournalStore) {
             HornetqJournalEnvironmentBean hornetqJournalEnvironmentBean = BeanPopulator.getDefaultInstance(
-                    com.arjuna.ats.internal.arjuna.objectstore.hornetq.HornetqJournalEnvironmentBean.class
+                    HornetqJournalEnvironmentBean.class
             );
             hornetqJournalEnvironmentBean.setAsyncIO(enableAsyncIO);
             hornetqJournalEnvironmentBean.setStoreDir(objectStoreDir+"/HornetqObjectStore");

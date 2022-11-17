@@ -54,7 +54,7 @@ public class ActiveMQServerResource implements Resource {
     private volatile ServiceController<ActiveMQServer> activeMQServerServiceController;
 
     public ActiveMQServerResource() {
-        this(Resource.Factory.create());
+        this(Factory.create());
     }
 
     public ActiveMQServerResource(final Resource delegate) {
