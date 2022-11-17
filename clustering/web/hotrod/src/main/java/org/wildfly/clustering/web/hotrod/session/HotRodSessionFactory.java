@@ -22,29 +22,20 @@
 
 package org.wildfly.clustering.web.hotrod.session;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
-import org.infinispan.client.hotrod.annotation.ClientListener;
-import org.infinispan.client.hotrod.event.ClientCacheEntryCustomEvent;
-import org.infinispan.commons.io.UnsignedNumeric;
-import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.context.DefaultExecutorService;
-import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
+import org.wildfly.clustering.infinispan.client.listener.ClientCacheEntryExpiredEventListener;
+import org.wildfly.clustering.infinispan.client.listener.ListenerRegistration;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
@@ -59,13 +50,11 @@ import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
  */
-@ClientListener(converterFactoryName = "___eager-key-value-version-converter", useRawData = true) // References org.infinispan.server.hotrod.KeyValueVersionConverterFactory
-public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V, L> implements Registrar<Consumer<ImmutableSession>> {
+public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V, L> implements Registrar<Consumer<ImmutableSession>>, BiConsumer<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> {
 
     private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
     private final RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
@@ -73,7 +62,7 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
     private final ImmutableSessionAttributesFactory<V> attributesFactory;
     private final Remover<String> attributesRemover;
     private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
-    private final ExecutorService executor = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
+    private final ListenerRegistration listenerRegistration;
     private final boolean nearCacheEnabled;
 
     /**
@@ -90,71 +79,37 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
         this.attributesRemover = attributesFactory;
         this.creationMetaDataCache = config.getCache();
         this.accessMetaDataCache= config.getCache();
-        this.creationMetaDataCache.addClientListener(this, null, new Object[] { Boolean.TRUE });
+        this.listenerRegistration = new ClientCacheEntryExpiredEventListener<>(this.creationMetaDataCache, this).register();
         this.nearCacheEnabled = this.creationMetaDataCache.getRemoteCacheContainer().getConfiguration().remoteCaches().get(this.creationMetaDataCache.getName()).nearCacheMode().enabled();
     }
 
     @Override
     public void close() {
-        this.creationMetaDataCache.removeClientListener(this);
-        WildFlySecurityManager.doUnchecked(this.executor, DefaultExecutorService.SHUTDOWN_ACTION);
-        try {
-            this.executor.awaitTermination(this.creationMetaDataCache.getRemoteCacheContainer().getConfiguration().transactionTimeout(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        this.listenerRegistration.close();
     }
 
-    @ClientCacheEntryExpired
-    public void expired(ClientCacheEntryCustomEvent<byte[]> event) {
-        RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache = this.creationMetaDataCache;
-        RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache = this.accessMetaDataCache;
-        ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory = this.metaDataFactory;
-        ImmutableSessionAttributesFactory<V> attributesFactory = this.attributesFactory;
-        Remover<String> attributesRemover = this.attributesRemover;
-        Collection<Consumer<ImmutableSession>> listeners = this.listeners;
-        boolean nearCacheEnabled = this.nearCacheEnabled;
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                ByteBuffer buffer = ByteBuffer.wrap(event.getEventData());
-                byte[] key = new byte[UnsignedNumeric.readUnsignedInt(buffer)];
-                buffer.get(key);
-                byte[] value = buffer.remaining() > 0 ? new byte[UnsignedNumeric.readUnsignedInt(buffer)] : null;
-                if (value != null) {
-                    buffer.get(value);
+    @Override
+    public void accept(SessionCreationMetaDataKey key, SessionCreationMetaDataEntry<L> entry) {
+        // Ensure entry is removed from near cache
+        if (this.nearCacheEnabled) {
+            this.creationMetaDataCache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).remove(key);
+        }
+        String id = key.getId();
+        SessionAccessMetaData accessMetaData = this.accessMetaDataCache.withFlags(Flag.FORCE_RETURN_VALUE).remove(new SessionAccessMetaDataKey(id));
+        if (accessMetaData != null) {
+            V attributesValue = this.attributesFactory.findValue(id);
+            if (attributesValue != null) {
+                SessionCreationMetaDataEntry<L> creationMetaDataEntry = (entry != null) ? entry : new SessionCreationMetaDataEntry<>(new SimpleSessionCreationMetaData(Instant.EPOCH));
+                ImmutableSessionMetaData metaData = this.metaDataFactory.createImmutableSessionMetaData(id, new CompositeSessionMetaDataEntry<>(creationMetaDataEntry , accessMetaData));
+                ImmutableSessionAttributes attributes = this.attributesFactory.createImmutableSessionAttributes(id, attributesValue);
+                ImmutableSession session = HotRodSessionFactory.this.createImmutableSession(id, metaData, attributes);
+                Logger.ROOT_LOGGER.tracef("Session %s has expired.", id);
+                for (Consumer<ImmutableSession> listener : this.listeners) {
+                    listener.accept(session);
                 }
-                Marshaller marshaller = creationMetaDataCache.getRemoteCacheContainer().getConfiguration().marshaller();
-                String id = null;
-                try {
-                    SessionCreationMetaDataKey creationKey = (SessionCreationMetaDataKey) marshaller.objectFromByteBuffer(key);
-                    id = creationKey.getId();
-                    @SuppressWarnings("unchecked")
-                    SessionCreationMetaDataEntry<L> creationEntry = (value != null) ? (SessionCreationMetaDataEntry<L>) marshaller.objectFromByteBuffer(value) : new SessionCreationMetaDataEntry<>(new SimpleSessionCreationMetaData(Instant.EPOCH));
-                    // Ensure entry is removed from near cache
-                    if (nearCacheEnabled) {
-                        creationMetaDataCache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).remove(creationKey);
-                    }
-                    SessionAccessMetaData accessMetaData = accessMetaDataCache.withFlags(Flag.FORCE_RETURN_VALUE).remove(new SessionAccessMetaDataKey(id));
-                    if (accessMetaData != null) {
-                        V attributesValue = attributesFactory.findValue(id);
-                        if (attributesValue != null) {
-                            ImmutableSessionMetaData metaData = metaDataFactory.createImmutableSessionMetaData(id, new CompositeSessionMetaDataEntry<>(creationEntry, accessMetaData));
-                            ImmutableSessionAttributes attributes = attributesFactory.createImmutableSessionAttributes(id, attributesValue);
-                            ImmutableSession session = HotRodSessionFactory.this.createImmutableSession(id, metaData, attributes);
-                            Logger.ROOT_LOGGER.tracef("Session %s has expired.", id);
-                            for (Consumer<ImmutableSession> listener : listeners) {
-                                listener.accept(session);
-                            }
-                            attributesRemover.remove(id);
-                        }
-                    }
-                } catch (IOException | ClassNotFoundException e) {
-                    Logger.ROOT_LOGGER.failedToExpireSession(e, id);
-                }
+                this.attributesRemover.remove(id);
             }
-        };
-        this.executor.submit(task);
+        }
     }
 
     @Override
