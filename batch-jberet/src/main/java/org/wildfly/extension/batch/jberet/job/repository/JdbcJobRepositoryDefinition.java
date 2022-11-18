@@ -63,7 +63,7 @@ public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
      * A data-source attribute which requires the {@link Capabilities#DATA_SOURCE_CAPABILITY}.
      */
     public static final SimpleAttributeDefinition DATA_SOURCE = SimpleAttributeDefinitionBuilder.create("data-source", ModelType.STRING, false)
-            .setCapabilityReference(Capabilities.DATA_SOURCE_CAPABILITY, Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), true)
+            .setCapabilityReference(Capabilities.DATA_SOURCE_CAPABILITY, Capabilities.JOB_REPOSITORY_CAPABILITY)
             .setRestartAllServices()
             .build();
 
