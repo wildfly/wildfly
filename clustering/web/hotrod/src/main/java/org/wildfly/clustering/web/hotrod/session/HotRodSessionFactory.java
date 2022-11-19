@@ -52,6 +52,10 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
+ * Creates a {@link org.wildfly.clustering.web.session.Session} from a set of remote cache entries.
+ * @param <C> the ServletContext specification type
+ * @param <V> the session attribute value type
+ * @param <L> the local context type
  * @author Paul Ferraro
  */
 public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V, L> implements Registrar<Consumer<ImmutableSession>>, BiConsumer<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> {
@@ -63,7 +67,6 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
     private final Remover<String> attributesRemover;
     private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
     private final ListenerRegistration listenerRegistration;
-    private final boolean nearCacheEnabled;
 
     /**
      * Constructs a new session factory
@@ -80,7 +83,6 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
         this.creationMetaDataCache = config.getCache();
         this.accessMetaDataCache= config.getCache();
         this.listenerRegistration = new ClientCacheEntryExpiredEventListener<>(this.creationMetaDataCache, this).register();
-        this.nearCacheEnabled = this.creationMetaDataCache.getRemoteCacheContainer().getConfiguration().remoteCaches().get(this.creationMetaDataCache.getName()).nearCacheMode().enabled();
     }
 
     @Override
@@ -90,10 +92,6 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
 
     @Override
     public void accept(SessionCreationMetaDataKey key, SessionCreationMetaDataEntry<L> entry) {
-        // Ensure entry is removed from near cache
-        if (this.nearCacheEnabled) {
-            this.creationMetaDataCache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).remove(key);
-        }
         String id = key.getId();
         SessionAccessMetaData accessMetaData = this.accessMetaDataCache.withFlags(Flag.FORCE_RETURN_VALUE).remove(new SessionAccessMetaDataKey(id));
         if (accessMetaData != null) {
