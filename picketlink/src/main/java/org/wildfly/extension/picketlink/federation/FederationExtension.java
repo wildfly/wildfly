@@ -39,6 +39,8 @@ import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolve
 import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
+import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -76,22 +78,7 @@ public final class FederationExtension extends AbstractLegacyExtension {
         final ManagementResourceRegistration subsystem = subsystemRegistration.registerSubsystemModel(new FederationSubsystemRootResourceDefinition());
         subsystemRegistration.registerXMLElementWriter(FederationSubsystemWriter.INSTANCE);
 
-        if (context.isRegisterTransformers()) {
-            registerTransformers_1_0(subsystemRegistration);
-        }
         return Collections.singleton(subsystem);
-    }
-
-    private void registerTransformers_1_0(SubsystemRegistration subsystemRegistration) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceTransformationDescriptionBuilder federationTransfDescBuilder = builder
-            .addChildResource(new FederationResourceDefinition());
-        ResourceTransformationDescriptionBuilder keyStoreTransfDescBuilder = federationTransfDescBuilder
-            .addChildResource(KeyStoreProviderResourceDefinition.INSTANCE);
-
-        keyStoreTransfDescBuilder.rejectChildResource(KeyResourceDefinition.INSTANCE.getPathElement());
-
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 0));
     }
 
     @Override
@@ -99,5 +86,27 @@ public final class FederationExtension extends AbstractLegacyExtension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, CURRENT.getUri(), CURRENT::getXMLReader);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_FEDERATION_1_1.getUri(), PICKETLINK_FEDERATION_1_1::getXMLReader);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_FEDERATION_1_0.getUri(), PICKETLINK_FEDERATION_1_0::getXMLReader);
+    }
+
+    public static final class TransformerRegistration implements ExtensionTransformerRegistration {
+
+        @Override
+        public String getSubsystemName() {
+            return SUBSYSTEM_NAME;
+        }
+
+        @Override
+        public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
+            ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+            ResourceTransformationDescriptionBuilder federationTransfDescBuilder = builder
+                    .addChildResource(new FederationResourceDefinition());
+            ResourceTransformationDescriptionBuilder keyStoreTransfDescBuilder = federationTransfDescBuilder
+                    .addChildResource(KeyStoreProviderResourceDefinition.INSTANCE);
+
+            keyStoreTransfDescBuilder.rejectChildResource(KeyResourceDefinition.INSTANCE.getPathElement());
+
+            TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 0));
+
+        }
     }
 }
