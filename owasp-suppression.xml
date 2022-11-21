@@ -921,4 +921,13 @@
         <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-websockets\-jsr@.*$</packageUrl>
         <cve>CVE-2022-1319</cve>
     </suppress>
+	
+	<!-- Vulnerable class is not used in wildfly-core (Wildfly inherits "vulnerable" modules from wildfly-core) -->
+	<suppress>
+		<notes><![CDATA[
+		file name: sshd-core-2.7.0.jar
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.sshd/sshd\-core@.*$</packageUrl>
+		<cve>CVE-2022-45047</cve>
+	</suppress>
 </suppressions>
