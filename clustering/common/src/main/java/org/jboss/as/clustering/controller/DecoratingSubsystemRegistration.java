@@ -55,34 +55,42 @@ public class DecoratingSubsystemRegistration<R extends ManagementResourceRegistr
         this.registration.setHostCapable();
     }
 
-    @Deprecated
+    @Deprecated // note that since https://issues.redhat.com/browse/WFCORE-3441 this method is no longer deprecated in the interface
     @Override
     public void registerXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer) {
         this.registration.registerXMLElementWriter(writer);
     }
 
+    /**
+     * Do not use. Always throws {@code UnsupportedOperationException}. See https://issues.redhat.com/browse/WFLY-17319
+     */
     @Deprecated
-    @Override
     public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer) {
-        return this.registration.registerModelTransformers(version, resourceTransformer);
+        throw new UnsupportedOperationException("WFLY-17319");
     }
 
+    /**
+     * Do not use. Always throws {@code UnsupportedOperationException}. See https://issues.redhat.com/browse/WFLY-17319
+     */
     @Deprecated
-    @Override
     public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {
-        return this.registration.registerModelTransformers(version, resourceTransformer, operationTransformer);
+        throw new UnsupportedOperationException("WFLY-17319");
     }
 
+    /**
+     * Do not use. Always throws {@code UnsupportedOperationException}. See https://issues.redhat.com/browse/WFLY-17319
+     */
     @Deprecated
-    @Override
     public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer, boolean placeholder) {
-        return this.registration.registerModelTransformers(version, resourceTransformer, operationTransformer, placeholder);
+        throw new UnsupportedOperationException("WFLY-17319");
     }
 
+    /**
+     * Do not use. Always throws {@code UnsupportedOperationException}. See https://issues.redhat.com/browse/WFLY-17319
+     */
     @Deprecated
-    @Override
     public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, CombinedTransformer combinedTransformer) {
-        return this.registration.registerModelTransformers(version, combinedTransformer);
+        throw new UnsupportedOperationException("WFLY-17319");
     }
 
     @Override
