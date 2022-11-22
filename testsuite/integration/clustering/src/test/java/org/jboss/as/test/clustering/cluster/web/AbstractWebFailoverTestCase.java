@@ -154,6 +154,8 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 }
             }
 
+            this.nonTxWait.run();
+
             lifecycle.stop(NODE_1);
 
             this.establishTopology(baseURL2, NODE_2, NODE_3);
@@ -241,6 +243,8 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                     Assert.assertNull(entry);
                 }
             }
+
+            this.nonTxWait.run();
 
             lifecycle.stop(NODE_2);
 
