@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.marshalling.spi.util;
 
-import java.util.OptionalInt;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.UUID;
 
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
+import org.wildfly.clustering.marshalling.spi.Serializer;
 
 /**
- * {@link Externalizer} for {@link UUID} instances.
+ * {@link Serializer} for a {@link UUID}.
  * @author Paul Ferraro
  */
-public class UUIDExternalizer extends SerializerExternalizer<UUID> {
+public enum UUIDSerializer implements Serializer<UUID> {
+    INSTANCE;
 
-    public UUIDExternalizer() {
-        super(UUID.class, UUIDSerializer.INSTANCE);
+    @Override
+    public void write(DataOutput output, UUID value) throws IOException {
+        output.writeLong(value.getMostSignificantBits());
+        output.writeLong(value.getLeastSignificantBits());
     }
 
     @Override
-    public OptionalInt size(UUID object) {
-        return OptionalInt.of(Long.BYTES + Long.BYTES);
+    public UUID read(DataInput input) throws IOException {
+        return new UUID(input.readLong(), input.readLong());
     }
 }
