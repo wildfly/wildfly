@@ -37,46 +37,63 @@ In the sections that follow, we discuss some aspects of configuring distributabl
 [[distributable-ejb-subsystem]]
 == Distributable EJB Subsystem
 
-The purpose of the distributable-ejb subsystem is to permit configuration of clustering abstractions
-required to support those resources of the ejb3 subsystem which support clustered operation. The key resources
-of the ejb3 subsystem which require clustering abstractions are:
+The distributable-ejb subsystem configures resources that can be referenced by the ejb3 subsystem to provide clustering behavior for various EJB-related use cases.
+The subsystem configures resources of the following types:
 
-* `cache factories`
-Passivating cache factories depend on a bean management provider to provide passivation and persistence of SFSB
-session states in a local or distributed environment.
-
-* `client mappings registries`
-Supporting remote invocation on SFSB deployed in a cluster require storing client mappings information in a
- client mappings registry. The registry may be tailored for a local or a distributed environment.
-
-These clustering abstractions are made available to the ejb3 subsystem via the specification and configuration of
-clustering abstraction 'providers'. We describe the available providers below.
+* <<bean-management-providers>>
+* <<client-mappings-registries>>
+* <<timer-management-providers>>
 
 [[bean-management-providers]]
 === Bean management providers
 
-A bean management provider provides access to a given implementation of a bean manager,
-used by passivation-capable cache factories defined in the ejb3 subsystem to manage passivation and persistence.
+A bean management provider provides the services required to configure a distributable @Stateful EJB cache on behalf of the ejb3 subsystem.
 
-Bean management provider elements are named, and represent different implementation and configuration choices for bean management.
-At least one named bean management provider must be defined in the distributable-ejb subsystem and of those, one
-instance must be identified as the default bean management provider, using the `default-bean-management` attribute of
-the distributable-ejb subsystem.
+Bean management providers are referenced from the ejb3 subsystem's `distributable-cache` resource.
 
-The available bean management provider is:
+[source,options="nowrap"]
+----
+/subsystem=ejb3/distributable-cache=foo:add(bean-management=default)
+/subsystem=ejb3:write-attribute(default-sfsb-cache=foo)
+----
+
+The `distributable-cache` resource references the default bean management provider when its `bean-management` attribute is undefined.
+
+[source,options="nowrap"]
+----
+/subsystem=ejb3/distributable-cache=foo:add()
+/subsystem=ejb3:write-attribute(default-sfsb-cache=foo)
+----
+
+The available bean management providers are:
 
 [[infinispan-bean-management]]
 ==== infinispan-bean-management
 
-The infinispan-bean-management provider element represents a bean manager implementation based on an Infinispan cache. The
-attributes for the infinispan-bean-manager element are:
+The infinispan-bean-management resource configures @Stateful session bean management via an embedded Infinispan cache.
+The attributes for the infinispan-bean-management element are:
 
 cache-container::
-Specifies a cache container defined in the Infinispan subsystem used to support the session state cache
+References a cache container defined in the Infinispan subsystem
 cache::
-Specifies the session state cache and its configured properties
+References a cache configuration defined within the associated cache-container, from which a deployment specific cache is created, used to store SFSB instances.
 max-active-beans::
-Specifies the maximum number of non-passivated session state entries allowed in the cache
+Specifies the maximum number of @Stateful session beans to retain in memory, after which the least recently used will passivate.
+
+
+[[hotrod-bean-management]]
+==== hotrod-bean-management
+
+The hotrod-bean-management resource configures @Stateful session bean management using an remote Infinispan cluster.
+The attributes for the hotrod-bean-management element are:
+
+remote-cache-container::
+References a remote cache container defined in the Infinispan subsystem
+cache-configuration::
+References a cache configuration or template defined on the remote Infinispan server
+max-active-beans::
+Specifies the maximum number of @Stateful session beans to cache in memory, i.e. within the HotRod near cache.
+A value of zero will disable the near cache.
 
 
 [[client-mappings-registries]]
@@ -93,18 +110,18 @@ The available client mappings registry providers are:
 [[infinispan-client-mappings-registry]]
 ==== infinispan-client-mappings-registry
 
-The infinispan-client-mappings-registry provider is a provider based on an Infinispan cache and suitable for a clustered server.
+The infinispan-client-mappings-registry provider stores client mappings within an embedded Infinispan cache, and is suitable for use with infinispan-bean-management backed by a clustered cache.
 
 cache-container::
-Specifies a cache container defined in the Infinispan subsystem used to support the client mappings registry
+References a cache container defined in the Infinispan subsystem
 cache::
-Specifies the cache and its configured properties used to support the client mappings registry
+References a cache configuration defined within the associated cache container, from which a connector specific cache is created, used to store client mappings for the associated socket-binding.
 
 
 [[local-client-mappings-registry]]
 ==== local-client-mappings-registry
 
-The client mappings registry provider suitable for a local, non-clustered server.
+The local=client-mappings-registry provider is suitable for hotrod-bean-management, or infinispan-bean-management backed by a local cache.
 
 
 [[timer-management]]
