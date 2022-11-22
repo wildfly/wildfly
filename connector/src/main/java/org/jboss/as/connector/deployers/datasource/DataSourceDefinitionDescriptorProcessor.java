@@ -40,7 +40,7 @@ import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 public class DataSourceDefinitionDescriptorProcessor extends ResourceDefinitionDescriptorProcessor {
 
     @Override
-    protected void processEnvironment(RemoteEnvironment environment, ResourceDefinitionDescriptorProcessor.ResourceDefinitionInjectionSources injectionSources) throws DeploymentUnitProcessingException {
+    protected void processEnvironment(RemoteEnvironment environment, ResourceDefinitionInjectionSources injectionSources) throws DeploymentUnitProcessingException {
         final DataSourcesMetaData metaDatas = environment.getDataSources();
         if (metaDatas != null) {
             for(DataSourceMetaData metaData : metaDatas) {

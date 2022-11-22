@@ -24,7 +24,7 @@ package org.jboss.as.connector.services.transactionintegration;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.txn.integration.JBossContextXATerminator;

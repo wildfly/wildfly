@@ -39,7 +39,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Service wrapper for a {@link java.sql.Driver}.
+ * Service wrapper for a {@link Driver}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

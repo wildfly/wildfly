@@ -29,7 +29,7 @@ import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_INTEGRAT
 import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY;
 import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
 
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.connector.deployers.ra.RaDeploymentActivator;
 import org.jboss.as.connector.services.driver.registry.DriverRegistryService;
@@ -46,7 +46,6 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.txn.integration.JBossContextXATerminator;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 
@@ -90,7 +89,7 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addCapabilityRequirement(TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY, TransactionSynchronizationRegistry.class, tiService.getTsrInjector())
                 .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, org.jboss.tm.usertx.UserTransactionRegistry.class, tiService.getUtrInjector())
                 .addDependency(TxnServices.JBOSS_TXN_CONTEXT_XA_TERMINATOR, JBossContextXATerminator.class, tiService.getTerminatorInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .setInitialMode(Mode.ACTIVE)
                 .addAliases(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE)
                 .install();
 
