@@ -24,31 +24,25 @@ package org.wildfly.extension.clustering.web;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import org.jboss.as.clustering.controller.Schema;
+import java.util.function.Function;
+
 import org.jboss.as.clustering.controller.persistence.AttributeXMLBuilderOperator;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLDescription.PersistentResourceXMLBuilder;
-import org.jboss.as.controller.PersistentResourceXMLParser;
 
 /**
- * Parser description for the distributable-web subsystem.
+ * XML description factory for the distributable-web subsystem.
  * @author Paul Ferraro
  */
-public class DistributableWebXMLParser extends PersistentResourceXMLParser {
-
-    private final Schema<DistributableWebSchema> schema;
-
-    public DistributableWebXMLParser(Schema<DistributableWebSchema> schema) {
-        this.schema = schema;
-    }
+public class DistributableWebXMLDescriptionFactory implements Function<DistributableWebSchema, PersistentResourceXMLDescription> {
 
     @Override
-    public PersistentResourceXMLDescription getParserDescription() {
-        return builder(DistributableWebResourceDefinition.PATH, this.schema.getNamespaceUri())
+    public PersistentResourceXMLDescription apply(DistributableWebSchema schema) {
+        return builder(DistributableWebResourceDefinition.PATH, schema.getNamespaceUri())
                 .addAttribute(DistributableWebResourceDefinition.Attribute.DEFAULT_SESSION_MANAGEMENT.getDefinition())
                 .addAttribute(DistributableWebResourceDefinition.Attribute.DEFAULT_SSO_MANAGEMENT.getDefinition())
-                .addChild(this.getInfinispanSessionManagementResourceXMLBuilder())
-                .addChild(this.getHotRodSessionManagementResourceXMLBuilder())
+                .addChild(this.getInfinispanSessionManagementResourceXMLBuilder(schema))
+                .addChild(this.getHotRodSessionManagementResourceXMLBuilder(schema))
                 .addChild(new AttributeXMLBuilderOperator(InfinispanSSOManagementResourceDefinition.Attribute.class)
                         .apply(builder(InfinispanSSOManagementResourceDefinition.WILDCARD_PATH)))
                 .addChild(new AttributeXMLBuilderOperator(HotRodSSOManagementResourceDefinition.Attribute.class)
@@ -58,20 +52,20 @@ public class DistributableWebXMLParser extends PersistentResourceXMLParser {
                 .build();
     }
 
-    private PersistentResourceXMLBuilder getInfinispanSessionManagementResourceXMLBuilder() {
+    private PersistentResourceXMLBuilder getInfinispanSessionManagementResourceXMLBuilder(DistributableWebSchema schema) {
         PersistentResourceXMLBuilder builder = new AttributeXMLBuilderOperator()
                 .addAttributes(InfinispanSessionManagementResourceDefinition.Attribute.class)
                 .addAttributes(SessionManagementResourceDefinition.Attribute.class)
                 .apply(builder(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH));
         this.addAffinityChildren(builder)
                 .addChild(builder(PrimaryOwnerAffinityResourceDefinition.PATH).setXmlElementName("primary-owner-affinity"));
-        if (this.schema.since(DistributableWebSchema.VERSION_2_0)) {
+        if (schema.since(DistributableWebSchema.VERSION_2_0)) {
             builder.addChild(new AttributeXMLBuilderOperator(RankedAffinityResourceDefinition.Attribute.class).apply(builder(RankedAffinityResourceDefinition.PATH).setXmlElementName("ranked-affinity")));
         }
         return builder;
     }
 
-    private PersistentResourceXMLBuilder getHotRodSessionManagementResourceXMLBuilder() {
+    private PersistentResourceXMLBuilder getHotRodSessionManagementResourceXMLBuilder(DistributableWebSchema schema) {
         PersistentResourceXMLBuilder builder = new AttributeXMLBuilderOperator()
                 .addAttributes(HotRodSessionManagementResourceDefinition.Attribute.class)
                 .addAttributes(SessionManagementResourceDefinition.Attribute.class)

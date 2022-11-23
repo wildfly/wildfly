@@ -22,38 +22,22 @@
 
 package org.wildfly.extension.clustering.web;
 
-import java.util.EnumSet;
-
-import org.jboss.as.clustering.controller.Schema;
+import org.jboss.as.clustering.controller.SubsystemExtension;
 import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.kohsuke.MetaInfServices;
 
 /**
+ * Extension that registers the distributable-web subsystem.
  * @author Paul Ferraro
  */
 @MetaInfServices(Extension.class)
-public class DistributableWebExtension implements Extension {
+public class DistributableWebExtension extends SubsystemExtension<DistributableWebSchema> {
 
     static final String SUBSYSTEM_NAME = "distributable-web";
     static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, DistributableWebExtension.class);
 
-    @Override
-    public void initialize(ExtensionContext context) {
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, DistributableWebModel.CURRENT.getVersion());
-
-        new DistributableWebResourceDefinition().register(registration);
-
-        registration.registerXMLElementWriter(new DistributableWebXMLParser(DistributableWebSchema.CURRENT));
-    }
-
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        for (Schema<DistributableWebSchema> schema : EnumSet.allOf(DistributableWebSchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new DistributableWebXMLParser(schema));
-        }
+    public DistributableWebExtension() {
+        super(SUBSYSTEM_NAME, DistributableWebModel.CURRENT, DistributableWebResourceDefinition::new, DistributableWebSchema.CURRENT, new DistributableWebXMLDescriptionFactory());
     }
 }
