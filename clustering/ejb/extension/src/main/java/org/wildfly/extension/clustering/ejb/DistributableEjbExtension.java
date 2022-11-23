@@ -41,7 +41,7 @@ import org.kohsuke.MetaInfServices;
 public class DistributableEjbExtension implements Extension {
 
     static final String SUBSYSTEM_NAME = "distributable-ejb";
-    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new DistributableEjbResourceDescriptionResolver();
+    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, DistributableEjbExtension.class);
 
     @Override
     public void initialize(ExtensionContext context) {

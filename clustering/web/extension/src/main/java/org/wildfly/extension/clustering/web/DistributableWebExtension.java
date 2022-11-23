@@ -39,7 +39,7 @@ import org.kohsuke.MetaInfServices;
 public class DistributableWebExtension implements Extension {
 
     static final String SUBSYSTEM_NAME = "distributable-web";
-    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new DistributableWebResourceDescriptionResolver();
+    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, DistributableWebExtension.class);
 
     @Override
     public void initialize(ExtensionContext context) {
