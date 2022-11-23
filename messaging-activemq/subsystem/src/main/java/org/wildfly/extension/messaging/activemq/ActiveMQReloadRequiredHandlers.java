@@ -102,7 +102,7 @@ public interface ActiveMQReloadRequiredHandlers {
         @Override
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                 ModelNode resolvedValue, ModelNode currentValue,
-                org.jboss.as.controller.AbstractWriteAttributeHandler.HandbackHolder<Void> handbackHolder)
+                HandbackHolder<Void> handbackHolder)
                 throws OperationFailedException {
             return isServiceInstalled(context);
         }

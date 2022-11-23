@@ -23,7 +23,7 @@ package org.jboss.as.weld.injection;
 
 import static java.security.AccessController.doPrivileged;
 
-import javax.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.Bean;
 
 import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
 import org.jboss.weld.manager.BeanManagerImpl;

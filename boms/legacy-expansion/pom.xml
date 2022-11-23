@@ -84,18 +84,6 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-opentracing-extension-legacy-namespace</artifactId>
-                <version>${full.maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-opentracing-smallrye-legacy-namespace</artifactId>
-                <version>${full.maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-legacy-namespace</artifactId>
                 <version>${project.version}</version>
             </dependency>

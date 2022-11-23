@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.transaction.TransactionScoped;
+import jakarta.transaction.TransactionScoped;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -32,8 +32,8 @@ import org.jboss.jandex.DotName;
  */
 public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor {
 
-    private static final DotName VIEW_SCOPED_NAME = DotName.createSimple("javax.faces.view.ViewScoped");
-    private static final DotName FLOW_SCOPED_NAME = DotName.createSimple("javax.faces.flow.FlowScoped");
+    private static final DotName VIEW_SCOPED_NAME = DotName.createSimple("jakarta.faces.view.ViewScoped");
+    private static final DotName FLOW_SCOPED_NAME = DotName.createSimple("jakarta.faces.flow.FlowScoped");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

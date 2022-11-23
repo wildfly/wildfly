@@ -96,7 +96,7 @@ public class SharedStoreColocatedDefinition extends PersistentResourceDefinition
     private static AliasEntry createAlias(ManagementResourceRegistration resourceRegistration, PathElement target) {
         return new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(target))) {
             @Override
-            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasEntry.AliasContext aliasContext) {
+            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
                 return aliasAddress.getParent().append(target);
             }
         };

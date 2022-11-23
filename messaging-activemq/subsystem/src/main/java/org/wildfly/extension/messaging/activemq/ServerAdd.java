@@ -27,11 +27,13 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
+import static org.jboss.as.server.services.net.SocketBindingResourceDefinition.SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.DATA_SOURCE_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.JMX_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.PATH_MANAGER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ADDRESS_SETTING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BINDINGS_DIRECTORY;
@@ -352,7 +354,7 @@ class ServerAdd extends AbstractAddStepHandler {
 
             Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
             for (final String socketBindingName : socketBindingNames) {
-                Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName));
+                Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(socketBindingName));
                 socketBindings.put(socketBindingName, socketBinding);
             }
 
@@ -364,13 +366,13 @@ class ServerAdd extends AbstractAddStepHandler {
             for (final String connectorSocketBinding : connectorsSocketBindings) {
                 // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
                 if (outbounds.get(connectorSocketBinding)) {
-                    final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(connectorSocketBinding);
+                    final ServiceName outboundSocketName = OUTBOUND_SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
                     Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requires(outboundSocketName);
                     outboundSocketBindings.put(connectorSocketBinding, outboundSocketBinding);
                 } else {
                     // check if the socket binding has not already been added by the acceptors
                     if (!socketBindings.containsKey(connectorSocketBinding)) {
-                        Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding));
+                        Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding));
                         socketBindings.put(connectorSocketBinding, socketBinding);
                     }
                 }
@@ -693,7 +695,7 @@ class ServerAdd extends AbstractAddStepHandler {
          *
          * @param configuration the ActiveMQ configuration
          * @param params the detyped operation parameters
-         * @throws org.jboss.as.controller.OperationFailedException
+         * @throws OperationFailedException
          */
         private void processAddressSettings(final OperationContext context, final Configuration configuration, final ModelNode params) throws OperationFailedException {
             if (params.hasDefined(ADDRESS_SETTING)) {

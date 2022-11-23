@@ -21,13 +21,10 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import static org.jboss.as.weld.util.Reflections.loadClass;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -35,7 +32,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension;
+import jakarta.enterprise.inject.spi.Extension;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -47,6 +45,7 @@ import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VFSUtils;
+import org.jboss.weld.lite.extension.translator.LiteExtensionTranslator;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -57,10 +56,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Ales Justin
  */
 public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
-
-    // TODO this variable be removed once WFLY fully depends on CDI 4 and we can reference the class directly!
-    private final String buildCompatExtensionName = "jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension";
-    private static final String BUILD_COMPATIBLE_EXTENSION_CLASS_NAME = "org.jboss.weld.lite.extension.translator.LiteExtensionTranslator";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -91,26 +86,17 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
             // load portable extension services
             final List<String> portableExtensionServices = loadServices(module, Extension.class.getName());
             // load build compatible extension services
-            final List<String> buildCompatibleExtensionServices = loadServices(module, buildCompatExtensionName);
+            final List<String> buildCompatibleExtensionServices = loadServices(module, BuildCompatibleExtension.class.getName());
 
             // load class and register for portable extensions
-            Collection<Class<? extends Object>> loadedPortableExtensions = loadExtensions(module, portableExtensionServices);
+            Collection<Class<?>> loadedPortableExtensions = loadExtensions(module, portableExtensionServices, Object.class);
             registerPortableExtensions(deploymentUnit, extensions, loadedPortableExtensions);
             // load class and register for portable extensions
             // if there is at least one, add a portable extension processing them
-            List<Class<? extends Object>> loadedBuildCompatExtensions = loadExtensions(module, buildCompatibleExtensionServices);
+            List<Class<? extends BuildCompatibleExtension>> loadedBuildCompatExtensions =
+                    loadExtensions(module, buildCompatibleExtensionServices, BuildCompatibleExtension.class);
             if (!loadedBuildCompatExtensions.isEmpty()) {
-                final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
-                // TODO heavy reflection usage; this can be removed once we can reference CDI 4/Weld 5 classes directly
-                Class<Extension> loadedClass = loadClass(BUILD_COMPATIBLE_EXTENSION_CLASS_NAME, module.getClassLoader());
-                Extension extension;
-                try {
-                    // initiate extension with discovered build compatible extensions
-                    extension = loadedClass.getConstructor(List.class, ClassLoader.class)
-                            .newInstance(loadedBuildCompatExtensions, module.getClassLoader());
-                } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
-                }
+                Extension extension = new LiteExtensionTranslator(loadedBuildCompatExtensions, module.getClassLoader());
                 // NOTE: I chose to register it under the same dep. unit as other extensions, not sure if this is correct
                 extensions.registerExtensionInstance(extension, deploymentUnit);
             }
@@ -119,10 +105,10 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private List<Class<? extends Object>> loadExtensions(Module module, List<String> services) {
-        List<Class<? extends Object>> result = new ArrayList<>();
+    private static <T> List<Class<? extends T>> loadExtensions(Module module, List<String> services, Class<T> type) {
+        List<Class<? extends T>> result = new ArrayList<>();
         for (String service : services) {
-            final Class<? extends Object> extensionClass = loadExtension(service, module.getClassLoader());
+            final Class<? extends T> extensionClass = loadExtension(service, module.getClassLoader(), type);
             if (extensionClass == null) {
                 continue;
             }
@@ -131,8 +117,8 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
         return result;
     }
 
-    private void registerPortableExtensions(DeploymentUnit deploymentUnit, WeldPortableExtensions extensions, Collection<Class<? extends Object>> loadedExtensions) throws DeploymentUnitProcessingException {
-        for (Class<? extends Object> loadedExtension : loadedExtensions) {
+    private void registerPortableExtensions(DeploymentUnit deploymentUnit, WeldPortableExtensions extensions, Collection<Class<?>> loadedExtensions) throws DeploymentUnitProcessingException {
+        for (Class<?> loadedExtension : loadedExtensions) {
             extensions.tryRegisterExtension(loadedExtension, deploymentUnit);
         }
     }
@@ -166,13 +152,10 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
         return services;
     }
 
-    @SuppressWarnings("unchecked")
-    private Class<? extends Object> loadExtension(String serviceClassName, final ClassLoader loader) {
+    private static <T> Class<? extends T> loadExtension(String serviceClassName, final ClassLoader loader, Class<T> type) {
         try {
-            return loader.loadClass(serviceClassName);
-        } catch (Exception e) {
-            WeldLogger.DEPLOYMENT_LOGGER.couldNotLoadPortableExceptionClass(serviceClassName, e);
-        } catch (LinkageError e) {
+            return loader.loadClass(serviceClassName).asSubclass(type);
+        } catch (Exception | LinkageError e) {
             WeldLogger.DEPLOYMENT_LOGGER.couldNotLoadPortableExceptionClass(serviceClassName, e);
         }
         return null;

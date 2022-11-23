@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Interceptor;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.Interceptor;
 
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.weld.WeldBootstrapService;

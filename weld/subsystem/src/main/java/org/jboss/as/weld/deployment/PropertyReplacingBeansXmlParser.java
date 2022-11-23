@@ -29,7 +29,7 @@ import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.weld.xml.BeansXmlParser;
 
 /**
- * Fork of {@link org.jboss.weld.xml.BeansXmlParser} to fix some minor XML parsing issues.
+ * Fork of {@link org.jboss.weld.xml.BeansXmlParser} to support standard WildFly deployment descriptor expression resolution.
  *
  * @author Stuart Douglas
  * @author Pete Muir
@@ -39,7 +39,8 @@ public class PropertyReplacingBeansXmlParser extends BeansXmlParser {
 
     private final PropertyReplacer replacer;
 
-    public PropertyReplacingBeansXmlParser(DeploymentUnit deploymentUnit) {
+    public PropertyReplacingBeansXmlParser(DeploymentUnit deploymentUnit, boolean legacyEmptyBeansXmlTreatment) {
+        super(legacyEmptyBeansXmlTreatment);
         this.replacer = SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit);
     }
 

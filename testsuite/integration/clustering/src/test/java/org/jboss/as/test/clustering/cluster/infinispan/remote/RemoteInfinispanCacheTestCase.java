@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.clustering.cluster.infinispan.remote;
 
+import static org.jboss.as.test.clustering.InfinispanServerUtil.infinispanServerTestRule;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.as.arquillian.api.ServerSetup;

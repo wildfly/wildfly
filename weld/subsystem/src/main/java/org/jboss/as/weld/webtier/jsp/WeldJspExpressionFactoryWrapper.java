@@ -21,14 +21,14 @@
  */
 package org.jboss.as.weld.webtier.jsp;
 
-import javax.el.ELContextListener;
-import javax.el.ExpressionFactory;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.el.ELContextListener;
+import jakarta.el.ExpressionFactory;
+import jakarta.enterprise.inject.spi.BeanManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
-import javax.servlet.jsp.JspApplicationContext;
-import javax.servlet.jsp.JspFactory;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.jsp.JspApplicationContext;
+import jakarta.servlet.jsp.JspFactory;
 
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.weld.util.Reflections;

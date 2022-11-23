@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import javax.jms.IllegalStateRuntimeException;
+import jakarta.jms.IllegalStateRuntimeException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;

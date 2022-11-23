@@ -27,9 +27,9 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.InjectionTarget;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.weld.WeldBootstrapService;
