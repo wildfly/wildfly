@@ -930,4 +930,36 @@
 		<packageUrl regex="true">^pkg:maven/org\.apache\.sshd/sshd\-core@.*$</packageUrl>
 		<cve>CVE-2022-45047</cve>
 	</suppress>
+
+    <!--    False positive for WildFly 21 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: artemis-wildfly-integration-1.0.5.jar
+   ]]></notes>
+        <packageUrl regex="true">
+            ^pkg:maven/org\.jboss\.activemq\.artemis\.integration/artemis\-wildfly\-integration@.*$
+        </packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-legacy-spi-5.0.0.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.legacy\.test/wildfly\-legacy\-spi@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-plugin-core-2.0.0.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-remoting-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-remoting@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
 </suppressions>
