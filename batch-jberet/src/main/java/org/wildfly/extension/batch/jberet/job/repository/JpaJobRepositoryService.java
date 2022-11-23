@@ -36,11 +36,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.SharedCacheMode;
 import jakarta.persistence.ValidationMode;
+import jakarta.persistence.spi.PersistenceProvider;
+import jakarta.persistence.spi.PersistenceProviderResolverHolder;
 import jakarta.persistence.spi.PersistenceUnitTransactionType;
+import java.util.Optional;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
 import static org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO;
-import org.hibernate.jpa.boot.spi.Bootstrap;
 
 import org.jberet.jpa.repository.JpaRepository;
 import org.jberet.repository.JobRepository;
@@ -132,13 +134,13 @@ public class JpaJobRepositoryService extends JobRepositoryService implements Ser
                 batchPersistenceUnitInfo.setExcludeUnlistedClasses(false);
                 batchPersistenceUnitInfo.setJarFileUrls(List.of(JpaRepository.class.getProtectionDomain().getCodeSource().getLocation()));
                 batchPersistenceUnitInfo.setValidationMode(ValidationMode.NONE);
-                this.entityManagerFactoryBuilder = Bootstrap.getEntityManagerFactoryBuilder(
+                Optional<PersistenceProvider> findFirst = PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders().stream().findFirst();
+                this.entityManagerFactory = findFirst.get().createContainerEntityManagerFactory(
                         batchPersistenceUnitInfo,
                         Map.of(
                                 HBM2DDL_AUTO, "update"
                         )
                 );
-                this.entityManagerFactory = entityManagerFactoryBuilder.build();
                 context.complete();
             } catch (IllegalStateException e) {
                 context.failed(BatchLogger.LOGGER.failedToCreateJobRepository(e, "JPA"));
