@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,25 +24,26 @@ package org.jboss.as.clustering.controller.descriptions;
 
 import java.util.List;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 
 /**
- * Generates resource descriptions for a given subsystem and exposes a mechanism for generating a {@link ResourceDescriptionResolver} for child resources.
+ * A factory for creating resource description resolvers for child resources.
  * @author Paul Ferraro
  */
-public class SubsystemResourceDescriptionResolver extends StandardResourceDescriptionResolver implements ChildResourceDescriptionResolverFactory {
+public interface ChildResourceDescriptionResolverFactory {
 
-    private static final String RESOURCE_NAME_PATTERN = "%s.LocalDescriptions";
-
-    public SubsystemResourceDescriptionResolver(String subsystemName, Class<? extends Extension> extensionClass) {
-        super(subsystemName, String.format(RESOURCE_NAME_PATTERN, extensionClass.getPackage().getName()), extensionClass.getClassLoader(), true, false);
+    default ResourceDescriptionResolver createChildResolver(PathElement path) {
+        return this.createChildResolver(List.of(path));
     }
 
-    @Override
-    public ResourceDescriptionResolver createChildResolver(List<PathElement> paths) {
-        return new ChildResourceDescriptionResolver(this, this.getKeyPrefix(), paths);
+    default ResourceDescriptionResolver createChildResolver(PathElement path1, PathElement path2) {
+        return this.createChildResolver(List.of(path1, path2));
     }
+
+    default ResourceDescriptionResolver createChildResolver(PathElement... paths) {
+        return this.createChildResolver(List.of(paths));
+    }
+
+    ResourceDescriptionResolver createChildResolver(List<PathElement> paths);
 }
