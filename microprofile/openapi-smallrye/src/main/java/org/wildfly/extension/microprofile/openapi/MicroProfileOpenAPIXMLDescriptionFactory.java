@@ -23,24 +23,19 @@ package org.wildfly.extension.microprofile.openapi;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
+import java.util.function.Function;
+
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.PersistentResourceXMLParser;
 
 /**
  * MicroProfile Open API subsystem XML parser.
  * @author Michael Edgar
  * @author Paul Ferraro
  */
-public class MicroProfileOpenAPIParser extends PersistentResourceXMLParser {
-
-    private final MicroProfileOpenAPISchema schema;
-
-    MicroProfileOpenAPIParser(MicroProfileOpenAPISchema schema) {
-        this.schema = schema;
-    }
+public class MicroProfileOpenAPIXMLDescriptionFactory implements Function<MicroProfileOpenAPISchema, PersistentResourceXMLDescription> {
 
     @Override
-    public PersistentResourceXMLDescription getParserDescription() {
-        return builder(MicroProfileOpenAPISubsystemDefinition.PATH, this.schema.getNamespaceUri()).build();
+    public PersistentResourceXMLDescription apply(MicroProfileOpenAPISchema schema) {
+        return builder(MicroProfileOpenAPISubsystemDefinition.PATH, schema.getNamespaceUri()).build();
     }
 }
