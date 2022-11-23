@@ -34,7 +34,7 @@ import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -154,7 +154,7 @@ public class CacheResourceDefinition<P extends CacheServiceConfiguratorProvider>
                 .addRequiredChildren(ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
                 .addRequiredSingletonChildren(HeapMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
                 ;
-        new SimpleResourceRegistration(descriptor, this.handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, this.handler).register(registration);
 
         new HeapMemoryResourceDefinition().register(registration);
         new OffHeapMemoryResourceDefinition().register(registration);

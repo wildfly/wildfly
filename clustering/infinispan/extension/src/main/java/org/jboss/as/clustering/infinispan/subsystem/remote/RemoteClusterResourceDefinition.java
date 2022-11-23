@@ -31,7 +31,7 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
+import org.jboss.as.clustering.controller.RestartParentResourceRegistrar;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
@@ -129,7 +129,7 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class);
-        new RestartParentResourceRegistration(this.serviceConfiguratorFactory, descriptor).register(registration);
+        new RestartParentResourceRegistrar(this.serviceConfiguratorFactory, descriptor).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new OperationHandler<>(new RemoteClusterOperationExecutor(this.executors), RemoteClusterOperation.class).register(registration);

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,12 +22,17 @@
 
 package org.jboss.as.clustering.controller;
 
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+
 /**
+ * Registration interface for child resource definitions.
  * @author Paul Ferraro
  */
-public class ReloadRequiredResourceRegistration extends ResourceRegistration {
-
-    public ReloadRequiredResourceRegistration(AddStepHandlerDescriptor descriptor) {
-        super(descriptor, new ReloadRequiredAddStepHandler(descriptor), new ReloadRequiredRemoveStepHandler(descriptor), new WriteAttributeStepHandler(descriptor));
-    }
+public interface ChildResourceRegistrar<R extends ManagementResourceRegistration> {
+    /**
+     * Registers this child resource, returning the new registration
+     * @param parent the parent registration
+     * @return the child resource registration
+     */
+    R register(R parent);
 }

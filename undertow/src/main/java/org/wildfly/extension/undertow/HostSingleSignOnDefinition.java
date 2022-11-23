@@ -23,7 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -50,7 +50,7 @@ public class HostSingleSignOnDefinition extends SingleSignOnDefinition {
     public void registerOperations(ManagementResourceRegistration registration) {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(SingleSignOnDefinition.Attribute.class).addCapabilities(() -> HOST_SSO_CAPABILITY);
-        new SimpleResourceRegistration(descriptor, null).register(registration);
+        new SimpleResourceRegistrar(descriptor, null).register(registration);
     }
 
 }

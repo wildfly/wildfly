@@ -36,7 +36,7 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
@@ -112,7 +112,7 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CHANNEL.getName()), capabilities)
                 ;
         ResourceServiceHandler handler = new JGroupsSubsystemServiceHandler();
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new ChannelResourceDefinition().register(registration);
         new StackResourceDefinition().register(registration);

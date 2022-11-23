@@ -28,7 +28,7 @@ import java.util.function.Consumer;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.DefaultSubsystemDescribeHandler;
-import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
+import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistrar;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -114,7 +114,7 @@ public class DistributableWebResourceDefinition extends SubsystemResourceDefinit
                 .addRequiredSingletonChildren(LocalRoutingProviderResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new DistributableWebResourceServiceHandler();
-        new DeploymentChainContributingResourceRegistration(descriptor, handler, this).register(registration);
+        new DeploymentChainContributingResourceRegistrar(descriptor, handler, this).register(registration);
 
         new LocalRoutingProviderResourceDefinition().register(registration);
         new InfinispanRoutingProviderResourceDefinition().register(registration);

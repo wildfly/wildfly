@@ -21,7 +21,7 @@
  */
 package org.wildfly.extension.microprofile.openapi;
 
-import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
+import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.PathElement;
@@ -69,6 +69,6 @@ public class MicroProfileOpenAPISubsystemDefinition extends SubsystemResourceDef
                 .addCapabilities(Capability.class)
                 ;
         MicroProfileOpenAPIServiceHandler handler = new MicroProfileOpenAPIServiceHandler();
-        new DeploymentChainContributingResourceRegistration(descriptor, handler, handler).register(registration);
+        new DeploymentChainContributingResourceRegistrar(descriptor, handler, handler).register(registration);
     }
 }

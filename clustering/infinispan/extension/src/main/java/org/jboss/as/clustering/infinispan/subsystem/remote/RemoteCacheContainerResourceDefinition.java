@@ -38,7 +38,7 @@ import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
@@ -245,7 +245,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 ;
         ServiceValueExecutorRegistry<RemoteCacheContainer> executors = new ServiceValueExecutorRegistry<>();
         ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(this, executors);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new ConnectionPoolResourceDefinition().register(registration);
         new RemoteClusterResourceDefinition(this, executors).register(registration);

@@ -29,7 +29,7 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
@@ -97,7 +97,7 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
                 .addAttribute(Attribute.SHARED_SECRET, new CredentialReferenceWriteAttributeHandler(Attribute.SHARED_SECRET.getDefinition()))
                 .addCapabilities(Capability.class)
                 ;
-        new SimpleResourceRegistration(descriptor, new SimpleResourceServiceHandler(this.serviceConfiguratorFactory)).register(registration);
+        new SimpleResourceRegistrar(descriptor, new SimpleResourceServiceHandler(this.serviceConfiguratorFactory)).register(registration);
         return registration;
     }
 }

@@ -32,7 +32,7 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -97,9 +97,9 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
                 ;
         ResourceServiceConfiguratorFactory serviceConfiguratorFactory = new ForkChannelFactoryServiceConfiguratorFactory();
         ResourceServiceHandler handler = new ForkServiceHandler(serviceConfiguratorFactory);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
-        new ProtocolRegistration(serviceConfiguratorFactory, new ForkProtocolRuntimeResourceRegistration(this.executors)).register(registration);
+        new ProtocolResourceRegistrar(serviceConfiguratorFactory, new ForkProtocolRuntimeResourceRegistration(this.executors)).register(registration);
 
         return registration;
     }

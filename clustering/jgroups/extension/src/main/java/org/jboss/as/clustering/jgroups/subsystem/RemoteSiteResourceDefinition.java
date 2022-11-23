@@ -29,7 +29,7 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
+import org.jboss.as.clustering.controller.RestartParentResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -108,7 +108,7 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
                 .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(RemoteSiteConfigurationServiceConfigurator::new);
-        new RestartParentResourceRegistration(this.parentServiceConfiguratorFactory, descriptor, handler).register(registration);
+        new RestartParentResourceRegistrar(this.parentServiceConfiguratorFactory, descriptor, handler).register(registration);
 
         return registration;
     }

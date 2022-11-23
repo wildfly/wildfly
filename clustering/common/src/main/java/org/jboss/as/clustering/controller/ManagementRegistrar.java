@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,17 +22,15 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-
 /**
- * Registration interface for child resource definitions.
+ * Implemented by a management artifact that can register itself.
+ * This allows a management object to encapsulates specific registration details (e.g. resource aliases) from the parent resource.
  * @author Paul Ferraro
  */
-public interface ChildResourceDefinitionRegistration<R extends ManagementResourceRegistration> {
+public interface ManagementRegistrar<R> {
     /**
-     * Registers this child resource, returning the new registration
-     * @param parent the parent registration
-     * @return the child resource registration
+     * Registers this object with a resource.
+     * @param registration a registration for a management resource
      */
-    R register(R parent);
+    void register(R registration);
 }

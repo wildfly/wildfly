@@ -31,9 +31,9 @@ import org.jboss.as.controller.services.path.PathManager;
  */
 public class ContextualResourceRegistration extends DecoratingResourceRegistration<ManagementResourceRegistration> implements ManagementResourceRegistration {
 
-    private final RegistrationContext context;
+    private final ManagementRegistrationContext context;
 
-    public ContextualResourceRegistration(org.jboss.as.controller.registry.ManagementResourceRegistration registration, RegistrationContext context) {
+    public ContextualResourceRegistration(org.jboss.as.controller.registry.ManagementResourceRegistration registration, ManagementRegistrationContext context) {
         super(registration, r -> new ContextualResourceRegistration(r, context));
         this.context = context;
     }

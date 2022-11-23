@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,14 +23,12 @@
 package org.jboss.as.clustering.controller;
 
 /**
- * Implemented by a management artifact that can register itself.
- * This allows a management object to encapsulates specific registration details (e.g. resource aliases) from the parent resource.
+ * Registers a {@link AddStepHandler}, {@link RemoveStepHandler}, and {@link WriteAttributeStepHandler} on behalf of a resource definition.
  * @author Paul Ferraro
  */
-public interface Registration<R> {
-    /**
-     * Registers this object with a resource.
-     * @param registration a registration for a management resource
-     */
-    void register(R registration);
+public class SimpleResourceRegistrar extends ResourceRegistrar {
+
+    public SimpleResourceRegistrar(ResourceDescriptor descriptor, ResourceServiceHandler handler) {
+        super(descriptor, new AddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler), new WriteAttributeStepHandler(descriptor, handler));
+    }
 }

@@ -27,7 +27,7 @@ import org.jboss.as.clustering.controller.DefaultSubsystemDescribeHandler;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
@@ -101,7 +101,7 @@ public class DistributableEjbResourceDefinition extends SubsystemResourceDefinit
                 .addRequiredSingletonChildren(LocalClientMappingsRegistryProviderResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new DistributableEjbResourceServiceHandler();
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         // register the child resource infinispan-bean-management
         new InfinispanBeanManagementResourceDefinition().register(registration);

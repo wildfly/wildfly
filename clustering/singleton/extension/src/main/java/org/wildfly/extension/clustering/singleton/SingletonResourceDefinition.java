@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
+import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistrar;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -109,7 +109,7 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition<Sub
                 .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new SingletonServiceHandler();
-        new DeploymentChainContributingResourceRegistration(descriptor, handler, this).register(registration);
+        new DeploymentChainContributingResourceRegistrar(descriptor, handler, this).register(registration);
 
         new SingletonPolicyResourceDefinition().register(registration);
     }

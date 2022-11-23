@@ -36,7 +36,7 @@ import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
@@ -147,7 +147,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
                 // Add a requirement on the XAResourceRecoveryRegistry capability to the parent cache capability
                 .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY, Attribute.MODE, EnumSet.complementOf(EnumSet.of(TransactionMode.FULL_XA))));
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(TransactionServiceConfigurator::new);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         return registration;
     }

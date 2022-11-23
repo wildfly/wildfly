@@ -26,7 +26,7 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.PathElement;
@@ -56,7 +56,7 @@ class ModClusterSubsystemResourceDefinition extends SubsystemResourceDefinition<
 
         ServiceValueExecutorRegistry<ModClusterServiceMBean> registry = new ServiceValueExecutorRegistry<>();
         ResourceServiceHandler handler = new ModClusterSubsystemServiceHandler(registry);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new ProxyConfigurationResourceDefinition(registry).register(registration);
     }

@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
+import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -46,7 +46,7 @@ public class SingleAffinityResourceDefinition extends AffinityResourceDefinition
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        new ReloadRequiredResourceRegistration(descriptor).register(registration);
+        new ReloadRequiredResourceRegistrar(descriptor).register(registration);
 
         return registration;
     }

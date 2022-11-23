@@ -28,7 +28,7 @@ import org.jboss.as.controller.ResourceDefinition;
  * Enhanced {@link org.jboss.as.controller.SubsystemRegistration} that also exposes the registration context.
  * @author Paul Ferraro
  */
-public interface SubsystemRegistration extends org.jboss.as.controller.SubsystemRegistration, RegistrationContext {
+public interface SubsystemRegistration extends org.jboss.as.controller.SubsystemRegistration, ManagementRegistrationContext {
 
     @Override
     ManagementResourceRegistration registerSubsystemModel(ResourceDefinition definition);

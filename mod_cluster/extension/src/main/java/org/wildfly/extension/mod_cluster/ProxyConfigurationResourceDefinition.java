@@ -29,7 +29,7 @@ import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
-import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
+import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
@@ -285,7 +285,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
             new OperationHandler<>(new ProxyOperationExecutor(this.executors), ProxyOperation.class).register(registration);
         }
 
-        new ReloadRequiredResourceRegistration(descriptor).register(registration);
+        new ReloadRequiredResourceRegistrar(descriptor).register(registration);
 
         new SimpleLoadProviderResourceDefinition().register(registration);
         new DynamicLoadProviderResourceDefinition().register(registration);

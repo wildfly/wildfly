@@ -32,19 +32,19 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Registration facility for capabilities.
  * @author Paul Ferraro
  */
-public class CapabilityRegistration implements Registration<ManagementResourceRegistration> {
+public class CapabilityRegistrar implements ManagementRegistrar<ManagementResourceRegistration> {
 
     private final Collection<? extends Capability> capabilities;
 
-    public <E extends Enum<E> & Capability> CapabilityRegistration(Class<E> capabilityClass) {
+    public <E extends Enum<E> & Capability> CapabilityRegistrar(Class<E> capabilityClass) {
         this(EnumSet.allOf(capabilityClass));
     }
 
-    public CapabilityRegistration(Capability... capabilities) {
+    public CapabilityRegistrar(Capability... capabilities) {
         this.capabilities = Arrays.asList(capabilities);
     }
 
-    public CapabilityRegistration(Collection<? extends Capability> capabilities) {
+    public CapabilityRegistrar(Collection<? extends Capability> capabilities) {
         this.capabilities = capabilities;
     }
 
