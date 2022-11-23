@@ -23,24 +23,19 @@ package org.wildfly.extension.microprofile.faulttolerance;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
+import java.util.function.Function;
+
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.PersistentResourceXMLParser;
 
 /**
  * MicroProfile Fault Tolerance subsystem XML parser.
  *
  * @author Radoslav Husar
  */
-public class MicroProfileFaultToleranceParser extends PersistentResourceXMLParser {
-
-    private final MicroProfileFaultToleranceSchema schema;
-
-    MicroProfileFaultToleranceParser(MicroProfileFaultToleranceSchema schema) {
-        this.schema = schema;
-    }
+public class MicroProfileFaultToleranceXMLDescriptionFactory implements Function<MicroProfileFaultToleranceSchema, PersistentResourceXMLDescription> {
 
     @Override
-    public PersistentResourceXMLDescription getParserDescription() {
-        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, this.schema.getNamespaceUri()).build();
+    public PersistentResourceXMLDescription apply(MicroProfileFaultToleranceSchema schema) {
+        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, schema.getNamespaceUri()).build();
     }
 }
