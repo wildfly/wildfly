@@ -38,7 +38,7 @@ import org.jboss.modcluster.ModClusterServiceMBean;
  *
  * @author Radoslav Husar
  */
-class ModClusterSubsystemResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
+class ModClusterSubsystemResourceDefinition extends SubsystemResourceDefinition {
 
     public static final PathElement PATH = pathElement(ModClusterExtension.SUBSYSTEM_NAME);
 

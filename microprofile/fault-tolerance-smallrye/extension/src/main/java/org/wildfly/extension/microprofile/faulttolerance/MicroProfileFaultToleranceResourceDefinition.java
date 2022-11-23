@@ -34,7 +34,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 /**
  * @author Radoslav Husar
  */
-public class MicroProfileFaultToleranceResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
+public class MicroProfileFaultToleranceResourceDefinition extends SubsystemResourceDefinition {
 
     static final PathElement PATH = pathElement(MicroProfileFaultToleranceExtension.SUBSYSTEM_NAME);
 

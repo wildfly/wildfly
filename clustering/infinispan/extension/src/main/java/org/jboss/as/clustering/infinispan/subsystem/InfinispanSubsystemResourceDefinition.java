@@ -53,7 +53,7 @@ import org.wildfly.clustering.server.service.ClusteringRequirement;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> implements Consumer<DeploymentProcessorTarget> {
+public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefinition implements Consumer<DeploymentProcessorTarget> {
 
     static final PathElement PATH = pathElement(InfinispanExtension.SUBSYSTEM_NAME);
 

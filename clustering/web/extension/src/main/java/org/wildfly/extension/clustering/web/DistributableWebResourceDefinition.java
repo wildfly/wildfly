@@ -57,7 +57,7 @@ import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymen
  * Definition of the /subsystem=distributable-web resource.
  * @author Paul Ferraro
  */
-public class DistributableWebResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> implements Consumer<DeploymentProcessorTarget> {
+public class DistributableWebResourceDefinition extends SubsystemResourceDefinition implements Consumer<DeploymentProcessorTarget> {
 
     static final PathElement PATH = pathElement(DistributableWebExtension.SUBSYSTEM_NAME);
 

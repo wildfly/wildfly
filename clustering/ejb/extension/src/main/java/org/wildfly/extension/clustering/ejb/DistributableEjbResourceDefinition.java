@@ -46,7 +46,7 @@ import org.wildfly.clustering.ejb.EjbProviderRequirement;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class DistributableEjbResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
+public class DistributableEjbResourceDefinition extends SubsystemResourceDefinition {
 
     static final PathElement PATH = pathElement(DistributableEjbExtension.SUBSYSTEM_NAME);
 

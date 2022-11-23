@@ -35,7 +35,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Root resource definition for MicroProfile Open API subsystem
  * @author Michael Edgar
  */
-public class MicroProfileOpenAPISubsystemDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
+public class MicroProfileOpenAPISubsystemDefinition extends SubsystemResourceDefinition {
 
     static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, MicroProfileOpenAPIExtension.SUBSYSTEM_NAME);
 

@@ -56,7 +56,7 @@ import org.wildfly.extension.clustering.singleton.deployment.SingletonDeployment
  * Definition of the singleton deployer resource.
  * @author Paul Ferraro
  */
-public class SingletonResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> implements Consumer<DeploymentProcessorTarget> {
+public class SingletonResourceDefinition extends SubsystemResourceDefinition implements Consumer<DeploymentProcessorTarget> {
 
     static final PathElement PATH = pathElement(SingletonExtension.SUBSYSTEM_NAME);
 

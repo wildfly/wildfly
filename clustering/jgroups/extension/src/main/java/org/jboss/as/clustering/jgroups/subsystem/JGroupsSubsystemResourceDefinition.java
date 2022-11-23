@@ -53,7 +53,7 @@ import org.wildfly.clustering.server.service.ClusteringRequirement;
  *
  * @author Richard Achmatowicz (c) 2012 Red Hat Inc.
  */
-public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
+public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinition {
 
     public static final PathElement PATH = pathElement(JGroupsExtension.SUBSYSTEM_NAME);
 
