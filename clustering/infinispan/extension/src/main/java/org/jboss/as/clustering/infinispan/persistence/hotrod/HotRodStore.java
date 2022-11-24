@@ -51,7 +51,6 @@ import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.util.IntSet;
 import org.infinispan.commons.util.IntSets;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.marshall.persistence.PersistenceMarshaller;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.persistence.spi.InitializationContext;
@@ -118,12 +117,12 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
             this.container.getConfiguration().addRemoteCache(this.segmentCacheName(i), configurator);
         }
         // When unshared, add/removeSegments(...) will be triggered as needed.
-        return configuration.shared() ? this.addSegments(IntSets.immutableRangeSet(this.segments)) : CompletableFutures.completedNull();
+        return configuration.shared() ? this.addSegments(IntSets.immutableRangeSet(this.segments)) : CompletableFuture.completedStage(null);
     }
 
     @Override
     public CompletionStage<Void> stop() {
-        CompletableFuture<Void> result = CompletableFutures.completedNull();
+        CompletableFuture<Void> result = CompletableFuture.completedFuture(null);
         for (int i = 0; i < this.caches.length(); ++i) {
             RemoteCache<ByteBuffer, ByteBuffer> cache = this.caches.get(i);
             if (cache != null) {
@@ -160,34 +159,34 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
     @Override
     public CompletionStage<MarshallableEntry<K, V>> load(int segment, Object key) {
         RemoteCache<ByteBuffer, ByteBuffer> cache = this.segmentCache(segment);
-        if (cache == null) return CompletableFutures.completedNull();
+        if (cache == null) return CompletableFuture.completedStage(null);
         try {
             return cache.getAsync(this.marshalKey(key)).thenApply(value -> (value != null) ? this.entryFactory.create(key, this.unmarshalValue(value)) : null);
         } catch (PersistenceException e) {
-            return CompletableFutures.completedExceptionFuture(e);
+            return CompletableFuture.failedStage(e);
         }
     }
 
     @Override
     public CompletionStage<Void> write(int segment, MarshallableEntry<? extends K, ? extends V> entry) {
         RemoteCache<ByteBuffer, ByteBuffer> cache = this.segmentCache(segment);
-        if (cache == null) return CompletableFutures.completedNull();
+        if (cache == null) return CompletableFuture.completedStage(null);
         Metadata metadata = entry.getMetadata();
         try {
             return cache.putAsync(entry.getKeyBytes(), this.marshalValue(entry.getMarshalledValue()), metadata.lifespan(), TimeUnit.MILLISECONDS, metadata.maxIdle(), TimeUnit.MILLISECONDS).thenAccept(Functions.discardingConsumer());
         } catch (PersistenceException e) {
-            return CompletableFutures.completedExceptionFuture(e);
+            return CompletableFuture.failedStage(e);
         }
     }
 
     @Override
     public CompletionStage<Boolean> delete(int segment, Object key) {
         RemoteCache<ByteBuffer, ByteBuffer> cache = this.segmentCache(segment);
-        if (cache == null) return CompletableFutures.completedNull();
+        if (cache == null) return CompletableFuture.completedStage(null);
         try {
             return cache.withFlags(Flag.FORCE_RETURN_VALUE).removeAsync(this.marshalKey(key)).thenApply(Objects::nonNull);
         } catch (PersistenceException e) {
-            return CompletableFutures.completedExceptionFuture(e);
+            return CompletableFuture.failedStage(e);
         }
     }
 
@@ -225,7 +224,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
             Stream<K> filteredKeys = (filter != null) ? keys.filter(filter) : keys;
             return Flowable.fromPublisher(this.blockingManager.blockingPublisher(Flowable.defer(() -> Flowable.fromStream(filteredKeys).doFinally(filteredKeys::close))));
         } catch (PersistenceException e) {
-            return Flowable.fromCompletionStage(CompletableFutures.completedExceptionFuture(e));
+            return Flowable.fromCompletionStage(CompletableFuture.failedStage(e));
         }
     }
 
@@ -248,13 +247,13 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
             Stream<MarshallableEntry<K, V>> filteredEntries = (filter != null) ? entries.filter(entry -> filter.test(entry.getKey())) : entries;
             return Flowable.fromPublisher(this.blockingManager.blockingPublisher(Flowable.defer(() -> Flowable.fromStream(filteredEntries).doFinally(filteredEntries::close))));
         } catch (PersistenceException e) {
-            return Flowable.fromCompletionStage(CompletableFutures.completedExceptionFuture(e));
+            return Flowable.fromCompletionStage(CompletableFuture.failedStage(e));
         }
     }
 
     @Override
     public CompletionStage<Void> clear() {
-        CompletableFuture<Void> result = CompletableFutures.completedNull();
+        CompletableFuture<Void> result = CompletableFuture.completedFuture(null);
         for (int i = 0; i < this.caches.length(); ++i) {
             RemoteCache<ByteBuffer, ByteBuffer> cache = this.caches.get(i);
             if (cache != null) {
@@ -267,11 +266,11 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
     @Override
     public CompletionStage<Boolean> containsKey(int segment, Object key) {
         RemoteCache<ByteBuffer, ByteBuffer> cache = this.segmentCache(segment);
-        if (cache == null) return CompletableFutures.completedFalse();
+        if (cache == null) return CompletableFuture.completedStage(false);
         try {
             return cache.containsKeyAsync(this.marshalKey(key));
         } catch (PersistenceException e) {
-            return CompletableFutures.completedExceptionFuture(e);
+            return CompletableFuture.failedStage(e);
         }
     }
 
@@ -294,7 +293,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
 
     @Override
     public CompletionStage<Void> addSegments(IntSet segments) {
-        CompletableFuture<Void> result = CompletableFutures.completedNull();
+        CompletableFuture<Void> result = CompletableFuture.completedFuture(null);
         PrimitiveIterator.OfInt iterator = segments.iterator();
         while (iterator.hasNext()) {
             int segment = iterator.nextInt();
@@ -318,7 +317,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
 
     @Override
     public CompletionStage<Void> removeSegments(IntSet segments) {
-        CompletableFuture<Void> result = CompletableFutures.completedNull();
+        CompletableFuture<Void> result = CompletableFuture.completedFuture(null);
         PrimitiveIterator.OfInt iterator = segments.iterator();
         while (iterator.hasNext()) {
             int segment = iterator.nextInt();

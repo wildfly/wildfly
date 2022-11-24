@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.CloseableIterator;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.Listener.Observation;
@@ -243,7 +243,7 @@ public class CacheServiceProviderRegistry<T> implements AutoCloseableServiceProv
                 });
             }
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     @CacheEntryCreated
@@ -275,7 +275,7 @@ public class CacheServiceProviderRegistry<T> implements AutoCloseableServiceProv
                 });
             }
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     private class RegisterLocalServiceTask implements ExceptionRunnable<CacheException> {
