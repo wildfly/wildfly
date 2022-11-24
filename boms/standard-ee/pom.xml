@@ -2162,7 +2162,7 @@
             <dependency>
                 <groupId>org.jberet</groupId>
                 <artifactId>jberet-jpa-repository</artifactId>
-                <version>2.1.1.Final</version>
+                <version>2.1.2.Final</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
