@@ -913,4 +913,11 @@
 		<packageUrl regex="true">^pkg:maven/org\.apache\.sshd/sshd\-core@.*$</packageUrl>
 		<cve>CVE-2022-45047</cve>
 	</suppress>
+	<suppress>
+		<notes><![CDATA[
+		file name: sshd-common-2.7.0.jar
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.sshd/sshd\-common@.*$</packageUrl>
+		<cve>CVE-2022-45047</cve>
+	</suppress>
 </suppressions>
