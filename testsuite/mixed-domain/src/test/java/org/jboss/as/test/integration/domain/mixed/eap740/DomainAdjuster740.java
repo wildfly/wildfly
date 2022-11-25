@@ -81,8 +81,8 @@ public class DomainAdjuster740 extends DomainAdjuster {
 
     private static void adjustEjb3(List<ModelNode> operations, PathAddress subsystemAddress) {
         PathAddress timerServiceAddress = subsystemAddress.append("service", "timer-service");
-        operations.add(Util.createCompositeOperation(Arrays.asList(Util.getUndefineAttributeOperation(timerServiceAddress, "default-persistent-timer-management"), Util.getWriteAttributeOperation(timerServiceAddress, "default-data-store", "default-file-store"))));
         operations.add(Util.createCompositeOperation(Arrays.asList(Util.getUndefineAttributeOperation(timerServiceAddress, "default-transient-timer-management"), Util.getWriteAttributeOperation(timerServiceAddress, "thread-pool-name", "default"))));
+        operations.add(Util.createCompositeOperation(Arrays.asList(Util.getUndefineAttributeOperation(timerServiceAddress, "default-persistent-timer-management"), Util.getWriteAttributeOperation(timerServiceAddress, "default-data-store", "default-file-store"))));
     }
 
     private static void adjustJGroups(List<ModelNode> operations, PathAddress subsystemAddress) {

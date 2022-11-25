@@ -53,14 +53,10 @@
         <module>iiop-openjdk</module>
         <module>transactions</module>
         <module>rts</module>
-        <module>jpa/spi</module>
-        <module>jpa/eclipselink</module>
-        <module>jpa/subsystem</module>
         <module>jsf</module>
         <module>microprofile</module>
         <module>shared</module>
         <module>web-common</module>
-        <module>weld/bean-validation</module>
         <module>weld/common</module>
         <module>weld/spi</module>
         <module>undertow</module>

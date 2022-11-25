@@ -41,7 +41,7 @@
         <module name="java.sql"/>
         <module name="javax.ejb.api"/>
         <module name="javax.enterprise.api"/>
-        <module name="javax.persistence.api"/>
+        <module name="jakarta.persistence.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
         <module name="org.hibernate.validator" services="import"/>

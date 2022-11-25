@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jipijapa.plugin.spi;
+package org.wildfly.clustering.marshalling.spi.util;
 
-import jakarta.persistence.EntityManagerFactory;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.UUID;
+
+import org.wildfly.clustering.marshalling.spi.Serializer;
 
 /**
- * Persistence unit service
- *
- * @author Scott Marlow
+ * {@link Serializer} for a {@link UUID}.
+ * @author Paul Ferraro
  */
-public interface PersistenceUnitService {
-    /**
-     * get the entity manager factory that represents the persistence unit service.  This corresponds to a
-     * persistence unit definition in a persistence.xml
-     *
-     * @return EntityManagerFactory or {@code null} if this service has not been started or has been stopped
-     */
-    EntityManagerFactory getEntityManagerFactory();
+public enum UUIDSerializer implements Serializer<UUID> {
+    INSTANCE;
 
-    /**
-     * Gets the scoped name of this persistence unit.
-     *
-     * @return the name
-     */
-    String getScopedPersistenceUnitName();
+    @Override
+    public void write(DataOutput output, UUID value) throws IOException {
+        output.writeLong(value.getMostSignificantBits());
+        output.writeLong(value.getLeastSignificantBits());
+    }
+
+    @Override
+    public UUID read(DataInput input) throws IOException {
+        return new UUID(input.readLong(), input.readLong());
+    }
 }

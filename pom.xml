@@ -490,8 +490,7 @@
         <legacy.version.org.eclipse.microprofile.rest.client.api>2.0</legacy.version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.yasson>3.0.1</version.org.eclipse.yasson>
-        <legacy.version.org.eclipse.persistence.eclipselink>2.7.11</legacy.version.org.eclipse.persistence.eclipselink>
-        <version.org.eclipse.persistence.eclipselink>3.0.3</version.org.eclipse.persistence.eclipselink>
+        <version.org.eclipse.persistence.eclipselink>4.0.0</version.org.eclipse.persistence.eclipselink>
         <version.org.glassfish.expressly>5.0.0</version.org.glassfish.expressly>
         <legacy.version.org.glassfish.jakarta.el>3.0.3.jbossorg-4</legacy.version.org.glassfish.jakarta.el>
         <legacy.version.org.glassfish.jakarta.enterprise.concurrent>1.1.1</legacy.version.org.glassfish.jakarta.enterprise.concurrent>
@@ -603,7 +602,7 @@
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>
         <version.org.wildfly.arquillian>5.0.0.Alpha6</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>20.0.0.Beta2</version.org.wildfly.core>
+        <version.org.wildfly.core>20.0.0.Beta3</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.http-client>1.1.15.Final</legacy.version.org.wildfly.http-client>
         <version.org.wildfly.http-client>2.0.0.Final</version.org.wildfly.http-client>

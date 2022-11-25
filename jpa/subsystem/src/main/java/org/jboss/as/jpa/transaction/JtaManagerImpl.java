@@ -22,8 +22,8 @@
 
 package org.jboss.as.jpa.transaction;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.spi.JtaManager;
 import org.wildfly.transaction.client.ContextTransactionManager;

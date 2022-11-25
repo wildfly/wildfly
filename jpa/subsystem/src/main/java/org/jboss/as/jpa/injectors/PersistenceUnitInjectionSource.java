@@ -26,7 +26,7 @@ package org.jboss.as.jpa.injectors;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.jpa.messages.JpaLogger;
@@ -84,7 +84,7 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
         final ServiceRegistry serviceRegistry;
         final String injectionTypeName;
         final PersistenceUnitMetadata pu;
-        private static final String ENTITY_MANAGER_FACTORY_CLASS = "javax.persistence.EntityManagerFactory";
+        private static final String ENTITY_MANAGER_FACTORY_CLASS = "jakarta.persistence.EntityManagerFactory";
 
         public PersistenceUnitJndiInjectable(
             final ServiceName puServiceName,

@@ -21,34 +21,20 @@
  */
 package org.wildfly.clustering.marshalling.spi.util;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.OptionalInt;
 import java.util.UUID;
 
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
 
 /**
  * {@link Externalizer} for {@link UUID} instances.
  * @author Paul Ferraro
  */
-public class UUIDExternalizer implements Externalizer<UUID> {
+public class UUIDExternalizer extends SerializerExternalizer<UUID> {
 
-    @Override
-    public void writeObject(ObjectOutput output, UUID uuid) throws IOException {
-        output.writeLong(uuid.getMostSignificantBits());
-        output.writeLong(uuid.getLeastSignificantBits());
-    }
-
-    @Override
-    public UUID readObject(ObjectInput input) throws IOException {
-        return new UUID(input.readLong(), input.readLong());
-    }
-
-    @Override
-    public Class<UUID> getTargetClass() {
-        return UUID.class;
+    public UUIDExternalizer() {
+        super(UUID.class, UUIDSerializer.INSTANCE);
     }
 
     @Override

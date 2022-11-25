@@ -24,7 +24,7 @@ package org.jboss.as.jpa.container;
 
 import java.util.Map;
 
-import javax.transaction.SystemException;
+import jakarta.transaction.SystemException;
 
 /**
  * Listens for UserTransaction events and handles associating the extended persistence context with the Jakarta Transactions transaction.

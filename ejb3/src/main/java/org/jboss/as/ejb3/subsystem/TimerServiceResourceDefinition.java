@@ -75,6 +75,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setRequired(true)
                     .setAlternatives(EJB3SubsystemModel.DEFAULT_PERSISTENT_TIMER_MANAGEMENT)
+                    .setRequires(EJB3SubsystemModel.THREAD_POOL_NAME)
                     .setCapabilityReference(TIMER_PERSISTENCE_CAPABILITY_NAME, TIMER_SERVICE_CAPABILITY)
                     .build();
 

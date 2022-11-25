@@ -24,7 +24,7 @@ package org.jipijapa.plugin.spi;
 
 import java.util.Map;
 
-import javax.persistence.spi.PersistenceUnitInfo;
+import jakarta.persistence.spi.PersistenceUnitInfo;
 
 /**
  * TwoPhaseBootstrapCapable obtains a two phase EntityManagerFactory builder

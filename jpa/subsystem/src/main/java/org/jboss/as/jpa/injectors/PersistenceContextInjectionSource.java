@@ -27,12 +27,12 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContextType;
-import javax.persistence.SynchronizationType;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceContextType;
+import jakarta.persistence.SynchronizationType;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
@@ -79,7 +79,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
      * @param puServiceName     represents the deployed persistence.xml that we are going to use.
      * @param serviceRegistry    The MSC service registry which will be used to find the PersistenceContext service
      * @param scopedPuName      the fully scoped reference to the persistence.xml
-     * @param injectionTypeName is normally "javax.persistence.EntityManager" but could be a different target class
+     * @param injectionTypeName is normally "jakarta.persistence.EntityManager" but could be a different target class
      *                          for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
      * @param pu
      * @param jpaDeploymentSettings Optional {@link JPADeploymentSettings} applicable for the persistence context
@@ -122,7 +122,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
         private final PersistenceUnitMetadata pu;
         private final JPADeploymentSettings jpaDeploymentSettings;
 
-        private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
+        private static final String ENTITY_MANAGER_CLASS = "jakarta.persistence.EntityManager";
 
         public PersistenceContextJndiInjectable(
             final ServiceName puServiceName,

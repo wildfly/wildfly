@@ -32,10 +32,10 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.persistence.SharedCacheMode;
-import javax.persistence.ValidationMode;
-import javax.persistence.spi.ClassTransformer;
-import javax.persistence.spi.PersistenceUnitTransactionType;
+import jakarta.persistence.SharedCacheMode;
+import jakarta.persistence.ValidationMode;
+import jakarta.persistence.spi.ClassTransformer;
+import jakarta.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
 
 import org.jboss.jandex.Index;
@@ -68,7 +68,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     private volatile DataSource nonJtaDataSource;
 
-    // optional: provider classname (must implement javax.persistence.spi.PersistenceProvider)
+    // optional: provider classname (must implement jakarta.persistence.spi.PersistenceProvider)
     private volatile String provider;
 
     // optional: specifies if EntityManagers will be JTA (default) or RESOURCE_LOCAL

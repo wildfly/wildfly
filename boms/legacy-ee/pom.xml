@@ -65,50 +65,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-eclipselink-legacy-namespace</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-hibernate5</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-entitymanager</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-java8</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-infinispan</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-hibernate5-3</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-openjpa</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-bean-validation-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
@@ -189,11 +145,6 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-bean-validation-legacy-namespace</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
@@ -201,17 +152,6 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-weld-spi-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-weld-transactions-legacy-namespace</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -558,33 +498,6 @@
                     <exclusion>
                         <groupId>javax.inject</groupId>
                         <artifactId>javax.inject</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.persistence</groupId>
-                <artifactId>eclipselink</artifactId>
-                <version>${legacy.version.org.eclipse.persistence.eclipselink}</version>
-                <scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.eclipse.persistence</groupId>
-                        <artifactId>javax.persistence</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>validation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish</groupId>
-                        <artifactId>javax.json</artifactId>
-                    </exclusion>
-                    <!-- TODO remove this exclusion once this depends on Jakarta JSON-P -->
-                    <!-- superseded by jakarta.json:jakarta.json-api -->
-                    <exclusion>
-                        <groupId>javax.json</groupId>
-                        <artifactId>javax.json-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
