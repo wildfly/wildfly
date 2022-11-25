@@ -82,7 +82,8 @@ public class ServerServiceTestCase extends AbstractUndertowSubsystemTestCase {
 
         assertNotNull(serverService);
         serverService.setMode(ServiceController.Mode.ACTIVE);
-        final Server server = serverService.awaitValue();
+        serverService.getServiceContainer().awaitStability();
+        final Server server = serverService.getValue();
         assertNotNull(server);
         return server;
     }
