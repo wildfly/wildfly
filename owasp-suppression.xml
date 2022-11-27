@@ -969,4 +969,165 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-remoting@.*$</packageUrl>
         <cve>CVE-2022-1278</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-server-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-server@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-legacy-versions-5.0.0.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.legacy\.test/wildfly\-legacy\-versions@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-core-test-runner-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-core\-test\-runner@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-core-testsuite-shared-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-core\-testsuite\-shared@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-io-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-io@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-jmx-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-jmx@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-network-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-network@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-threads-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-threads@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-version-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-version@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-embedded-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-embedded@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-launcher-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-launcher@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-protocol-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-protocol@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-controller-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-controller@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-model-test-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-model\-test@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-event-logger-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-event\-logger@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-platform-mbean-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-platform\-mbean@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-host-controller-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-host\-controller@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-domain-management-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-domain\-management@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-process-controller-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-process\-controller@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-request-controller-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-request\-controller@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-deployment-repository-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-deployment\-repository@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-domain-http-interface-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-domain\-http\-interface@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-subsystem-test-framework-13.0.3-12-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-subsystem\-test\-framework@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
 </suppressions>
