@@ -40,7 +40,19 @@ public final class RTSSubsystemDefinition extends SimpleResourceDefinition {
 
     static final String XA_RESOURCE_RECOVERY_CAPABILITY = "org.wildfly.transactions.xa-resource-recovery-registry";
     /** Private capability that currently just represents the existence of the subsystem */
-    private static final RuntimeCapability<Void> RTS_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.rts")
+    public static final RuntimeCapability<Void> RTS_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.rts", false, Void.class)
+            .addRequirements(XA_RESOURCE_RECOVERY_CAPABILITY)
+            .build();
+
+    public static final RuntimeCapability<Void> RTS_COORDINATOR_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.rts.coordinator", false, Void.class)
+            .addRequirements(XA_RESOURCE_RECOVERY_CAPABILITY)
+            .build();
+
+    public static final RuntimeCapability<Void> RTS_PARTICIPANT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.rts.participant", false, Void.class)
+            .addRequirements(XA_RESOURCE_RECOVERY_CAPABILITY)
+            .build();
+
+    public static final RuntimeCapability<Void> RTS_VOLATILE_PARTICIPANT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.rts.volatile-participant", false, Void.class)
             .addRequirements(XA_RESOURCE_RECOVERY_CAPABILITY)
             .build();
 

@@ -22,7 +22,6 @@
 
 package org.wildfly.iiop.openjdk;
 
-import static org.wildfly.iiop.openjdk.Capabilities.IIOP_CAPABILITY;
 import static org.wildfly.iiop.openjdk.Capabilities.LEGACY_SECURITY;
 
 import java.util.ArrayList;
@@ -58,7 +57,7 @@ import org.jboss.dmr.ModelType;
  */
 class IIOPRootDefinition extends PersistentResourceDefinition {
 
-    static final RuntimeCapability<Void> IIOP_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.IIOP_CAPABILITY, false).build();
+    public static final RuntimeCapability<Void> IIOP_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.IIOP_CAPABILITY, false, Void.class).build();
 
     static final ModelNode NONE = new ModelNode("none");
 

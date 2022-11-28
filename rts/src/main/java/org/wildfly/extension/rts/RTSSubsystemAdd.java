@@ -21,9 +21,14 @@
  */
 package org.wildfly.extension.rts;
 
+import static org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition.SOCKET_BINDING_CAPABILITY_NAME;
+import static org.wildfly.extension.rts.RTSSubsystemDefinition.RTS_COORDINATOR_CAPABILITY;
+import static org.wildfly.extension.rts.RTSSubsystemDefinition.RTS_PARTICIPANT_CAPABILITY;
+import static org.wildfly.extension.rts.RTSSubsystemDefinition.RTS_VOLATILE_PARTICIPANT_CAPABILITY;
 import static org.wildfly.extension.rts.RTSSubsystemDefinition.XA_RESOURCE_RECOVERY_CAPABILITY;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.network.SocketBinding;
@@ -33,6 +38,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.rts.configuration.Attribute;
 import org.wildfly.extension.rts.deployment.InboundBridgeDeploymentProcessor;
 import org.wildfly.extension.rts.logging.RTSLogger;
@@ -42,6 +48,8 @@ import org.wildfly.extension.rts.service.ParticipantService;
 import org.wildfly.extension.rts.service.VolatileParticipantService;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowService;
+
+import java.util.function.Supplier;
 
 /**
  *
@@ -97,16 +105,13 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String socketBindingName = model.get(Attribute.SOCKET_BINDING.getLocalName()).asString();
         final String serverName = model.get(Attribute.SERVER.getLocalName()).asString();
         final String hostName = model.get(Attribute.HOST.getLocalName()).asString();
-        final CoordinatorService coordinatorService = new CoordinatorService();
-        final ServiceBuilder<CoordinatorService> coordinatorServiceBuilder = context
-                .getServiceTarget()
-                .addService(RTSSubsystemExtension.COORDINATOR, coordinatorService)
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class,
-                        coordinatorService.getInjectedSocketBinding())
-                .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class,
-                        coordinatorService.getInjectedHost());
-
-        coordinatorServiceBuilder
+        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(RTS_COORDINATOR_CAPABILITY);
+        Supplier<Host> hostSupplier = builder.requires(UndertowService.virtualHostName(serverName, hostName));
+        ServiceName serviceName = context.getCapabilityServiceName(SOCKET_BINDING_CAPABILITY_NAME, socketBindingName, SocketBinding.class);
+        Supplier<SocketBinding> socketBindingSupplier = builder.requires(serviceName);
+        final CoordinatorService coordinatorService = new CoordinatorService(hostSupplier, socketBindingSupplier);
+        builder.setInstance(coordinatorService)
+                .addAliases(RTSSubsystemExtension.COORDINATOR)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }
@@ -116,20 +121,16 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String socketBindingName = model.get(Attribute.SOCKET_BINDING.getLocalName()).asString();
         final String serverName = model.get(Attribute.SERVER.getLocalName()).asString();
         final String hostName = model.get(Attribute.HOST.getLocalName()).asString();
-        final ParticipantService participantService = new ParticipantService();
-        final ServiceBuilder<ParticipantService> participantServiceBuilder = context
-                .getServiceTarget()
-                .addService(RTSSubsystemExtension.PARTICIPANT, participantService)
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class,
-                        participantService.getInjectedSocketBinding())
-                .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class,
-                        participantService.getInjectedHost());
 
-        participantServiceBuilder
+        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(RTS_PARTICIPANT_CAPABILITY);
+        Supplier<Host> hostSupplier = builder.requires(UndertowService.virtualHostName(serverName, hostName));
+        ServiceName serviceName = context.getCapabilityServiceName(SOCKET_BINDING_CAPABILITY_NAME, socketBindingName, SocketBinding.class);
+        Supplier<SocketBinding> socketBindingSupplier = builder.requires(serviceName);
+        final ParticipantService participantService = new ParticipantService(hostSupplier, socketBindingSupplier);
+        builder.setInstance(participantService)
+                .addAliases(RTSSubsystemExtension.PARTICIPANT)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-
-
     }
 
     private void registerVolatileParticipantService(final OperationContext context, final ModelNode model) {
@@ -137,16 +138,14 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String socketBindingName = model.get(Attribute.SOCKET_BINDING.getLocalName()).asString();
         final String serverName = model.get(Attribute.SERVER.getLocalName()).asString();
         final String hostName = model.get(Attribute.HOST.getLocalName()).asString();
-        final VolatileParticipantService volatileParticipantService = new VolatileParticipantService();
-        final ServiceBuilder<VolatileParticipantService> volatileParticipantServiceBuilder = context
-                .getServiceTarget()
-                .addService(RTSSubsystemExtension.VOLATILE_PARTICIPANT, volatileParticipantService)
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class,
-                        volatileParticipantService.getInjectedSocketBinding())
-                .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class,
-                        volatileParticipantService.getInjectedHost());
 
-        volatileParticipantServiceBuilder
+        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(RTS_VOLATILE_PARTICIPANT_CAPABILITY);
+        Supplier<Host> hostSupplier = builder.requires(UndertowService.virtualHostName(serverName, hostName));
+        ServiceName serviceName = context.getCapabilityServiceName(SOCKET_BINDING_CAPABILITY_NAME, socketBindingName, SocketBinding.class);
+        Supplier<SocketBinding> socketBindingSupplier = builder.requires(serviceName);
+        final VolatileParticipantService volatileParticipantService = new VolatileParticipantService(hostSupplier, socketBindingSupplier);
+        builder.setInstance(volatileParticipantService)
+                .addAliases(RTSSubsystemExtension.VOLATILE_PARTICIPANT)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }

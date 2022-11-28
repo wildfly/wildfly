@@ -75,7 +75,7 @@ import org.wildfly.transaction.client.provider.remoting.RemotingTransactionServi
  */
 public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
-    static final RuntimeCapability<Void> TRANSACTION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.transactions")
+    static final RuntimeCapability<Void> TRANSACTION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.transactions", Void.class)
             .build();
 
     /** Capability that indicates a local TransactionManager provider is present. */
