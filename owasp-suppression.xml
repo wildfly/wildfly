@@ -1130,4 +1130,11 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-subsystem\-test\-framework@.*$</packageUrl>
         <cve>CVE-2022-1278</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-core-galleon-pack-13.0.3-12-PSI-SNAPSHOT.pom
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-core\-galleon\-pack@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
 </suppressions>
