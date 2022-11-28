@@ -106,7 +106,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
     private static final ServiceName SUBJECT_FACTORY_SERVICE = ServiceName.JBOSS.append("security", "subject-factory");
 
     AbstractDataSourceAdd(Collection<AttributeDefinition> attributes) {
-        super(Capabilities.DATA_SOURCE_CAPABILITY, attributes);
+        super(attributes);
     }
 
 

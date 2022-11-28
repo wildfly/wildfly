@@ -24,7 +24,6 @@ package org.wildfly.extension.batch.jberet;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -175,7 +174,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         private final ContextClassLoaderJobOperatorContextSelector selector;
 
         private BatchSubsystemAdd() {
-            super(Collections.singleton(Capabilities.BATCH_CONFIGURATION_CAPABILITY), DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL, RESTART_JOBS_ON_RESUME, SECURITY_DOMAIN);
+            super(DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL, RESTART_JOBS_ON_RESUME, SECURITY_DOMAIN);
             selector = new ContextClassLoaderJobOperatorContextSelector(() -> JobOperatorContext.create(DefaultBatchEnvironment.INSTANCE));
             JobOperatorContext.setJobOperatorContextSelector(selector);
         }
