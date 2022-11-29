@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.web.sso.interfaces;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBLocalHome;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJBLocalHome;
 
 /**
  * A trivial local SessionBean home interface.

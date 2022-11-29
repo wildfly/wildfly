@@ -25,6 +25,7 @@ import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 
 /**

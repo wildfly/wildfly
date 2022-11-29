@@ -22,15 +22,15 @@
 
 package org.jboss.as.test.integration.common.jms;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 /**
  * Utility class for getting implementations of JMSOperations interface
@@ -53,7 +53,7 @@ public class JMSOperationsProvider {
      *
      * @return a JMSOperations implementation that is JMS-provider-dependent
      *
-     * @deprecated use {@link #getInstance(org.jboss.as.controller.client.ModelControllerClient)} instead
+     * @deprecated use {@link #getInstance(ModelControllerClient)} instead
      */
     @Deprecated
     public static JMSOperations getInstance(ManagementClient client) {
