@@ -27,6 +27,7 @@ package org.jboss.as.mail.extension;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -42,7 +43,7 @@ import jakarta.mail.Session;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class SessionProviderFactory {
-    static SessionProvider create(MailSessionConfig config, final Map<String, OutboundSocketBinding> socketBindings) throws StartException {
+    static SessionProvider create(MailSessionConfig config, final Map<String, Supplier<OutboundSocketBinding>> socketBindings) throws StartException {
         return new ManagedSession(config, socketBindings);
     }
 
@@ -63,11 +64,11 @@ class SessionProviderFactory {
     }
 
     private static class ManagedSession implements SessionProvider {
-        private final Map<String, OutboundSocketBinding> socketBindings;
+        private final Map<String, Supplier<OutboundSocketBinding>> socketBindings;
         private final MailSessionConfig sessionConfig;
         private final Properties properties = new Properties();
 
-        private ManagedSession(MailSessionConfig sessionConfig, Map<String, OutboundSocketBinding> socketBindings) throws StartException {
+        private ManagedSession(MailSessionConfig sessionConfig, Map<String, Supplier<OutboundSocketBinding>> socketBindings) throws StartException {
             this.socketBindings = socketBindings;
             this.sessionConfig = sessionConfig;
             configure();
@@ -159,11 +160,11 @@ class SessionProviderFactory {
 
         private InetSocketAddress getServerSocketAddress(ServerConfig server) throws StartException {
             final String ref = server.getOutgoingSocketBinding();
-            final OutboundSocketBinding binding = socketBindings.get(ref);
+            final Supplier<OutboundSocketBinding> binding = socketBindings.get(ref);
             if (binding == null) {
                 throw MailLogger.ROOT_LOGGER.outboundSocketBindingNotAvailable(ref);
             }
-            return new InetSocketAddress(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
+            return new InetSocketAddress(binding.get().getUnresolvedDestinationAddress(), binding.get().getDestinationPort());
         }
 
         @Override

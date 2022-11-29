@@ -33,7 +33,9 @@ import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
 import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -118,23 +120,24 @@ class MailSessionAdd extends AbstractAddStepHandler {
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         final MailSessionConfig config = from(context, fullModel);
-        final MailSessionService service = new MailSessionService(config);
 
-        final CapabilityServiceBuilder mailSessionBuilder = serviceTarget.addCapability(SESSION_CAPABILITY.fromBaseCapability(address.getLastElement().getValue())).setInstance(service);
-        addOutboundSocketDependency(service, mailSessionBuilder, config.getImapServer());
+        final Map<String, Supplier<OutboundSocketBinding>> socketBindings = new HashMap<>();
+        final CapabilityServiceBuilder mailSessionBuilder = serviceTarget.addCapability(SESSION_CAPABILITY.fromBaseCapability(address.getLastElement().getValue()));
+        addOutboundSocketDependency(socketBindings, mailSessionBuilder, config.getImapServer());
         addCredentialStoreReference(config.getImapServer(), context, fullModel, mailSessionBuilder, MailSubsystemModel.IMAP_SERVER_PATH);
-        addOutboundSocketDependency(service, mailSessionBuilder, config.getPop3Server());
+        addOutboundSocketDependency(socketBindings, mailSessionBuilder, config.getPop3Server());
         addCredentialStoreReference(config.getPop3Server(), context, fullModel, mailSessionBuilder, MailSubsystemModel.POP3_SERVER_PATH);
-        addOutboundSocketDependency(service, mailSessionBuilder, config.getSmtpServer());
+        addOutboundSocketDependency(socketBindings, mailSessionBuilder, config.getSmtpServer());
         addCredentialStoreReference(config.getSmtpServer(), context, fullModel, mailSessionBuilder, MailSubsystemModel.SMTP_SERVER_PATH);
         for (CustomServerConfig server : config.getCustomServers()) {
             if (server.getOutgoingSocketBinding() != null) {
-                addOutboundSocketDependency(service, mailSessionBuilder, server);
+                addOutboundSocketDependency(socketBindings, mailSessionBuilder, server);
             }
             addCredentialStoreReference(server, context, fullModel, mailSessionBuilder, PathElement.pathElement(MailSubsystemModel.CUSTOM_SERVER_PATH.getKey(), server.getProtocol()));
         }
         mailSessionBuilder.addAliases(MAIL_SESSION_SERVICE_NAME.append(address.getLastElement().getValue()));
-
+        final MailSessionService service = new MailSessionService(config, socketBindings);
+        mailSessionBuilder.setInstance(service).install();
 
         final ManagedReferenceFactory valueManagedReferenceFactory = new MailSessionManagedReferenceFactory(service);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
@@ -165,10 +168,6 @@ class MailSessionAdd extends AbstractAddStepHandler {
                         }
                     }
                 });
-
-        mailSessionBuilder
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
         binderBuilder
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
@@ -196,10 +195,10 @@ class MailSessionAdd extends AbstractAddStepHandler {
         return jndiName;
     }
 
-    private static void addOutboundSocketDependency(MailSessionService service, CapabilityServiceBuilder<?> mailSessionBuilder, ServerConfig server) {
+    private static void addOutboundSocketDependency(final Map<String, Supplier<OutboundSocketBinding>> socketBindings, final CapabilityServiceBuilder<?> mailSessionBuilder, final ServerConfig server) {
         if (server != null) {
             final String ref = server.getOutgoingSocketBinding();
-            mailSessionBuilder.addCapabilityRequirement(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, OutboundSocketBinding.class, service.getSocketBindingInjector(ref), ref);
+            socketBindings.put(ref, mailSessionBuilder.requiresCapability(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, OutboundSocketBinding.class, ref));
         }
     }
 
