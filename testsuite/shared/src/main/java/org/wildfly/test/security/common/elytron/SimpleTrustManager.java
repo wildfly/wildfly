@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
 
 /**
  * Elytron trust-managers configuration implementation.

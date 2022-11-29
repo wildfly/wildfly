@@ -21,12 +21,12 @@
  */
 package org.jboss.as.test.integration.security.common.ejb3;
 
-import jakarta.annotation.Resource;
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.ejb.Remote;
-import jakarta.ejb.SessionContext;
-import jakarta.ejb.Stateless;
+import javax.annotation.Resource;
+import javax.annotation.security.DeclareRoles;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Remote;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
 
 /**
  * A simple implementation of {@link Hello} interface. It's annotated as a {@link Stateless} bean with {@link Hello} as a
@@ -52,7 +52,7 @@ public class HelloBean implements Hello {
     /**
      * Returns {@value #HELLO_WORLD}.
      *
-     * @see Hello#sayHelloWorld()
+     * @see org.jboss.as.test.integration.security.common.ejb3.Hello#sayHelloWorld()
      */
     public String sayHelloWorld() {
         return HELLO_WORLD;
@@ -61,7 +61,7 @@ public class HelloBean implements Hello {
     /**
      * Returns greeting with name retrieved from {@link SessionContext#getCallerPrincipal()}.
      *
-     * @see Hello#sayHello()
+     * @see org.jboss.as.test.integration.security.common.ejb3.Hello#sayHello()
      */
     public String sayHello() {
         return "Hello " + context.getCallerPrincipal().getName() + "!";

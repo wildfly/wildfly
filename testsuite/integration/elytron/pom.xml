@@ -381,7 +381,7 @@
              on older version of BouncyCastle. -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
+            <artifactId>${wildfly-testsuite-shared.artifactId}</artifactId>
             <scope>test</scope>
         </dependency>
 

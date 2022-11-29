@@ -81,8 +81,8 @@ public abstract class AbstractSystemPropertiesServerSetupTask implements ServerS
      *
      * @param managementClient
      * @param containerId
-     * @see AbstractSecurityDomainSetup#tearDown(ManagementClient,
-     *      String)
+     * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup#tearDown(org.jboss.as.arquillian.container.ManagementClient,
+     *      java.lang.String)
      */
     public final void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         if (LOGGER.isInfoEnabled()) {

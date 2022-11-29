@@ -22,7 +22,6 @@
 package org.wildfly.test.security.common.elytron;
 
 import java.util.Objects;
-
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 
 /**

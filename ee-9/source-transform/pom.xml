@@ -51,6 +51,7 @@
         <module>ee</module>
         <module>jsf</module>
         <module>microprofile</module>
+        <module>shared</module>
         <module>web-common</module>
         <module>weld/common</module>
         <module>weld/spi</module>

@@ -35,6 +35,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.elytron.ElytronExtension;
 
 /**
  * Utility methods to create/remove simple security domains
@@ -43,7 +44,6 @@ import org.jboss.dmr.ModelNode;
  */
 public class ServletElytronDomainSetup implements ServerSetupTask {
 
-    private static final String SUBSYSTEM_NAME = "elytron";
     private static final String DEFAULT_SECURITY_DOMAIN_NAME = "elytron-tests";
 
     private PathAddress httpAuthenticationAddress;
@@ -89,7 +89,7 @@ public class ServletElytronDomainSetup implements ServerSetupTask {
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
         httpAuthenticationAddress = PathAddress.pathAddress()
-                .append(SUBSYSTEM, SUBSYSTEM_NAME)
+                .append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)
                 .append("http-authentication-factory", getHttpAuthenticationName());
 
         undertowDomainAddress = PathAddress.pathAddress()

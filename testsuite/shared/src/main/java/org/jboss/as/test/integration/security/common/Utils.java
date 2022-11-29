@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.security.common;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils.OID_KERBEROS_V5;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -64,8 +65,8 @@ import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.x500.X500Principal;
+import javax.servlet.http.HttpServletResponse;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -1087,7 +1088,7 @@ public class Utils extends CoreUtils {
     }
 
     /**
-     * Returns management address (host) from the givem {@link ManagementClient}. If the
+     * Returns management address (host) from the givem {@link org.jboss.as.arquillian.container.ManagementClient}. If the
      * returned value is IPv6 address then square brackets around are stripped.
      *
      * @param managementClient
@@ -1099,7 +1100,7 @@ public class Utils extends CoreUtils {
 
     /**
      * Returns canonical hostname retrieved from management address of the givem
-     * {@link ManagementClient}.
+     * {@link org.jboss.as.arquillian.container.ManagementClient}.
      *
      * @param managementClient
      * @return
@@ -1116,7 +1117,7 @@ public class Utils extends CoreUtils {
      * @param mgmtClient Management Client (may be null)
      * @param useCanonicalHost flag which says if host in URI should be replaced by the canonical host.
      * @return
-     * @throws URISyntaxException
+     * @throws java.net.URISyntaxException
      */
     public static final URI getServletURI(final URL webAppURL, final String servletPath, final ManagementClient mgmtClient,
             boolean useCanonicalHost) throws URISyntaxException {
