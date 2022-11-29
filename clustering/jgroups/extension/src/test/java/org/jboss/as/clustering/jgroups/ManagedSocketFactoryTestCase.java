@@ -21,10 +21,17 @@
  */
 package org.jboss.as.clustering.jgroups;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -35,16 +42,11 @@ import java.net.MulticastSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.network.ManagedServerSocketFactory;
 import org.jboss.as.network.ManagedSocketFactory;
@@ -52,7 +54,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.network.SocketBindingManager.NamedManagedBindingRegistry;
 import org.jboss.as.network.SocketBindingManager.UnnamedBindingRegistry;
-import org.junit.After;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
@@ -64,15 +65,8 @@ public class ManagedSocketFactoryTestCase {
 
     private final SocketBindingManager manager = mock(SocketBindingManager.class);
     private final SelectorProvider provider = mock(SelectorProvider.class);
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private final SocketFactory subject = new org.jboss.as.clustering.jgroups.ManagedSocketFactory(this.provider, this.manager, Map.of("known-service", new SocketBinding("binding", 0, false, null, 0, null, this.manager, List.of())), this.executor);
-
-    @After
-    public void destroy() {
-        reset(this.manager);
-        this.executor.shutdown();
-    }
+    private final SocketFactory subject = new org.jboss.as.clustering.jgroups.ManagedSocketFactory(this.provider, this.manager, Map.of("known-service", new SocketBinding("binding", 0, false, null, 0, null, this.manager, List.of())));
 
     @Test
     public void createSocket() throws IOException {
@@ -448,12 +442,12 @@ public class ManagedSocketFactoryTestCase {
     }
 
     @Test
+    @org.junit.Ignore("WFCORE-6145")
     public void createSocketChannel() throws IOException {
         this.createSocketChannel("known-service", "binding");
         this.createSocketChannel("unknown-service", null);
     }
 
-    @SuppressWarnings("cast")
     private void createSocketChannel(String serviceName, String bindingName) throws IOException {
         NamedManagedBindingRegistry namedRegistry = mock(NamedManagedBindingRegistry.class);
         UnnamedBindingRegistry unnamedRegistry = mock(UnnamedBindingRegistry.class);
@@ -461,78 +455,29 @@ public class ManagedSocketFactoryTestCase {
         when(this.manager.getNamedRegistry()).thenReturn(namedRegistry);
         when(this.manager.getUnnamedRegistry()).thenReturn(unnamedRegistry);
 
-        // Validate no registration when unbound
-        try (SocketChannel channel = SocketChannel.open(); AbstractSelector selector = SelectorProvider.provider().openSelector()) {
+        Closeable namedRegistration = mock(Closeable.class);
+        Closeable unnamedRegistration = mock(Closeable.class);
+
+        // Validate registration after connect
+        try (SocketChannel channel = SocketChannel.open()) {
             when(this.provider.openSocketChannel()).thenReturn(channel);
-            when(this.provider.openSelector()).thenReturn(selector);
+            when(namedRegistry.registerChannel(eq(bindingName), same(channel))).thenReturn(namedRegistration);
+            when(unnamedRegistry.registerChannel(same(channel))).thenReturn(unnamedRegistration);
 
             SocketChannel result = this.subject.createSocketChannel(serviceName);
 
             assertSame(channel, result);
-            // Socket was not bound yet
-            assertNull(result.getLocalAddress());
 
+            // If registration was successful, close of channel should trigger registration close
             this.subject.close(result);
 
-            // Acquire channel monitor to ensure that registration task has complete
-            synchronized (result) {
-                verify(namedRegistry, never()).registerChannel(bindingName, channel);
-                verify(unnamedRegistry, never()).registerChannel(channel);
-            }
-        }
-        reset(this.provider, unnamedRegistry, namedRegistry);
-
-        Closeable namedRegistration = mock(Closeable.class);
-        Closeable unnamedRegistration = mock(Closeable.class);
-        SocketAddress bindAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-
-        // Validate registration after connect
-        try (SocketChannel channel = SocketChannel.open(); AbstractSelector selector = SelectorProvider.provider().openSelector()) {
-            // Bind a server socket so that the test channel has somewhere to which to connect
-            try (ServerSocket server = new ServerSocket()) {
-                server.bind(bindAddress);
-
-                when(this.provider.openSocketChannel()).thenReturn(channel);
-                when(this.provider.openSelector()).thenReturn(selector);
-                when(namedRegistry.registerChannel(eq(bindingName), same(channel))).thenReturn(namedRegistration);
-                when(unnamedRegistry.registerChannel(same(channel))).thenReturn(unnamedRegistration);
-
-                SocketChannel result = this.subject.createSocketChannel(serviceName);
-
-                assertSame(channel, result);
-                // Socket was not bound yet
-                assertNull(result.getLocalAddress());
-                channel.bind(bindAddress);
-
-                // Trigger channel registration by connecting a socket
-                try (Selector connectSelector = Selector.open()) {
-                    SelectionKey key = result.register(connectSelector, SelectionKey.OP_CONNECT);
-                    if (!result.connect(server.getLocalSocketAddress())) {
-                        while (key.isValid()) {
-                            if (connectSelector.select() > 0) {
-                                try {
-                                    assertTrue(((SocketChannel) channel).finishConnect());
-                                } finally {
-                                    key.cancel();
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Acquire channel monitor to ensure that registration task has complete
-                synchronized (result) {
-                    // If registration was successful, close of channel should trigger registration close
-                    this.subject.close(result);
-
-                    verify((bindingName != null) ? namedRegistration : unnamedRegistration).close();
-                    verify((bindingName == null) ? namedRegistration : unnamedRegistration, never()).close();
-                }
-            }
+            verify((bindingName != null) ? namedRegistration : unnamedRegistration).close();
+            verify((bindingName == null) ? namedRegistration : unnamedRegistration, never()).close();
         }
     }
 
     @Test
+    @org.junit.Ignore("WFCORE-6145")
     public void createServerSocketChannel() throws IOException {
         this.createServerSocketChannel("known-service", "binding");
         this.createServerSocketChannel("unknown-service", null);
@@ -541,64 +486,28 @@ public class ManagedSocketFactoryTestCase {
     private void createServerSocketChannel(String serviceName, String bindingName) throws IOException {
         NamedManagedBindingRegistry namedRegistry = mock(NamedManagedBindingRegistry.class);
         UnnamedBindingRegistry unnamedRegistry = mock(UnnamedBindingRegistry.class);
-        SocketAddress bindAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
 
         when(this.manager.getNamedRegistry()).thenReturn(namedRegistry);
         when(this.manager.getUnnamedRegistry()).thenReturn(unnamedRegistry);
 
-        // Validate no registration when unbound
-        try (ServerSocketChannel channel = ServerSocketChannel.open(); AbstractSelector selector = SelectorProvider.provider().openSelector()) {
-            when(this.provider.openServerSocketChannel()).thenReturn(channel);
-            when(this.provider.openSelector()).thenReturn(selector);
-
-            ServerSocketChannel result = this.subject.createServerSocketChannel(serviceName);
-
-            assertSame(channel, result);
-            // Socket was not bound yet
-            assertNull(result.getLocalAddress());
-
-            this.subject.close(result);
-
-            // Acquire channel monitor to ensures that registration has complete
-            synchronized (result) {
-                verify(namedRegistry, never()).registerChannel(bindingName, channel);
-                verify(unnamedRegistry, never()).registerChannel(channel);
-            }
-        }
-        reset(this.provider, namedRegistry, unnamedRegistry);
-
         Closeable namedRegistration = mock(Closeable.class);
         Closeable unnamedRegistration = mock(Closeable.class);
 
-        // Validate registration after accept
-        try (ServerSocketChannel channel = ServerSocketChannel.open(); AbstractSelector selector = SelectorProvider.provider().openSelector()) {
+        // Validate registration after bind
+        try (ServerSocketChannel channel = ServerSocketChannel.open()) {
             when(this.provider.openServerSocketChannel()).thenReturn(channel);
-            when(this.provider.openSelector()).thenReturn(selector);
             when(namedRegistry.registerChannel(eq(bindingName), same(channel))).thenReturn(namedRegistration);
             when(unnamedRegistry.registerChannel(same(channel))).thenReturn(unnamedRegistration);
 
             ServerSocketChannel result = this.subject.createServerSocketChannel(serviceName);
 
             assertSame(channel, result);
-            // Socket was not bound yet
-            assertNull(result.getLocalAddress());
-            // Bind socket
-            channel.bind(bindAddress);
 
-            // Trigger channel registration by connecting a socket
-            try (Socket socket = new Socket()) {
-                socket.bind(bindAddress);
-                socket.connect(channel.getLocalAddress());
-            }
+            // If registration was successful, close of channel should trigger registration close
+            this.subject.close(result);
 
-            // Acquire channel monitor to ensures that registration has complete
-            synchronized (result) {
-                // If registration was successful, close of channel should trigger registration close
-                this.subject.close(result);
-
-                verify((bindingName != null) ? namedRegistration : unnamedRegistration).close();
-                verify((bindingName == null) ? namedRegistration : unnamedRegistration, never()).close();
-            }
+            verify((bindingName != null) ? namedRegistration : unnamedRegistration).close();
+            verify((bindingName == null) ? namedRegistration : unnamedRegistration, never()).close();
         }
     }
 

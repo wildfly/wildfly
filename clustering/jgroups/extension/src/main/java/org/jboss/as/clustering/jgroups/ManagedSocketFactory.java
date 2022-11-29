@@ -29,24 +29,18 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.NetworkChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.util.Util;
@@ -63,16 +57,14 @@ public class ManagedSocketFactory implements SocketFactory {
     private final SocketBindingManager manager;
     // Maps a JGroups service name its associated SocketBinding
     private final Map<String, SocketBinding> bindings;
-    private final Executor executor;
     // Store references to managed socket-binding registrations
     private final Map<SocketChannel, Closeable> channels = Collections.synchronizedMap(new IdentityHashMap<>());
     private final Map<ServerSocketChannel, Closeable> serverChannels = Collections.synchronizedMap(new IdentityHashMap<>());
 
-    public ManagedSocketFactory(SelectorProvider provider, SocketBindingManager manager, Map<String, SocketBinding> socketBindings, Executor executor) {
+    public ManagedSocketFactory(SelectorProvider provider, SocketBindingManager manager, Map<String, SocketBinding> socketBindings) {
         this.provider = provider;
         this.manager = manager;
         this.bindings = socketBindings;
-        this.executor = executor;
     }
 
     @Override
@@ -128,32 +120,9 @@ public class ManagedSocketFactory implements SocketFactory {
             }
         };
         C channel = factory.apply(this.provider);
-        try {
-            Selector selector = this.provider.openSelector();
-            // Store reference to selector so that we can close selector if channel is never bound
-            registrations.put(channel, selector);
-            channel.configureBlocking(false);
-            // Register a selector for relevant operation
-            SelectionKey key = channel.register(selector, operation, name);
-            try {
-                synchronized (key) {
-                    // Start thread that registers the channel upon first selection
-                    // Thread is short-lived, but we will not track its completion
-                    // If channel is never bound, thread will end when selector is closed
-                    this.executor.execute(new RegistrationTask<>(key, registration));
-                    // Wait until registration task holds channel monitor and is waiting to select
-                    key.wait();
-                }
-            } catch (RejectedExecutionException e) {
-                key.cancel();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            return channel;
-        } catch (IOException | RuntimeException | Error e) {
-            close(registrations, channel);
-            throw e;
-        }
+// Temporarily disabled due to WFCORE-6146
+//        registration.accept(channel);
+        return channel;
     }
 
     @Override
@@ -169,51 +138,5 @@ public class ManagedSocketFactory implements SocketFactory {
     private static <C extends NetworkChannel> void close(Map<C, Closeable> registrations, C channel) {
         Util.close(registrations.remove(channel));
         Util.close(channel);
-    }
-
-    private static class RegistrationTask<C extends NetworkChannel> implements Runnable {
-        private final SelectionKey key;
-        private final ExceptionConsumer<C, IOException> registration;
-
-        RegistrationTask(SelectionKey key, ExceptionConsumer<C, IOException> registration) {
-            this.key = key;
-            this.registration = registration;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public void run() {
-            // We only need selector long enough to detect first accept/connect
-            try (Selector selector = this.key.selector()) {
-                C channel = (C) this.key.channel();
-                // Acquire channel monitor
-                synchronized (channel) {
-                    synchronized (this.key) {
-                        // Wake up createChannel(...) thread
-                        this.key.notify();
-                    }
-                    while (this.key.isValid()) {
-                        // Wait for first accept/connect
-                        if (selector.select() > 0) {
-                            // We may need to wait while the channel sets its bind address
-                            while (channel.getLocalAddress() == null) {
-                                // Reading the bind address will contend for the channel's state lock
-                                Thread.yield();
-                            }
-                            try {
-                                this.registration.accept(channel);
-                            } finally {
-                                // Cancel selector registration with channel
-                                this.key.cancel();
-                            }
-                        }
-                    }
-                }
-            } catch (ClosedSelectorException | ClosedChannelException e) {
-                // Channel was closed while waiting for selection or checking bind address
-            } catch (IOException | RuntimeException | Error e) {
-                JGroupsLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-            }
-        }
     }
 }
