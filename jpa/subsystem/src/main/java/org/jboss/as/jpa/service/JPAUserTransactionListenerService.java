@@ -24,7 +24,6 @@ package org.jboss.as.jpa.service;
 
 import org.jboss.as.jpa.container.JPAUserTransactionListener;
 import org.jboss.as.txn.service.UserTransactionRegistryService;
-import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -72,7 +71,7 @@ public class JPAUserTransactionListenerService implements Service<Void> {
         JPAUserTransactionListenerService jpaUserTransactionListenerService = new JPAUserTransactionListenerService();
 
         target.addService(SERVICE_NAME, jpaUserTransactionListenerService)
-                .addDependency(UserTransactionRegistryService.SERVICE_NAME, Object.class, new CastingInjector<UserTransactionRegistry>(jpaUserTransactionListenerService.getUserTransactionRegistryInjectedValue(), UserTransactionRegistry.class))
+                .addDependency(UserTransactionRegistryService.SERVICE_NAME, UserTransactionRegistry.class, jpaUserTransactionListenerService.getUserTransactionRegistryInjectedValue())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }

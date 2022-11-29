@@ -97,7 +97,6 @@ import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -601,7 +600,7 @@ public class PersistenceUnitServiceHandler {
             builder.requires(JPAServiceNames.getJPAServiceName());
 
             // add dependency on first phase
-            builder.addDependency(puServiceName.append(FIRST_PHASE), Object.class, new CastingInjector<>(service.getPhaseOnePersistenceUnitServiceImplInjector(), PhaseOnePersistenceUnitServiceImpl.class));
+            builder.addDependency(puServiceName.append(FIRST_PHASE), PhaseOnePersistenceUnitServiceImpl.class, service.getPhaseOnePersistenceUnitServiceImplInjector());
 
             boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
             final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
