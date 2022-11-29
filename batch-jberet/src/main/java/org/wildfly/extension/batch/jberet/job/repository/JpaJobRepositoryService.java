@@ -39,6 +39,7 @@ import jakarta.persistence.ValidationMode;
 import jakarta.persistence.spi.PersistenceProvider;
 import jakarta.persistence.spi.PersistenceProviderResolverHolder;
 import jakarta.persistence.spi.PersistenceUnitTransactionType;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -137,8 +138,10 @@ public class JpaJobRepositoryService extends JobRepositoryService implements Ser
                 Optional<PersistenceProvider> findFirst = PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders().stream().findFirst();
                 this.entityManagerFactory = findFirst.get().createContainerEntityManagerFactory(
                         batchPersistenceUnitInfo,
-                        Map.of(
-                                HBM2DDL_AUTO, "update"
+                        new HashMap<>(
+                                Map.of(
+                                        HBM2DDL_AUTO, "update"
+                                )
                         )
                 );
                 context.complete();
