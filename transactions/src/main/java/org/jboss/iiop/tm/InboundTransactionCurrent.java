@@ -21,7 +21,7 @@
  */
 package org.jboss.iiop.tm;
 
-import javax.transaction.Transaction;
+import jakarta.transaction.Transaction;
 
 import org.omg.CORBA.Current;
 
@@ -50,7 +50,7 @@ public interface InboundTransactionCurrent extends Current {
      * requests; its return value is undefined in the case of a call issued
      * outside of a request scope.
      *
-     * @return the javax.transaction.Transaction instance associated with the
+     * @return the jakarta.transaction.Transaction instance associated with the
      *         current incoming request, or null if that request was not issued
      *         within the scope of some transaction.
      */

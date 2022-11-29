@@ -669,7 +669,7 @@ public class DsParser extends AbstractParser {
         operation.get(OP).set(ADD);
 
         String driverName = null;
-        for (org.jboss.jca.common.api.metadata.ds.Driver.Attribute attribute : Driver.Attribute.values()) {
+        for (Driver.Attribute attribute : Driver.Attribute.values()) {
             switch (attribute) {
 
                 case NAME: {

@@ -101,7 +101,7 @@ public class StubStrategy {
      *                   will be used)
      * @return an <code>StubStrategy</code> for the operation with the
      *         parameters, exceptions, and return value specified.
-     * @see org.wildfly.iiop.openjdk.rmi.marshal.CDRStream#abbrevFor(Class clz)
+     * @see CDRStream#abbrevFor(Class clz)
      */
     public static StubStrategy forMethod(String[] paramTypes,
                                          String[] excepIds,
@@ -135,7 +135,7 @@ public class StubStrategy {
      * @param cl         a <code>ClassLoader</code> to load value classes
      *                   (if null, the current thread's context class loader
      *                   will be used)
-     * @see org.wildfly.iiop.openjdk.rmi.marshal.CDRStream#abbrevFor(Class clz)
+     * @see CDRStream#abbrevFor(Class clz)
      */
     private StubStrategy(String[] paramTypes, String[] excepIds,
                          String[] excepTypes, String retvalType,

@@ -30,7 +30,7 @@ import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.credential.GSSKerberosCredential;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import javax.resource.spi.security.PasswordCredential;
+import jakarta.resource.spi.security.PasswordCredential;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;

@@ -187,7 +187,7 @@ public class SkeletonStrategy {
         * A null value indicates that the exception class does not correspond
         * to an IDL-defined exception.
         */
-        private java.lang.reflect.Method writeMethod = null;
+        private Method writeMethod = null;
 
         /**
          * The CORBA repository id of the exception class. (This field is used

@@ -32,8 +32,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
-import javax.resource.spi.work.DistributableWork;
-import javax.resource.spi.work.WorkException;
+import jakarta.resource.spi.work.DistributableWork;
+import jakarta.resource.spi.work.WorkException;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.jca.core.api.workmanager.DistributedWorkManager;

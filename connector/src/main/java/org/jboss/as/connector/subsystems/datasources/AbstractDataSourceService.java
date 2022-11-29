@@ -27,7 +27,7 @@ import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.DS_DEPLOYER_LOGGER;
 
 import javax.naming.Reference;
-import javax.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.ManagedConnectionFactory;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 import java.net.MalformedURLException;
@@ -165,7 +165,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 throw ConnectorLogger.ROOT_LOGGER.cannotStartDSTooManyConnectionFactories(jndiName.getAbsoluteJndiName(),
                         cfs.length);
             }
-            sqlDataSource = new WildFlyDataSource((javax.sql.DataSource) deploymentMD.getCfs()[0], jndiName.getAbsoluteJndiName());
+            sqlDataSource = new WildFlyDataSource((DataSource) deploymentMD.getCfs()[0], jndiName.getAbsoluteJndiName());
             DS_DEPLOYER_LOGGER.debugf("Adding datasource: %s", deploymentMD.getCfJndiNames()[0]);
             CommonDeploymentService cdService = new CommonDeploymentService(deploymentMD);
             final ServiceName cdServiceName = CommonDeploymentService.getServiceName(jndiName);
@@ -203,7 +203,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     }
 
     /**
-     * Performs the actual work of stopping the service. Should be called by {@link #stop(org.jboss.msc.service.StopContext)}
+     * Performs the actual work of stopping the service. Should be called by {@link #stop(StopContext)}
      * asynchronously from the MSC thread that invoked stop.
      */
     protected synchronized void stopService() {
@@ -439,8 +439,8 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         @Override
         protected String[] bindConnectionFactory(String deployment, final String jndi, Object cf) throws Throwable {
             // AS7-2222: Just hack it
-            if (cf instanceof javax.resource.Referenceable) {
-                ((javax.resource.Referenceable)cf).setReference(new Reference(jndi));
+            if (cf instanceof jakarta.resource.Referenceable) {
+                ((jakarta.resource.Referenceable)cf).setReference(new Reference(jndi));
             }
 
             // don't register because it's one during add operation
@@ -723,18 +723,18 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         }
 
         @Override
-        protected javax.resource.spi.ResourceAdapter createRa(String uniqueId, ClassLoader cl) throws NotFoundException, DeployException {
+        protected jakarta.resource.spi.ResourceAdapter createRa(String uniqueId, ClassLoader cl) throws NotFoundException, DeployException {
 
             List<? extends ConfigProperty> l = new ArrayList<ConfigProperty>();
 
-            javax.resource.spi.ResourceAdapter rar =
-                    (javax.resource.spi.ResourceAdapter) initAndInject(JDBCResourceAdapter.class.getName(), l, cl);
+            jakarta.resource.spi.ResourceAdapter rar =
+                    (jakarta.resource.spi.ResourceAdapter) initAndInject(JDBCResourceAdapter.class.getName(), l, cl);
 
             return rar;
         }
 
         @Override
-        protected String registerResourceAdapterToResourceAdapterRepository(javax.resource.spi.ResourceAdapter instance) {
+        protected String registerResourceAdapterToResourceAdapterRepository(jakarta.resource.spi.ResourceAdapter instance) {
             return raRepository.getValue().registerResourceAdapter(instance);
         }
 

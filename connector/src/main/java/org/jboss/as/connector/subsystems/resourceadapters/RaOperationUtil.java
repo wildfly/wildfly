@@ -329,7 +329,7 @@ public class RaOperationUtil {
             ServiceController raServiceController = registry.getService(raDeploymentServiceName);
 
             if (raServiceController != null) {
-                final org.jboss.msc.service.ServiceController.Mode originalMode = raServiceController.getMode();
+                final ServiceController.Mode originalMode = raServiceController.getMode();
                 final UninterruptibleCountDownLatch latch = new UninterruptibleCountDownLatch(1);
                 raServiceController.addListener(new LifecycleListener() {
                     @Override

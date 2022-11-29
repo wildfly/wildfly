@@ -29,7 +29,7 @@ import org.jboss.metadata.javaee.spec.ConnectionFactoriesMetaData;
 import org.jboss.metadata.javaee.spec.ConnectionFactoryMetaData;
 import org.jboss.metadata.javaee.spec.RemoteEnvironment;
 
-import javax.resource.spi.TransactionSupport;
+import jakarta.resource.spi.TransactionSupport;
 
 import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 

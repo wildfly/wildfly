@@ -30,7 +30,7 @@ import org.jboss.dmr.ModelNode;
 
 /**
  * {@link org.jboss.as.controller.OperationStepHandler} for the {@code write-attribute} operation for the
- * {@link org.jboss.as.connector.subsystems.jca.TracerDefinition tracer resource}.
+ * {@link TracerDefinition tracer resource}.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */

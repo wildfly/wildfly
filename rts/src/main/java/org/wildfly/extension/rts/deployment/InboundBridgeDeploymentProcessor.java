@@ -37,10 +37,10 @@ import org.jboss.narayana.rest.bridge.inbound.InboundBridgeFilter;
 import org.jboss.narayana.rest.bridge.inbound.TransactionalExceptionMapper;
 import org.wildfly.extension.rts.jaxrs.ImportWildflyClientGlobalTransactionFilter;
 
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import javax.transaction.Transactional;
-import javax.ws.rs.Path;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.Stateless;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.Path;
 import java.util.List;
 
 /**

@@ -41,8 +41,8 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.naming.InitialContext;
 import javax.naming.Reference;
-import javax.resource.spi.ResourceAdapter;
-import javax.transaction.TransactionManager;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
@@ -460,8 +460,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
             }
             installJNDIAliases(bindInfo, serviceTarget);
             // AS7-2222: Just hack it
-            if (cf instanceof javax.resource.Referenceable) {
-                ((javax.resource.Referenceable)cf).setReference(new Reference(jndi));
+            if (cf instanceof jakarta.resource.Referenceable) {
+                ((jakarta.resource.Referenceable)cf).setReference(new Reference(jndi));
             }
 
             return new String[] { jndi };
@@ -562,8 +562,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 }).setInitialMode(ServiceController.Mode.ACTIVE).install();
             }
             // AS7-2222: Just hack it
-            if (ao instanceof javax.resource.Referenceable) {
-                ((javax.resource.Referenceable)ao).setReference(new Reference(jndi));
+            if (ao instanceof jakarta.resource.Referenceable) {
+                ((jakarta.resource.Referenceable)ao).setReference(new Reference(jndi));
             }
 
             return new String[] { jndi };
