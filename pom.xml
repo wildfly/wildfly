@@ -538,7 +538,8 @@
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <version.org.jboss.metadata>15.3.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>2.0.1.Final</version.org.jboss.mod_cluster>
-        <version.org.jboss.narayana>5.13.0.Final</version.org.jboss.narayana>
+        <version.org.jboss.narayana>6.0.0.CR1</version.org.jboss.narayana>
+        <legacy.version.org.jboss.narayana>5.13.1.Final</legacy.version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.9.Final</version.org.jboss.openjdk-orb>
         <legacy.version.org.jboss.resteasy>4.7.4.Final</legacy.version.org.jboss.resteasy>
         <version.org.jboss.resteasy>6.2.1.Final</version.org.jboss.resteasy>
@@ -1224,45 +1225,11 @@
                 <scope>test</scope>
             </dependency>
 
-            <!--
-            TODO used both in testsuite/integration/legacy-ejb-client and in legacy code.
-            Once legacy code use is gone, convert to <scope>test</scope>
-            -->
-            <dependency>
-                <groupId>org.jboss.narayana.jts</groupId>
-                <artifactId>narayana-jts-idlj</artifactId>
-                <version>${version.org.jboss.narayana}</version>
-                <exclusions>
-                    <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
-                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
             <dependency>
                 <groupId>org.jboss.narayana.xts</groupId>
                 <artifactId>byteman_support</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <scope>test</scope>
-                <exclusions>
-                    <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
-                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!-- only still used by tests -->

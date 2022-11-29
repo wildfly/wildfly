@@ -429,12 +429,12 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-idlj-jakarta</artifactId>
+            <artifactId>narayana-jts-idlj</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-integration-jakarta</artifactId>
+            <artifactId>narayana-jts-integration</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
