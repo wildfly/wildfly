@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.microprofile.faulttolerance;
 
-import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
+import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistrar;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SubsystemRegistration;
@@ -34,7 +34,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 /**
  * @author Radoslav Husar
  */
-public class MicroProfileFaultToleranceResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
+public class MicroProfileFaultToleranceResourceDefinition extends SubsystemResourceDefinition {
 
     static final PathElement PATH = pathElement(MicroProfileFaultToleranceExtension.SUBSYSTEM_NAME);
 
@@ -68,7 +68,7 @@ public class MicroProfileFaultToleranceResourceDefinition extends SubsystemResou
                 ;
         MicroProfileFaultToleranceServiceHandler handler = new MicroProfileFaultToleranceServiceHandler();
 
-        new DeploymentChainContributingResourceRegistration(descriptor, handler, handler).register(registration);
+        new DeploymentChainContributingResourceRegistrar(descriptor, handler, handler).register(registration);
     }
 
 }

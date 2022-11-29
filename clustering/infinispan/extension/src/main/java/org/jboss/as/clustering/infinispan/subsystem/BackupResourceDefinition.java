@@ -34,7 +34,7 @@ import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
-import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
+import org.jboss.as.clustering.controller.RestartParentResourceRegistrar;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -160,7 +160,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
                 .addAttributes(TakeOfflineAttribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 ;
-        new RestartParentResourceRegistration(this.parentServiceConfiguratorFactory, descriptor).register(registration);
+        new RestartParentResourceRegistrar(this.parentServiceConfiguratorFactory, descriptor).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new OperationHandler<>(new BackupOperationExecutor(this.executors), BackupOperation.class).register(registration);

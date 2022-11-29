@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
+import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -72,7 +72,7 @@ public class RankedAffinityResourceDefinition extends AffinityResourceDefinition
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 ;
-        new ReloadRequiredResourceRegistration(descriptor).register(registration);
+        new ReloadRequiredResourceRegistrar(descriptor).register(registration);
 
         return registration;
     }

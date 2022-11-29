@@ -33,7 +33,7 @@ import org.jboss.as.clustering.controller.Schema;
 public enum DistributableEjbSchema implements Schema<DistributableEjbSchema> {
     VERSION_1_0(1, 0), // WildFly 27
     ;
-    static final Schema<DistributableEjbSchema> CURRENT = VERSION_1_0;
+    static final DistributableEjbSchema CURRENT = VERSION_1_0;
 
     private final int major;
     private final int minor;

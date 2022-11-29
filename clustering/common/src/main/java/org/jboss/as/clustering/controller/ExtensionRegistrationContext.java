@@ -30,7 +30,7 @@ import org.jboss.as.controller.services.path.PathManager;
 /**
  * @author Paul Ferraro
  */
-public class ExtensionRegistrationContext implements RegistrationContext {
+public class ExtensionRegistrationContext implements ManagementRegistrationContext {
 
     private final boolean runtimeOnlyRegistrationValid;
     private final Optional<PathManager> pathManager;

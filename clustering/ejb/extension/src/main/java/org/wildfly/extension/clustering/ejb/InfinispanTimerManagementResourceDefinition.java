@@ -29,7 +29,7 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
@@ -135,7 +135,7 @@ public class InfinispanTimerManagementResourceDefinition extends ChildResourceDe
         // create the service handler for the infinispan-brean-management resource
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(InfinispanTimerManagementServiceConfigurator::new);
         // register the resource descriptor and the handler
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         return registration;
     }

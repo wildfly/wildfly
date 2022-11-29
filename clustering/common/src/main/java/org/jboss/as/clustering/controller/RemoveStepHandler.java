@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelNode;
  * Generic remove operation step handler that delegates service removal/recovery to a dedicated {@link ResourceServiceHandler}.
  * @author Paul Ferraro
  */
-public class RemoveStepHandler extends AbstractRemoveStepHandler implements Registration<ManagementResourceRegistration> {
+public class RemoveStepHandler extends AbstractRemoveStepHandler implements ManagementRegistrar<ManagementResourceRegistration> {
 
     private final RemoveStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;

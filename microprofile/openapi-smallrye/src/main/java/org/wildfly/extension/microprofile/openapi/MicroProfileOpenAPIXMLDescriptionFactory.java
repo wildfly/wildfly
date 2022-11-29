@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,18 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.clustering.ejb;
+package org.wildfly.extension.microprofile.openapi;
 
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+
+import java.util.function.Function;
+
+import org.jboss.as.controller.PersistentResourceXMLDescription;
 
 /**
- * Resource description resolver for the distributable-ejb subsystem.
+ * MicroProfile Open API subsystem XML parser.
+ * @author Michael Edgar
  * @author Paul Ferraro
- * @author Richard Achmatowicz
  */
-public class DistributableEjbResourceDescriptionResolver extends SubsystemResourceDescriptionResolver {
+public class MicroProfileOpenAPIXMLDescriptionFactory implements Function<MicroProfileOpenAPISchema, PersistentResourceXMLDescription> {
 
-    DistributableEjbResourceDescriptionResolver() {
-        super(DistributableEjbExtension.SUBSYSTEM_NAME, DistributableEjbExtension.class);
+    @Override
+    public PersistentResourceXMLDescription apply(MicroProfileOpenAPISchema schema) {
+        return builder(MicroProfileOpenAPISubsystemDefinition.PATH, schema.getNamespaceUri()).build();
     }
 }

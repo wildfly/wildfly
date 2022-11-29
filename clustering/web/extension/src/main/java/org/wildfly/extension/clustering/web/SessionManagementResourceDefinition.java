@@ -29,7 +29,7 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -121,7 +121,7 @@ public class SessionManagementResourceDefinition extends ChildResourceDefinition
                 .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.factory);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new NoAffinityResourceDefinition().register(registration);
         new LocalAffinityResourceDefinition().register(registration);

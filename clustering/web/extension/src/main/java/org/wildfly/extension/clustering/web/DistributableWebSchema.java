@@ -35,7 +35,7 @@ public enum DistributableWebSchema implements Schema<DistributableWebSchema> {
     VERSION_2_0(2, 0), // WildFly 18-26.1
     VERSION_3_0(3, 0), // WildFly 27
     ;
-    static final Schema<DistributableWebSchema> CURRENT = VERSION_3_0;
+    static final DistributableWebSchema CURRENT = VERSION_3_0;
 
     private final int major;
     private final int minor;

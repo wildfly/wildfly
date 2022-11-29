@@ -40,7 +40,7 @@ import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.AddStepHandlerDescriptor;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceRegistration;
+import org.jboss.as.clustering.controller.ResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
@@ -341,7 +341,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
                 .addRequiredSingletonChildren(SingleAffinityResourceDefinition.PATH)
                 ;
         ModClusterResourceServiceHandler handler = new ModClusterResourceServiceHandler();
-        new ModClusterResourceRegistration(descriptor, handler).register(resourceRegistration);
+        new ModClusterResourceRegistrar(descriptor, handler).register(resourceRegistration);
     }
 
     @Override
@@ -353,9 +353,9 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
         resourceRegistration.registerSubModel(ModClusterBalancerDefinition.INSTANCE);
     }
 
-    static class ModClusterResourceRegistration extends ResourceRegistration {
+    static class ModClusterResourceRegistrar extends ResourceRegistrar {
 
-        ModClusterResourceRegistration(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
+        ModClusterResourceRegistrar(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
             super(descriptor, handler, new ModClusterAddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler));
         }
     }

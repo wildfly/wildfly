@@ -51,6 +51,7 @@ public enum ModClusterModel implements Model {
         this.version = ModelVersion.create(major, minor, micro);
     }
 
+    @Override
     public ModelVersion getVersion() {
         return this.version;
     }

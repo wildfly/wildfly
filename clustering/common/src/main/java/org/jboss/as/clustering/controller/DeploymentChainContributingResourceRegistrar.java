@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,17 +22,17 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import java.util.function.Consumer;
+
+import org.jboss.as.server.DeploymentProcessorTarget;
 
 /**
- * Registration interface for child resource definitions.
+ * Registers a {@link DeploymentChainContributingAddStepHandler}, {@link ReloadRequiredRemoveStepHandler}, and {@link WriteAttributeStepHandler} on behalf of a resource definition.
  * @author Paul Ferraro
  */
-public interface ChildResourceDefinitionRegistration<R extends ManagementResourceRegistration> {
-    /**
-     * Registers this child resource, returning the new registration
-     * @param parent the parent registration
-     * @return the child resource registration
-     */
-    R register(R parent);
+public class DeploymentChainContributingResourceRegistrar extends ResourceRegistrar {
+
+    public DeploymentChainContributingResourceRegistrar(ResourceDescriptor descriptor, ResourceServiceHandler handler, Consumer<DeploymentProcessorTarget> contributor) {
+        super(descriptor, handler, new DeploymentChainContributingAddStepHandler(descriptor, handler, contributor), new ReloadRequiredRemoveStepHandler(descriptor));
+    }
 }

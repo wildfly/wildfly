@@ -38,18 +38,18 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Registers add, remove, and write-attribute operation handlers and capabilities.
  * @author Paul Ferraro
  */
-public class ResourceRegistration implements Registration<ManagementResourceRegistration> {
+public class ResourceRegistrar implements ManagementRegistrar<ManagementResourceRegistration> {
 
     private final AddStepHandlerDescriptor descriptor;
-    private final Registration<ManagementResourceRegistration> addRegistration;
-    private final Registration<ManagementResourceRegistration> removeRegistration;
-    private final Registration<ManagementResourceRegistration> writeAttributeRegistration;
+    private final ManagementRegistrar<ManagementResourceRegistration> addRegistration;
+    private final ManagementRegistrar<ManagementResourceRegistration> removeRegistration;
+    private final ManagementRegistrar<ManagementResourceRegistration> writeAttributeRegistration;
 
-    protected ResourceRegistration(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler, Registration<ManagementResourceRegistration> addRegistration, Registration<ManagementResourceRegistration> removeRegistration) {
+    protected ResourceRegistrar(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler, ManagementRegistrar<ManagementResourceRegistration> addRegistration, ManagementRegistrar<ManagementResourceRegistration> removeRegistration) {
         this(descriptor, addRegistration, removeRegistration, new WriteAttributeStepHandler(descriptor, handler));
     }
 
-    protected ResourceRegistration(AddStepHandlerDescriptor descriptor, Registration<ManagementResourceRegistration> addRegistration, Registration<ManagementResourceRegistration> removeRegistration, Registration<ManagementResourceRegistration> writeAttributeRegistration) {
+    protected ResourceRegistrar(AddStepHandlerDescriptor descriptor, ManagementRegistrar<ManagementResourceRegistration> addRegistration, ManagementRegistrar<ManagementResourceRegistration> removeRegistration, ManagementRegistrar<ManagementResourceRegistration> writeAttributeRegistration) {
         this.descriptor = descriptor;
         this.addRegistration = addRegistration;
         this.removeRegistration = removeRegistration;
@@ -58,7 +58,7 @@ public class ResourceRegistration implements Registration<ManagementResourceRegi
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        new CapabilityRegistration(this.descriptor.getCapabilities().keySet()).register(registration);
+        new CapabilityRegistrar(this.descriptor.getCapabilities().keySet()).register(registration);
 
         registration.registerRequirements(this.descriptor.getResourceCapabilityReferences());
 

@@ -27,13 +27,13 @@ import org.jboss.as.clustering.controller.DefaultSubsystemDescribeHandler;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
+import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
@@ -46,7 +46,7 @@ import org.wildfly.clustering.ejb.EjbProviderRequirement;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class DistributableEjbResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
+public class DistributableEjbResourceDefinition extends SubsystemResourceDefinition {
 
     static final PathElement PATH = pathElement(DistributableEjbExtension.SUBSYSTEM_NAME);
 
@@ -101,7 +101,7 @@ public class DistributableEjbResourceDefinition extends SubsystemResourceDefinit
                 .addRequiredSingletonChildren(LocalClientMappingsRegistryProviderResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new DistributableEjbResourceServiceHandler();
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         // register the child resource infinispan-bean-management
         new InfinispanBeanManagementResourceDefinition().register(registration);
