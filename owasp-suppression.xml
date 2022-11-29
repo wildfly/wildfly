@@ -1137,4 +1137,14 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-core\-galleon\-pack@.*$</packageUrl>
         <cve>CVE-2022-1278</cve>
     </suppress>
+
+    <!--    Jackson-xc does not contain jackson-databind in which vulnerability was found-->
+    <suppress>
+        <notes><![CDATA[
+   file name: jackson-xc-1.9.13.redhat-00007.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.codehaus\.jackson/jackson\-xc@.*$</packageUrl>
+        <cve>CVE-2022-42004</cve>
+        <cve>CVE-2022-42003</cve>
+    </suppress>
 </suppressions>
