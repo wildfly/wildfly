@@ -37,6 +37,8 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
+import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -74,30 +76,7 @@ public class IDMExtension extends AbstractLegacyExtension {
         ManagementResourceRegistration mrr = subsystem.registerSubsystemModel(IDMSubsystemRootResourceDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(Namespace.CURRENT.getXMLWriter());
 
-        if (context.isRegisterTransformers()) {
-            registerTransformers_1_0(context, subsystem);
-        }
         return Collections.singleton(mrr);
-    }
-
-    private void registerTransformers_1_0(ExtensionContext context, SubsystemRegistration subsystemRegistration) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceTransformationDescriptionBuilder partitionManagerResourceBuilder = builder
-                .addChildResource(PartitionManagerResourceDefinition.INSTANCE);
-        ResourceTransformationDescriptionBuilder identityConfigResourceBuilder = partitionManagerResourceBuilder
-                .addChildResource(IdentityConfigurationResourceDefinition.INSTANCE);
-        ResourceTransformationDescriptionBuilder ldapTransfDescBuilder = identityConfigResourceBuilder
-                .addChildResource(LDAPStoreResourceDefinition.INSTANCE);
-
-        ldapTransfDescBuilder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, LDAPStoreResourceDefinition.ACTIVE_DIRECTORY)
-                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, LDAPStoreResourceDefinition.ACTIVE_DIRECTORY);
-
-        ldapTransfDescBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED,
-                LDAPStoreResourceDefinition.UNIQUE_ID_ATTRIBUTE_NAME)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, LDAPStoreResourceDefinition.UNIQUE_ID_ATTRIBUTE_NAME);
-
-        Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 0));
     }
 
     @Override
@@ -106,5 +85,34 @@ public class IDMExtension extends AbstractLegacyExtension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_IDENTITY_MANAGEMENT_1_1.getUri(), PICKETLINK_IDENTITY_MANAGEMENT_1_1::getXMLReader);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_IDENTITY_MANAGEMENT_1_0.getUri(), PICKETLINK_IDENTITY_MANAGEMENT_1_0::getXMLReader);
 
+    }
+
+    public static final class TransformerRegistration implements ExtensionTransformerRegistration {
+
+        @Override
+        public String getSubsystemName() {
+            return SUBSYSTEM_NAME;
+        }
+
+        @Override
+        public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
+            ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+            ResourceTransformationDescriptionBuilder partitionManagerResourceBuilder = builder
+                    .addChildResource(PartitionManagerResourceDefinition.INSTANCE);
+            ResourceTransformationDescriptionBuilder identityConfigResourceBuilder = partitionManagerResourceBuilder
+                    .addChildResource(IdentityConfigurationResourceDefinition.INSTANCE);
+            ResourceTransformationDescriptionBuilder ldapTransfDescBuilder = identityConfigResourceBuilder
+                    .addChildResource(LDAPStoreResourceDefinition.INSTANCE);
+
+            ldapTransfDescBuilder.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, LDAPStoreResourceDefinition.ACTIVE_DIRECTORY)
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, LDAPStoreResourceDefinition.ACTIVE_DIRECTORY);
+
+            ldapTransfDescBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED,
+                            LDAPStoreResourceDefinition.UNIQUE_ID_ATTRIBUTE_NAME)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, LDAPStoreResourceDefinition.UNIQUE_ID_ATTRIBUTE_NAME);
+
+            Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 0));
+        }
     }
 }
