@@ -57,8 +57,8 @@ public abstract class AbstractDataSourceServerSetupTask extends SnapshotRestoreS
      * @param managementClient
      * @param containerId
      * @throws Exception
-     * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
-     *      java.lang.String)
+     * @see ServerSetupTask#setup(ManagementClient,
+     *      String)
      */
     public final void doSetup(final ManagementClient managementClient, String containerId) throws Exception {
         final DataSource[] dataSourceConfigurations = getDataSourceConfigurations(managementClient, containerId);

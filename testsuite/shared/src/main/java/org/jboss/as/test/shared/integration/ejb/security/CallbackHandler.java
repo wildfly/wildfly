@@ -1,7 +1,6 @@
 package org.jboss.as.test.shared.integration.ejb.security;
 
 import java.io.IOException;
-
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;

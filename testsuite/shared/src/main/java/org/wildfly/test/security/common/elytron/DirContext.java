@@ -19,6 +19,7 @@ package org.wildfly.test.security.common.elytron;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;

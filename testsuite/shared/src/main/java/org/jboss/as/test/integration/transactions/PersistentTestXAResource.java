@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.transactions;
 
-import org.jboss.logging.Logger;
-
+import java.util.Collection;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-import java.util.Collection;
+
+import org.jboss.logging.Logger;
 
 /**
  * <p>
