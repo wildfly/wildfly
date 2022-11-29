@@ -21,9 +21,9 @@
  */
 package org.wildfly.test.security.common.elytron;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
 import org.jboss.as.test.integration.management.util.CLIWrapper;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Helper class for adding "file-audit-log" attributes into CLI commands.

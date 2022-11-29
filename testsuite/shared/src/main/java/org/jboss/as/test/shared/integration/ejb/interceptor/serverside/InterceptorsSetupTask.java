@@ -22,7 +22,6 @@
 package org.jboss.as.test.shared.integration.ejb.interceptor.serverside;
 
 import java.util.List;
-
 import org.jboss.as.arquillian.container.ManagementClient;
 
 public interface InterceptorsSetupTask {

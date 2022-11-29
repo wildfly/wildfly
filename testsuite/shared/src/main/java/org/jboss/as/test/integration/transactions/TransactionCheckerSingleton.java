@@ -22,13 +22,12 @@
 
 package org.jboss.as.test.integration.transactions;
 
+import javax.ejb.LocalBean;
+import javax.ejb.Singleton;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import jakarta.ejb.LocalBean;
-import jakarta.ejb.Singleton;
 
 /**
  * Singleton class used as log for actions done during testing.

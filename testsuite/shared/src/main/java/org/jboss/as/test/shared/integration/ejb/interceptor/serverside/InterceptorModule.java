@@ -22,7 +22,6 @@
 package org.jboss.as.test.shared.integration.ejb.interceptor.serverside;
 
 import java.net.URL;
-
 import org.jboss.as.test.module.util.TestModule;
 
 /**

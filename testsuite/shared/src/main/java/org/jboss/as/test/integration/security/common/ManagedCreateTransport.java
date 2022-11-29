@@ -21,7 +21,8 @@
  */
 package org.jboss.as.test.integration.security.common;
 
-import jakarta.enterprise.util.AnnotationLiteral;
+import javax.enterprise.util.AnnotationLiteral;
+
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.annotations.TransportType;
 
@@ -74,7 +75,7 @@ public class ManagedCreateTransport extends AnnotationLiteral<CreateTransport> i
     /**
      *
      * @return
-     * @see CreateTransport#protocol()
+     * @see org.apache.directory.server.annotations.CreateTransport#protocol()
      */
     public String protocol() {
         return protocol;
@@ -83,7 +84,7 @@ public class ManagedCreateTransport extends AnnotationLiteral<CreateTransport> i
     /**
      *
      * @return
-     * @see CreateTransport#type()
+     * @see org.apache.directory.server.annotations.CreateTransport#type()
      */
     public TransportType type() {
         return type;
@@ -92,7 +93,7 @@ public class ManagedCreateTransport extends AnnotationLiteral<CreateTransport> i
     /**
      *
      * @return
-     * @see CreateTransport#port()
+     * @see org.apache.directory.server.annotations.CreateTransport#port()
      */
     public int port() {
         return port;
@@ -101,7 +102,7 @@ public class ManagedCreateTransport extends AnnotationLiteral<CreateTransport> i
     /**
      *
      * @return
-     * @see CreateTransport#address()
+     * @see org.apache.directory.server.annotations.CreateTransport#address()
      */
     public String address() {
         return address;
@@ -110,7 +111,7 @@ public class ManagedCreateTransport extends AnnotationLiteral<CreateTransport> i
     /**
      *
      * @return
-     * @see CreateTransport#backlog()
+     * @see org.apache.directory.server.annotations.CreateTransport#backlog()
      */
     public int backlog() {
         return backlog;
@@ -119,7 +120,7 @@ public class ManagedCreateTransport extends AnnotationLiteral<CreateTransport> i
     /**
      *
      * @return
-     * @see CreateTransport#ssl()
+     * @see org.apache.directory.server.annotations.CreateTransport#ssl()
      */
     public boolean ssl() {
         return ssl;
@@ -128,7 +129,7 @@ public class ManagedCreateTransport extends AnnotationLiteral<CreateTransport> i
     /**
      *
      * @return
-     * @see CreateTransport#nbThreads()
+     * @see org.apache.directory.server.annotations.CreateTransport#nbThreads()
      */
     public int nbThreads() {
         return nbThreads;

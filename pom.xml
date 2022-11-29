@@ -106,7 +106,6 @@
         <module>servlet-feature-pack</module>
         <module>weld</module>
         <module>testsuite/test-feature-pack</module>
-        <module>testsuite/shared</module>
         <module>testsuite</module>
         <module>transactions</module>
     </modules>
@@ -936,6 +935,13 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-testsuite-shared-legacy-namespace</artifactId>
+                <version>${ee.maven.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-testsuite-shared</artifactId>
                 <version>${ee.maven.version}</version>
                 <scope>test</scope>
@@ -1263,22 +1269,6 @@
             TODO used both in testsuite/integration/legacy-ejb-client and in legacy code.
             Once legacy code use is gone, convert to <scope>test</scope>
             -->
-            <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>jboss-transaction-spi</artifactId>
-                <version>${version.org.jboss.jboss-transaction-spi}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.spec.javax.ejb</groupId>
-                <artifactId>jboss-ejb-api_3.2_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec}</version>
-            </dependency>
             <dependency>
                 <groupId>org.jboss.spec.javax.transaction</groupId>
                 <artifactId>jboss-transaction-api_1.3_spec</artifactId>
@@ -2039,6 +2029,8 @@
                 <module>webservices</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>xts</module>
+                <!-- TODO once moved to jakarta.* move to main module set-->
+                <module>testsuite/shared</module>
             </modules>
         </profile>
         <profile>

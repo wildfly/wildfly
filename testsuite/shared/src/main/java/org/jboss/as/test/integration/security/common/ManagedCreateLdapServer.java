@@ -21,7 +21,8 @@
  */
 package org.jboss.as.test.integration.security.common;
 
-import jakarta.enterprise.util.AnnotationLiteral;
+import javax.enterprise.util.AnnotationLiteral;
+
 import org.apache.directory.server.annotations.CreateLdapServer;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.annotations.SaslMechanism;
@@ -94,7 +95,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#name()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#name()
      */
     public String name() {
         return name;
@@ -103,7 +104,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#transports()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#transports()
      */
     public CreateTransport[] transports() {
         return transports;
@@ -112,7 +113,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#factory()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#factory()
      */
     public Class<?> factory() {
         return factory;
@@ -121,7 +122,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#maxSizeLimit()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#maxSizeLimit()
      */
     public long maxSizeLimit() {
         return maxSizeLimit;
@@ -130,7 +131,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#maxTimeLimit()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#maxTimeLimit()
      */
     public int maxTimeLimit() {
         return maxTimeLimit;
@@ -139,7 +140,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#allowAnonymousAccess()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#allowAnonymousAccess()
      */
     public boolean allowAnonymousAccess() {
         return allowAnonymousAccess;
@@ -148,7 +149,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#keyStore()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#keyStore()
      */
     public String keyStore() {
         return keyStore;
@@ -157,7 +158,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#certificatePassword()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#certificatePassword()
      */
     public String certificatePassword() {
         return certificatePassword;
@@ -166,7 +167,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#extendedOpHandlers()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#extendedOpHandlers()
      */
     public Class<?>[] extendedOpHandlers() {
         return extendedOpHandlers;
@@ -175,7 +176,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#saslMechanisms()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#saslMechanisms()
      */
     public SaslMechanism[] saslMechanisms() {
         return saslMechanisms;
@@ -184,7 +185,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#ntlmProvider()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#ntlmProvider()
      */
     public Class<?> ntlmProvider() {
         return ntlmProvider;
@@ -193,7 +194,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#saslHost()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#saslHost()
      */
     public String saslHost() {
         return saslHost;
@@ -202,7 +203,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /**
      *
      * @return
-     * @see CreateLdapServer#saslPrincipal()
+     * @see org.apache.directory.server.annotations.CreateLdapServer#saslPrincipal()
      */
     public String saslPrincipal() {
         return saslPrincipal;

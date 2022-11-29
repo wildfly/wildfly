@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.transactions;
 
-import jakarta.transaction.Synchronization;
+import javax.transaction.Synchronization;
 import org.jboss.logging.Logger;
 
 /**
@@ -46,12 +46,12 @@ public class TestSynchronization implements Synchronization {
     }
 
     /**
-     * For status see {@link jakarta.transaction.Status}.
+     * For status see {@link javax.transaction.Status}.
      */
     @Override
     public void afterCompletion(int status) {
         log.tracef("afterCompletion called with status '%s'", status);
-        boolean isCommitted = status == jakarta.transaction.Status.STATUS_COMMITTED ? true : false;
+        boolean isCommitted = status == javax.transaction.Status.STATUS_COMMITTED ? true : false;
         checker.setSynchronizedAfter(isCommitted);
     }
 

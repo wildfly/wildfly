@@ -21,9 +21,8 @@
  */
 package org.jboss.as.test.integration.web.sso.interfaces;
 
+import javax.ejb.EJBObject;
 import java.rmi.RemoteException;
-
-import jakarta.ejb.EJBObject;
 
 /**
  * A trivial SessionBean interface.
