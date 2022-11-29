@@ -88,7 +88,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-testsuite-shared-legacy-namespace</artifactId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.transactions;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

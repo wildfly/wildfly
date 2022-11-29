@@ -100,7 +100,7 @@ public class SimpleCredentialStore extends AbstractConfigurableElement implement
     }
 
     /**
-     * @see org.wildfly.test.security.common.elytron.ConfigurableElement#remove(org.jboss.as.test.integration.management.util.CLIWrapper)
+     * @see ConfigurableElement#remove(CLIWrapper)
      */
     @Override
     public void remove(CLIWrapper cli) throws Exception {
