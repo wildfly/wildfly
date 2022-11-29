@@ -62,11 +62,11 @@ public class DsXmlParser extends DsParser {
      *
      * @param reader The reader
      * @return The result
-     * @throws javax.xml.stream.XMLStreamException
+     * @throws XMLStreamException
      *          XMLStreamException
-     * @throws org.jboss.jca.common.metadata.ParserException
+     * @throws ParserException
      *          ParserException
-     * @throws org.jboss.jca.common.api.validator.ValidateException
+     * @throws ValidateException
      *          ValidateException
      */
     @Override

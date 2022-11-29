@@ -28,7 +28,7 @@ import java.util.EnumSet;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ManagementRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
@@ -42,7 +42,7 @@ import org.jgroups.stack.Protocol;
  * Registers protocol resource definitions, including any overrides.
  * @author Paul Ferraro
  */
-public class ProtocolRegistration implements Registration<ManagementResourceRegistration> {
+public class ProtocolResourceRegistrar implements ManagementRegistrar<ManagementResourceRegistration> {
 
     enum AuthProtocol {
         AUTH;
@@ -126,12 +126,12 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
     private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
     private final UnaryOperator<ResourceDescriptor> configurator;
 
-    ProtocolRegistration(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+    ProtocolResourceRegistrar(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
         this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
         this.configurator = UnaryOperator.identity();
     }
 
-    ProtocolRegistration(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory, RuntimeResourceRegistration runtimeResourceRegistration) {
+    ProtocolResourceRegistrar(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory, RuntimeResourceRegistration runtimeResourceRegistration) {
         this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
         this.configurator = new ResourceDescriptorConfigurator(runtimeResourceRegistration);
     }

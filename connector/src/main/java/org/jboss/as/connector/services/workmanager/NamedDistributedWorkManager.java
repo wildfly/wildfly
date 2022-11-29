@@ -22,9 +22,9 @@
 
 package org.jboss.as.connector.services.workmanager;
 
-import javax.resource.spi.work.ExecutionContext;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkListener;
+import jakarta.resource.spi.work.ExecutionContext;
+import jakarta.resource.spi.work.Work;
+import jakarta.resource.spi.work.WorkListener;
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.jca.core.spi.security.SecurityIntegration;

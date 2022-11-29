@@ -245,11 +245,11 @@ public class InterfaceRepository {
         TypeCode ret = (TypeCode) typeCodeMap.get(cls);
 
         if (ret == null) {
-            if (cls == java.lang.String.class)
+            if (cls == String.class)
                 ret = getJavaLangString().type();
-            else if (cls == java.lang.Object.class)
+            else if (cls == Object.class)
                 ret = getJavaLang_Object().type();
-            else if (cls == java.lang.Class.class)
+            else if (cls == Class.class)
                 ret = getJavaxRmiCORBAClassDesc().type();
             else if (cls == java.io.Serializable.class)
                 ret = getJavaIoSerializable().type();
@@ -717,11 +717,11 @@ public class InterfaceRepository {
         } else {
             typeCode = getTypeCode(compType); // map the component type.
 
-            if (compType == java.lang.String.class)
+            if (compType == String.class)
                 typeName = getJavaLangString().name();
-            else if (compType == java.lang.Object.class)
+            else if (compType == Object.class)
                 typeName = getJavaLang_Object().name();
-            else if (compType == java.lang.Class.class)
+            else if (compType == Class.class)
                 typeName = getJavaxRmiCORBAClassDesc().name();
             else if (compType == java.io.Serializable.class)
                 typeName = getJavaIoSerializable().name();

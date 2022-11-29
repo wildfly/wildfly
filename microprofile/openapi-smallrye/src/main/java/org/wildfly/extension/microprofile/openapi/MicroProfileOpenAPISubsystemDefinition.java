@@ -21,11 +21,11 @@
  */
 package org.wildfly.extension.microprofile.openapi;
 
-import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
+import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -35,7 +35,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Root resource definition for MicroProfile Open API subsystem
  * @author Michael Edgar
  */
-public class MicroProfileOpenAPISubsystemDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
+public class MicroProfileOpenAPISubsystemDefinition extends SubsystemResourceDefinition {
 
     static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, MicroProfileOpenAPIExtension.SUBSYSTEM_NAME);
 
@@ -69,6 +69,6 @@ public class MicroProfileOpenAPISubsystemDefinition extends SubsystemResourceDef
                 .addCapabilities(Capability.class)
                 ;
         MicroProfileOpenAPIServiceHandler handler = new MicroProfileOpenAPIServiceHandler();
-        new DeploymentChainContributingResourceRegistration(descriptor, handler, handler).register(registration);
+        new DeploymentChainContributingResourceRegistrar(descriptor, handler, handler).register(registration);
     }
 }

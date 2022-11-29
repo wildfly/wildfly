@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,18 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.extension.microprofile.openapi;
 
-package org.jboss.as.clustering.controller;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+
+import java.util.function.Function;
+
+import org.jboss.as.controller.PersistentResourceXMLDescription;
 
 /**
- * Implemented by a management artifact that can register itself.
- * This allows a management object to encapsulates specific registration details (e.g. resource aliases) from the parent resource.
+ * MicroProfile Open API subsystem XML parser.
+ * @author Michael Edgar
  * @author Paul Ferraro
  */
-public interface Registration<R> {
-    /**
-     * Registers this object with a resource.
-     * @param registration a registration for a management resource
-     */
-    void register(R registration);
+public class MicroProfileOpenAPIXMLDescriptionFactory implements Function<MicroProfileOpenAPISchema, PersistentResourceXMLDescription> {
+
+    @Override
+    public PersistentResourceXMLDescription apply(MicroProfileOpenAPISchema schema) {
+        return builder(MicroProfileOpenAPISubsystemDefinition.PATH, schema.getNamespaceUri()).build();
+    }
 }

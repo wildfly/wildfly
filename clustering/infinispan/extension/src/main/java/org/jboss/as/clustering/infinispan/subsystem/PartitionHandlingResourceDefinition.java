@@ -32,7 +32,7 @@ import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
@@ -125,7 +125,7 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
                 })
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(PartitionHandlingServiceConfigurator::new);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         return registration;
     }

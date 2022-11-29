@@ -48,14 +48,9 @@
 
     <modules>
         <module>bean-validation</module>
-        <module>connector</module>
         <module>ee</module>
-        <module>iiop-openjdk</module>
-        <module>transactions</module>
-        <module>rts</module>
         <module>jsf</module>
         <module>microprofile</module>
-        <module>shared</module>
         <module>web-common</module>
         <module>weld/common</module>
         <module>weld/spi</module>

@@ -34,6 +34,8 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
+import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -78,11 +80,6 @@ public class JacORBExtension extends AbstractLegacyExtension {
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(JacORBSubsystemResource.INSTANCE);
         subsystem.registerXMLElementWriter(PARSER);
 
-        if (context.isRegisterTransformers()) {
-            // Register the model transformers
-            registerTransformers(subsystem);
-        }
-
         return Collections.singleton(subsystemRegistration);
     }
 
@@ -96,36 +93,45 @@ public class JacORBExtension extends AbstractLegacyExtension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_2_0.getUriString(), () -> PARSER);
     }
 
-    /**
-     * Register the transformers for the 1.3.0 version.
-     *
-     * @param subsystem the subsystems registration
-     */
-    protected static void registerTransformers(final SubsystemRegistration subsystem) {
-        ChainedTransformationDescriptionBuilder chained = ResourceTransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
-        ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 4, 0);
-        ModelVersion MODEL_VERSION_EAP63 = ModelVersion.create(1, 3, 0);//also EAP6.2
+    public static final class TransformerRegistration implements ExtensionTransformerRegistration {
 
-        ResourceTransformationDescriptionBuilder builder64 = chained.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP64);
-        builder64.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID)
-                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID)
-                .setValueConverter(AttributeConverter.DEFAULT_VALUE, JacORBSubsystemDefinitions.INTEROP_CHUNK_RMI_VALUETYPES);
+        @Override
+        public String getSubsystemName() {
+            return SUBSYSTEM_NAME;
+        }
 
 
-        ResourceTransformationDescriptionBuilder builder63 = chained.createBuilder(MODEL_VERSION_EAP64, MODEL_VERSION_EAP63);
-        builder63.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, IORTransportConfigDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
-                .addRejectCheck(RejectAttributeChecker.DEFINED, IORASContextDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
-                .addRejectCheck(RejectAttributeChecker.DEFINED, IORSASContextDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
-                .end()
-                .rejectChildResource(IORSettingsDefinition.INSTANCE.getPathElement());
+        /**
+         * Register the transformers for the 1.3.0 version.
+         *
+         * @param subsystemRegistration the subsystems registration
+         */
+        @Override
+        public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
+            ChainedTransformationDescriptionBuilder chained = ResourceTransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
+            ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 4, 0);
+            ModelVersion MODEL_VERSION_EAP63 = ModelVersion.create(1, 3, 0);//also EAP6.2
+
+            ResourceTransformationDescriptionBuilder builder64 = chained.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP64);
+            builder64.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID)
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID)
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, JacORBSubsystemDefinitions.INTEROP_CHUNK_RMI_VALUETYPES);
 
 
-        chained.buildAndRegister(subsystem, new ModelVersion[]{
-                MODEL_VERSION_EAP64,
-                MODEL_VERSION_EAP63
-        });
+            ResourceTransformationDescriptionBuilder builder63 = chained.createBuilder(MODEL_VERSION_EAP64, MODEL_VERSION_EAP63);
+            builder63.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, IORTransportConfigDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, IORASContextDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, IORSASContextDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
+                    .end()
+                    .rejectChildResource(IORSettingsDefinition.INSTANCE.getPathElement());
+
+
+            chained.buildAndRegister(subsystemRegistration, new ModelVersion[]{
+                    MODEL_VERSION_EAP64,
+                    MODEL_VERSION_EAP63
+            });
+        }
     }
-
 }

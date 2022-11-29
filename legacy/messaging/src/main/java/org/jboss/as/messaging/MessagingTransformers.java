@@ -32,6 +32,8 @@ import static org.jboss.as.messaging.AddressSettingDefinition.SLOW_CONSUMER_THRE
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.OVERRIDE_IN_VM_SECURITY;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.as.messaging.MessagingExtension.CURRENT_MODEL_VERSION;
+import static org.jboss.as.messaging.MessagingExtension.SUBSYSTEM_NAME;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_3_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_4_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_2_0_0;
@@ -42,7 +44,8 @@ import java.math.BigDecimal;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
+import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
@@ -59,14 +62,20 @@ import org.jboss.dmr.ModelNode;
  * <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat, inc.
  */
 
-public class MessagingTransformers {
+public final class MessagingTransformers implements ExtensionTransformerRegistration {
 
-    static void registerTransformers(final SubsystemRegistration subsystem) {
-        ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getSubsystemVersion());
+    @Override
+    public String getSubsystemName() {
+        return SUBSYSTEM_NAME;
+    }
+
+    @Override
+    public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
+        ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
 
         // Current
         // 3.0.0 -> 2.1.0 (WildFly 8.1.0.Final)
-        buildTransformers2_1_0(chainedBuilder.createBuilder(subsystem.getSubsystemVersion(), VERSION_2_1_0));
+        buildTransformers2_1_0(chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, VERSION_2_1_0));
         // 2.1.0 -> 2.0.0 (WildFly 8.0.0.Final)
         buildTransformers2_0_0(chainedBuilder.createBuilder(VERSION_2_1_0, VERSION_2_0_0));
         // 2.0.0 -> 1.4.0 (AS7 7.5.0) EAP 6.4
@@ -74,7 +83,7 @@ public class MessagingTransformers {
         // 1.4.0 -> 1.3.0 (AS7 7.3.0) EAP 6.2 & EAP 6.3
         buildTransformers1_3_0(chainedBuilder.createBuilder(VERSION_1_4_0, VERSION_1_3_0));
 
-        chainedBuilder.buildAndRegister(subsystem, new ModelVersion[]{
+        chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{
                 VERSION_1_3_0,
                 VERSION_1_4_0,
                 VERSION_2_0_0,

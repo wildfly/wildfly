@@ -34,7 +34,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Sets up the CMR related properties in {@link com.arjuna.ats.jta.common.JTAEnvironmentBean}
+ * Sets up the CMR related properties in {@link JTAEnvironmentBean}
  *
  * @author Stefano Maestri
  */

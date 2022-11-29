@@ -33,8 +33,8 @@ import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinit
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.UserTransaction;
 
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -87,7 +87,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Endpoint;
@@ -272,9 +271,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final BinderService tmBinderService = new BinderService("TransactionManager");
         final ServiceBuilder<ManagedReferenceFactory> tmBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmBinderService);
         tmBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, tmBinderService.getNamingStoreInjector());
-        tmBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
+        tmBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, jakarta.transaction.TransactionManager.class, new Injector<jakarta.transaction.TransactionManager>() {
             @Override
-            public void inject(final javax.transaction.TransactionManager value) throws InjectionException {
+            public void inject(final jakarta.transaction.TransactionManager value) throws InjectionException {
                 tmBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
             }
 
@@ -288,9 +287,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final BinderService tmLegacyBinderService = new BinderService("TransactionManager");
         final ServiceBuilder<ManagedReferenceFactory> tmLegacyBuilder = context.getServiceTarget().addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmLegacyBinderService);
         tmLegacyBuilder.addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, tmLegacyBinderService.getNamingStoreInjector());
-        tmLegacyBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
+        tmLegacyBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, jakarta.transaction.TransactionManager.class, new Injector<jakarta.transaction.TransactionManager>() {
             @Override
-            public void inject(final javax.transaction.TransactionManager value) throws InjectionException {
+            public void inject(final jakarta.transaction.TransactionManager value) throws InjectionException {
                 tmLegacyBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
             }
 
@@ -365,12 +364,12 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(dataSourceJndiName);
             builder.requires(bindInfo.getBinderServiceName());
         }
-        builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        builder.setInitialMode(Mode.ACTIVE).install();
 
         TransactionManagerService.addService(target);
         UserTransactionService.addService(target);
         target.addService(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, new UserTransactionRegistryService())
-                .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                .setInitialMode(Mode.ACTIVE).install();
         TransactionSynchronizationRegistryService.addService(target);
 
     }
@@ -401,7 +400,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceName bindingName = SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName);
             coreEnvBuilder.addDependency(bindingName, SocketBinding.class, coreEnvironmentService.getSocketProcessBindingInjector());
         }
-        coreEnvBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        coreEnvBuilder.setInitialMode(Mode.ACTIVE).install();
     }
 
     private void performRecoveryEnvBoottime(OperationContext context, ModelNode model, final boolean jts, List<ServiceName> deps) throws OperationFailedException {
@@ -424,7 +423,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
         recoveryManagerServiceServiceBuilder.addAliases(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
-        recoveryManagerServiceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        recoveryManagerServiceServiceBuilder.setInitialMode(Mode.ACTIVE);
 
 
         // add dependency on Jakarta Transactions environment bean
@@ -534,7 +533,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         transactionManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
         transactionManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
         transactionManagerServiceServiceBuilder.requires(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName());
-        transactionManagerServiceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        transactionManagerServiceServiceBuilder.setInitialMode(Mode.ACTIVE);
         transactionManagerServiceServiceBuilder.install();
     }
 

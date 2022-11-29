@@ -222,7 +222,7 @@ public class ValueAnalysis extends ContainerAnalysis {
 
         // Get superclass analysis
         Class superClass = cls.getSuperclass();
-        if (superClass == java.lang.Object.class)
+        if (superClass == Object.class)
             superClass = null;
         if (superClass == null)
             superAnalysis = null;

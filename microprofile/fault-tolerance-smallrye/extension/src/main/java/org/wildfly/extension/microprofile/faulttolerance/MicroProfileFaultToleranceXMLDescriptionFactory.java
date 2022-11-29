@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,16 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.extension.microprofile.faulttolerance;
 
-package org.jboss.as.clustering.controller;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+
+import java.util.function.Function;
+
+import org.jboss.as.controller.PersistentResourceXMLDescription;
 
 /**
- * Registers a {@link AddStepHandler}, {@link RemoveStepHandler}, and {@link WriteAttributeStepHandler} on behalf of a resource definition.
- * @author Paul Ferraro
+ * MicroProfile Fault Tolerance subsystem XML parser.
+ *
+ * @author Radoslav Husar
  */
-public class SimpleResourceRegistration extends ResourceRegistration {
+public class MicroProfileFaultToleranceXMLDescriptionFactory implements Function<MicroProfileFaultToleranceSchema, PersistentResourceXMLDescription> {
 
-    public SimpleResourceRegistration(ResourceDescriptor descriptor, ResourceServiceHandler handler) {
-        super(descriptor, new AddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler), new WriteAttributeStepHandler(descriptor, handler));
+    @Override
+    public PersistentResourceXMLDescription apply(MicroProfileFaultToleranceSchema schema) {
+        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, schema.getNamespaceUri()).build();
     }
 }

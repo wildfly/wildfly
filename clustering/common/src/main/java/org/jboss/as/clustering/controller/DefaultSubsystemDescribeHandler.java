@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  * Workaround for WFCORE-2286.
  * @author Paul Ferraro
  */
-public class DefaultSubsystemDescribeHandler extends GenericSubsystemDescribeHandler implements Registration<ManagementResourceRegistration> {
+public class DefaultSubsystemDescribeHandler extends GenericSubsystemDescribeHandler implements ManagementRegistrar<ManagementResourceRegistration> {
 
     @Override
     protected void describe(OrderedChildTypesAttachment orderedChildTypesAttachment, Resource resource, ModelNode addressModel, ModelNode result, ImmutableManagementResourceRegistration registration) {

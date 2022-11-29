@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,17 +22,12 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.function.Consumer;
-
-import org.jboss.as.server.DeploymentProcessorTarget;
-
 /**
- * Registers a {@link DeploymentChainContributingAddStepHandler}, {@link ReloadRequiredRemoveStepHandler}, and {@link WriteAttributeStepHandler} on behalf of a resource definition.
  * @author Paul Ferraro
  */
-public class DeploymentChainContributingResourceRegistration extends ResourceRegistration {
+public class ReloadRequiredResourceRegistrar extends ResourceRegistrar {
 
-    public DeploymentChainContributingResourceRegistration(ResourceDescriptor descriptor, ResourceServiceHandler handler, Consumer<DeploymentProcessorTarget> contributor) {
-        super(descriptor, handler, new DeploymentChainContributingAddStepHandler(descriptor, handler, contributor), new ReloadRequiredRemoveStepHandler(descriptor));
+    public ReloadRequiredResourceRegistrar(AddStepHandlerDescriptor descriptor) {
+        super(descriptor, new ReloadRequiredAddStepHandler(descriptor), new ReloadRequiredRemoveStepHandler(descriptor), new WriteAttributeStepHandler(descriptor));
     }
 }

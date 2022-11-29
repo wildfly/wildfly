@@ -27,9 +27,6 @@
         <version.org.jboss.ejb-client>The legacy testsuite is unintentionally including ejb client!
             It MUST be excluded to function properly! See the HACK comment in pom.xml</version.org.jboss.ejb-client>
 
-        <!-- Use the legacy javax.* testsuite/shared as it's used client-side and client-side is currently javax.* -->
-        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared-legacy-namespace</wildfly-testsuite-shared.artifactId>
-
         <!-- Tell the server to run in javax<->jakarta interop mode -->
         <extra.server.jvm.args>-Dorg.wildfly.ee.namespace.interop=true</extra.server.jvm.args>
 
@@ -83,18 +80,30 @@
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.3_spec</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
+        </dependency>
 
         <!-- Runtime deps -->
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-transaction-spi</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- TODO confirm if this is needed -->
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client</artifactId>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

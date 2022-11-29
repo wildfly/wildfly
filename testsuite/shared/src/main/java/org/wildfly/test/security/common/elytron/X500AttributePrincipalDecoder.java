@@ -91,7 +91,7 @@ public class X500AttributePrincipalDecoder extends AbstractConfigurableElement {
 
         /**
          * Uses attribute with given object id to construct principal name. E.g. oid "2.5.4.3" ~ CN (Common Name).
-         * {@link #withAttributeName(java.lang.String)} can be used instead.
+         * {@link #withAttributeName(String)} can be used instead.
          * @param oid object identifier
          * @return builder
          */

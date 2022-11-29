@@ -121,7 +121,6 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-@SuppressWarnings("deprecation")
 public class MessagingExtension extends AbstractLegacyExtension {
 
     public static final String SUBSYSTEM_NAME = "messaging";
@@ -130,7 +129,7 @@ public class MessagingExtension extends AbstractLegacyExtension {
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
     public static final ModelVersion VERSION_2_1_0 = ModelVersion.create(2, 1, 0);
     public static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
@@ -144,7 +143,6 @@ public class MessagingExtension extends AbstractLegacyExtension {
         return getResourceDescriptionResolver(true, keyPrefix);
     }
 
-    @SuppressWarnings("deprecation")
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final boolean useUnprefixedChildTypes, final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder();
         for (String kp : keyPrefix) {
@@ -239,10 +237,6 @@ public class MessagingExtension extends AbstractLegacyExtension {
 
         // Jakarta Messaging Bridges
         rootRegistration.registerSubModel(JMSBridgeDefinition.INSTANCE);
-
-        if (context.isRegisterTransformers()) {
-            MessagingTransformers.registerTransformers(subsystem);
-        }
 
         return Collections.singleton(rootRegistration);
     }

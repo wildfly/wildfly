@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.jboss.as.clustering.controller.descriptions;
 
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import java.util.List;
+
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 
 /**
- * Registration interface for child resource definitions.
+ * A factory for creating resource description resolvers for child resources.
  * @author Paul Ferraro
  */
-public interface ChildResourceDefinitionRegistration<R extends ManagementResourceRegistration> {
-    /**
-     * Registers this child resource, returning the new registration
-     * @param parent the parent registration
-     * @return the child resource registration
-     */
-    R register(R parent);
+public interface ChildResourceDescriptionResolverFactory {
+
+    default ResourceDescriptionResolver createChildResolver(PathElement path) {
+        return this.createChildResolver(List.of(path));
+    }
+
+    default ResourceDescriptionResolver createChildResolver(PathElement path1, PathElement path2) {
+        return this.createChildResolver(List.of(path1, path2));
+    }
+
+    default ResourceDescriptionResolver createChildResolver(PathElement... paths) {
+        return this.createChildResolver(List.of(paths));
+    }
+
+    ResourceDescriptionResolver createChildResolver(List<PathElement> paths);
 }

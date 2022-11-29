@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.xts.jandex;
 
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.xts.XTSException;
-import org.jboss.narayana.txframework.api.annotation.transaction.Compensatable;
+package org.jboss.as.clustering.controller;
 
 /**
- * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
+ * Registers a {@link AddStepHandler}, {@link RemoveStepHandler}, and {@link WriteAttributeStepHandler} on behalf of a resource definition.
+ * @author Paul Ferraro
  */
-public class OldCompensatableAnnotation {
+public class SimpleResourceRegistrar extends ResourceRegistrar {
 
-    public static final String[] COMPENSATABLE_ANNOTATIONS = {
-            Compensatable.class.getName()
-    };
-
-    private OldCompensatableAnnotation() {
+    public SimpleResourceRegistrar(ResourceDescriptor descriptor, ResourceServiceHandler handler) {
+        super(descriptor, new AddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler), new WriteAttributeStepHandler(descriptor, handler));
     }
-
-    public static OldCompensatableAnnotation build(final DeploymentUnit unit, final String endpoint) throws XTSException {
-        for (final String annotation : COMPENSATABLE_ANNOTATIONS) {
-            if (JandexHelper.getAnnotation(unit, endpoint, annotation) != null) {
-                return new OldCompensatableAnnotation();
-            }
-        }
-
-        return null;
-    }
-
 }

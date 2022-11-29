@@ -25,8 +25,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.inject.spi.Extension;
-
+import jakarta.enterprise.inject.spi.Extension;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.web;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
+import java.util.function.Consumer;
+
+import org.jboss.as.server.DeploymentProcessorTarget;
 
 /**
- * Resource description resolver for the distributable-web subsystem.
+ * Registers a {@link DeploymentChainContributingAddStepHandler}, {@link ReloadRequiredRemoveStepHandler}, and {@link WriteAttributeStepHandler} on behalf of a resource definition.
  * @author Paul Ferraro
  */
-public class DistributableWebResourceDescriptionResolver extends SubsystemResourceDescriptionResolver {
+public class DeploymentChainContributingResourceRegistrar extends ResourceRegistrar {
 
-    DistributableWebResourceDescriptionResolver() {
-        super(DistributableWebExtension.SUBSYSTEM_NAME, DistributableWebExtension.class);
+    public DeploymentChainContributingResourceRegistrar(ResourceDescriptor descriptor, ResourceServiceHandler handler, Consumer<DeploymentProcessorTarget> contributor) {
+        super(descriptor, handler, new DeploymentChainContributingAddStepHandler(descriptor, handler, contributor), new ReloadRequiredRemoveStepHandler(descriptor));
     }
 }

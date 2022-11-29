@@ -29,7 +29,7 @@ import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
+import org.jboss.as.clustering.controller.RestartParentResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
@@ -106,7 +106,7 @@ public class AbstractProtocolResourceDefinition extends ChildResourceDefinition<
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttributes(Attribute.class)
                 ;
-        new RestartParentResourceRegistration(this.parentServiceConfiguratorFactory, descriptor, this.handler).register(registration);
+        new RestartParentResourceRegistrar(this.parentServiceConfiguratorFactory, descriptor, this.handler).register(registration);
 
         return registration;
     }

@@ -22,6 +22,12 @@
 
 package org.jboss.as.test.integration.transactions;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.arjuna.ats.arjuna.recovery.RecoveryDriver;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
@@ -31,12 +37,6 @@ import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * A helper class which wraps remote execution of the transaction recovery.

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,18 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.clustering.ejb;
 
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
+package org.jboss.as.clustering.controller;
 
 /**
- * Resource description resolver for the distributable-ejb subsystem.
+ * Implemented by a management artifact that can register itself.
+ * This allows a management object to encapsulates specific registration details (e.g. resource aliases) from the parent resource.
  * @author Paul Ferraro
- * @author Richard Achmatowicz
  */
-public class DistributableEjbResourceDescriptionResolver extends SubsystemResourceDescriptionResolver {
-
-    DistributableEjbResourceDescriptionResolver() {
-        super(DistributableEjbExtension.SUBSYSTEM_NAME, DistributableEjbExtension.class);
-    }
+public interface ManagementRegistrar<R> {
+    /**
+     * Registers this object with a resource.
+     * @param registration a registration for a management resource
+     */
+    void register(R registration);
 }

@@ -23,31 +23,21 @@ package org.wildfly.extension.clustering.ejb;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import org.jboss.as.clustering.controller.Schema;
+import java.util.function.Function;
+
 import org.jboss.as.clustering.controller.persistence.AttributeXMLBuilderOperator;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.PersistentResourceXMLParser;
 
 /**
  * Parser description for the distributable-ejb subsystem.
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class DistributableEjbXMLParser extends PersistentResourceXMLParser {
+public class DistributableEjbXMLDescriptionFactory implements Function<DistributableEjbSchema, PersistentResourceXMLDescription> {
 
-    private final Schema<DistributableEjbSchema> schema;
-
-    public DistributableEjbXMLParser(Schema<DistributableEjbSchema> schema) {
-        this.schema = schema;
-    }
-
-    /**
-     * Create a PersistentResourceXMLDescription that models the path, attributes and children of the XML schema
-     * @return the PersistentResourceXMLDescription
-     */
     @Override
-    public PersistentResourceXMLDescription getParserDescription() {
-        return new AttributeXMLBuilderOperator().addAttributes(DistributableEjbResourceDefinition.Attribute.class).apply(builder(DistributableEjbResourceDefinition.PATH, this.schema.getNamespaceUri()))
+    public PersistentResourceXMLDescription apply(DistributableEjbSchema schema) {
+        return new AttributeXMLBuilderOperator().addAttributes(DistributableEjbResourceDefinition.Attribute.class).apply(builder(DistributableEjbResourceDefinition.PATH, schema.getNamespaceUri()))
                 .addChild(new AttributeXMLBuilderOperator().addAttributes(InfinispanBeanManagementResourceDefinition.Attribute.class).apply(builder(InfinispanBeanManagementResourceDefinition.WILDCARD_PATH)))
                 .addChild(builder(LocalClientMappingsRegistryProviderResourceDefinition.PATH).setXmlElementName("local-client-mappings-registry"))
                 .addChild(new AttributeXMLBuilderOperator(InfinispanClientMappingsRegistryProviderResourceDefinition.Attribute.class).apply(builder(InfinispanClientMappingsRegistryProviderResourceDefinition.PATH)).setXmlElementName("infinispan-client-mappings-registry"))

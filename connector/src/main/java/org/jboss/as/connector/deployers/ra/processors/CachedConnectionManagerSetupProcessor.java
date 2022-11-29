@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.ee.component.Attachments;

@@ -24,7 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.EnumSet;
 
-import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ManagementRegistrar;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
@@ -32,7 +32,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Registers transport definitions, including any definition overrides.
  * @author Paul Ferraro
  */
-public class TransportRegistration implements Registration<ManagementResourceRegistration> {
+public class TransportResourceRegistrar implements ManagementRegistrar<ManagementResourceRegistration> {
 
     enum MulticastTransport {
         UDP;
@@ -44,7 +44,7 @@ public class TransportRegistration implements Registration<ManagementResourceReg
 
     private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
 
-    public TransportRegistration(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+    public TransportResourceRegistrar(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
         this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
     }
 
