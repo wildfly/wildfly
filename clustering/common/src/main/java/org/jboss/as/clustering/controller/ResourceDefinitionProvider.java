@@ -29,7 +29,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Provides a {@link ResourceDefinition} and handles its registration.
  * @author Paul Ferraro
  */
-public interface ResourceDefinitionProvider extends Registration<ManagementResourceRegistration> {
+public interface ResourceDefinitionProvider extends ManagementRegistrar<ManagementResourceRegistration> {
 
     /**
      * The registration path of the provided resource definition.

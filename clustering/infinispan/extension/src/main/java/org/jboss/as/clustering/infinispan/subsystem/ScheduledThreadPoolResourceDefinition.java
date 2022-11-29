@@ -27,7 +27,7 @@ import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -96,7 +96,7 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinitionP
                 .addAttributes(this.minThreads, this.keepAliveTime)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
     }
 
     @Override

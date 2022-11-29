@@ -42,6 +42,7 @@
     <name>WildFly: Weld</name>
 
     <modules>
+        <module>bean-validation</module>
         <module>ejb</module>
         <module>jpa</module>
         <module>subsystem</module>
@@ -70,11 +71,10 @@
                 </property>
             </activation>
             <modules>
+                <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>spi</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>common</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>bean-validation</module>
             </modules>
         </profile>
     </profiles>

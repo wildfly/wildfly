@@ -33,7 +33,7 @@ import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
@@ -143,7 +143,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
                 .addRuntimeResourceRegistration(new ChannelRuntimeResourceRegistration(executors))
                 ;
         ResourceServiceHandler handler = new ChannelServiceHandler(executors);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new ChannelMetricExecutor(executors), ChannelMetric.class).register(registration);

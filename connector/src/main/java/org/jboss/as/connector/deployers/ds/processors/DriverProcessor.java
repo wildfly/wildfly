@@ -118,7 +118,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
          *
          * This hack allows to deregister all drivers registered by this module. See comments in {@link DriverManagerAdapterProcessor}
          */
-        final Module module = context.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final Module module = context.getAttachment(Attachments.MODULE);
         final ServicesAttachment servicesAttachment = context.getAttachment(Attachments.SERVICES);
         if (module != null && servicesAttachment != null) {
             final List<String> driverNames = servicesAttachment.getServiceImplementations(Driver.class.getName());

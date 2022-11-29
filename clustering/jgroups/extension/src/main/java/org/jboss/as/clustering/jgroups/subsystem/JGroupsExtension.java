@@ -21,15 +21,10 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.EnumSet;
-
-import org.jboss.as.clustering.controller.ContextualSubsystemRegistration;
+import org.jboss.as.clustering.controller.SubsystemExtension;
 import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.clustering.jgroups.LogFactory;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -39,30 +34,16 @@ import org.kohsuke.MetaInfServices;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 @MetaInfServices(Extension.class)
-public class JGroupsExtension implements Extension {
+public class JGroupsExtension extends SubsystemExtension<JGroupsSchema> {
 
-    public static final String SUBSYSTEM_NAME = "jgroups";
-
+    static final String SUBSYSTEM_NAME = "jgroups";
     static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, JGroupsExtension.class);
 
-            // Workaround for JGRP-1475
-    // Configure JGroups to use jboss-logging.
-    static {
+    public JGroupsExtension() {
+        super(SUBSYSTEM_NAME, JGroupsModel.CURRENT, JGroupsSubsystemResourceDefinition::new, JGroupsSchema.CURRENT, JGroupsSubsystemXMLReader::new, new JGroupsSubsystemXMLWriter());
+
+        // Workaround for JGRP-1475
+        // Configure JGroups to use jboss-logging.
         org.jgroups.logging.LogFactory.setCustomLogFactory(new LogFactory());
-    }
-
-    @Override
-    public void initialize(ExtensionContext context) {
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, JGroupsModel.CURRENT.getVersion());
-
-        new JGroupsSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
-        registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
-    }
-
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        for (JGroupsSchema schema : EnumSet.allOf(JGroupsSchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new JGroupsSubsystemXMLReader(schema));
-        }
     }
 }

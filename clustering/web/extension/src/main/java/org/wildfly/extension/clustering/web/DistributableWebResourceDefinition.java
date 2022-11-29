@@ -28,16 +28,16 @@ import java.util.function.Consumer;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.DefaultSubsystemDescribeHandler;
-import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
+import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistrar;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -57,7 +57,7 @@ import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymen
  * Definition of the /subsystem=distributable-web resource.
  * @author Paul Ferraro
  */
-public class DistributableWebResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> implements Consumer<DeploymentProcessorTarget> {
+public class DistributableWebResourceDefinition extends SubsystemResourceDefinition implements Consumer<DeploymentProcessorTarget> {
 
     static final PathElement PATH = pathElement(DistributableWebExtension.SUBSYSTEM_NAME);
 
@@ -114,7 +114,7 @@ public class DistributableWebResourceDefinition extends SubsystemResourceDefinit
                 .addRequiredSingletonChildren(LocalRoutingProviderResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new DistributableWebResourceServiceHandler();
-        new DeploymentChainContributingResourceRegistration(descriptor, handler, this).register(registration);
+        new DeploymentChainContributingResourceRegistrar(descriptor, handler, this).register(registration);
 
         new LocalRoutingProviderResourceDefinition().register(registration);
         new InfinispanRoutingProviderResourceDefinition().register(registration);

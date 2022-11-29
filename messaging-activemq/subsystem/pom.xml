@@ -182,6 +182,11 @@
         </dependency>
 
         <dependency>
+            <groupId>jakarta.resource</groupId>
+            <artifactId>jakarta.resource-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-jakarta-client</artifactId>
             <exclusions>
@@ -287,6 +292,7 @@
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-core-impl</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -364,11 +370,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>failureaccess</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -414,11 +415,6 @@
             <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.resource</groupId>
-            <artifactId>jakarta.resource-api</artifactId>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

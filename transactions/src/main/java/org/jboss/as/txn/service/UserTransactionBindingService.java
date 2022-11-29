@@ -22,7 +22,7 @@
 
 package org.jboss.as.txn.service;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -32,9 +32,9 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * A special type of {@link BinderService} used to bind {@link javax.transaction.UserTransaction} instances. This
+ * A special type of {@link BinderService} used to bind {@link jakarta.transaction.UserTransaction} instances. This
  * {@link UserTransactionBindingService} checks the permission to access the UserTransaction} before handing out the
- * {@link javax.transaction.UserTransaction} instance from its {@link #getValue()} method.
+ * {@link jakarta.transaction.UserTransaction} instance from its {@link #getValue()} method.
  *
  * @author Jaikiran Pai
  * @author Eduardo Martins

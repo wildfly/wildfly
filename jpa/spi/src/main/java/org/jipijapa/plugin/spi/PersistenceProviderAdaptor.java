@@ -24,7 +24,7 @@ package org.jipijapa.plugin.spi;
 
 import java.util.Map;
 
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 /**
  * PersistenceProvider adaptor

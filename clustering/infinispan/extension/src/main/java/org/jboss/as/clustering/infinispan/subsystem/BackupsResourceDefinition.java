@@ -29,7 +29,7 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.controller.PathElement;
 
 /**
@@ -57,7 +57,7 @@ public class BackupsResourceDefinition extends ComponentResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
         ResourceServiceConfiguratorFactory serviceConfiguratorFactory = BackupsServiceConfigurator::new;
         ResourceServiceHandler handler = new ParentResourceServiceHandler(serviceConfiguratorFactory);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new BackupResourceDefinition(serviceConfiguratorFactory, this.executors).register(registration);
 

@@ -67,6 +67,7 @@
         <module>client/properties</module>
         <module>client/shade</module>
         <module>clustering</module>
+        <module>connector</module>
         <module>datasources-agroal</module>
         <module>dist</module>
         <module>ee-build</module>
@@ -78,6 +79,7 @@
         <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
         <module>health</module>
+        <module>iiop-openjdk</module>
         <module>jaxrs</module>
         <module>jdr</module>
         <module>jpa</module>
@@ -96,6 +98,7 @@
         <module>picketlink</module>
         <module>pojo</module>
         <module>release</module>
+        <module>rts</module>
         <module>sar</module>
         <module>security</module>
         <module>system-jmx</module>
@@ -103,7 +106,9 @@
         <module>servlet-feature-pack</module>
         <module>weld</module>
         <module>testsuite/test-feature-pack</module>
+        <module>testsuite/shared</module>
         <module>testsuite</module>
+        <module>transactions</module>
     </modules>
 
     <scm>
@@ -490,8 +495,7 @@
         <legacy.version.org.eclipse.microprofile.rest.client.api>2.0</legacy.version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.yasson>3.0.1</version.org.eclipse.yasson>
-        <legacy.version.org.eclipse.persistence.eclipselink>2.7.11</legacy.version.org.eclipse.persistence.eclipselink>
-        <version.org.eclipse.persistence.eclipselink>3.0.3</version.org.eclipse.persistence.eclipselink>
+        <version.org.eclipse.persistence.eclipselink>4.0.0</version.org.eclipse.persistence.eclipselink>
         <version.org.glassfish.expressly>5.0.0</version.org.glassfish.expressly>
         <legacy.version.org.glassfish.jakarta.el>3.0.3.jbossorg-4</legacy.version.org.glassfish.jakarta.el>
         <legacy.version.org.glassfish.jakarta.enterprise.concurrent>1.1.1</legacy.version.org.glassfish.jakarta.enterprise.concurrent>
@@ -603,7 +607,7 @@
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>
         <version.org.wildfly.arquillian>5.0.0.Alpha6</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>20.0.0.Beta2</version.org.wildfly.core>
+        <version.org.wildfly.core>20.0.0.Beta3</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.http-client>1.1.15.Final</legacy.version.org.wildfly.http-client>
         <version.org.wildfly.http-client>2.0.0.Final</version.org.wildfly.http-client>
@@ -928,13 +932,6 @@
                 <artifactId>wildfly-standard-expansion-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-testsuite-shared-legacy-namespace</artifactId>
-                <version>${ee.maven.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>
@@ -1266,6 +1263,22 @@
             TODO used both in testsuite/integration/legacy-ejb-client and in legacy code.
             Once legacy code use is gone, convert to <scope>test</scope>
             -->
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-transaction-spi</artifactId>
+                <version>${version.org.jboss.jboss-transaction-spi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.spec.javax.ejb</groupId>
+                <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec}</version>
+            </dependency>
             <dependency>
                 <groupId>org.jboss.spec.javax.transaction</groupId>
                 <artifactId>jboss-transaction-api_1.3_spec</artifactId>
@@ -2013,17 +2026,11 @@
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>bean-validation</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>connector</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>ee</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>iiop-openjdk</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>jsf</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>rts</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>transactions</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>undertow</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
@@ -2032,8 +2039,6 @@
                 <module>webservices</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>xts</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>testsuite/shared</module>
             </modules>
         </profile>
         <profile>

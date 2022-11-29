@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  * Convenience extension of {@link org.jboss.as.controller.ReloadRequiredWriteAttributeHandler} that can be initialized with an {@link Attribute} set.
  * @author Paul Ferraro
  */
-public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandler implements Registration<ManagementResourceRegistration> {
+public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandler implements ManagementRegistrar<ManagementResourceRegistration> {
 
     private final WriteAttributeStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;

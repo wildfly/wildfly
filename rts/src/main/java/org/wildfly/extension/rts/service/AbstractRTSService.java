@@ -32,7 +32,7 @@ import java.net.Inet4Address;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import org.jboss.as.network.SocketBinding;
 import org.jboss.jbossts.star.service.ContextListener;

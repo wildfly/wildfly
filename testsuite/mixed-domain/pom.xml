@@ -291,7 +291,7 @@
             </build>
         </profile>
         <profile>
-            <id>legacy-slave-java-home</id>
+            <id>legacy-secondary-java-home</id>
             <activation>
                 <jdk>[9,)</jdk>
                 <property>
@@ -318,7 +318,7 @@
             </build>
         </profile>
         <profile>
-            <id>legacy-slave-java11-home</id>
+            <id>legacy-secondary-java11-home</id>
             <activation>
                 <jdk>[12,)</jdk>
                 <property>

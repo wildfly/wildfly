@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.controller.descriptions;
 
-import java.util.Arrays;
+import java.util.List;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.PathElement;
@@ -33,7 +33,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
  * Generates resource descriptions for a given subsystem and exposes a mechanism for generating a {@link ResourceDescriptionResolver} for child resources.
  * @author Paul Ferraro
  */
-public class SubsystemResourceDescriptionResolver extends StandardResourceDescriptionResolver {
+public class SubsystemResourceDescriptionResolver extends StandardResourceDescriptionResolver implements ChildResourceDescriptionResolverFactory {
 
     private static final String RESOURCE_NAME_PATTERN = "%s.LocalDescriptions";
 
@@ -41,7 +41,8 @@ public class SubsystemResourceDescriptionResolver extends StandardResourceDescri
         super(subsystemName, String.format(RESOURCE_NAME_PATTERN, extensionClass.getPackage().getName()), extensionClass.getClassLoader(), true, false);
     }
 
-    public ResourceDescriptionResolver createChildResolver(PathElement... paths) {
-        return new ChildResourceDescriptionResolver(this, this.getKeyPrefix(), Arrays.asList(paths));
+    @Override
+    public ResourceDescriptionResolver createChildResolver(List<PathElement> paths) {
+        return new ChildResourceDescriptionResolver(this, this.getKeyPrefix(), paths);
     }
 }

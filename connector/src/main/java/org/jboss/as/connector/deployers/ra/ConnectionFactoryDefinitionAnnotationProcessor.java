@@ -30,12 +30,12 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.resource.ConnectionFactoryDefinition;
-import javax.resource.ConnectionFactoryDefinitions;
-import javax.resource.spi.TransactionSupport;
+import jakarta.resource.ConnectionFactoryDefinition;
+import jakarta.resource.ConnectionFactoryDefinitions;
+import jakarta.resource.spi.TransactionSupport;
 
 /**
- * Deployment processor responsible for processing {@link javax.resource.ConnectionFactoryDefinition} and {@link javax.resource.ConnectionFactoryDefinitions}.
+ * Deployment processor responsible for processing {@link jakarta.resource.ConnectionFactoryDefinition} and {@link jakarta.resource.ConnectionFactoryDefinitions}.
  *
  * @author Jesper Pedersen
  * @author Eduardo Martins

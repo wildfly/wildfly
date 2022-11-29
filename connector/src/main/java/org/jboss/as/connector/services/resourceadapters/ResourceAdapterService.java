@@ -24,7 +24,7 @@ package org.jboss.as.connector.services.resourceadapters;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
-import javax.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.ResourceAdapter;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;

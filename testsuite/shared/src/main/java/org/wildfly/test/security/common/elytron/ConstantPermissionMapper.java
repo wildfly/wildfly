@@ -76,7 +76,7 @@ public class ConstantPermissionMapper extends AbstractConfigurableElement implem
     /**
      * Builder for this class.
      */
-    public static final class Builder extends AbstractConfigurableElement.Builder<ConstantPermissionMapper.Builder> {
+    public static final class Builder extends AbstractConfigurableElement.Builder<Builder> {
 
         private PermissionRef[] permissions;
 

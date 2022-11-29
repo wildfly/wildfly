@@ -394,17 +394,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.narayana.txframework</groupId>
-      <artifactId>txframework-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.openjdk-orb</groupId>
       <artifactId>openjdk-orb-jakarta</artifactId>
       <licenses>
@@ -562,28 +551,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>jipijapa-spi</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>jipijapa-eclipselink</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-batch-jberet</artifactId>
       <licenses>
         <license>
@@ -693,7 +660,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-web-common</artifactId>
       <licenses>
         <license>

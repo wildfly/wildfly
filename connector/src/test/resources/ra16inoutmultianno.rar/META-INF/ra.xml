@@ -45,7 +45,7 @@
          <connection-definition>
             <managedconnectionfactory-class>org.jboss.as.connector.deployers.spec.rars.ra16inoutmultianno.TestManagedConnectionFactory</managedconnectionfactory-class>
 
-            <connectionfactory-interface>javax.resource.spi.ManagedConnection</connectionfactory-interface>
+            <connectionfactory-interface>jakarta.resource.spi.ManagedConnection</connectionfactory-interface>
             <connectionfactory-impl-class>org.jboss.as.connector.deployers.spec.rars.ra16inoutmultianno.TestManagedConnection</connectionfactory-impl-class>
             <connection-interface>org.jboss.as.connector.deployers.spec.rars.TestConnectionInterface</connection-interface>
             <connection-impl-class>org.jboss.as.connector.deployers.spec.rars.TestConnection</connection-impl-class>

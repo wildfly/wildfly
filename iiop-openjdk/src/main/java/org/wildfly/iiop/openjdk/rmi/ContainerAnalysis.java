@@ -169,7 +169,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
     protected ContainerAnalysis(Class cls) {
         super(cls);
 
-        if (cls == java.lang.Object.class || cls == java.io.Serializable.class || cls == java.io.Externalizable.class)
+        if (cls == Object.class || cls == Serializable.class || cls == Externalizable.class)
             throw IIOPLogger.ROOT_LOGGER.cannotAnalyzeSpecialClass(cls.getName());
 
         this.cls = cls;
@@ -369,10 +369,10 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
             if (intfs[i] == java.rmi.Remote.class)
                 continue;
             // Ignore java.io.Serializable
-            if (intfs[i] == java.io.Serializable.class)
+            if (intfs[i] == Serializable.class)
                 continue;
             // Ignore java.io.Externalizable
-            if (intfs[i] == java.io.Externalizable.class)
+            if (intfs[i] == Externalizable.class)
                 continue;
             if (!RmiIdlUtil.isAbstractValueType(intfs[i])) {
                 a.add(InterfaceAnalysis.getInterfaceAnalysis(intfs[i]));
@@ -512,7 +512,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
             Class type = fields[i].getType();
 
             // Only map primitives and java.lang.String
-            if (!type.isPrimitive() && type != java.lang.String.class) {
+            if (!type.isPrimitive() && type != String.class) {
                 // It is an RMI/IIOP violation for interfaces.
                 if (cls.isInterface())
                     throw IIOPLogger.ROOT_LOGGER.badRMIIIOPConstantType(fields[i].getName(), cls.getName(), "1.2.3");

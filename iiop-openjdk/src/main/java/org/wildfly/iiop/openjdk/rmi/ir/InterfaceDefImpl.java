@@ -114,7 +114,7 @@ class InterfaceDefImpl
 
     public IRObject getReference() {
         if (ref == null) {
-            ref = org.omg.CORBA.InterfaceDefHelper.narrow(
+            ref = InterfaceDefHelper.narrow(
                     servantToReference(new InterfaceDefPOATie(this)));
         }
         return ref;
@@ -237,7 +237,7 @@ class InterfaceDefImpl
         return base_interfaces_ref;
     }
 
-    public void base_interfaces(org.omg.CORBA.InterfaceDef[] arg) {
+    public void base_interfaces(InterfaceDef[] arg) {
         throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
@@ -249,7 +249,7 @@ class InterfaceDefImpl
         throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
-    public boolean is_a(java.lang.String interface_id) {
+    public boolean is_a(String interface_id) {
         // TODO
         return false;
     }
@@ -312,7 +312,7 @@ class InterfaceDefImpl
         if (defined_in instanceof org.omg.CORBA.ContainedOperations)
             defined_in_id = ((org.omg.CORBA.ContainedOperations) defined_in).id();
 
-        org.omg.CORBA.InterfaceDescription md =
+        InterfaceDescription md =
                 new InterfaceDescription(name, id, defined_in_id, version,
                         base_interfaces, false);
 

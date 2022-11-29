@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeanManager;
 import javax.sql.DataSource;
 
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
