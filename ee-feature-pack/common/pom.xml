@@ -1830,24 +1830,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>gnu.getopt</groupId>
             <artifactId>java-getopt</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>jaxen</groupId>
-            <artifactId>jaxen</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -3853,17 +3837,6 @@
         <dependency>
             <groupId>xml-resolver</groupId>
             <artifactId>xml-resolver</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- OpenTelemetry -->

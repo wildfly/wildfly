@@ -1374,39 +1374,6 @@
             </dependency>
 
             <dependency>
-                <groupId>jaxen</groupId>
-                <artifactId>jaxen</artifactId>
-                <version>${version.jaxen}</version>
-                <exclusions>
-                    <!-- I kid you not -->
-                    <exclusion>
-                        <groupId>jaxen</groupId>
-                        <artifactId>jaxen</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jdom</groupId>
-                        <artifactId>jdom</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>maven-plugins</groupId>
-                        <artifactId>maven-cobertura-plugin</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>maven-plugins</groupId>
-                        <artifactId>maven-findbugs-plugin</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xom</groupId>
-                        <artifactId>xom</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
                 <version>${version.joda-time}</version>
@@ -1869,18 +1836,6 @@
                     <exclusion>
                         <groupId>org.bouncycastle</groupId>
                         <artifactId>bcprov-jdk18on</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.dom4j</groupId>
-                <artifactId>dom4j</artifactId>
-                <version>${version.dom4j}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2530,22 +2485,6 @@
                 <groupId>xml-resolver</groupId>
                 <artifactId>xml-resolver</artifactId>
                 <version>${version.xml-resolver}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>xom</groupId>
-                <artifactId>xom</artifactId>
-                <version>${version.xom}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xerces</groupId>
-                        <artifactId>xercesImpl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
         </dependencies>
