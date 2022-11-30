@@ -89,7 +89,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
           return properties;
       }
 
-    public static void testRuntime(KernelServices mainServices, final String virtualHostName, int schemaVersion) throws Exception {
+    public static void testRuntime(KernelServices mainServices, final String virtualHostName, int schemaVersion) throws InterruptedException {
         if (!mainServices.isSuccessfulBoot()) {
             Throwable t = mainServices.getBootError();
             Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
@@ -121,10 +121,10 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
 
         final ServiceName undertowServiceName = UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName();
-        ServiceController<UndertowService> undertowServiceService = (ServiceController<UndertowService>) mainServices.getContainer().getService(undertowServiceName);
+        ServiceController<?> undertowServiceService = mainServices.getContainer().getService(undertowServiceName);
         Assert.assertNotNull(undertowServiceService);
         undertowServiceService.setMode(ServiceController.Mode.ACTIVE);
-        final UndertowService undertowService = undertowServiceService.getValue();
+        final UndertowService undertowService = (UndertowService) awaitServiceValue(undertowServiceService);
         Assert.assertEquals("some-id", undertowService.getInstanceId());
         if (schemaVersion > 1)
             Assert.assertTrue(undertowService.isStatisticsEnabled());
@@ -134,19 +134,30 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             Assert.assertEquals("some-server", undertowService.getDefaultServer());
         Assert.assertEquals("myContainer", undertowService.getDefaultContainer());
         Assert.assertEquals("default-virtual-host", undertowService.getDefaultVirtualHost());
+
+        // We need to wait for the server to register itself with the undertow service
+        awaitServiceValue(mainServices.getContainer().getService(ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName(virtualHostName)));
+
+        // Don't verify servers until we know they are registered
         Assert.assertEquals(1, undertowService.getServers().size());
         final Server server = undertowService.getServers().iterator().next();
         Assert.assertEquals("other-host", server.getDefaultHost());
-        Assert.assertEquals(2, server.getHosts().size());
-        if (schemaVersion > 1)
-            Assert.assertEquals("some-server", server.getName());
 
+        // We need to wait for each host to register itself with the server
+        awaitServiceValue(mainServices.getContainer().getService(HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(virtualHostName, "default-virtual-host")));
 
         final ServiceName hostServiceName = HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(virtualHostName, "other-host");
         ServiceController hostSC = mainServices.getContainer().getService(hostServiceName);
         Assert.assertNotNull(hostSC);
         hostSC.setMode(ServiceController.Mode.ACTIVE);
+
         Host host = (Host) awaitServiceValue(hostSC);
+
+        // Don't verify hosts until we know that they are all registered
+        Assert.assertEquals(2, server.getHosts().size());
+        if (schemaVersion > 1)
+            Assert.assertEquals("some-server", server.getName());
+
         if (schemaVersion >=3) {
             Assert.assertEquals(3, host.getAllAliases().size());
             Assert.assertTrue(host.getAllAliases().contains("default-alias"));
@@ -156,7 +167,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         ServiceController locationSC = mainServices.getContainer().getService(locationServiceName);
         Assert.assertNotNull(locationSC);
         locationSC.setMode(ServiceController.Mode.ACTIVE);
-        LocationService locationService = (LocationService)locationSC.getValue();
+        LocationService locationService = (LocationService) awaitServiceValue(locationSC);
         Assert.assertNotNull(locationService);
         connectionLimiter.setMode(ServiceController.Mode.REMOVE);
         final ServiceName servletContainerServiceName = UndertowService.SERVLET_CONTAINER.append("myContainer");
@@ -173,6 +184,9 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         FilterRef gzipFilterRef = (FilterRef) awaitServiceValue(gzipFilterController);
         HttpHandler gzipHandler = gzipFilterRef.createHttpHandler(new PathHandler());
         Assert.assertNotNull("handler should have been created", gzipHandler);
+
+        // We need to ensure filter has registered itself with the host
+        awaitServiceValue(mainServices.getContainer().getService(UndertowService.filterRefName(virtualHostName, "other-host", "headers")));
         Assert.assertEquals(1, host.getFilters().size());
 
         ModelNode op = Util.createOperation("write-attribute",
@@ -199,24 +213,24 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Assert.assertNotNull(res);
     }
 
-    public static void testRuntimeOther(KernelServices mainServices) {
+    public static void testRuntimeOther(KernelServices mainServices) throws InterruptedException {
         ServiceController defaultHostSC = mainServices.getContainer().getService(UndertowService.DEFAULT_HOST);
         defaultHostSC.setMode(ServiceController.Mode.ACTIVE);
-        Host defaultHost = (Host)defaultHostSC.getValue();
+        Host defaultHost = (Host) awaitServiceValue(defaultHostSC);
         Assert.assertNotNull("Default host should exist", defaultHost);
 
         ServiceController defaultServerSC = mainServices.getContainer().getService(UndertowService.DEFAULT_SERVER);
         defaultServerSC.setMode(ServiceController.Mode.ACTIVE);
-        Server defaultServer = (Server)defaultServerSC.getValue();
+        Server defaultServer = (Server) awaitServiceValue(defaultServerSC);
         Assert.assertNotNull("Default host should exist", defaultServer);
     }
 
-    public static void testRuntimeLast(KernelServices mainServices) {
+    public static void testRuntimeLast(KernelServices mainServices) throws InterruptedException {
         final ServiceName accessLogServiceName = UndertowService.accessLogServiceName("some-server", "default-virtual-host");
         ServiceController accessLogSC = mainServices.getContainer().getService(accessLogServiceName);
         Assert.assertNotNull(accessLogSC);
         accessLogSC.setMode(ServiceController.Mode.ACTIVE);
-        AccessLogService accessLogService = (AccessLogService)accessLogSC.getValue();
+        AccessLogService accessLogService = (AccessLogService) awaitServiceValue(accessLogSC);
         Assert.assertNotNull(accessLogService);
         Assert.assertFalse(accessLogService.isRotate());
     }
