@@ -100,7 +100,7 @@ public final class PermissionUtils {
     /**
      * Creates a new {@link FilePermission}.
      * <p>
-     * The paths are iterated with a {@link java.io.File#separatorChar} be placed after each path portion. The
+     * The paths are iterated with a {@link File#separatorChar} be placed after each path portion. The
      * {@code sysPropKey} is used to resolve the base directory which the {@code paths} will be appended to.
      * </p>
      * <p>

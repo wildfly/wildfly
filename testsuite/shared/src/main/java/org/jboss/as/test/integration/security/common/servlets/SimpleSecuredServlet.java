@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.security.common.servlets;
 
-import javax.annotation.security.DeclareRoles;
-import javax.servlet.annotation.HttpConstraint;
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.annotation.WebServlet;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.servlet.annotation.HttpConstraint;
+import jakarta.servlet.annotation.ServletSecurity;
+import jakarta.servlet.annotation.WebServlet;
 
 /**
  * Protected version of {@link SimpleServlet}. Only {@value #ALLOWED_ROLE} role has access right.
