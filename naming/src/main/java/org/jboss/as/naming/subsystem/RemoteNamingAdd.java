@@ -44,7 +44,6 @@ public class RemoteNamingAdd extends AbstractAddStepHandler {
     static final RemoteNamingAdd INSTANCE = new RemoteNamingAdd();
 
     private RemoteNamingAdd() {
-        super(RemoteNamingResourceDefinition.REMOTE_NAMING_CAPABILITY);
     }
 
     @Override

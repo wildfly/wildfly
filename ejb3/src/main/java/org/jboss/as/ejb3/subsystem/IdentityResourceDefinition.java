@@ -90,7 +90,7 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.IDENTITY_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.IDENTITY))
                 .setAddHandler(new AddHandler())
                 // .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
-                .setRemoveHandler(new ReloadRequiredRemoveStepHandler(IDENTITY_CAPABILITY))
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setCapabilities(IDENTITY_CAPABILITY));
     }
@@ -107,7 +107,7 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
     private static class AddHandler extends AbstractAddStepHandler {
 
         private AddHandler() {
-            super(IDENTITY_CAPABILITY, OUTFLOW_SECURITY_DOMAINS);
+            super(OUTFLOW_SECURITY_DOMAINS);
         }
 
         @Override
