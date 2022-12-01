@@ -45,6 +45,7 @@
         <module>config-smallrye</module>
         <module>fault-tolerance-smallrye</module>
         <module>galleon-common</module>
+        <module>health-smallrye</module>
         <module>openapi-smallrye</module>
         <module>reactive-messaging-smallrye</module>
         <module>reactive-streams-operators-smallrye</module>
@@ -71,8 +72,6 @@
                 </property>
             </activation>
             <modules>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>health-smallrye</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>jwt-smallrye</module>
                 <module>metrics-smallrye</module>
