@@ -168,14 +168,7 @@ class SessionProviderFactory {
 
         @Override
         public Session getSession() {
-            final Session session;
-            final ClassLoader current = Thread.currentThread().getContextClassLoader();
-            try {
-                Thread.currentThread().setContextClassLoader(Session.class.getClassLoader());
-                session = Session.getInstance(properties, new ManagedPasswordAuthenticator(sessionConfig));
-            } finally {
-                Thread.currentThread().setContextClassLoader(current);
-            }
+            final Session session = Session.getInstance(properties, new ManagedPasswordAuthenticator(sessionConfig));
             return session;
         }
     }

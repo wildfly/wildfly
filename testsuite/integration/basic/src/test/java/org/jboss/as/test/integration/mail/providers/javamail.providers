@@ -1,0 +1,2 @@
+protocol=CustomTransport; type=transport; class=org.jboss.qa.management.mail.custom.CustomTransport; vendor=JBoss QE;
+protocol=CustomStore; type=store; class=org.jboss.qa.management.mail.custom.CustomStore; vendor=JBoss QE;
