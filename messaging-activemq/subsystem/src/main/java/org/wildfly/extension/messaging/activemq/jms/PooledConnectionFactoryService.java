@@ -102,8 +102,6 @@ import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -596,13 +594,4 @@ public class PooledConnectionFactoryService implements Service<Void> {
     public void stop(StopContext context) {
         // Service context takes care of this
     }
-
-    Injector<SocketBinding> getSocketBindingInjector(String name) {
-        return new MapInjector<String, SocketBinding>(socketBindings, name);
-    }
-
-    public Injector<ActiveMQServer> getActiveMQServer() {
-        return activeMQServer;
-    }
-
 }
