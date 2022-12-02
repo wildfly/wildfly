@@ -30,8 +30,6 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.channels.NetworkChannel;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
@@ -39,12 +37,10 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.util.Util;
-import org.wildfly.common.function.ExceptionConsumer;
 import org.wildfly.common.function.ExceptionFunction;
 
 /**
@@ -58,8 +54,7 @@ public class ManagedSocketFactory implements SocketFactory {
     // Maps a JGroups service name its associated SocketBinding
     private final Map<String, SocketBinding> bindings;
     // Store references to managed socket-binding registrations
-    private final Map<SocketChannel, Closeable> channels = Collections.synchronizedMap(new IdentityHashMap<>());
-    private final Map<ServerSocketChannel, Closeable> serverChannels = Collections.synchronizedMap(new IdentityHashMap<>());
+    private final Map<NetworkChannel, Closeable> channels = Collections.synchronizedMap(new IdentityHashMap<>());
 
     public ManagedSocketFactory(SelectorProvider provider, SocketBindingManager manager, Map<String, SocketBinding> socketBindings) {
         this.provider = provider;
@@ -103,40 +98,37 @@ public class ManagedSocketFactory implements SocketFactory {
 
     @Override
     public SocketChannel createSocketChannel(String name) throws IOException {
-        return this.createChannel(name, SelectorProvider::openSocketChannel, SelectionKey.OP_CONNECT, this.manager.getNamedRegistry()::registerChannel, this.manager.getUnnamedRegistry()::registerChannel, this.channels);
+        return this.createNetworkChannel(name, SelectorProvider::openSocketChannel, SocketBindingManager.NamedManagedBindingRegistry::registerChannel, SocketBindingManager.UnnamedBindingRegistry::registerChannel);
     }
 
     @Override
     public ServerSocketChannel createServerSocketChannel(String name) throws IOException {
-        return this.createChannel(name, SelectorProvider::openServerSocketChannel, SelectionKey.OP_ACCEPT, this.manager.getNamedRegistry()::registerChannel, this.manager.getUnnamedRegistry()::registerChannel, this.serverChannels);
-    }
-
-    private <C extends SelectableChannel & NetworkChannel> C createChannel(String name, ExceptionFunction<SelectorProvider, C, IOException> factory, int operation, BiFunction<String, C, Closeable> namedRegistration, Function<C, Closeable> unnamedRegistration, Map<C, Closeable> registrations) throws IOException {
-        SocketBinding binding = this.bindings.get(name);
-        ExceptionConsumer<C, IOException> registration = new ExceptionConsumer<>() {
-            @Override
-            public void accept(C channel) throws IOException {
-                registrations.put(channel, (binding != null) ? namedRegistration.apply(binding.getName(), channel) : unnamedRegistration.apply(channel));
-            }
-        };
-        C channel = factory.apply(this.provider);
-// Temporarily disabled due to WFCORE-6146
-//        registration.accept(channel);
-        return channel;
+        return this.createNetworkChannel(name, SelectorProvider::openServerSocketChannel, SocketBindingManager.NamedManagedBindingRegistry::registerChannel, SocketBindingManager.UnnamedBindingRegistry::registerChannel);
     }
 
     @Override
     public void close(SocketChannel channel) {
-        close(this.channels, channel);
+        this.closeNetworkChannel(channel);
     }
 
     @Override
     public void close(ServerSocketChannel channel) {
-        close(this.serverChannels, channel);
+        this.closeNetworkChannel(channel);
     }
 
-    private static <C extends NetworkChannel> void close(Map<C, Closeable> registrations, C channel) {
-        Util.close(registrations.remove(channel));
+    private <C extends NetworkChannel> C createNetworkChannel(String name, ExceptionFunction<SelectorProvider, C, IOException> factory, TriFunction<SocketBindingManager.NamedManagedBindingRegistry, String, C, Closeable> namedRegistration, BiFunction<SocketBindingManager.UnnamedBindingRegistry, C, Closeable> unnamedRegistration) throws IOException {
+        SocketBinding binding = this.bindings.get(name);
+        C channel = factory.apply(this.provider);
+        this.channels.put(channel, (binding != null) ? namedRegistration.apply(this.manager.getNamedRegistry(), binding.getName(), channel) : unnamedRegistration.apply(this.manager.getUnnamedRegistry(), channel));
+        return channel;
+    }
+
+    private void closeNetworkChannel(NetworkChannel channel) {
+        Util.close(this.channels.remove(channel));
         Util.close(channel);
+    }
+
+    private static interface TriFunction<T, U, V, R> {
+        R apply(T t, U u, V v);
     }
 }
