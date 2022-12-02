@@ -44,7 +44,6 @@
     <modules>
        <module>subsystem</module>
        <module>injection</module>
-       <module>multi-jsf-installer</module>
     </modules>
 
     <dependencyManagement>
