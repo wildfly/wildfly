@@ -22,10 +22,10 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
-import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
@@ -62,8 +62,11 @@ public class SessionManagerFactoryConfigurationAdapter<C extends DistributableSe
         DeploymentUnit unit = configuration.getDeploymentUnit();
         Module module = unit.getAttachment(Attachments.MODULE);
         this.marshaller = managementConfiguration.getMarshallerFactory().apply(configuration.getDeploymentUnit());
-        ServiceLoader<Immutability> loadedImmutability = module.loadService(Immutability.class);
-        this.immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(UndertowSessionAttributeImmutability.class), loadedImmutability, Collections.singleton(immutability)));
+        List<Immutability> loadedImmutabilities = new LinkedList<>();
+        for (Immutability loadedImmutability : module.loadService(Immutability.class)) {
+            loadedImmutabilities.add(loadedImmutability);
+        }
+        this.immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(UndertowSessionAttributeImmutability.class), loadedImmutabilities, List.of(immutability)));
         this.attributePersistenceStrategy = managementConfiguration.getAttributePersistenceStrategy();
     }
 
