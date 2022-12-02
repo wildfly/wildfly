@@ -889,6 +889,14 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-text@.*$</packageUrl>
         <vulnerabilityName>CVE-2022-42889</vulnerabilityName>
     </suppress>
+	<!-- False positive, H2 web console is used in development process. Not shared in production -->
+	<suppress>
+   		<notes><![CDATA[
+   		file name: h2-1.4.197.jar
+   		]]></notes>
+   		<packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+   		<cve>CVE-2022-45868</cve>
+	</suppress>
     <!-- [PJFCB-3041] False positive as we don't use Payara -->
     <suppress>
         <notes><![CDATA[
