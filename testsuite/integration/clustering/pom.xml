@@ -172,6 +172,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${legacy.version.com.squareup.okhttp}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec</artifactId>
             <scope>test</scope>
@@ -223,6 +229,41 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-cdi-common-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-cdi-remote-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-client-hotrod-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-clustered-lock</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-query-dsl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-remote-query-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-server-testdriver-junit4</artifactId>
             <version>${version.org.infinispan.server.driver}</version>
             <scope>test</scope>
@@ -235,6 +276,10 @@
                 <exclusion>
                     <groupId>org.jboss.marshalling</groupId>
                     <artifactId>jboss-marshalling-osgi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-client-hotrod</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -351,48 +396,6 @@
         <dependency>
             <groupId>xom</groupId>
             <artifactId>xom</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>${legacy.version.com.squareup.okhttp}</version>
-        </dependency>
-
-        <!-- Infinispan modules tests -->
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-common-jakarta</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-remote-jakarta</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-clustered-lock</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-query-dsl</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-remote-query-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
