@@ -23,11 +23,9 @@
 package org.jboss.as.test.clustering.single.infinispan;
 
 import org.jboss.as.test.clustering.InfinispanServerUtil;
-import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.DuplicatedDomainsCdiTestCase;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.GreetingCacheManagerTestCase;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.GreetingServiceTestCase;
 import org.jboss.as.test.clustering.single.infinispan.cdi.remote.RemoteGreetingServiceTestCase;
-import org.jboss.as.test.clustering.single.infinispan.embedded.InfinispanCoreTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.ContainerManagedHotRodClientTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.HotRodClientTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.ContainerRemoteQueryTestCase;
@@ -54,9 +52,7 @@ import org.junit.runners.Suite.SuiteClasses;
         HotRodClientTestCase.class,
         RemoteQueryTestCase.class,
         ContainerRemoteQueryTestCase.class,
-        InfinispanCoreTestCase.class,
         RemoteGreetingServiceTestCase.class,
-        DuplicatedDomainsCdiTestCase.class,
         GreetingCacheManagerTestCase.class,
         GreetingServiceTestCase.class,
         ContainerManagedHotRodClientTestCase.class,
