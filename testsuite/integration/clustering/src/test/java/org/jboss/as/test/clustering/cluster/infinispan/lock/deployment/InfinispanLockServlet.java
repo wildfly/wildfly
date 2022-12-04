@@ -41,7 +41,6 @@ import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
 import org.infinispan.lock.api.ClusteredLock;
 import org.infinispan.lock.api.ClusteredLockManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.logging.Logger;
 
 /**
  * Clustered lock servlet exposing define/is locked/lock/unlock operations for a given named lock.
@@ -51,8 +50,6 @@ import org.jboss.logging.Logger;
  */
 @WebServlet(urlPatterns = { InfinispanLockServlet.SERVLET_PATH })
 public class InfinispanLockServlet extends HttpServlet {
-
-    private static final Logger log = Logger.getLogger(InfinispanLockServlet.class);
 
     private static final long serialVersionUID = 1L;
     private static final String SERVLET_NAME = "lock";
