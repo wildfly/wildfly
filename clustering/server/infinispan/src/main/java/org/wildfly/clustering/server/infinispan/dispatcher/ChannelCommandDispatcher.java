@@ -46,6 +46,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.group.Group;
+import org.wildfly.clustering.server.infinispan.group.JGroupsAddressResolver;
 
 /**
  * MessageDispatcher-based command dispatcher.
@@ -102,7 +103,7 @@ public class ChannelCommandDispatcher<CC, MC> implements CommandDispatcher<CC> {
     @Override
     public <R> CompletionStage<R> executeOnMember(Command<R, ? super CC> command, Node member) throws CommandDispatcherException {
         // Bypass MessageDispatcher if target node is local
-        Address address = this.group.getAddress(member);
+        Address address = JGroupsAddressResolver.INSTANCE.apply(member);
         if (this.localAddress.equals(address)) {
             return this.localDispatcher.executeOnMember(command, member);
         }
@@ -119,7 +120,7 @@ public class ChannelCommandDispatcher<CC, MC> implements CommandDispatcher<CC> {
         ByteBuffer buffer = this.createBuffer(command);
         for (Node member : this.group.getMembership().getMembers()) {
             if (!excluded.contains(member)) {
-                Address address = this.group.getAddress(member);
+                Address address = JGroupsAddressResolver.INSTANCE.apply(member);
                 if (this.localAddress.equals(address)) {
                     results.put(member, this.localDispatcher.executeOnMember(command, member));
                 } else {

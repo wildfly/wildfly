@@ -45,9 +45,7 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.LocalModeAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
-import org.infinispan.remoting.transport.jgroups.JGroupsAddressCache;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultExecutorService;
@@ -131,21 +129,10 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
 
     @Override
     public Node createNode(Address address) {
-        return this.nodeFactory.createNode(toJGroupsAddress(address));
-    }
-
-    @Override
-    public Address getAddress(Node node) {
-        return (node instanceof AddressableNode) ? JGroupsAddressCache.fromJGroupsAddress(((AddressableNode) node).getAddress()) : LocalModeAddress.INSTANCE;
-    }
-
-    private static org.jgroups.Address toJGroupsAddress(Address address) {
-        if ((address == null) || (address == LocalModeAddress.INSTANCE)) return null;
-        if (address instanceof JGroupsAddress) {
-            JGroupsAddress jgroupsAddress = (JGroupsAddress) address;
-            return jgroupsAddress.getJGroupsAddress();
+        if (!(address instanceof JGroupsAddress)) {
+            throw new IllegalArgumentException(address.toString());
         }
-        throw new IllegalArgumentException(address.toString());
+        return this.nodeFactory.createNode(((JGroupsAddress) address).getJGroupsAddress());
     }
 
     @Merged

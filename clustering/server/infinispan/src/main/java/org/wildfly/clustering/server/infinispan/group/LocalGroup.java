@@ -22,7 +22,6 @@
 package org.wildfly.clustering.server.infinispan.group;
 
 import org.jgroups.Address;
-import org.wildfly.clustering.group.Node;
 
 /**
  * Non-clustered {@link org.wildfly.clustering.server.group.Group} implementation
@@ -32,10 +31,5 @@ public class LocalGroup extends AbstractLocalGroup<Address> {
 
     public LocalGroup(String nodeName) {
         super(nodeName);
-    }
-
-    @Override
-    public Address getAddress(Node node) {
-        return null;
     }
 }

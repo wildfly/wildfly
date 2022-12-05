@@ -23,8 +23,6 @@
 package org.wildfly.clustering.server.infinispan.group;
 
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.LocalModeAddress;
-import org.wildfly.clustering.group.Node;
 
 /**
  * Non-clustered cache group.
@@ -34,10 +32,5 @@ public class LocalCacheGroup extends AbstractLocalGroup<Address> {
 
     public LocalCacheGroup(String nodeName) {
         super(nodeName);
-    }
-
-    @Override
-    public Address getAddress(Node node) {
-        return LocalModeAddress.INSTANCE;
     }
 }
