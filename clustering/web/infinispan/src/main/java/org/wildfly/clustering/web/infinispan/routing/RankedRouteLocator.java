@@ -76,12 +76,14 @@ public class RankedRouteLocator implements RouteLocator {
         while (addresses.hasNext() && (routes.size() < this.maxRoutes)) {
             Address address = addresses.next();
             Node member = this.factory.createNode(address);
-            if (member.equals(localMember)) {
-                localIsOwner = true;
-            }
-            Map.Entry<String, Void> entry = this.registry.getEntry(member);
-            if (entry != null) {
-                routes.add(entry.getKey());
+            if (member != null) {
+                if (member.equals(localMember)) {
+                    localIsOwner = true;
+                }
+                Map.Entry<String, Void> entry = this.registry.getEntry(member);
+                if (entry != null) {
+                    routes.add(entry.getKey());
+                }
             }
         }
         if (!localIsOwner && (routes.size() < this.maxRoutes)) {

@@ -176,7 +176,10 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         if (addresses == null) return Collections.emptySet();
         Set<Node> members = new TreeSet<>();
         for (Address address : addresses) {
-            members.add(this.group.createNode(address));
+            Node member = this.group.createNode(address);
+            if (member != null) {
+                members.add(member);
+            }
         }
         return Collections.unmodifiableSet(members);
     }
@@ -255,7 +258,10 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                         entry.getValue().submit(() -> {
                             Set<Node> members = new TreeSet<>();
                             for (Address address : event.getValue()) {
-                                members.add(this.group.createNode(address));
+                                Node member = this.group.createNode(address);
+                                if (member != null) {
+                                    members.add(member);
+                                }
                             }
                             try {
                                 listener.providersChanged(members);
