@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.extension.clustering.server.group;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.server.infinispan.group.LocalGroup;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
 
 /**
- * Builds a non-clustered {@link Group} service.
+ * Builds a non-clustered {@link Group}.
  * @author Paul Ferraro
  */
-public class LocalGroupServiceConfigurator extends AbstractLocalGroupServiceConfigurator {
+public class LocalGroupServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<ServerEnvironment, Group> {
+
+    private volatile Supplier<ServerEnvironment> environment;
 
     public LocalGroupServiceConfigurator(ServiceName name) {
         super(name);
+    }
+
+    @Override
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        this.environment = builder.requires(ServerEnvironmentService.SERVICE_NAME);
+        Consumer<Group> group = builder.provides(this.getServiceName());
+        Service service = new FunctionalService<>(group, this, this.environment);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
