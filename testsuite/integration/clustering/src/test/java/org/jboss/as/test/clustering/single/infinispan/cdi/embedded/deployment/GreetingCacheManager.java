@@ -29,7 +29,6 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import org.infinispan.Cache;
-import org.infinispan.eviction.EvictionType;
 
 /**
  * The greeting cache manager. This manager is used to collect information on the greeting cache and to clear its content if needed.
@@ -53,10 +52,6 @@ public class GreetingCacheManager {
 
     public int getNumberOfEntries() {
         return cache.size();
-    }
-
-    public EvictionType getEvictionType() {
-        return cache.getCacheConfiguration().memory().evictionType();
     }
 
     public long getMemorySize() {

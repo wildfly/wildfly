@@ -28,8 +28,6 @@ import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.IN
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_PORT;
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-
 import jakarta.annotation.Resource;
 
 import org.infinispan.client.hotrod.RemoteCache;
@@ -58,7 +56,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({ ContainerManagedHotRodClientTestCase.ServerSetupTask.class })
 public class ContainerManagedHotRodClientTestCase {
-
 
     @Deployment
     public static Archive<?> deployment() {
@@ -98,21 +95,13 @@ public class ContainerManagedHotRodClientTestCase {
     @Resource(lookup = "java:jboss/infinispan/remote-container/query")
     private RemoteCacheContainer remoteCacheContainer;
 
-    private RemoteCache<String, Object> remoteCache;
-
-    private RemoteCache<String, Object> createRemoteCache() {
-        RemoteCache<String, Object> remoteCache = remoteCacheContainer.getCache();
-        remoteCache.clear();
-        return remoteCache;
-    }
-
     @Test
-    public void testPutGetCustomObject() throws IOException {
-        remoteCache = createRemoteCache();
+    public void testPutGetCustomObject() {
+        RemoteCache<String, Person> cache = this.remoteCacheContainer.getCache();
+        cache.clear();
 
         Person p = new Person("Martin");
-        remoteCache.put("k1", p);
-        assertEquals(p.getName(), ((Person) remoteCache.get("k1")).getName());
+        cache.put("k1", p);
+        assertEquals(p.getName(), cache.get("k1").getName());
     }
-
 }
