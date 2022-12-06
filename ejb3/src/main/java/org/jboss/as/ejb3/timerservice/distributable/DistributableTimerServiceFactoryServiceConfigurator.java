@@ -61,6 +61,7 @@ import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
 
 /**
+ * Configures a service that provides a distributed {@link TimerServiceFactory}.
  * @author Paul Ferraro
  */
 public class DistributableTimerServiceFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, TimerManagerFactoryConfiguration<UUID>, ManagedTimerServiceFactory, TimerRegistry<UUID> {

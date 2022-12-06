@@ -25,7 +25,9 @@ package org.wildfly.clustering.ejb.timer;
 import java.util.function.Supplier;
 
 /**
+ * Encapsulates the configuration of a {@link TimerManagerFactory}.
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
  */
 public interface TimerManagerFactoryConfiguration<I> {
 

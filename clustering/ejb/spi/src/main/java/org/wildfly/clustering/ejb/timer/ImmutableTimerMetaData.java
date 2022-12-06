@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.util.function.Predicate;
 
 /**
+ * Describes the immutable metadata of a timer.
  * @author Paul Ferraro
  */
 public interface ImmutableTimerMetaData {
