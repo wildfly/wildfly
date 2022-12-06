@@ -48,7 +48,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import javax.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyConfiguration;
 
 import org.apache.jasper.Constants;
 import org.apache.jasper.deploy.FunctionInfo;

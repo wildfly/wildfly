@@ -109,6 +109,7 @@
         <module>testsuite/shared</module>
         <module>testsuite</module>
         <module>transactions</module>
+        <module>undertow</module>
     </modules>
 
     <scm>
@@ -398,8 +399,6 @@
         <version.io.smallrye.smallrye-mutiny-vertx>2.26.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-opentracing>3.0.0</version.io.smallrye.smallrye-opentracing>
         <version.io.smallrye.smallrye-reactive-messaging>4.1.0</version.io.smallrye.smallrye-reactive-messaging>
-        <legacy.version.io.undertow>2.2.20.Final</legacy.version.io.undertow>
-        <legacy.version.io.undertow.jastow>2.0.12.Final</legacy.version.io.undertow.jastow>
         <version.io.undertow.jastow>2.2.4.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.3.4</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
@@ -2095,8 +2094,6 @@
                 <module>jsf</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>rts</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>undertow</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>web-common</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->

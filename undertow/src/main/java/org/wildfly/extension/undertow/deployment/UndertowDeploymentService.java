@@ -32,7 +32,7 @@ import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import org.jboss.as.web.common.StartupContext;
 import org.jboss.as.web.common.WebInjectionContainer;

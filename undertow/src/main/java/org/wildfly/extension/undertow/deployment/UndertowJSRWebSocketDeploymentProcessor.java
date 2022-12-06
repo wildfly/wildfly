@@ -42,11 +42,11 @@ import org.jboss.modules.Module;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
-import javax.websocket.ClientEndpoint;
-import javax.websocket.Endpoint;
-import javax.websocket.server.ServerApplicationConfig;
-import javax.websocket.server.ServerEndpoint;
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.websocket.ClientEndpoint;
+import jakarta.websocket.Endpoint;
+import jakarta.websocket.server.ServerApplicationConfig;
+import jakarta.websocket.server.ServerEndpoint;
+import jakarta.websocket.server.ServerEndpointConfig;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.List;
