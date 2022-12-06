@@ -24,7 +24,6 @@ package org.wildfly.extension.clustering.server.group;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.server.ServerEnvironment;
@@ -37,7 +36,9 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.server.infinispan.group.LocalGroup;
 import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * Builds a non-clustered {@link Group}.
@@ -45,23 +46,23 @@ import org.wildfly.clustering.service.SimpleServiceNameProvider;
  */
 public class LocalGroupServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<ServerEnvironment, Group> {
 
-    private volatile Supplier<ServerEnvironment> environment;
+    private final SupplierDependency<ServerEnvironment> environment;
 
     public LocalGroupServiceConfigurator(ServiceName name) {
         super(name);
+        this.environment = new ServiceSupplierDependency<>(ServerEnvironmentService.SERVICE_NAME);
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        this.environment = builder.requires(ServerEnvironmentService.SERVICE_NAME);
-        Consumer<Group> group = builder.provides(this.getServiceName());
+        Consumer<Group> group = this.environment.register(builder).provides(this.getServiceName());
         Service service = new FunctionalService<>(group, this, this.environment);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
     public Group apply(ServerEnvironment environment) {
-        return new LocalGroup(environment.getNodeName());
+        return new LocalGroup(environment.getNodeName(), org.wildfly.clustering.server.service.LocalGroupServiceConfiguratorProvider.LOCAL);
     }
 }

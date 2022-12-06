@@ -62,7 +62,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 @org.infinispan.notifications.Listener(observation = Observation.POST)
-public class CacheGroup implements Group<Address>, AutoCloseable, Function<GroupListener, ExecutorService> {
+public class CacheGroup implements AutoCloseableGroup<Address>, AutoCloseable, Function<GroupListener, ExecutorService> {
 
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<?, ?> cache;
@@ -114,9 +114,6 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
 
     @Override
     public Membership getMembership() {
-        if (this.isSingleton()) {
-            return new SingletonMembership(this.getLocalMember());
-        }
         EmbeddedCacheManager manager = this.cache.getCacheManager();
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         return (dist != null) ? new CacheMembership(manager.getAddress(), dist.getCacheTopology(), this) : new CacheMembership(manager, this);
@@ -124,7 +121,7 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
 
     @Override
     public boolean isSingleton() {
-        return this.cache.getAdvancedCache().getRpcManager() == null;
+        return false;
     }
 
     @Override

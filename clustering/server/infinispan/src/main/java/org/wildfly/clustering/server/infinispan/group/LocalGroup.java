@@ -26,20 +26,20 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.server.group.Group;
 
 /**
  * Non-clustered group implementation.
  * Registered {@link GroupListener} are never invoked, as membership of a local group is fixed.
  * @author Paul Ferraro
  */
-public class LocalGroup implements Group<Void>, Registration {
-    private static final String NAME = "local";
+public class LocalGroup implements AutoCloseableGroup<Void>, Registration {
 
     private final Membership membership;
+    private final String name;
 
-    public LocalGroup(String nodeName) {
+    public LocalGroup(String nodeName, String groupName) {
         this.membership = new SingletonMembership(new LocalNode(nodeName));
+        this.name = groupName;
     }
 
     @Override
@@ -55,7 +55,7 @@ public class LocalGroup implements Group<Void>, Registration {
 
     @Override
     public String getName() {
-        return NAME;
+        return this.name;
     }
 
     @Override
