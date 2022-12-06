@@ -43,7 +43,6 @@
 
     <modules>
         <module>jwt-smallrye</module>
-        <module>reactive-streams-operators-smallrye/cdi-provider</module>
     </modules>
 
     <dependencyManagement>

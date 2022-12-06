@@ -37,9 +37,10 @@
 
 
 
-    <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-legacy-namespace</artifactId>
+    <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
     <name>WildFly: MicroProfile Reactive Streams Operators CDI Provider</name>
 
+<!--
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -51,6 +52,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+-->
 
     <dependencies>
         <dependency>
