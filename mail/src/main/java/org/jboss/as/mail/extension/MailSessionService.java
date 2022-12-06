@@ -22,13 +22,10 @@
 
 package org.jboss.as.mail.extension;
 
-
-import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -44,29 +41,26 @@ import jakarta.mail.Session;
  */
 public class MailSessionService implements Service<Session> {
     private final MailSessionConfig config;
+    private final Map<String, Supplier<OutboundSocketBinding>> socketBindings;
     private volatile SessionProvider provider;
-    private Map<String, OutboundSocketBinding> socketBindings = new HashMap<String, OutboundSocketBinding>();
 
-    public MailSessionService(MailSessionConfig config) {
+    public MailSessionService(final MailSessionConfig config, final Map<String, Supplier<OutboundSocketBinding>> socketBindings) {
         MailLogger.ROOT_LOGGER.tracef("service constructed with config: %s", config);
         this.config = config;
+        this.socketBindings = socketBindings;
     }
 
-    public MailSessionConfig getConfig() {
+    MailSessionConfig getConfig() {
         return config;
     }
 
-    public void start(StartContext startContext) throws StartException {
+    public void start(final StartContext startContext) throws StartException {
         MailLogger.ROOT_LOGGER.trace("start...");
         provider = SessionProviderFactory.create(config, socketBindings);
     }
 
-    public void stop(StopContext stopContext) {
+    public void stop(final StopContext stopContext) {
         MailLogger.ROOT_LOGGER.trace("stop...");
-    }
-
-    Injector<OutboundSocketBinding> getSocketBindingInjector(String name) {
-        return new MapInjector<>(socketBindings, name);
     }
 
     public Session getValue() throws IllegalStateException, IllegalArgumentException {
