@@ -43,7 +43,6 @@ import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -69,6 +68,7 @@ import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.extension.undertow.UndertowModel;
 import org.wildfly.extension.undertow.deployment.GlobalRequestControllerHandler;
 import org.xnio.OptionMap;
 import org.xnio.Options;
@@ -130,7 +130,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
-            .setDeprecated(ModelVersion.create(12))
+            .setDeprecated(UndertowModel.VERSION_12_0_0.getVersion())
             .build();
 
     public static final SimpleAttributeDefinition ENABLE_HTTP2 = new SimpleAttributeDefinitionBuilder(Constants.ENABLE_HTTP2, ModelType.BOOLEAN)

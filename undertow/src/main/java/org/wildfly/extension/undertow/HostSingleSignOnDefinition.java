@@ -24,7 +24,6 @@ package org.wildfly.extension.undertow;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 /**
@@ -43,7 +42,7 @@ public class HostSingleSignOnDefinition extends SingleSignOnDefinition {
 
     public HostSingleSignOnDefinition() {
         super();
-        setDeprecated(ModelVersion.create(12));
+        setDeprecated(UndertowModel.VERSION_12_0_0.getVersion());
     }
 
     @Override
