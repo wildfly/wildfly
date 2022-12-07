@@ -21,9 +21,9 @@
  */
 package org.jboss.as.jsf.injection.weld.legacy;
 
-import javax.el.ELContextListener;
-import javax.el.ELException;
-import javax.el.ELResolver;
+import jakarta.el.ELContextListener;
+import jakarta.el.ELException;
+import jakarta.el.ELResolver;
 import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
 import javax.faces.FacesException;

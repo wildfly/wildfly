@@ -66,7 +66,7 @@ import org.jboss.vfs.VirtualFile;
  */
 public class JSFComponentProcessor implements DeploymentUnitProcessor {
 
-    public static final DotName MANAGED_BEAN_ANNOTATION = DotName.createSimple("javax.faces.bean.ManagedBean");
+    public static final DotName MANAGED_BEAN_ANNOTATION = DotName.createSimple("jakarta.faces.bean.ManagedBean");
 
     private static final String WEB_INF_FACES_CONFIG = "WEB-INF/faces-config.xml";
 

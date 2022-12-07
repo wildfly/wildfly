@@ -83,6 +83,7 @@
         <module>jaxrs</module>
         <module>jdr</module>
         <module>jpa</module>
+        <module>jsf</module>
         <module>mail</module>
         <module>legacy/jacorb</module>
         <module>legacy/jsr77</module>
@@ -2090,8 +2091,6 @@
                 <module>bean-validation</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>ee</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>jsf</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>rts</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->

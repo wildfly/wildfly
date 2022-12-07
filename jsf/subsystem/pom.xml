@@ -28,7 +28,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-jsf-parent-legacy-namespace</artifactId>
+        <artifactId>wildfly-jsf-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -36,7 +36,7 @@
         <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-jsf-legacy-namespace</artifactId>
+    <artifactId>wildfly-jsf</artifactId>
 
     <name>WildFly: JSF Subsystem</name>
 
@@ -49,17 +49,17 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-legacy-namespace</artifactId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-bean-validation-legacy-namespace</artifactId>
+            <artifactId>wildfly-bean-validation</artifactId>
         </dependency>
 
         <dependency>
@@ -76,7 +76,22 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common-legacy-namespace</artifactId>
+            <artifactId>wildfly-web-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.faces</groupId>
+            <artifactId>jakarta.faces-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
 
         <dependency>
@@ -104,17 +119,12 @@
 
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
             <artifactId>jboss-servlet-api_4.0_spec</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.faces</groupId>
-            <artifactId>jboss-jsf-api_2.3_spec</artifactId>
         </dependency>
 
         <dependency>

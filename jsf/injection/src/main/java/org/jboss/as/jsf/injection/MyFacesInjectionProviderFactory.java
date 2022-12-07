@@ -24,7 +24,7 @@ package org.jboss.as.jsf.injection;
 import org.apache.myfaces.spi.InjectionProvider;
 import org.apache.myfaces.spi.InjectionProviderFactory;
 
-import javax.faces.context.ExternalContext;
+import jakarta.faces.context.ExternalContext;
 
 /**
  * {@link InjectionProviderFactory} implementation which provides MyFaces 2.2 support
