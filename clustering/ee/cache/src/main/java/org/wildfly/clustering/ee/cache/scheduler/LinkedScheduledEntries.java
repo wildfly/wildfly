@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 /**
  * {@link ScheduledEntries} implemented using a {@link ConcurrentDirectDeque}.
- * Both {@link #add(Object, Comparable)} and {@link #remove(Object)} run in O(1) time.
+ * Both {@link #add(Object, Object)} and {@link #remove(Object)} run in O(1) time.
  * @author Paul Ferraro
  */
 public class LinkedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
