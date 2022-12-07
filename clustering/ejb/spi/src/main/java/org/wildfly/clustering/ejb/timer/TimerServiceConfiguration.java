@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,15 +22,17 @@
 
 package org.wildfly.clustering.ejb.timer;
 
-import java.util.function.Supplier;
+import org.wildfly.clustering.ejb.DeploymentConfiguration;
 
 /**
+ * Encapsulates the configuration of a timer service.
  * @author Paul Ferraro
  */
-public interface TimerManagerFactoryConfiguration<I> {
+public interface TimerServiceConfiguration extends DeploymentConfiguration {
 
-    TimerServiceConfiguration getTimerServiceConfiguration();
-    Supplier<I> getIdentifierFactory();
-    TimerRegistry<I> getRegistry();
-    boolean isPersistent();
+    /**
+     * The name of the component containing the timer service.
+     * @return a component name
+     */
+    String getName();
 }

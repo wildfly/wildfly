@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.timer;
+package org.wildfly.clustering.ejb;
 
-import java.util.function.Supplier;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Paul Ferraro
  */
-public interface TimerManagerFactoryConfiguration<I> {
+public interface DeploymentConfiguration extends org.wildfly.clustering.ee.DeploymentConfiguration {
 
-    TimerServiceConfiguration getTimerServiceConfiguration();
-    Supplier<I> getIdentifierFactory();
-    TimerRegistry<I> getRegistry();
-    boolean isPersistent();
+    /**
+     * Returns the service name of the deployment containing the EJB.
+     * @return the service name for the deployment
+     */
+    ServiceName getDeploymentServiceName();
+
+    /**
+     * Returns the module of the deployment.
+     * @return a module
+     */
+    Module getModule();
 }
