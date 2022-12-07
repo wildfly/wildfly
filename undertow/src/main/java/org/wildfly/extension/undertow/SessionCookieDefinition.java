@@ -62,6 +62,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.COMMENT, ModelType.STRING, true)
                     .setRestartAllServices()
                     .setAllowExpression(true)
+                    .setDeprecated(UndertowModel.VERSION_13_0_0.getVersion())
                     .build();
     protected static final SimpleAttributeDefinition HTTP_ONLY =
             new SimpleAttributeDefinitionBuilder(Constants.HTTP_ONLY, ModelType.BOOLEAN, true)
