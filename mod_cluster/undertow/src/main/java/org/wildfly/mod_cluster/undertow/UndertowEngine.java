@@ -22,14 +22,14 @@
 
 package org.wildfly.mod_cluster.undertow;
 
-
 import java.util.Iterator;
 
+import io.undertow.server.session.SessionCookieConfig;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.Server;
-import org.wildfly.extension.undertow.SessionCookieConfig;
+import org.wildfly.extension.undertow.CookieConfig;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 
@@ -152,13 +152,13 @@ public class UndertowEngine implements Engine {
     /**
      * {@inheritDoc}
      *
-     * @return overridden session cookie name if defined, otherwise {@link io.undertow.server.session.SessionCookieConfig#DEFAULT_SESSION_ID}
+     * @return overridden session cookie name if defined, otherwise {@link SessionCookieConfig#DEFAULT_SESSION_ID}
      */
     @Override
     public String getSessionCookieName() {
-        SessionCookieConfig override = server.getServletContainer().getSessionCookieConfig();
+        CookieConfig override = this.server.getServletContainer().getSessionCookieConfig();
         if (override == null || override.getName() == null) {
-            return io.undertow.server.session.SessionCookieConfig.DEFAULT_SESSION_ID;
+            return SessionCookieConfig.DEFAULT_SESSION_ID;
         }
         return override.getName();
     }

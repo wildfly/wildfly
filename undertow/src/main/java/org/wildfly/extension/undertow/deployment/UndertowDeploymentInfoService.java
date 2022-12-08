@@ -117,7 +117,7 @@ import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.JSPConfig;
 import org.wildfly.extension.undertow.ServletContainerService;
-import org.wildfly.extension.undertow.SessionCookieConfig;
+import org.wildfly.extension.undertow.CookieConfig;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.Registration;
@@ -306,7 +306,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
             ServletSessionConfig config = null;
             //default session config
-            SessionCookieConfig defaultSessionConfig = container.get().getSessionCookieConfig();
+            CookieConfig defaultSessionConfig = container.get().getSessionCookieConfig();
             if (defaultSessionConfig != null) {
                 config = new ServletSessionConfig();
                 if (defaultSessionConfig.getName() != null) {

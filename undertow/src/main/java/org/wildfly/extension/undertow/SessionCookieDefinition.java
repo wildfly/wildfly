@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
@@ -38,13 +41,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.Collection;
-import java.util.List;
-
 /**
- * Global session cookie config
+ * Resource definition for a Cookie configuration.
  *
  * @author Stuart Douglas
+ * @author Radoslav Husar
  */
 class SessionCookieDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
@@ -103,7 +104,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
         return ATTRIBUTES;
     }
 
-    static SessionCookieConfig getConfig(final ExpressionResolver context, final ModelNode model) throws OperationFailedException {
+    static CookieConfig getConfig(final ExpressionResolver context, final ModelNode model) throws OperationFailedException {
         if(!model.isDefined()) {
             return null;
         }
@@ -112,12 +113,14 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
         ModelNode secureValue = SECURE.resolveModelAttribute(context, model);
         ModelNode httpOnlyValue = HTTP_ONLY.resolveModelAttribute(context, model);
         ModelNode maxAgeValue = MAX_AGE.resolveModelAttribute(context, model);
+
         final String name = nameValue.isDefined() ? nameValue.asString() : null;
         final String domain = domainValue.isDefined() ? domainValue.asString() : null;
         final Boolean secure = secureValue.isDefined() ? secureValue.asBoolean() : null;
         final Boolean httpOnly = httpOnlyValue.isDefined() ? httpOnlyValue.asBoolean() : null;
         final Integer maxAge = maxAgeValue.isDefined() ? maxAgeValue.asInt() : null;
-        return new SessionCookieConfig(name, domain, httpOnly, secure, maxAge);
+
+        return new CookieConfig(name, domain, httpOnly, secure, maxAge);
     }
 
 
@@ -140,7 +143,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return UndertowService.SERVLET_CONTAINER.append(parentAddress.getLastElement().getValue());
+            return ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName(parentAddress);
         }
     }
 
@@ -157,7 +160,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return UndertowService.SERVLET_CONTAINER.append(parentAddress.getLastElement().getValue());
+            return ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName(parentAddress);
         }
     }
 }

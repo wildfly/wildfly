@@ -28,7 +28,6 @@ import io.undertow.servlet.api.CrawlerSessionManagerConfig;
 import io.undertow.servlet.api.ServletContainer;
 import io.undertow.servlet.api.ServletStackTraces;
 import io.undertow.servlet.api.SessionPersistenceManager;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
@@ -66,7 +65,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
     }
 
     static void installRuntimeServices(CapabilityServiceTarget target, ExpressionResolver resolver, PathAddress address, ModelNode model) throws OperationFailedException {
-        final SessionCookieConfig config = SessionCookieDefinition.getConfig(resolver, model.get(SessionCookieDefinition.PATH_ELEMENT.getKeyValuePair()));
+        final CookieConfig config = SessionCookieDefinition.getConfig(resolver, model.get(SessionCookieDefinition.PATH_ELEMENT.getKeyValuePair()));
         final CrawlerSessionManagerConfig crawlerSessionManagerConfig = CrawlerSessionManagementDefinition.getConfig(resolver, model.get(CrawlerSessionManagementDefinition.PATH_ELEMENT.getKeyValuePair()));
         final boolean persistentSessions = PersistentSessionsDefinition.isEnabled(model.get(PersistentSessionsDefinition.PATH_ELEMENT.getKeyValuePair()));
         final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(resolver, model).asBoolean();
@@ -134,7 +133,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
             }
 
             @Override
-            public SessionCookieConfig getSessionCookieConfig() {
+            public CookieConfig getSessionCookieConfig() {
                 return config;
             }
 
