@@ -401,9 +401,9 @@
                                 <!-- Don't transform artifacts only transformed due to data in a
                                      module-info.class or OSGi attributes in a MANIFEST.MF.
                                      These things are irrelevant to WildFly's use of artifacts.-->
-                                <exclude>com.fasterxml.jackson.jakarta.rs:jackson-jakarta-rs-base\z</exclude>
-                                <exclude>com.fasterxml.jackson.jakarta.rs:jackson-jakarta-rs-json-provider\z</exclude>
-                                <exclude>com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations\z</exclude>
+                                <exclude>com.fasterxml.jackson.jaxrs:jackson-jaxrs-base\z</exclude>
+                                <exclude>com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider\z</exclude>
+                                <exclude>com.fasterxml.jackson.module:jackson-module-jaxb-annotations\z</exclude>
                                 <!-- end JPMS or OSGi metadata excludes -->
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
