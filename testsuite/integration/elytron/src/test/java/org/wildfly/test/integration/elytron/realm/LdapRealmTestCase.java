@@ -67,9 +67,11 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServl
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.fail;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -86,6 +88,11 @@ import org.junit.runner.RunWith;
 @RunAsClient
 @ServerSetup({LdapRealmTestCase.LDAPServerSetupTask.class, LdapRealmTestCase.SetupTask.class})
 public class LdapRealmTestCase {
+    @BeforeClass
+    public static void beforeClass() {
+        // https://issues.redhat.com/browse/WFLY-17383
+        AssumeTestGroupUtil.assumeJDKVersionBefore(20);
+    }
 
     private static final String DEPLOYMENT = "ldapRealmDep";
     private static final String DEPLOYMENT_WITH_CHARSET = "ldapRealmDepCharset";
