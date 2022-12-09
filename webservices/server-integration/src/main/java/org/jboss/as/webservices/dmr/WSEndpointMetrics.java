@@ -134,20 +134,22 @@ final class WSEndpointMetrics implements OperationStepHandler {
         }
         final ModelNode result = new ModelNode();
         final EndpointMetrics endpointMetrics = endpoint.getEndpointMetrics();
-        if (MIN_PROCESSING_TIME.getName().equals(metricName)) {
-            result.set(endpointMetrics.getMinProcessingTime());
-        } else if (MAX_PROCESSING_TIME.getName().equals(metricName)) {
-            result.set(endpointMetrics.getMaxProcessingTime());
-        } else if (AVERAGE_PROCESSING_TIME.getName().equals(metricName)) {
-            result.set(endpointMetrics.getAverageProcessingTime());
-        } else if (TOTAL_PROCESSING_TIME.getName().equals(metricName)) {
-            result.set(endpointMetrics.getTotalProcessingTime());
-        } else if (REQUEST_COUNT.getName().equals(metricName)) {
-            result.set(endpointMetrics.getRequestCount());
-        } else if (RESPONSE_COUNT.getName().equals(metricName)) {
-            result.set(endpointMetrics.getResponseCount());
-        } else if (FAULT_COUNT.getName().equals(metricName)) {
-            result.set(endpointMetrics.getFaultCount());
+        if (endpointMetrics != null) {
+            if (MIN_PROCESSING_TIME.getName().equals(metricName)) {
+                result.set(endpointMetrics.getMinProcessingTime());
+            } else if (MAX_PROCESSING_TIME.getName().equals(metricName)) {
+                result.set(endpointMetrics.getMaxProcessingTime());
+            } else if (AVERAGE_PROCESSING_TIME.getName().equals(metricName)) {
+                result.set(endpointMetrics.getAverageProcessingTime());
+            } else if (TOTAL_PROCESSING_TIME.getName().equals(metricName)) {
+                result.set(endpointMetrics.getTotalProcessingTime());
+            } else if (REQUEST_COUNT.getName().equals(metricName)) {
+                result.set(endpointMetrics.getRequestCount());
+            } else if (RESPONSE_COUNT.getName().equals(metricName)) {
+                result.set(endpointMetrics.getResponseCount());
+            } else if (FAULT_COUNT.getName().equals(metricName)) {
+                result.set(endpointMetrics.getFaultCount());
+            }
         }
         return result;
     }
