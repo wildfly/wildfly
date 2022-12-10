@@ -388,7 +388,7 @@
         <legacy.version.io.smallrye.smallrye-common>1.13.0</legacy.version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-common>2.0.0</version.io.smallrye.smallrye-common>
         <legacy.version.io.smallrye.smallrye-config>2.10.1</legacy.version.io.smallrye.smallrye-config>
-        <version.io.smallrye.smallrye-config>3.0.0</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-config>3.1.0</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>6.1.0</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.0.0</version.io.smallrye.smallrye-health>
         <legacy.version.io.smallrye.smallrye-jwt>3.1.1</legacy.version.io.smallrye.smallrye-jwt>
