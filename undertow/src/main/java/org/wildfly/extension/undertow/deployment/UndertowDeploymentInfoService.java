@@ -130,11 +130,11 @@ import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
 import org.xnio.IoUtils;
 
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.Filter;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -770,10 +770,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                             if (mapping.getDispatchers() != null && !mapping.getDispatchers().isEmpty()) {
                                 for (DispatcherType dispatcher : mapping.getDispatchers()) {
 
-                                    d.addFilterUrlMapping(mapping.getFilterName(), url, javax.servlet.DispatcherType.valueOf(dispatcher.name()));
+                                    d.addFilterUrlMapping(mapping.getFilterName(), url, jakarta.servlet.DispatcherType.valueOf(dispatcher.name()));
                                 }
                             } else {
-                                d.addFilterUrlMapping(mapping.getFilterName(), url, javax.servlet.DispatcherType.REQUEST);
+                                d.addFilterUrlMapping(mapping.getFilterName(), url, jakarta.servlet.DispatcherType.REQUEST);
                             }
                         }
                     }
@@ -781,10 +781,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         for (String servletName : mapping.getServletNames()) {
                             if (mapping.getDispatchers() != null && !mapping.getDispatchers().isEmpty()) {
                                 for (DispatcherType dispatcher : mapping.getDispatchers()) {
-                                    d.addFilterServletNameMapping(mapping.getFilterName(), servletName, javax.servlet.DispatcherType.valueOf(dispatcher.name()));
+                                    d.addFilterServletNameMapping(mapping.getFilterName(), servletName, jakarta.servlet.DispatcherType.valueOf(dispatcher.name()));
                                 }
                             } else {
-                                d.addFilterServletNameMapping(mapping.getFilterName(), servletName, javax.servlet.DispatcherType.REQUEST);
+                                d.addFilterServletNameMapping(mapping.getFilterName(), servletName, jakarta.servlet.DispatcherType.REQUEST);
                             }
                         }
                     }
@@ -1026,7 +1026,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     /**
      * Convert the authentication method name from the format specified in the web.xml to the format used by
-     * {@link javax.servlet.http.HttpServletRequest}.
+     * {@link jakarta.servlet.http.HttpServletRequest}.
      * <p/>
      * If the auth method is not recognised then it is returned as-is.
      *

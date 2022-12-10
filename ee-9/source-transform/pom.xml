@@ -54,7 +54,6 @@
         <module>web-common</module>
         <module>weld/common</module>
         <module>weld/spi</module>
-        <module>undertow</module>
     </modules>
 
     <dependencyManagement>

@@ -24,7 +24,7 @@ package org.wildfly.extension.undertow.deployment;
 
 import org.apache.jasper.deploy.JspPropertyGroup;
 
-import javax.servlet.descriptor.JspPropertyGroupDescriptor;
+import jakarta.servlet.descriptor.JspPropertyGroupDescriptor;
 import java.util.Collection;
 
 /**
@@ -96,5 +96,10 @@ public class JspPropertyGroupDescriptorImpl implements JspPropertyGroupDescripto
     @Override
     public String getErrorOnUndeclaredNamespace() {
         return propertyGroup.getErrorOnUndeclaredNamespace();
+    }
+
+    @Override
+    public String getErrorOnELNotFound() {
+        return propertyGroup.getErrorOnELNotFound();
     }
 }

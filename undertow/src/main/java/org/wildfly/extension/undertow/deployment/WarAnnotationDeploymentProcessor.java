@@ -28,13 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.annotation.WebListener;
-import javax.servlet.annotation.WebServlet;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.annotation.ServletSecurity;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.annotation.WebListener;
+import jakarta.servlet.annotation.WebServlet;
 
 import org.jboss.annotation.javaee.Descriptions;
 import org.jboss.annotation.javaee.DisplayNames;

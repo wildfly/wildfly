@@ -35,7 +35,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-undertow-legacy-namespace</artifactId>
+    <artifactId>wildfly-undertow</artifactId>
 
     <name>WildFly: Undertow</name>
 
@@ -45,7 +45,7 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -88,7 +88,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-legacy-namespace</artifactId>
+            <artifactId>wildfly-ee</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-naming</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -108,7 +112,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common-legacy-namespace</artifactId>
+            <artifactId>wildfly-web-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security.elytron-web</groupId>
@@ -143,6 +147,30 @@
         <dependency>
             <groupId>io.undertow.jastow</groupId>
             <artifactId>jastow</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.authorization</groupId>
+            <artifactId>jakarta.authorization-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-ear</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.jakarta.el</groupId>
+            <artifactId>jboss-el-api_5.0_spec</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>

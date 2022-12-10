@@ -24,10 +24,10 @@ package org.wildfly.extension.undertow;
 
 import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
 
-import javax.el.ELClass;
-import javax.el.ELContext;
-import javax.el.ELResolver;
-import javax.el.ImportHandler;
+import jakarta.el.ELClass;
+import jakarta.el.ELContext;
+import jakarta.el.ELResolver;
+import jakarta.el.ImportHandler;
 import java.beans.FeatureDescriptor;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
