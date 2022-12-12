@@ -331,7 +331,7 @@ link:#gal.bean-validation[bean-validation] (optional) +
 link:#gal.datasources[datasources] +
 
 |[[gal.jsf]]jsf
-|Support for Jakarta Server Faces.
+|Support for Jakarta Faces.
 |
 link:#gal.bean-validation[bean-validation] (optional) +
 link:#gal.cdi[cdi] +

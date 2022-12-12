@@ -86,7 +86,7 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 
 |Jakarta Security 3.0 |X |X |X |X
 
-|Jakarta Server Faces 4.0 |X |X |X |X
+|Jakarta Faces 4.0 |X |X |X |X
 
 |Jakarta Server Pages 3.1 |X |X |X |X
 
