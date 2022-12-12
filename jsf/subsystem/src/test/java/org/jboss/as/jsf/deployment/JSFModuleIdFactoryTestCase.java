@@ -21,6 +21,7 @@ package org.jboss.as.jsf.deployment;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -83,6 +84,7 @@ public class JSFModuleIdFactoryTestCase {
    }
 
     @Test
+    @Ignore("Depends on https://issues.redhat.com/browse/WFLY-17405")
     public void modIdsTest() {
         Assert.assertEquals(API_MODULE, factory.getApiModId("main").getName());
         Assert.assertEquals("main", factory.getApiModId("main").getSlot());

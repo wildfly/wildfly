@@ -23,7 +23,7 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import jakarta.faces.bean.ManagedBean;
+
 import jakarta.faces.component.FacesComponent;
 import jakarta.faces.component.behavior.FacesBehavior;
 import jakarta.faces.context.ExternalContext;
@@ -65,7 +65,6 @@ public class AnnotationMap {
             stringToAnnoMap.put(FacesConverter.class.getName(), FacesConverter.class);
             stringToAnnoMap.put(FacesValidator.class.getName(), FacesValidator.class);
             stringToAnnoMap.put(FacesRenderer.class.getName(), FacesRenderer.class);
-            stringToAnnoMap.put(ManagedBean.class.getName(), ManagedBean.class);
             stringToAnnoMap.put(NamedEvent.class.getName(), NamedEvent.class);
             stringToAnnoMap.put(FacesBehavior.class.getName(), FacesBehavior.class);
             stringToAnnoMap.put(FacesBehaviorRenderer.class.getName(), FacesBehaviorRenderer.class);

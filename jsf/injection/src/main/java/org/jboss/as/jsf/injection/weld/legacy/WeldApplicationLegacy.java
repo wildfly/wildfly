@@ -21,16 +21,16 @@
  */
 package org.jboss.as.jsf.injection.weld.legacy;
 
-import org.jboss.as.jsf.injection.weld.DummyELResolver;
-import org.jboss.as.jsf.injection.weld.ForwardingELResolver;
-import org.jboss.weld.module.web.el.WeldELContextListener;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import jakarta.el.ELResolver;
 import jakarta.el.ExpressionFactory;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.faces.application.Application;
-import jakarta.naming.InitialContext;
-import javax.naming.NamingException;
+import org.jboss.as.jsf.injection.weld.DummyELResolver;
+import org.jboss.as.jsf.injection.weld.ForwardingELResolver;
+import org.jboss.weld.module.web.el.WeldELContextListener;
 
 /**
  * @author pmuir
