@@ -43,8 +43,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -74,14 +73,6 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
             PATH,
             RELATIVE_TO
     };
-    static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
-
-    static {
-        for (SimpleAttributeDefinition attr : ATTRIBUTES) {
-            ATTRIBUTES_MAP.put(attr.getName(), attr);
-        }
-    }
-
 
     private PersistentSessionsDefinition() {
         super(UndertowExtension.PATH_PERSISTENT_SESSIONS,
@@ -92,7 +83,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES_MAP.values();
+        return List.of(ATTRIBUTES);
     }
 
     public static boolean isEnabled(final OperationContext context, final ModelNode model) throws OperationFailedException {

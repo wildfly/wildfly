@@ -36,8 +36,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Global session cookie config
@@ -89,14 +88,6 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
             SECURE,
             MAX_AGE
     };
-    static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
-
-    static {
-        for (SimpleAttributeDefinition attr : ATTRIBUTES) {
-            ATTRIBUTES_MAP.put(attr.getName(), attr);
-        }
-    }
-
 
     private SessionCookieDefinition() {
         super(UndertowExtension.PATH_SESSION_COOKIE,
@@ -107,7 +98,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES_MAP.values();
+        return List.of(ATTRIBUTES);
     }
 
     public SessionCookieConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {

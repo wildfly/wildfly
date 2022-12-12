@@ -31,8 +31,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelType;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Global mime mapping config for file types
@@ -53,14 +52,6 @@ class MimeMappingDefinition extends PersistentResourceDefinition {
             VALUE
     };
 
-    static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
-
-    static {
-        for (SimpleAttributeDefinition attr : ATTRIBUTES) {
-            ATTRIBUTES_MAP.put(attr.getName(), attr);
-        }
-    }
-
     static final MimeMappingDefinition INSTANCE = new MimeMappingDefinition();
 
     private MimeMappingDefinition() {
@@ -70,6 +61,6 @@ class MimeMappingDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES_MAP.values();
+        return List.of(ATTRIBUTES);
     }
 }

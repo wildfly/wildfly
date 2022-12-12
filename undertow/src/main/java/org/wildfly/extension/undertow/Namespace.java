@@ -22,9 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
@@ -70,21 +67,4 @@ enum Namespace {
     public String getUriString() {
         return name;
     }
-
-    private static final Map<String, Namespace> MAP;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null) { map.put(name, namespace); }
-        }
-        MAP = map;
-    }
-
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
-    }
-
 }
