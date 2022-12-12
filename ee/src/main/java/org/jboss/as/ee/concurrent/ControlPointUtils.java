@@ -79,8 +79,8 @@ public class ControlPointUtils {
             throw ROOT_LOGGER.rejectedDueToMaxRequests();
         }
         try {
-            final ControlledCallable controlledCallable = new ControlledCallable(callable, controlPoint);
-            return callable instanceof ManagedTask ? new ControlledManagedCallable(controlledCallable, (ManagedTask) callable) : controlledCallable;
+            final ControlledCallable<T> controlledCallable = new ControlledCallable<>(callable, controlPoint);
+            return callable instanceof ManagedTask ? new ControlledManagedCallable<>(controlledCallable, (ManagedTask) callable) : controlledCallable;
         } catch (Exception e) {
             controlPoint.requestComplete();
             throw new RejectedExecutionException(e);
@@ -100,8 +100,8 @@ public class ControlPointUtils {
         if (controlPoint == null || callable == null) {
             return callable;
         } else {
-            final ControlledScheduledCallable controlledScheduledCallable = new ControlledScheduledCallable(callable, controlPoint);
-            return callable instanceof ManagedTask ? new ControlledManagedCallable(controlledScheduledCallable, (ManagedTask) callable) : controlledScheduledCallable;
+            final ControlledScheduledCallable<T> controlledScheduledCallable = new ControlledScheduledCallable<>(callable, controlPoint);
+            return callable instanceof ManagedTask ? new ControlledManagedCallable<>(controlledScheduledCallable, (ManagedTask) callable) : controlledScheduledCallable;
         }
     }
 
@@ -171,7 +171,7 @@ public class ControlPointUtils {
         public void run() {
             if (controlPoint == null) {
                 runnable.run();
-            } else
+            } else {
                 try {
                     if (controlPoint.beginRequest() == RunResult.RUN) {
                         try {
@@ -179,13 +179,17 @@ public class ControlPointUtils {
                         } finally {
                             controlPoint.requestComplete();
                         }
-                        return;
                     } else {
                         throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(runnable);
                     }
-                } catch (Exception e) {
-                    EeLogger.ROOT_LOGGER.failedToRunTask(e);
+                } catch (RuntimeException re) {
+                    EeLogger.ROOT_LOGGER.failedToRunTask(re);  // note that this is now a DEBUG message as we rethrow re
+                    throw re;
+                } catch (Exception e) { // TODO when WFCORE-6153 is done, drop this block. The actual try code only throws RuntimeExceptions
+                    EeLogger.ROOT_LOGGER.failedToRunTask(e);  // note that this is now a DEBUG message as we rethrow e
+                    throw new RuntimeException(e);
                 }
+            }
         }
     }
 
@@ -207,7 +211,7 @@ public class ControlPointUtils {
         public T call() throws Exception {
             if (controlPoint == null) {
                 return callable.call();
-            } else  {
+            } else {
                 try {
                     if (controlPoint.beginRequest() == RunResult.RUN) {
                         try {
@@ -215,11 +219,13 @@ public class ControlPointUtils {
                         } finally {
                             controlPoint.requestComplete();
                         }
+                    } else {
+                        throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(callable);
                     }
                 } catch (Exception e) {
-                    EeLogger.ROOT_LOGGER.failedToRunTask(e);
+                    EeLogger.ROOT_LOGGER.failedToRunTask(e); // note that this is now a DEBUG message as we rethrow e
+                    throw e;
                 }
-                throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(callable);
             }
         }
     }
