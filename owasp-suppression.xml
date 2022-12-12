@@ -1165,4 +1165,11 @@
         <cve>CVE-2022-42003</cve>
         <cve>CVE-2022-42004</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: snakeyaml-1.32.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-1471</vulnerabilityName>
+    </suppress>
 </suppressions>
