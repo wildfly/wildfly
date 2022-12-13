@@ -47,7 +47,10 @@ import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.sql.DataSource;
 
@@ -315,9 +318,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToCreate("XaDataSource", operation, e.getLocalizedMessage()));
             }
             final ServiceName xaDataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(dsName);
-            final XADataSourceConfigService xaDataSourceConfigService = new XADataSourceConfigService(dataSourceConfig);
-
-            final ServiceBuilder<?> builder = serviceTarget.addService(xaDataSourceConfigServiceName, xaDataSourceConfigService);
+            final ServiceBuilder<?> builder = serviceTarget.addService(xaDataSourceConfigServiceName);
             // add dependency on security domain service if applicable
             final DsSecurity dsSecurityConfig = dataSourceConfig.getSecurity();
             if (dsSecurityConfig != null) {
@@ -337,6 +338,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 }
             }
             int propertiesCount = 0;
+            final Map<String, Supplier<String>> xaDataSourceProperties = new HashMap<>();
             for (ServiceName name : serviceNames) {
                 if (xaDataSourceConfigServiceName.append("xa-datasource-properties").isParentOf(name)) {
                     final ServiceController<?> xaConfigPropertyController = registry.getService(name);
@@ -345,7 +347,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     if (!ServiceController.State.UP.equals(xaConfigPropertyController.getState())) {
                         propertiesCount++;
                         xaConfigPropertyController.setMode(ServiceController.Mode.ACTIVE);
-                        builder.addDependency(name, String.class, xaDataSourceConfigService.getXaDataSourcePropertyInjector(xaPropService.getName()));
+                        xaDataSourceProperties.put(xaPropService.getName(), builder.requires(name));
 
                     } else {
                         throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.serviceAlreadyStarted("Data-source.xa-config-property", name));
@@ -355,6 +357,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             if (propertiesCount == 0) {
                 throw ConnectorLogger.ROOT_LOGGER.xaDataSourcePropertiesNotPresent();
             }
+            final XADataSourceConfigService xaDataSourceConfigService = new XADataSourceConfigService(dataSourceConfig, xaDataSourceProperties);
+            builder.setInstance(xaDataSourceConfigService);
             builder.install();
 
         } else {
@@ -367,9 +371,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             }
             jta = dataSourceConfig.isJTA();
             final ServiceName dataSourceCongServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(dsName);
-            final DataSourceConfigService configService = new DataSourceConfigService(dataSourceConfig);
 
-            final ServiceBuilder<?> builder = serviceTarget.addService(dataSourceCongServiceName, configService);
+            final ServiceBuilder<?> builder = serviceTarget.addService(dataSourceCongServiceName);
             // add dependency on security domain service if applicable
             final DsSecurity dsSecurityConfig = dataSourceConfig.getSecurity();
             if (dsSecurityConfig != null) {
@@ -378,6 +381,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     builder.requires(SECURITY_DOMAIN_SERVICE.append(securityDomainName));
                 }
             }
+            final Map<String, Supplier<String>> connectionProperties = new HashMap<>();
             for (ServiceName name : serviceNames) {
                 if (dataSourceCongServiceName.append("connection-properties").isParentOf(name)) {
                     final ServiceController<?> connPropServiceController = registry.getService(name);
@@ -385,13 +389,15 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
                     if (!ServiceController.State.UP.equals(connPropServiceController.getState())) {
                         connPropServiceController.setMode(ServiceController.Mode.ACTIVE);
-                        builder.addDependency(name, String.class, configService.getConnectionPropertyInjector(connPropService.getName()));
+                        connectionProperties.put(connPropService.getName(), builder.requires(name));
 
                     } else {
                         throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.serviceAlreadyStarted("Data-source.connectionProperty", name));
                     }
                 }
             }
+            final DataSourceConfigService configService = new DataSourceConfigService(dataSourceConfig, connectionProperties);
+            builder.setInstance(configService);
             builder.install();
         }
 
