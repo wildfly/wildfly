@@ -1161,7 +1161,7 @@
         <notes><![CDATA[
    file name: wildfly-elytron-1.19.0.Final.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.11.4)
    ]]></notes>
-        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <filePath regex="true">.*wildfly-elytron-1\.19\..*\.jar.*jackson-databind.*</filePath >
         <cve>CVE-2022-42003</cve>
         <cve>CVE-2022-42004</cve>
     </suppress>
