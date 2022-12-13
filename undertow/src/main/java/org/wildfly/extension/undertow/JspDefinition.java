@@ -31,6 +31,7 @@ import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -199,10 +200,10 @@ class JspDefinition extends PersistentResourceDefinition {
     static final JspDefinition INSTANCE = new JspDefinition();
 
     private JspDefinition() {
-        super(UndertowExtension.PATH_JSP,
-                UndertowExtension.getResolver(UndertowExtension.PATH_JSP.getKeyValuePair()),
-                new JSPAdd(),
-                new JSPRemove());
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_JSP, UndertowExtension.getResolver(UndertowExtension.PATH_JSP.getKeyValuePair()))
+                .setAddHandler(new JSPAdd())
+                .setRemoveHandler(new JSPRemove())
+        );
     }
 
     @Override

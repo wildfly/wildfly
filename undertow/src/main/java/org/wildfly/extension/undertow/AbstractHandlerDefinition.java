@@ -59,11 +59,11 @@ public abstract class AbstractHandlerDefinition extends PersistentResourceDefini
     }
 
     protected AbstractHandlerDefinition(final String name, String prefix, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {
-        super(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name), addHandler, removeHandler);
+        this(new SimpleResourceDefinition.Parameters(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name)).setAddHandler(addHandler).setRemoveHandler(removeHandler));
     }
 
     protected AbstractHandlerDefinition(final String name, String prefix) {
-        super(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name));
+        this(new SimpleResourceDefinition.Parameters(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name)));
     }
 
     protected AbstractHandlerDefinition(final SimpleResourceDefinition.Parameters parameters) {

@@ -40,6 +40,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -94,7 +95,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
     static final HttpInvokerDefinition INSTANCE = new HttpInvokerDefinition();
 
     private HttpInvokerDefinition() {
-        super(new Parameters(UndertowExtension.PATH_HTTP_INVOKER, UndertowExtension.getResolver(Constants.HTTP_INVOKER))
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_HTTP_INVOKER, UndertowExtension.getResolver(Constants.HTTP_INVOKER))
                 .setAddHandler(new HttpInvokerAdd())
                 .setRemoveHandler(new HttpInvokerRemove())
                 .setCapabilities(HTTP_INVOKER_HOST_CAPABILITY)

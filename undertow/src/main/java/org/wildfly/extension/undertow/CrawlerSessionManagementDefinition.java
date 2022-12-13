@@ -32,6 +32,7 @@ import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -67,10 +68,10 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
     };
 
     private CrawlerSessionManagementDefinition() {
-        super(UndertowExtension.CRAWLER_SESSION_MANAGEMENT,
-                UndertowExtension.getResolver(UndertowExtension.CRAWLER_SESSION_MANAGEMENT.getKeyValuePair()),
-                new CrawlerSessionManagementAdd(),
-                new CrawlerSessionManagementRemove());
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.CRAWLER_SESSION_MANAGEMENT, UndertowExtension.getResolver(UndertowExtension.CRAWLER_SESSION_MANAGEMENT.getKeyValuePair()))
+                .setAddHandler(new CrawlerSessionManagementAdd())
+                .setRemoveHandler(new CrawlerSessionManagementRemove())
+        );
     }
 
     @Override

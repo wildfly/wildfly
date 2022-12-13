@@ -32,6 +32,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -65,10 +66,10 @@ public class BufferCacheDefinition extends PersistentResourceDefinition {
     private static final List<SimpleAttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(BUFFER_SIZE, BUFFERS_PER_REGION, MAX_REGIONS));
 
     private BufferCacheDefinition() {
-        super(UndertowExtension.PATH_BUFFER_CACHE,
-                UndertowExtension.getResolver(Constants.BUFFER_CACHE),
-                BufferCacheAdd.INSTANCE,
-                new ServiceRemoveStepHandler(BufferCacheService.SERVICE_NAME, BufferCacheAdd.INSTANCE));
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_BUFFER_CACHE, UndertowExtension.getResolver(Constants.BUFFER_CACHE))
+                .setAddHandler(BufferCacheAdd.INSTANCE)
+                .setRemoveHandler(new ServiceRemoveStepHandler(BufferCacheService.SERVICE_NAME, BufferCacheAdd.INSTANCE))
+        );
     }
 
     @Override

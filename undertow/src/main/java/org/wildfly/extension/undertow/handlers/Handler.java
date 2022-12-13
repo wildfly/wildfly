@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -57,7 +58,7 @@ abstract class Handler extends PersistentResourceDefinition {
 
 
     protected Handler(String name) {
-        super(PathElement.pathElement(name), UndertowExtension.getResolver(Constants.HANDLER, name));
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(name), UndertowExtension.getResolver(Constants.HANDLER, name)));
     }
 
     @Override

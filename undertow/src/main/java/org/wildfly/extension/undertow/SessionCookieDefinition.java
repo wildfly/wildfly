@@ -31,6 +31,7 @@ import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -91,10 +92,10 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
     };
 
     private SessionCookieDefinition() {
-        super(UndertowExtension.PATH_SESSION_COOKIE,
-                UndertowExtension.getResolver(UndertowExtension.PATH_SESSION_COOKIE.getKeyValuePair()),
-                new SessionCookieAdd(),
-                new SessionCookieRemove());
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_SESSION_COOKIE, UndertowExtension.getResolver(UndertowExtension.PATH_SESSION_COOKIE.getKeyValuePair()))
+                .setAddHandler(new SessionCookieAdd())
+                .setRemoveHandler(new SessionCookieRemove())
+        );
     }
 
     @Override

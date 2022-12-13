@@ -26,6 +26,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleResourceDefinition;
 
 import java.util.Collection;
 import java.util.List;
@@ -40,8 +41,10 @@ class WelcomeFileDefinition extends PersistentResourceDefinition {
     static final WelcomeFileDefinition INSTANCE = new WelcomeFileDefinition();
 
     private WelcomeFileDefinition() {
-        super(UndertowExtension.PATH_WELCOME_FILE,
-                UndertowExtension.getResolver(Constants.WELCOME_FILE), new ReloadRequiredAddStepHandler(), new ReloadRequiredRemoveStepHandler());
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_WELCOME_FILE, UndertowExtension.getResolver(Constants.WELCOME_FILE))
+                .setAddHandler(new ReloadRequiredAddStepHandler())
+                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+        );
     }
 
     @Override

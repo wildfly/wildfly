@@ -33,6 +33,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -119,8 +120,9 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setDeprecated(ModelVersion.create(4, 0, 0)).setMeasurementUnit(MeasurementUnit.SECONDS).setRequired(false).setAllowExpression(true).setAlternatives(Constants.SSL_CONTEXT).build();
 
     private HttpsListenerResourceDefinition() {
-        super(new Parameters(UndertowExtension.HTTPS_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER))
-                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY));
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.HTTPS_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER))
+                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY)
+        );
     }
 
     @Override

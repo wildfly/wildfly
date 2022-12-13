@@ -29,6 +29,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -128,7 +129,7 @@ class AccessLogDefinition extends PersistentResourceDefinition {
 
 
     private AccessLogDefinition() {
-        super(new Parameters(UndertowExtension.PATH_ACCESS_LOG, UndertowExtension.getResolver(Constants.ACCESS_LOG))
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_ACCESS_LOG, UndertowExtension.getResolver(Constants.ACCESS_LOG))
                 .setAddHandler(AccessLogAdd.INSTANCE)
                 .setRemoveHandler(AccessLogRemove.INSTANCE)
                 .setCapabilities(ACCESS_LOG_CAPABILITY)

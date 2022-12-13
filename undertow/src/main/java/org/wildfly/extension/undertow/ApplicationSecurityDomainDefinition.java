@@ -61,6 +61,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -194,7 +195,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
     private static final AttachmentKey<KnownDeploymentsApi> KNOWN_DEPLOYMENTS_KEY = AttachmentKey.create(KnownDeploymentsApi.class);
 
     private ApplicationSecurityDomainDefinition() {
-        this((Parameters) new Parameters(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN,
+        this(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN,
                 UndertowExtension.getResolver(Constants.APPLICATION_SECURITY_DOMAIN))
                         .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
                         .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN, false, false, false)),
@@ -202,7 +203,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                         , new AddHandler());
     }
 
-    private ApplicationSecurityDomainDefinition(Parameters parameters, AbstractAddStepHandler add) {
+    private ApplicationSecurityDomainDefinition(SimpleResourceDefinition.Parameters parameters, AbstractAddStepHandler add) {
         super(parameters.setAddHandler(add).setRemoveHandler(new RemoveHandler(add)));
     }
 

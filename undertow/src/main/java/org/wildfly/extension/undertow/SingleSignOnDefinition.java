@@ -28,6 +28,7 @@ import java.util.Collections;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -62,7 +63,7 @@ class SingleSignOnDefinition extends PersistentResourceDefinition {
     }
 
     SingleSignOnDefinition() {
-        super(new Parameters(UndertowExtension.PATH_SSO, UndertowExtension.getResolver(Constants.SINGLE_SIGN_ON)));
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_SSO, UndertowExtension.getResolver(Constants.SINGLE_SIGN_ON)));
     }
 
     @Override

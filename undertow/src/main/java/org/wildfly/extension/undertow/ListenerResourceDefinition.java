@@ -49,6 +49,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -244,7 +245,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         ATTRIBUTES.addAll(SOCKET_OPTIONS);
     }
 
-    public ListenerResourceDefinition(Parameters parameters) {
+    public ListenerResourceDefinition(SimpleResourceDefinition.Parameters parameters) {
         // this Persistent Parameters will be cast to Parameters
         super(parameters.setDescriptionResolver(UndertowExtension.getResolver(Constants.LISTENER)).addCapabilities(LISTENER_CAPABILITY));
     }

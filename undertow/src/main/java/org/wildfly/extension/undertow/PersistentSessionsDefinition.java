@@ -33,6 +33,7 @@ import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.Services;
@@ -75,10 +76,10 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
     };
 
     private PersistentSessionsDefinition() {
-        super(UndertowExtension.PATH_PERSISTENT_SESSIONS,
-                UndertowExtension.getResolver(UndertowExtension.PATH_PERSISTENT_SESSIONS.getKeyValuePair()),
-                new PersistentSessionsAdd(),
-                new PersistentSessionsRemove());
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_PERSISTENT_SESSIONS, UndertowExtension.getResolver(UndertowExtension.PATH_PERSISTENT_SESSIONS.getKeyValuePair()))
+                .setAddHandler(new PersistentSessionsAdd())
+                .setRemoveHandler(new PersistentSessionsRemove())
+        );
     }
 
     @Override

@@ -28,6 +28,7 @@ import io.undertow.protocols.http2.Http2Channel;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -133,8 +134,9 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .build();
 
     private HttpListenerResourceDefinition() {
-        super(new Parameters(UndertowExtension.HTTP_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER))
-                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY));
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.HTTP_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER))
+                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY)
+        );
     }
 
     @Override
