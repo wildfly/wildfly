@@ -25,8 +25,7 @@ package org.wildfly.extension.undertow.handlers;
 import java.util.List;
 
 import io.undertow.server.HttpHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
+
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
@@ -37,7 +36,6 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
@@ -48,7 +46,7 @@ import org.wildfly.extension.undertow.UndertowService;
  */
 abstract class Handler extends PersistentResourceDefinition {
 
-    static final RuntimeCapability CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HANDLER, true, HttpHandler.class)
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HANDLER, true, HttpHandler.class)
             //.addRuntimeOnlyRequirements(Capabilities.REF_REQUEST_CONTROLLER) -- has no function so don't use it
             .build();
 
@@ -56,18 +54,19 @@ abstract class Handler extends PersistentResourceDefinition {
             new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-handler", false, false, false)
     ).wrapAsList();
 
+    private final HandlerFactory factory;
 
-    protected Handler(PathElement path) {
+    protected Handler(PathElement path, HandlerFactory factory) {
         super(new SimpleResourceDefinition.Parameters(path, UndertowExtension.getResolver(Constants.HANDLER, path.getKey())));
+        this.factory = factory;
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        HandlerAdd add = new HandlerAdd(this);
+        HandlerAdd add = new HandlerAdd(this.factory, this.getAttributes());
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-        registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.HANDLER, add, Handler.CAPABILITY), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-
+        registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.HANDLER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 
     @Override
@@ -79,6 +78,4 @@ abstract class Handler extends PersistentResourceDefinition {
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return CONSTRAINTS;
     }
-
-    abstract HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException;
 }

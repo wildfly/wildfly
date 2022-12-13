@@ -112,7 +112,7 @@ public class ReverseProxyHandler extends Handler {
     public static final ReverseProxyHandler INSTANCE = new ReverseProxyHandler();
 
     private ReverseProxyHandler() {
-        super(PATH_ELEMENT);
+        super(PATH_ELEMENT, ReverseProxyHandler::createHandler);
     }
 
     @Override
@@ -128,8 +128,7 @@ public class ReverseProxyHandler extends Handler {
         return Collections.<PersistentResourceDefinition>singletonList(ReverseProxyHandlerHost.INSTANCE);
     }
 
-    @Override
-    public HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException {
+    static HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException {
 
         String sessionCookieNames = SESSION_COOKIE_NAMES.resolveModelAttribute(context, model).asString();
         int connectionsPerThread = CONNECTIONS_PER_THREAD.resolveModelAttribute(context, model).asInt();

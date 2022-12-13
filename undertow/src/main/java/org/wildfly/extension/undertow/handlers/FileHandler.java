@@ -97,7 +97,7 @@ public class FileHandler extends Handler {
             .build();
 
     private FileHandler() {
-        super(PATH_ELEMENT);
+        super(PATH_ELEMENT, FileHandler::createHandler);
     }
 
     @Override
@@ -105,8 +105,7 @@ public class FileHandler extends Handler {
         return Arrays.asList(PATH, CACHE_BUFFER_SIZE, CACHE_BUFFERS, DIRECTORY_LISTING, FOLLOW_SYMLINK, CASE_SENSITIVE, SAFE_SYMLINK_PATHS);
     }
 
-    @Override
-    public HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException {
+    static HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException {
         final String path = PATH.resolveModelAttribute(context, model).asString();
         final boolean directoryListing = DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
         final boolean followSymlink = FOLLOW_SYMLINK.resolveModelAttribute(context, model).asBoolean();
