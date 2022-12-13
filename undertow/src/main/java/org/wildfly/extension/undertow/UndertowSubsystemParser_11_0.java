@@ -157,7 +157,7 @@ public class UndertowSubsystemParser_11_0 extends PersistentResourceXMLParser {
                                                     )
                                         ).addChild(filterRefBuilder())
                                                 .addChild(
-                                                    builder(UndertowExtension.PATH_SSO)
+                                                    builder(SingleSignOnDefinition.PATH_ELEMENT)
                                                         .addAttribute(SingleSignOnDefinition.Attribute.DOMAIN.getDefinition())
                                                         .addAttribute(SingleSignOnDefinition.Attribute.PATH.getDefinition())
                                                         .addAttribute(SingleSignOnDefinition.Attribute.HTTP_ONLY.getDefinition())
@@ -371,7 +371,7 @@ public class UndertowSubsystemParser_11_0 extends PersistentResourceXMLParser {
                             .addAttribute(ApplicationSecurityDomainDefinition.ENABLE_JACC)
                             .addAttribute(ApplicationSecurityDomainDefinition.ENABLE_JASPI)
                             .addAttribute(ApplicationSecurityDomainDefinition.INTEGRATED_JASPI)
-                            .addChild(builder(UndertowExtension.PATH_SSO)
+                            .addChild(builder(SingleSignOnDefinition.PATH_ELEMENT)
                                     .addAttribute(SingleSignOnDefinition.Attribute.DOMAIN.getDefinition())
                                     .addAttribute(SingleSignOnDefinition.Attribute.PATH.getDefinition())
                                     .addAttribute(SingleSignOnDefinition.Attribute.HTTP_ONLY.getDefinition())
@@ -385,8 +385,8 @@ public class UndertowSubsystemParser_11_0 extends PersistentResourceXMLParser {
                 )
                  //here to make sure we always add filters & handlers path to mgmt model
                 .setAdditionalOperationsGenerator((address, addOperation, operations) -> {
-                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_FILTERS)));
-                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_HANDLERS)));
+                    operations.add(Util.createAddOperation(address.append(FilterDefinitions.PATH_ELEMENT)));
+                    operations.add(Util.createAddOperation(address.append(HandlerDefinitions.PATH_ELEMENT)));
                 })
                 .build();
     }

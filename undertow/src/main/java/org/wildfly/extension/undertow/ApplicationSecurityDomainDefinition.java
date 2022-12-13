@@ -56,6 +56,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.AttachmentKey;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
@@ -121,7 +122,7 @@ import io.undertow.servlet.api.LoginConfig;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class ApplicationSecurityDomainDefinition extends PersistentResourceDefinition {
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN);
     private static Predicate<String> SERVLET_MECHANISM;
 
     static {
@@ -195,16 +196,17 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
     private static final AttachmentKey<KnownDeploymentsApi> KNOWN_DEPLOYMENTS_KEY = AttachmentKey.create(KnownDeploymentsApi.class);
 
     private ApplicationSecurityDomainDefinition() {
-        this(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN,
-                UndertowExtension.getResolver(Constants.APPLICATION_SECURITY_DOMAIN))
-                        .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
-                        .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN, false, false, false)),
-                                new ApplicationTypeAccessConstraintDefinition(new ApplicationTypeConfig(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN)))
-                        , new AddHandler());
+        this(new AddHandler());
     }
 
-    private ApplicationSecurityDomainDefinition(SimpleResourceDefinition.Parameters parameters, AbstractAddStepHandler add) {
-        super(parameters.setAddHandler(add).setRemoveHandler(new RemoveHandler(add)));
+    private ApplicationSecurityDomainDefinition(AbstractAddStepHandler addHandler) {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+                .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
+                .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN, false, false, false)),
+                        new ApplicationTypeAccessConstraintDefinition(new ApplicationTypeConfig(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN)))
+                .setAddHandler(addHandler)
+                .setRemoveHandler(new RemoveHandler(addHandler))
+        );
     }
 
     @Override
@@ -304,8 +306,8 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
             final Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> transformerSupplier;
             final BiFunction<HttpExchangeSpi, String, IdentityCache> identityCacheSupplier;
-            if (resource.hasChild(UndertowExtension.PATH_SSO)) {
-                ModelNode ssoModel = resource.getChild(UndertowExtension.PATH_SSO).getModel();
+            if (resource.hasChild(SingleSignOnDefinition.PATH_ELEMENT)) {
+                ModelNode ssoModel = resource.getChild(SingleSignOnDefinition.PATH_ELEMENT).getModel();
 
                 String cookieName = SingleSignOnDefinition.Attribute.COOKIE_NAME.resolveModelAttribute(context, ssoModel).asString();
                 String domain = null;

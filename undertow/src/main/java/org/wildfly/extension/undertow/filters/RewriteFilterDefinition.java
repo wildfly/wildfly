@@ -29,6 +29,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.RedirectHandler;
 import io.undertow.server.handlers.SetAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -41,7 +42,7 @@ import java.util.Collection;
  * @author Stuart Douglas
  */
 public class RewriteFilterDefinition extends Filter {
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.REWRITE);
     public static final AttributeDefinition TARGET = new SimpleAttributeDefinitionBuilder("target", ModelType.STRING)
             .setRequired(true)
             .setAllowExpression(true)
@@ -59,7 +60,7 @@ public class RewriteFilterDefinition extends Filter {
     public static final RewriteFilterDefinition INSTANCE = new RewriteFilterDefinition();
 
     private RewriteFilterDefinition() {
-        super(Constants.REWRITE);
+        super(PATH_ELEMENT);
     }
 
     @Override

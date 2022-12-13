@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -41,6 +42,8 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class BufferCacheDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.BUFFER_CACHE);
+
     protected static final SimpleAttributeDefinition BUFFER_SIZE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_SIZE, ModelType.INT)
             .setRequired(false)
             .setRestartAllServices()
@@ -66,7 +69,7 @@ public class BufferCacheDefinition extends PersistentResourceDefinition {
     private static final List<SimpleAttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(BUFFER_SIZE, BUFFERS_PER_REGION, MAX_REGIONS));
 
     private BufferCacheDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_BUFFER_CACHE, UndertowExtension.getResolver(Constants.BUFFER_CACHE))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(BufferCacheAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(BufferCacheService.SERVICE_NAME, BufferCacheAdd.INSTANCE))
         );

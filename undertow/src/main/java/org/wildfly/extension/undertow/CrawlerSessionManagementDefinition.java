@@ -27,6 +27,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
@@ -47,7 +48,7 @@ import java.util.List;
  * @author Stuart Douglas
  */
 class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT);
     static final CrawlerSessionManagementDefinition INSTANCE = new CrawlerSessionManagementDefinition();
 
     protected static final SimpleAttributeDefinition USER_AGENTS =
@@ -68,7 +69,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
     };
 
     private CrawlerSessionManagementDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.CRAWLER_SESSION_MANAGEMENT, UndertowExtension.getResolver(UndertowExtension.CRAWLER_SESSION_MANAGEMENT.getKeyValuePair()))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
                 .setAddHandler(new CrawlerSessionManagementAdd())
                 .setRemoveHandler(new CrawlerSessionManagementRemove())
         );

@@ -30,6 +30,7 @@ import java.util.List;
 
 import io.undertow.servlet.api.ServletStackTraces;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -47,6 +48,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class ServletContainerDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SERVLET_CONTAINER);
     static final RuntimeCapability<Void> SERVLET_CONTAINER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_SERVLET_CONTAINER, true, ServletContainerService.class)
                 .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
                 .build();
@@ -236,10 +238,11 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
     }
 
     private ServletContainerDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_SERVLET_CONTAINER, UndertowExtension.getResolver(Constants.SERVLET_CONTAINER))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(ServletContainerAdd.INSTANCE)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .addCapabilities(SERVLET_CONTAINER_CAPABILITY));
+                .addCapabilities(SERVLET_CONTAINER_CAPABILITY)
+        );
     }
 
     @Override

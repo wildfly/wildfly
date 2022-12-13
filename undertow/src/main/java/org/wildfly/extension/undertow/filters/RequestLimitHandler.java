@@ -28,6 +28,7 @@ import java.util.Collection;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.RequestLimitingHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
@@ -37,7 +38,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class RequestLimitHandler extends Filter {
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement("request-limit");
     public static final RequestLimitHandler INSTANCE = new RequestLimitHandler();
 
     public static final AttributeDefinition MAX_CONCURRENT_REQUESTS = new SimpleAttributeDefinitionBuilder("max-concurrent-requests", ModelType.INT)
@@ -57,12 +58,8 @@ public class RequestLimitHandler extends Filter {
             .build();
 
 
-    /*
-    <connection-limit max-concurrent-requests="100" />
-     */
-
     private RequestLimitHandler() {
-        super("request-limit");
+        super(PATH_ELEMENT);
     }
 
     @Override

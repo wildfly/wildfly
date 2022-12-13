@@ -30,6 +30,7 @@ import java.util.List;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -49,7 +50,7 @@ import org.wildfly.extension.undertow.filters.FilterRefDefinition;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class HostDefinition extends PersistentResourceDefinition {
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HOST);
     public static final String DEFAULT_WEB_MODULE_DEFAULT = "ROOT.war";
 
     static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST, true, Host.class)
@@ -102,11 +103,11 @@ class HostDefinition extends PersistentResourceDefinition {
     ));
 
     private HostDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.HOST_PATH, UndertowExtension.getResolver(Constants.HOST))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(HostAdd.INSTANCE)
                 .setRemoveHandler(new HostRemove())
-                .addCapabilities(HOST_CAPABILITY,
-                        WebHost.CAPABILITY));
+                .addCapabilities(HOST_CAPABILITY, WebHost.CAPABILITY)
+        );
     }
 
     @Override

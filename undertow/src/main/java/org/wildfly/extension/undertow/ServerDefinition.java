@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -41,6 +42,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class ServerDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SERVER);
     static final RuntimeCapability<Void> SERVER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_SERVER, true, Server.class)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             .build();
@@ -66,10 +68,11 @@ class ServerDefinition extends PersistentResourceDefinition {
     static final ServerDefinition INSTANCE = new ServerDefinition();
 
     private ServerDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.SERVER_PATH, UndertowExtension.getResolver(Constants.SERVER))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new ServerAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .addCapabilities(SERVER_CAPABILITY, CommonWebServer.CAPABILITY));
+                .addCapabilities(SERVER_CAPABILITY, CommonWebServer.CAPABILITY)
+        );
     }
 
     @Override

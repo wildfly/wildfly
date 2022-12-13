@@ -326,7 +326,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
     private final ServiceValueExecutorRegistry<ModCluster> registry = new ServiceValueExecutorRegistry<>();
 
     public ModClusterDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH, UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER)));
+        super(new SimpleResourceDefinition.Parameters(PATH, UndertowExtension.getResolver(Constants.HANDLER, PATH.getKey())));
     }
 
     @Override

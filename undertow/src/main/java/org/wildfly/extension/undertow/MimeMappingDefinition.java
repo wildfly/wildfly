@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -41,7 +42,7 @@ import java.util.List;
  */
 class MimeMappingDefinition extends PersistentResourceDefinition {
 
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.MIME_MAPPING);
     protected static final SimpleAttributeDefinition VALUE =
             new SimpleAttributeDefinitionBuilder(Constants.VALUE, ModelType.STRING, false)
                     .setRestartAllServices()
@@ -56,7 +57,7 @@ class MimeMappingDefinition extends PersistentResourceDefinition {
     static final MimeMappingDefinition INSTANCE = new MimeMappingDefinition();
 
     private MimeMappingDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_MIME_MAPPING, UndertowExtension.getResolver(Constants.MIME_MAPPING))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new ReloadRequiredAddStepHandler(ATTRIBUTES))
                 .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
         );

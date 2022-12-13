@@ -30,6 +30,7 @@ import io.undertow.util.Headers;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -48,7 +49,7 @@ import java.util.List;
  */
 public class ReverseProxyHandler extends Handler {
 
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.REVERSE_PROXY);
     public static final AttributeDefinition PROBLEM_SERVER_RETRY = new SimpleAttributeDefinitionBuilder(Constants.PROBLEM_SERVER_RETRY, ModelType.INT)
             .setRequired(false)
             .setAllowExpression(true)
@@ -111,7 +112,7 @@ public class ReverseProxyHandler extends Handler {
     public static final ReverseProxyHandler INSTANCE = new ReverseProxyHandler();
 
     private ReverseProxyHandler() {
-        super(Constants.REVERSE_PROXY);
+        super(PATH_ELEMENT);
     }
 
     @Override

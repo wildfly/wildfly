@@ -80,9 +80,9 @@ final class ServerAdd extends AbstractAddStepHandler {
             csb.setInstance(new WebServerService(wssConsumer, sSupplier));
             csb.setInitialMode(ServiceController.Mode.PASSIVE);
 
-            addCommonHostListenerDeps(context, csb, UndertowExtension.HTTP_LISTENER_PATH);
-            addCommonHostListenerDeps(context, csb, UndertowExtension.AJP_LISTENER_PATH);
-            addCommonHostListenerDeps(context, csb, UndertowExtension.HTTPS_LISTENER_PATH);
+            addCommonHostListenerDeps(context, csb, HttpListenerResourceDefinition.PATH_ELEMENT);
+            addCommonHostListenerDeps(context, csb, AjpListenerResourceDefinition.PATH_ELEMENT);
+            addCommonHostListenerDeps(context, csb, HttpsListenerResourceDefinition.PATH_ELEMENT);
             csb.install();
         }
 

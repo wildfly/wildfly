@@ -133,7 +133,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                                 AccessLogDefinition.PREDICATE)
                                         ).addChild(filterRefBuilder())
                                                 .addChild(
-                                                    builder(UndertowExtension.PATH_SSO)
+                                                    builder(SingleSignOnDefinition.PATH_ELEMENT)
                                                         .addAttribute(SingleSignOnDefinition.Attribute.DOMAIN.getDefinition())
                                                         .addAttribute(SingleSignOnDefinition.Attribute.PATH.getDefinition())
                                                         .addAttribute(SingleSignOnDefinition.Attribute.HTTP_ONLY.getDefinition())
@@ -326,7 +326,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                         builder(ApplicationSecurityDomainDefinition.INSTANCE.getPathElement())
                             .setXmlWrapperElement(Constants.APPLICATION_SECURITY_DOMAINS)
                             .addAttributes(ApplicationSecurityDomainDefinition.HTTP_AUTHENTICATION_FACTORY, ApplicationSecurityDomainDefinition.OVERRIDE_DEPLOYMENT_CONFIG, ApplicationSecurityDomainDefinition.ENABLE_JACC)
-                            .addChild(builder(UndertowExtension.PATH_SSO)
+                            .addChild(builder(SingleSignOnDefinition.PATH_ELEMENT)
                                     .addAttribute(SingleSignOnDefinition.Attribute.DOMAIN.getDefinition())
                                     .addAttribute(SingleSignOnDefinition.Attribute.PATH.getDefinition())
                                     .addAttribute(SingleSignOnDefinition.Attribute.HTTP_ONLY.getDefinition())
@@ -340,8 +340,8 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                 )
                  //here to make sure we always add filters & handlers path to mgmt model
                 .setAdditionalOperationsGenerator((address, addOperation, operations) -> {
-                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_FILTERS)));
-                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_HANDLERS)));
+                    operations.add(Util.createAddOperation(address.append(FilterDefinitions.PATH_ELEMENT)));
+                    operations.add(Util.createAddOperation(address.append(HandlerDefinitions.PATH_ELEMENT)));
                 })
                 .build();
     }

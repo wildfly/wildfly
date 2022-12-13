@@ -28,6 +28,8 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.encoding.ContentEncodingRepository;
 import io.undertow.server.handlers.encoding.EncodingHandler;
 import io.undertow.server.handlers.encoding.GzipEncodingProvider;
+
+import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,11 +37,11 @@ import org.jboss.dmr.ModelNode;
  */
 public class GzipFilter extends Filter {
 
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement("gzip");
     public static final GzipFilter INSTANCE = new GzipFilter();
 
     private GzipFilter() {
-        super("gzip");
+        super(PATH_ELEMENT);
     }
 
     @Override

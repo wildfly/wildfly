@@ -30,6 +30,7 @@ import io.undertow.UndertowOptions;
 import io.undertow.protocols.ajp.AjpClientRequestClientStreamSinkChannel;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -44,6 +45,7 @@ import org.wildfly.extension.io.OptionAttributeDefinition;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.AJP_LISTENER);
     protected static final AjpListenerResourceDefinition INSTANCE = new AjpListenerResourceDefinition();
 
     protected static final SimpleAttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder(Constants.SCHEME, ModelType.STRING)
@@ -61,7 +63,7 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
             .build();
 
     private AjpListenerResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.AJP_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER)));
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER)));
     }
 
     @Override

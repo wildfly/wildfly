@@ -46,6 +46,7 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -63,6 +64,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
  */
 class ModClusterContextDefinition extends SimpleResourceDefinition {
 
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.CONTEXT);
     static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER, Constants.BALANCER, Constants.NODE, Constants.CONTEXT);
 
     enum ContextMetric implements Metric<ModClusterStatus.Context> {
@@ -122,7 +124,7 @@ class ModClusterContextDefinition extends SimpleResourceDefinition {
     private final FunctionExecutorRegistry<ModCluster> registry;
 
     ModClusterContextDefinition(FunctionExecutorRegistry<ModCluster> registry) {
-        super(new Parameters(UndertowExtension.CONTEXT, RESOLVER).setRuntime());
+        super(new Parameters(PATH_ELEMENT, RESOLVER).setRuntime());
         this.registry = registry;
     }
 

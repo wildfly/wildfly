@@ -28,6 +28,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.builder.PredicatedHandler;
 import io.undertow.server.handlers.builder.PredicatedHandlersParser;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -45,7 +46,7 @@ import java.util.List;
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
 public class ExpressionFilterDefinition extends Filter {
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement("expression-filter");
     public static final AttributeDefinition EXPRESSION = new SimpleAttributeDefinitionBuilder("expression", ModelType.STRING)
             .setRequired(true)
             .setAllowExpression(true)
@@ -60,7 +61,7 @@ public class ExpressionFilterDefinition extends Filter {
     public static final ExpressionFilterDefinition INSTANCE = new ExpressionFilterDefinition();
 
     private ExpressionFilterDefinition() {
-        super("expression-filter");
+        super(PATH_ELEMENT);
     }
 
     @Override

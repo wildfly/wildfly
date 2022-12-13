@@ -42,7 +42,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
 public class FilterDefinitions extends PersistentResourceDefinition {
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.CONFIGURATION, Constants.FILTER);
     public static final FilterDefinitions INSTANCE = new FilterDefinitions();
     private static List<? extends PersistentResourceDefinition> FILTERS = Collections.unmodifiableList(Arrays.asList(
             RequestLimitHandler.INSTANCE,
@@ -56,8 +56,7 @@ public class FilterDefinitions extends PersistentResourceDefinition {
     ));
 
     private FilterDefinitions() {
-        super(UndertowExtension.PATH_FILTERS,
-                UndertowExtension.getResolver(Constants.FILTER),
+        super(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()),
                 new AbstractAddStepHandler(),
                 ReloadRequiredRemoveStepHandler.INSTANCE
         );

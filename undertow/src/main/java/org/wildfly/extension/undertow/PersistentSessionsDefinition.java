@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
@@ -55,7 +56,7 @@ import java.util.function.Supplier;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class PersistentSessionsDefinition extends PersistentResourceDefinition {
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.PERSISTENT_SESSIONS);
     static final PersistentSessionsDefinition INSTANCE = new PersistentSessionsDefinition();
 
     protected static final SimpleAttributeDefinition PATH =
@@ -76,7 +77,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
     };
 
     private PersistentSessionsDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_PERSISTENT_SESSIONS, UndertowExtension.getResolver(UndertowExtension.PATH_PERSISTENT_SESSIONS.getKeyValuePair()))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
                 .setAddHandler(new PersistentSessionsAdd())
                 .setRemoveHandler(new PersistentSessionsRemove())
         );

@@ -30,6 +30,7 @@ import io.undertow.Handlers;
 import io.undertow.predicate.Predicate;
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -43,11 +44,9 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
 abstract class Filter extends AbstractHandlerDefinition {
-    private String name;
 
-    protected Filter(String name) {
-        super(name, Constants.FILTER);
-        this.name = name;
+    protected Filter(PathElement path) {
+        super(path, Constants.FILTER);
     }
 
     @Override

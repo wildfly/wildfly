@@ -28,6 +28,7 @@ import java.util.Collections;
 import io.undertow.security.handlers.AuthenticationCallHandler;
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelType;
 
@@ -39,7 +40,7 @@ import org.jboss.dmr.ModelType;
  */
 @Deprecated
 public class BasicAuthHandler extends Filter {
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement("basic-auth");
     public static final BasicAuthHandler INSTANCE = new BasicAuthHandler();
 
     public static final AttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder("security-domain", ModelType.STRING)
@@ -48,7 +49,7 @@ public class BasicAuthHandler extends Filter {
             .build();
 
     private BasicAuthHandler() {
-        super("basic-auth");
+        super(PATH_ELEMENT);
     }
 
     @Override

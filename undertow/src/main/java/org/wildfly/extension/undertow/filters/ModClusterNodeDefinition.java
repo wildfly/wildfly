@@ -49,6 +49,7 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
@@ -68,6 +69,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
  */
 public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.NODE);
     static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER, Constants.BALANCER, Constants.NODE);
     static final BiFunction<String, ModelType, PrimitiveListAttributeDefinition.Builder> PRIMITIVE_LIST_BUILDER_FACTORY = PrimitiveListAttributeDefinition.Builder::new;
 
@@ -246,7 +248,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
     private final FunctionExecutorRegistry<ModCluster> registry;
 
     ModClusterNodeDefinition(FunctionExecutorRegistry<ModCluster> registry) {
-        super(new Parameters(UndertowExtension.NODE, RESOLVER).setRuntime());
+        super(new Parameters(PATH_ELEMENT, RESOLVER).setRuntime());
         this.registry = registry;
     }
 

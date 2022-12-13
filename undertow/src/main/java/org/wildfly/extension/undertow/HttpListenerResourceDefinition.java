@@ -26,6 +26,7 @@ import io.undertow.UndertowOptions;
 import io.undertow.protocols.http2.Http2Channel;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -46,7 +47,7 @@ import java.util.List;
  * @author Richard Achmatowicz (c) 2020 Red Hat Inc.
  */
 public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HTTP_LISTENER);
     protected static final HttpListenerResourceDefinition INSTANCE = new HttpListenerResourceDefinition();
 
     protected static final SimpleAttributeDefinition CERTIFICATE_FORWARDING = new SimpleAttributeDefinitionBuilder(Constants.CERTIFICATE_FORWARDING, ModelType.BOOLEAN)
@@ -134,7 +135,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .build();
 
     private HttpListenerResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.HTTP_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
                 .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY)
         );
     }

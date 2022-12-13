@@ -57,8 +57,8 @@ abstract class Handler extends PersistentResourceDefinition {
     ).wrapAsList();
 
 
-    protected Handler(String name) {
-        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(name), UndertowExtension.getResolver(Constants.HANDLER, name)));
+    protected Handler(PathElement path) {
+        super(new SimpleResourceDefinition.Parameters(path, UndertowExtension.getResolver(Constants.HANDLER, path.getKey())));
     }
 
     @Override

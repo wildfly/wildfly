@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -44,6 +45,7 @@ import org.jboss.dmr.ValueExpression;
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
 class AccessLogDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG);
     static final RuntimeCapability<Void> ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_ACCESS_LOG, true, AccessLogService.class)
               .setDynamicNameMapper(DynamicNameMappers.GRAND_PARENT)
               .build();
@@ -129,7 +131,7 @@ class AccessLogDefinition extends PersistentResourceDefinition {
 
 
     private AccessLogDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_ACCESS_LOG, UndertowExtension.getResolver(Constants.ACCESS_LOG))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
                 .setAddHandler(AccessLogAdd.INSTANCE)
                 .setRemoveHandler(AccessLogRemove.INSTANCE)
                 .setCapabilities(ACCESS_LOG_CAPABILITY)

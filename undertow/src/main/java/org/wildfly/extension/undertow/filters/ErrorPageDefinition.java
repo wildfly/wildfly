@@ -32,6 +32,7 @@ import io.undertow.predicate.Predicate;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.error.FileErrorPageHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -41,7 +42,7 @@ import org.wildfly.extension.undertow.Constants;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class ErrorPageDefinition extends Filter{
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.ERROR_PAGE);
     public static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
             .setAllowExpression(true)
             .setRequired(true)
@@ -56,7 +57,7 @@ public class ErrorPageDefinition extends Filter{
     public static final ErrorPageDefinition INSTANCE = new ErrorPageDefinition();
 
     private ErrorPageDefinition() {
-        super(Constants.ERROR_PAGE);
+        super(PATH_ELEMENT);
     }
 
     @Override

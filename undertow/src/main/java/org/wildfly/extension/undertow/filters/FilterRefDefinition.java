@@ -34,6 +34,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -56,7 +57,7 @@ import org.wildfly.extension.undertow.UndertowService;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class FilterRefDefinition extends PersistentResourceDefinition {
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.FILTER_REF);
     public static final AttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder("predicate", ModelType.STRING)
             .setRequired(false)
             .setAllowExpression(true)
@@ -75,7 +76,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
 
 
     private FilterRefDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_FILTER_REF, UndertowExtension.getResolver(Constants.FILTER_REF))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new FilterRefAdd())
                 .setRemoveHandler(new ServiceRemoveStepHandler(new FilterRefAdd()) {
                     @Override

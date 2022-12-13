@@ -26,6 +26,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
@@ -45,7 +46,7 @@ import java.util.List;
  * @author Stuart Douglas
  */
 class SessionCookieDefinition extends PersistentResourceDefinition {
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
     static final SessionCookieDefinition INSTANCE = new SessionCookieDefinition();
 
     protected static final SimpleAttributeDefinition NAME =
@@ -92,7 +93,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
     };
 
     private SessionCookieDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_SESSION_COOKIE, UndertowExtension.getResolver(UndertowExtension.PATH_SESSION_COOKIE.getKeyValuePair()))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
                 .setAddHandler(new SessionCookieAdd())
                 .setRemoveHandler(new SessionCookieRemove())
         );

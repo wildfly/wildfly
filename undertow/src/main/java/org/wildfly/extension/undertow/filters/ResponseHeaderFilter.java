@@ -28,6 +28,7 @@ import java.util.Collection;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.SetHeaderHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelType;
 
@@ -35,7 +36,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class ResponseHeaderFilter extends Filter {
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement("response-header");
     public static final AttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("header-name", ModelType.STRING)
             .setRequired(true)
             .setAllowExpression(true)
@@ -50,7 +51,7 @@ public class ResponseHeaderFilter extends Filter {
     public static final ResponseHeaderFilter INSTANCE = new ResponseHeaderFilter();
 
     private ResponseHeaderFilter() {
-        super("response-header");
+        super(PATH_ELEMENT);
     }
 
     @Override

@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -44,6 +45,7 @@ import org.wildfly.extension.undertow.filters.FilterRefDefinition;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class LocationDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.LOCATION);
     static final RuntimeCapability<Void> LOCATION_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_LOCATION, true, LocationService.class)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             .setDynamicNameMapper(DynamicNameMappers.GRAND_PARENT)
@@ -60,7 +62,7 @@ class LocationDefinition extends PersistentResourceDefinition {
 
 
     private LocationDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_LOCATION, UndertowExtension.getResolver(Constants.HOST, Constants.LOCATION))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.HOST, PATH_ELEMENT.getKey()))
                 .setAddHandler(LocationAdd.INSTANCE)
                 .setRemoveHandler( new ServiceRemoveStepHandler(LocationAdd.INSTANCE) {
                     @Override
@@ -68,7 +70,8 @@ class LocationDefinition extends PersistentResourceDefinition {
                         return LOCATION_CAPABILITY.getCapabilityServiceName(address);
                     }
                 })
-                .addCapabilities(LOCATION_CAPABILITY));
+                .addCapabilities(LOCATION_CAPABILITY)
+        );
     }
 
     @Override

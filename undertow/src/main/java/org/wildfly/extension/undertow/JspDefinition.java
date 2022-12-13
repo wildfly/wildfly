@@ -26,6 +26,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
@@ -47,6 +48,7 @@ import java.util.List;
  * @created 23.2.12 18:47
  */
 class JspDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.JSP);
     protected static final SimpleAttributeDefinition DEVELOPMENT =
             new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -200,7 +202,7 @@ class JspDefinition extends PersistentResourceDefinition {
     static final JspDefinition INSTANCE = new JspDefinition();
 
     private JspDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_JSP, UndertowExtension.getResolver(UndertowExtension.PATH_JSP.getKeyValuePair()))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
                 .setAddHandler(new JSPAdd())
                 .setRemoveHandler(new JSPRemove())
         );

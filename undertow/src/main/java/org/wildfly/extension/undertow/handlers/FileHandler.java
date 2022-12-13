@@ -35,6 +35,7 @@ import io.undertow.server.handlers.resource.ResourceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -47,7 +48,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class FileHandler extends Handler {
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.FILE);
     public static final FileHandler INSTANCE = new FileHandler();
 
     /*<file path="/opt/data" cache-buffer-size="1024" cache-buffers="1024"/>*/
@@ -96,7 +97,7 @@ public class FileHandler extends Handler {
             .build();
 
     private FileHandler() {
-        super(Constants.FILE);
+        super(PATH_ELEMENT);
     }
 
     @Override

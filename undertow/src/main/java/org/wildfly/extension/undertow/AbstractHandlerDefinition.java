@@ -50,20 +50,20 @@ public abstract class AbstractHandlerDefinition extends PersistentResourceDefini
             new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-filter", false, false, false)
     ).wrapAsList();
 
-    protected AbstractHandlerDefinition(final String name, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {
-        this(name, Constants.HANDLER, addHandler, removeHandler);
+    protected AbstractHandlerDefinition(PathElement path, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {
+        this(path, Constants.HANDLER, addHandler, removeHandler);
     }
 
-    protected AbstractHandlerDefinition(final String name) {
-        this(name, Constants.HANDLER);
+    protected AbstractHandlerDefinition(PathElement path) {
+        this(path, Constants.HANDLER);
     }
 
-    protected AbstractHandlerDefinition(final String name, String prefix, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {
-        this(new SimpleResourceDefinition.Parameters(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name)).setAddHandler(addHandler).setRemoveHandler(removeHandler));
+    protected AbstractHandlerDefinition(PathElement path, String prefix, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {
+        this(new SimpleResourceDefinition.Parameters(path, UndertowExtension.getResolver(prefix, path.getKey())).setAddHandler(addHandler).setRemoveHandler(removeHandler));
     }
 
-    protected AbstractHandlerDefinition(final String name, String prefix) {
-        this(new SimpleResourceDefinition.Parameters(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name)));
+    protected AbstractHandlerDefinition(PathElement path, String prefix) {
+        this(new SimpleResourceDefinition.Parameters(path, UndertowExtension.getResolver(prefix, path.getKey())));
     }
 
     protected AbstractHandlerDefinition(final SimpleResourceDefinition.Parameters parameters) {

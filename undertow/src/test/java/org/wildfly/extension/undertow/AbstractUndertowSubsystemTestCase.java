@@ -189,7 +189,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Assert.assertEquals(1, host.getFilters().size());
 
         ModelNode op = Util.createOperation("write-attribute",
-                PathAddress.pathAddress(UndertowExtension.SUBSYSTEM_PATH)
+                PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT)
                         .append("servlet-container", "myContainer")
                         .append("setting", "websockets")
         );
@@ -201,7 +201,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
         // WFLY-14648 Check expression in enabled attribute is resolved.
         op = Util.createOperation("write-attribute",
-                PathAddress.pathAddress(UndertowExtension.SUBSYSTEM_PATH)
+                PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT)
                         .append("server", virtualHostName)
                         .append("http-listener", "default")
         );

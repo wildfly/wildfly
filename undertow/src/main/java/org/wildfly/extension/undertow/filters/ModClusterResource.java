@@ -31,7 +31,6 @@ import org.jboss.as.clustering.controller.ComplexResource;
 import org.jboss.as.clustering.controller.SimpleChildResourceProvider;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
-import org.wildfly.extension.undertow.UndertowExtension;
 
 import java.util.Map;
 import java.util.Objects;
@@ -58,7 +57,7 @@ public class ModClusterResource extends ComplexResource implements Consumer<ModC
 
     @Override
     public void accept(ModCluster service) {
-        this.providers.put(UndertowExtension.BALANCER.getKey(), new ModClusterBalancerResourceProvider(service));
+        this.providers.put(ModClusterBalancerDefinition.PATH_ELEMENT.getKey(), new ModClusterBalancerResourceProvider(service));
     }
 
     static class ModClusterBalancerResourceProvider implements ChildResourceProvider {
@@ -72,7 +71,7 @@ public class ModClusterResource extends ComplexResource implements Consumer<ModC
         public Resource getChild(String name) {
             ModClusterStatus status = this.service.getController().getStatus();
             ModClusterStatus.LoadBalancer balancer = status.getLoadBalancer(name);
-            return (balancer != null) ? new ComplexResource(PlaceholderResource.INSTANCE, Map.of(UndertowExtension.NODE.getKey(), new ModClusterNodeResourceProvider(balancer), UndertowExtension.LOAD_BALANCING_GROUP.getKey(), new SimpleChildResourceProvider(balancer.getNodes().stream().map(ModClusterStatus.Node::getDomain).filter(Predicate.not(Objects::isNull)).distinct().collect(Collectors.toSet())))) : null;
+            return (balancer != null) ? new ComplexResource(PlaceholderResource.INSTANCE, Map.of(ModClusterNodeDefinition.PATH_ELEMENT.getKey(), new ModClusterNodeResourceProvider(balancer), ModClusterLoadBalancingGroupDefinition.PATH_ELEMENT.getKey(), new SimpleChildResourceProvider(balancer.getNodes().stream().map(ModClusterStatus.Node::getDomain).filter(Predicate.not(Objects::isNull)).distinct().collect(Collectors.toSet())))) : null;
         }
 
         @Override
@@ -92,7 +91,7 @@ public class ModClusterResource extends ComplexResource implements Consumer<ModC
         @Override
         public Resource getChild(String name) {
             ModClusterStatus.Node node = this.balancer.getNode(name);
-            return (node != null) ? new ComplexResource(PlaceholderResource.INSTANCE, Map.of(UndertowExtension.CONTEXT.getKey(), new SimpleChildResourceProvider(node.getContexts().stream().map(ModClusterStatus.Context::getName).collect(Collectors.toSet())))) : null;
+            return (node != null) ? new ComplexResource(PlaceholderResource.INSTANCE, Map.of(ModClusterContextDefinition.PATH_ELEMENT.getKey(), new SimpleChildResourceProvider(node.getContexts().stream().map(ModClusterStatus.Context::getName).collect(Collectors.toSet())))) : null;
         }
 
         @Override

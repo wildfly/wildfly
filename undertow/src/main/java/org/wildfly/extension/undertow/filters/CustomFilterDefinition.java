@@ -32,6 +32,7 @@ import io.undertow.Handlers;
 import io.undertow.predicate.Predicate;
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -48,7 +49,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
 public class CustomFilterDefinition extends Filter {
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement("custom-filter");
     public static final AttributeDefinition CLASS_NAME = new SimpleAttributeDefinitionBuilder("class-name", ModelType.STRING)
             .setRequired(true)
             .setAllowExpression(true)
@@ -71,7 +72,7 @@ public class CustomFilterDefinition extends Filter {
     public static final CustomFilterDefinition INSTANCE = new CustomFilterDefinition();
 
     private CustomFilterDefinition() {
-        super("custom-filter");
+        super(PATH_ELEMENT);
     }
 
     @Override
