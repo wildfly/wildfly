@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,62 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.infinispan.group;
 
-import org.jgroups.Address;
+import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.group.GroupListener;
+import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 
 /**
- * Non-clustered {@link org.wildfly.clustering.server.group.Group} implementation
+ * Non-clustered group implementation.
+ * Registered {@link GroupListener} are never invoked, as membership of a local group is fixed.
  * @author Paul Ferraro
  */
-public class LocalGroup extends AbstractLocalGroup<Address> {
+public class LocalGroup implements AutoCloseableGroup<Void>, Registration {
 
-    public LocalGroup(String nodeName) {
-        super(nodeName);
+    private final Membership membership;
+    private final String name;
+
+    public LocalGroup(String nodeName, String groupName) {
+        this.membership = new SingletonMembership(new LocalNode(nodeName));
+        this.name = groupName;
     }
 
     @Override
-    public Address getAddress(Node node) {
-        return null;
+    public void close() {
+        // We never registered anything
+    }
+
+    @Override
+    public Registration register(GroupListener listener) {
+        // Nothing to register
+        return this;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public Node getLocalMember() {
+        return this.membership.getCoordinator();
+    }
+
+    @Override
+    public Membership getMembership() {
+        return this.membership;
+    }
+
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
+
+    @Override
+    public Node createNode(Void address) {
+        return this.getLocalMember();
     }
 }

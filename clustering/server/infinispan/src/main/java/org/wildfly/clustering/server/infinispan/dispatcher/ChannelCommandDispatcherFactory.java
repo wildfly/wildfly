@@ -272,16 +272,15 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
         return this.members.computeIfAbsent(address, key -> {
             IpAddress ipAddress = (IpAddress) this.dispatcher.getChannel().down(new Event(Event.GET_PHYSICAL_ADDRESS, address));
             // Physical address might be null if node is no longer a member of the cluster
-            InetSocketAddress socketAddress = (ipAddress != null) ? new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort()) : new InetSocketAddress(0);
-            // If no logical name exists, create one using physical address
-            String name = Optional.ofNullable(NameCache.get(address)).orElseGet(() -> String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort()));
+            if (ipAddress == null) return null;
+            InetSocketAddress socketAddress = new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort());
+            String name = NameCache.get(address);
+            if (name == null) {
+                // If no logical name exists, create one using physical address
+                name = String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort());
+            }
             return new AddressableNode(address, name, socketAddress);
         });
-    }
-
-    @Override
-    public Address getAddress(Node node) {
-        return ((AddressableNode) node).getAddress();
     }
 
     @Override

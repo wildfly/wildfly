@@ -21,14 +21,13 @@
  */
 package org.wildfly.clustering.server.infinispan.registry;
 
-import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
-import org.wildfly.clustering.server.group.Group;
+import org.wildfly.clustering.group.Group;
 
 /**
  * Configuration for a {@link CacheRegistryFactory}.
  * @author Paul Ferraro
  */
 public interface CacheRegistryConfiguration<K, V> extends InfinispanConfiguration {
-    Group<Address> getGroup();
+    Group getGroup();
 }

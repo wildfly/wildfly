@@ -45,9 +45,7 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.LocalModeAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
-import org.infinispan.remoting.transport.jgroups.JGroupsAddressCache;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultExecutorService;
@@ -64,7 +62,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 @org.infinispan.notifications.Listener(observation = Observation.POST)
-public class CacheGroup implements Group<Address>, AutoCloseable, Function<GroupListener, ExecutorService> {
+public class CacheGroup implements AutoCloseableGroup<Address>, AutoCloseable, Function<GroupListener, ExecutorService> {
 
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<?, ?> cache;
@@ -116,9 +114,6 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
 
     @Override
     public Membership getMembership() {
-        if (this.isSingleton()) {
-            return new SingletonMembership(this.getLocalMember());
-        }
         EmbeddedCacheManager manager = this.cache.getCacheManager();
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         return (dist != null) ? new CacheMembership(manager.getAddress(), dist.getCacheTopology(), this) : new CacheMembership(manager, this);
@@ -126,26 +121,15 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
 
     @Override
     public boolean isSingleton() {
-        return this.cache.getAdvancedCache().getRpcManager() == null;
+        return false;
     }
 
     @Override
     public Node createNode(Address address) {
-        return this.nodeFactory.createNode(toJGroupsAddress(address));
-    }
-
-    @Override
-    public Address getAddress(Node node) {
-        return (node instanceof AddressableNode) ? JGroupsAddressCache.fromJGroupsAddress(((AddressableNode) node).getAddress()) : LocalModeAddress.INSTANCE;
-    }
-
-    private static org.jgroups.Address toJGroupsAddress(Address address) {
-        if ((address == null) || (address == LocalModeAddress.INSTANCE)) return null;
-        if (address instanceof JGroupsAddress) {
-            JGroupsAddress jgroupsAddress = (JGroupsAddress) address;
-            return jgroupsAddress.getJGroupsAddress();
+        if (!(address instanceof JGroupsAddress)) {
+            throw new IllegalArgumentException(address.toString());
         }
-        throw new IllegalArgumentException(address.toString());
+        return this.nodeFactory.createNode(((JGroupsAddress) address).getJGroupsAddress());
     }
 
     @Merged
