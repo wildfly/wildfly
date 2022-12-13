@@ -928,4 +928,14 @@
 		<packageUrl regex="true">^pkg:maven/org\.apache\.sshd/sshd\-common@.*$</packageUrl>
 		<cve>CVE-2022-45047</cve>
 	</suppress>
+    <!--    Based on https://github.com/wildfly-security/wildfly-elytron/pull/1847#issuecomment-1340075025 wildfly-elytron will be suppressed CVE-2022-42004-->
+    <!--    Based on https://github.com/wildfly-security/wildfly-elytron/pull/1847#issuecomment-1341254539 wildfly-elytron will be suppressed  CVE-2022-42003 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-1.19.1.Final.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.13.3)
+   ]]></notes>
+        <filePath regex="true">.*wildfly-elytron-1\.19\..*\.jar.*jackson-databind.*</filePath >
+        <cve>CVE-2022-42003</cve>
+        <cve>CVE-2022-42004</cve>
+    </suppress>
 </suppressions>
