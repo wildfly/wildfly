@@ -26,7 +26,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
-import javax.faces.FacesException;
+import jakarta.faces.FacesException;
 import javax.naming.NamingException;
 
 import org.apache.myfaces.config.annotation.LifecycleProvider2;

@@ -21,6 +21,7 @@ package org.jboss.as.jsf.deployment;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -30,7 +31,7 @@ import org.junit.Test;
  */
 public class JSFModuleIdFactoryTestCase {
 
-    private static final String API_MODULE = "javax.faces.api";
+    private static final String API_MODULE = "jakarta.faces.api";
     private static final String IMPL_MODULE = "com.sun.jsf-impl";
     private static final String INJECTION_MODULE = "org.jboss.as.jsf-injection";
 
@@ -83,6 +84,7 @@ public class JSFModuleIdFactoryTestCase {
    }
 
     @Test
+    @Ignore("Depends on https://issues.redhat.com/browse/WFLY-17405")
     public void modIdsTest() {
         Assert.assertEquals(API_MODULE, factory.getApiModId("main").getName());
         Assert.assertEquals("main", factory.getApiModId("main").getSlot());

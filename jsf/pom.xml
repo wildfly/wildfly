@@ -36,7 +36,7 @@
         <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-jsf-parent-legacy-namespace</artifactId>
+    <artifactId>wildfly-jsf-parent</artifactId>
     <packaging>pom</packaging>
 
     <name>WildFly: JSF</name>
@@ -50,7 +50,7 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-legacy-ee-bom</artifactId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>

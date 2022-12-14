@@ -49,7 +49,6 @@
     <modules>
         <module>bean-validation</module>
         <module>ee</module>
-        <module>jsf</module>
         <module>microprofile</module>
         <module>web-common</module>
         <module>weld/common</module>

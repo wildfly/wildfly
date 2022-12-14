@@ -21,8 +21,8 @@ package org.jboss.as.jsf.injection;
 
 import org.apache.myfaces.webapp.StartupServletContextListener;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import java.util.Set;
 
 /**
