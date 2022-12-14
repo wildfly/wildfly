@@ -42,7 +42,7 @@ import org.mockito.stubbing.Answer;
 /**
  * Test class for AbstractJMSContextTes.
  *
- * @author <a href="http://fnbrandao.com.br/">Fabio Nascimento Brandão</a> (c) 2021 Red Hat inc.
+ * @author <a href="http://fnbrandao.com.br/">Fabio Nascimento Brand&atilde;o</a> (c) 2021 Red Hat inc.
  */
 public class AbstractJMSContextTestCase {
 
