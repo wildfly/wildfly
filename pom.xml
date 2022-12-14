@@ -488,7 +488,6 @@
         <version.org.eclipse.microprofile.opentracing>3.0</version.org.eclipse.microprofile.opentracing>
         <legacy.version.org.eclipse.microprofile.reactive-messaging.api>2.0.1</legacy.version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-messaging.api>3.0</version.org.eclipse.microprofile.reactive-messaging.api>
-        <legacy.version.org.eclipse.microprofile.reactive-streams-operators.api>2.0</legacy.version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <legacy.version.org.eclipse.microprofile.rest.client.api>2.0</legacy.version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>

@@ -77,12 +77,6 @@
             </dependency>
 
             <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-legacy-namespace</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>io.opentracing.contrib</groupId>
                 <artifactId>opentracing-tracerresolver</artifactId>
                 <version>${legacy.version.io.opentracing.tracerresolver}</version>
@@ -205,30 +199,6 @@
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
-                <artifactId>microprofile-reactive-streams-operators-api</artifactId>
-                <version>${legacy.version.org.eclipse.microprofile.reactive-streams-operators.api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
-                <artifactId>microprofile-reactive-streams-operators-core</artifactId>
-                <version>${legacy.version.org.eclipse.microprofile.reactive-streams-operators.api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
