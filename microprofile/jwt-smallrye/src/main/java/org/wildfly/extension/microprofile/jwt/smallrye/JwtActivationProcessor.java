@@ -48,7 +48,7 @@ class JwtActivationProcessor implements DeploymentUnitProcessor {
     private static final String REALM_NAME = "realmName";
     private static final String JWT_AUTH_METHOD = "MP-JWT";
 
-    private static final DotName APPLICATION_DOT_NAME = DotName.createSimple("javax.ws.rs.core.Application");
+    private static final DotName APPLICATION_DOT_NAME = DotName.createSimple("jakarta.ws.rs.core.Application");
     private static final DotName LOGIN_CONFIG_DOT_NAME = DotName.createSimple("org.eclipse.microprofile.auth.LoginConfig");
 
 
