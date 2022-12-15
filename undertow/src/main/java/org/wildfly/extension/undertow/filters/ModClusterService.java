@@ -73,6 +73,7 @@ import java.util.function.Supplier;
  */
 public class ModClusterService extends FilterService {
 
+    private final Consumer<ModCluster> modClusterConsumer;
     private final Supplier<XnioWorker> worker;
     private final Supplier<SocketBinding> managementSocketBinding;
     private final Supplier<SocketBinding> advertiseSocketBinding;
@@ -94,12 +95,13 @@ public class ModClusterService extends FilterService {
     private final FailoverStrategy failoverStrategy;
     private final RouteParsingStrategy routeParsingStrategy;
     private final String routeDelimiter;
+    private final OptionMap clientOptions;
 
     private ModCluster modCluster;
     private MCMPConfig config;
-    private final OptionMap clientOptions;
 
     ModClusterService(final Consumer<FilterService> serviceConsumer,
+                      final Consumer<ModCluster> modClusterConsumer,
                       final Supplier<XnioWorker> worker,
                       final Supplier<SocketBinding> managementSocketBinding,
                       final Supplier<SocketBinding> advertiseSocketBinding,
@@ -124,6 +126,7 @@ public class ModClusterService extends FilterService {
                       String routeDelimiter,
                       OptionMap clientOptions) {
         super(serviceConsumer, ModClusterDefinition.INSTANCE, model);
+        this.modClusterConsumer = modClusterConsumer;
         this.worker = worker;
         this.managementSocketBinding = managementSocketBinding;
         this.advertiseSocketBinding = advertiseSocketBinding;
@@ -150,7 +153,6 @@ public class ModClusterService extends FilterService {
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        super.start(context);
 
         SSLContext sslContext = this.sslContext != null ? this.sslContext.get() : null;
 
@@ -221,10 +223,13 @@ public class ModClusterService extends FilterService {
             }
         }
         modCluster.start();
+        this.modClusterConsumer.accept(this.modCluster);
+        super.start(context);
     }
 
     @Override
     public synchronized void stop(StopContext context) {
+        this.modClusterConsumer.accept(null);
         super.stop(context);
         modCluster.stop();
         modCluster = null;
@@ -260,21 +265,10 @@ public class ModClusterService extends FilterService {
     }
 
     static void install(String name, CapabilityServiceTarget serviceTarget, ModelNode model, OperationContext operationContext) throws OperationFailedException {
-        String securityKey = null;
-        ModelNode securityKeyNode = ModClusterDefinition.SECURITY_KEY.resolveModelAttribute(operationContext, model);
-        if(securityKeyNode.isDefined()) {
-            securityKey = securityKeyNode.asString();
-        }
 
-        String managementAccessPredicateString = null;
-        ModelNode managementAccessPredicateNode = ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE.resolveModelAttribute(operationContext, model);
-        if(managementAccessPredicateNode.isDefined()) {
-            managementAccessPredicateString = managementAccessPredicateNode.asString();
-        }
-        Predicate managementAccessPredicate = null;
-        if(managementAccessPredicateString != null) {
-            managementAccessPredicate = PredicateParser.parse(managementAccessPredicateString, ModClusterService.class.getClassLoader());
-        }
+        String managementAccessPredicateString = ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE.resolveModelAttribute(operationContext, model).asStringOrNull();
+        Predicate managementAccessPredicate = (managementAccessPredicateString != null) ? managementAccessPredicate = PredicateParser.parse(managementAccessPredicateString, ModClusterService.class.getClassLoader()) : null;
+
         final ModelNode sslContext = ModClusterDefinition.SSL_CONTEXT.resolveModelAttribute(operationContext, model);
         final ModelNode securityRealm = ModClusterDefinition.SECURITY_REALM.resolveModelAttribute(operationContext, model);
         if (securityRealm.isDefined()) {
@@ -312,18 +306,20 @@ public class ModClusterService extends FilterService {
         final RuntimeCapability<?> capabilityName = ModClusterDefinition.Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition();
         final CapabilityServiceBuilder<?> sb = serviceTarget.addCapability(capabilityName);
         final Consumer<FilterService> serviceConsumer = sb.provides(capabilityName, UndertowService.FILTER.append(name));
+        final Consumer<ModCluster> modClusterConsumer = sb.provides(new ModClusterServiceNameProvider(name).getServiceName());
         final Supplier<XnioWorker> xwSupplier = sb.requiresCapability(IOServices.IO_WORKER_CAPABILITY_NAME, XnioWorker.class, workerRef);
         final Supplier<SocketBinding> msbSupplier = sb.requiresCapability(Capabilities.REF_SOCKET_BINDING, SocketBinding.class, mgmtSocketBindingRef);
         final Supplier<SocketBinding> asbSupplier = advertiseSocketBindingRef.isDefined() ? sb.requiresCapability(Capabilities.REF_SOCKET_BINDING, SocketBinding.class, advertiseSocketBindingRef.asString()) : null;
         final Supplier<SSLContext> scSupplier = sslContext.isDefined() ? sb.requiresCapability(REF_SSL_CONTEXT, SSLContext.class, sslContext.asString()) : null;
-        ModClusterService service = new ModClusterService(serviceConsumer, xwSupplier, msbSupplier, asbSupplier, scSupplier, model,
+        ModClusterService service = new ModClusterService(serviceConsumer, modClusterConsumer, xwSupplier, msbSupplier, asbSupplier, scSupplier, model,
                 ModClusterDefinition.HEALTH_CHECK_INTERVAL.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.MAX_REQUEST_TIME.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.BROKEN_NODE_TIMEOUT.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.ADVERTISE_FREQUENCY.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.ADVERTISE_PATH.resolveModelAttribute(operationContext, model).asString(),
                 ModClusterDefinition.ADVERTISE_PROTOCOL.resolveModelAttribute(operationContext, model).asString(),
-                securityKey, managementAccessPredicate,
+                ModClusterDefinition.SECURITY_KEY.resolveModelAttribute(operationContext, model).asStringOrNull(),
+                managementAccessPredicate,
                 ModClusterDefinition.CONNECTIONS_PER_THREAD.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.CACHED_CONNECTIONS_PER_THREAD.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.CONNECTION_IDLE_TIMEOUT.resolveModelAttribute(operationContext, model).asInt(),
@@ -336,9 +332,5 @@ public class ModClusterService extends FilterService {
                 builder.getMap());
         sb.setInstance(service);
         sb.install();
-    }
-
-    public ModCluster getModCluster() {
-        return modCluster;
     }
 }
