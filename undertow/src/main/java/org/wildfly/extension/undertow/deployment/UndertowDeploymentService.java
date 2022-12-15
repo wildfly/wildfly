@@ -107,6 +107,7 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
                 Deployment deployment = deploymentManager.getDeployment();
                 host.get().registerDeployment(deployment, handler);
             } catch (Throwable e ) {
+                deploymentManager.undeploy();
                 container.get().getServletContainer().removeDeployment(deploymentInfo);
                 throw e;
             } finally {
