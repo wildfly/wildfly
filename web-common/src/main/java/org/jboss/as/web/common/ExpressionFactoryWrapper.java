@@ -3,8 +3,8 @@ package org.jboss.as.web.common;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 
-import javax.el.ExpressionFactory;
-import javax.servlet.ServletContext;
+import jakarta.el.ExpressionFactory;
+import jakarta.servlet.ServletContext;
 
 /**
  * @author Stuart Douglas

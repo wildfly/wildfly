@@ -111,6 +111,9 @@
         <module>testsuite</module>
         <module>transactions</module>
         <module>undertow</module>
+        <module>webservices</module>
+        <module>web-common</module>
+        <module>xts</module>
     </modules>
 
     <scm>
@@ -2088,14 +2091,6 @@
                 <module>bean-validation</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>ee</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>rts</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>web-common</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>webservices</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>xts</module>
             </modules>
         </profile>
         <profile>
