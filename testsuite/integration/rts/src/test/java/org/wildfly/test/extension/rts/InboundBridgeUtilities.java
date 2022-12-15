@@ -48,14 +48,23 @@ final class InboundBridgeUtilities {
 
     protected JSONArray getInboundBridgeResourceInvocations() throws Exception {
         final String response = ClientBuilder.newClient().target(inboundBridgeResourceUrl).request().get(String.class);
-        final JSONArray jsonArray = new JSONArray(response);
-
+        JSONArray jsonArray = null;
+        try {
+            jsonArray = new JSONArray(response);
+        } catch (JSONException aEx) {
+            throw new RuntimeException(aEx);
+        }
         return jsonArray;
     }
 
     protected JSONArray getLoggingRestATParticipantInvocations() throws Exception {
         String response = ClientBuilder.newClient().target(loggingRestATParticipantInvocationsUrl).request().get(String.class);
-        JSONArray jsonArray = new JSONArray(response);
+        JSONArray jsonArray = null;
+        try {
+            jsonArray = new JSONArray(response);
+        } catch (JSONException aEx) {
+            throw new RuntimeException(aEx);
+        }
 
         return jsonArray;
     }

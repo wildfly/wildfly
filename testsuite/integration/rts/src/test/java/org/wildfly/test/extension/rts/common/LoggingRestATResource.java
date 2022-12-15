@@ -22,6 +22,7 @@
 package org.wildfly.test.extension.rts.common;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.jboss.jbossts.star.util.TxLinkNames;
 import org.jboss.jbossts.star.util.TxStatus;
 import org.jboss.jbossts.star.util.TxSupport;
@@ -136,8 +137,13 @@ public class LoggingRestATResource {
         if (LOG.isTraceEnabled()) {
             LOG.trace("LoggingRestATResource.getInvocations()");
         }
-
-        return new JSONArray(invocations).toString();
+        JSONArray jsonArray = null;
+        try {
+            jsonArray = new JSONArray(invocations);
+        } catch (JSONException aEx) {
+            throw new RuntimeException(aEx);
+        }
+        return jsonArray.toString();
     }
 
     @PUT

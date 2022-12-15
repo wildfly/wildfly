@@ -22,6 +22,7 @@
 package org.wildfly.test.extension.rts.common;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;
@@ -55,7 +56,13 @@ public class InboundBridgeResourceEjb {
         if (loggingXAResource == null) {
             throw new WebApplicationException(409);
         }
-        return new JSONArray(loggingXAResource.getInvocations()).toString();
+        JSONArray jsonArray = null;
+        try {
+            jsonArray = new JSONArray(loggingXAResource.getInvocations());
+        } catch (JSONException aEx) {
+            throw new RuntimeException(aEx);
+        }
+        return jsonArray.toString();
     }
 
     @POST

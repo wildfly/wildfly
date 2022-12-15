@@ -33,6 +33,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 
 import com.arjuna.ats.jta.TransactionManager;
 import org.jboss.logging.Logger;
@@ -63,7 +64,13 @@ public class InboundBridgeResource {
             throw new WebApplicationException(409);
         }
 
-        return new JSONArray(loggingXAResource.getInvocations()).toString();
+        JSONArray jsonArray = null;
+        try {
+            jsonArray = new JSONArray(loggingXAResource.getInvocations());
+        } catch (JSONException aEx) {
+            throw new RuntimeException(aEx);
+        }
+        return jsonArray.toString();
     }
 
     @POST
