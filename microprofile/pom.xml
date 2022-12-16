@@ -46,7 +46,10 @@
         <module>fault-tolerance-smallrye</module>
         <module>galleon-common</module>
         <module>health-smallrye</module>
+        <module>metrics-smallrye</module>
         <module>openapi-smallrye</module>
+        <module>opentracing-extension</module>
+        <module>opentracing-smallrye</module>
         <module>reactive-messaging-smallrye</module>
         <module>reactive-streams-operators-smallrye</module>
     </modules>
@@ -68,17 +71,12 @@
             <id>ee8.build.profile</id>
             <activation>
                 <property>
-                    <name>!skip.ee8</name>
+                    <name>!quickly</name>
                 </property>
             </activation>
             <modules>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>jwt-smallrye</module>
-                <module>metrics-smallrye</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>opentracing-extension</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>opentracing-smallrye</module>
             </modules>
         </profile>
     </profiles>

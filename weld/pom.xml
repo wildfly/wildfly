@@ -67,7 +67,7 @@
             <id>ee8.build.profile</id>
             <activation>
                 <property>
-                    <name>!skip.ee8</name>
+                    <name>!quickly</name>
                 </property>
             </activation>
             <modules>

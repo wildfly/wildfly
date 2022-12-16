@@ -72,15 +72,27 @@
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
         </dependency>
-
-        <!-- Test dependencies -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-spi</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>include-test-dependency</id>
+            <activation>
+                <property>
+                    <name>!quickly</name>
+                </property>
+            </activation>
+            <dependencies>
+                <!-- Test dependencies -->
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-clustering-ee-spi</artifactId>
+                    <version>${project.version}</version>
+                    <scope>test</scope>
+                    <classifier>tests</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
 </project>

@@ -59,8 +59,6 @@
         <module>boms/common-expansion</module>
         <module>boms/legacy-ee</module>
         <module>boms/legacy-expansion</module>
-        <module>boms/preview-ee</module>
-        <module>boms/preview-expansion</module>
         <module>boms/standard-ee</module>
         <module>boms/standard-expansion</module>
         <module>build</module>
@@ -74,7 +72,6 @@
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
         <module>ee-security</module>
-        <module>ee-9</module>
         <module>ejb3</module>
         <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
@@ -105,12 +102,14 @@
         <module>system-jmx</module>
         <module>spec-api</module>
         <module>servlet-feature-pack</module>
+        <module>webservices</module>
         <module>weld</module>
         <module>testsuite/test-feature-pack</module>
         <module>testsuite/shared</module>
         <module>testsuite</module>
         <module>transactions</module>
         <module>undertow</module>
+        <module>xts</module>
     </modules>
 
     <scm>
@@ -2076,6 +2075,24 @@
             <build>
                 <defaultGoal>clean install</defaultGoal>
             </build>
+            <modules>
+                <!-- TODO remove this when no more source transformation is required -->
+                <module>ee-9/source-transform</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>default-build</id>
+            <activation>
+                <property>
+                    <name>!quickly</name>
+                </property>
+            </activation>
+            <modules>
+                <module>boms/preview-ee</module>
+                <module>boms/preview-expansion</module>
+                <module>ee-9</module>
+            </modules>
         </profile>
 
         <profile>
@@ -2091,13 +2108,7 @@
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>ee</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>rts</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>web-common</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>webservices</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>xts</module>
             </modules>
         </profile>
         <profile>

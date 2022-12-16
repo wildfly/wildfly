@@ -109,18 +109,31 @@
 
         <!-- Test dependencies -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-
-        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>include-test-dependency</id>
+            <activation>
+                <property>
+                    <name>!quickly</name>
+                </property>
+            </activation>
+            <dependencies>
+                <!-- Test dependencies -->
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-clustering-common</artifactId>
+                    <version>${project.version}</version>
+                    <scope>test</scope>
+                    <classifier>tests</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

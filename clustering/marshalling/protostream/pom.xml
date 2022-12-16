@@ -76,25 +76,38 @@
 
         <!-- Test dependencies -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-api</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-
-        <dependency>
             <groupId>org.infinispan.protostream</groupId>
             <artifactId>protostream-processor</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>include-test-dependency</id>
+            <activation>
+                <property>
+                    <name>!quickly</name>
+                </property>
+            </activation>
+            <dependencies>
+                <!-- Test dependencies -->
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-clustering-marshalling-api</artifactId>
+                    <version>${project.version}</version>
+                    <scope>test</scope>
+                    <classifier>tests</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-clustering-marshalling-spi</artifactId>
+                    <version>${project.version}</version>
+                    <scope>test</scope>
+                    <classifier>tests</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
 </project>
