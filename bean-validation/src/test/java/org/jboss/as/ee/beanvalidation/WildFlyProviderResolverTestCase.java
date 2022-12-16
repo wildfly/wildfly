@@ -25,8 +25,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import javax.validation.ValidationProviderResolver;
-import javax.validation.spi.ValidationProvider;
+import jakarta.validation.ValidationProviderResolver;
+import jakarta.validation.spi.ValidationProvider;
 
 import org.hibernate.validator.HibernateValidator;
 import org.jboss.as.ee.beanvalidation.testprovider.MyValidationProvider;

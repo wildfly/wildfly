@@ -26,8 +26,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 import org.hibernate.validator.HibernateValidatorFactory;
 import org.jboss.as.ee.beanvalidation.testprovider.MyValidatorImpl;
