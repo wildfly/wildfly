@@ -66,14 +66,6 @@ public abstract class AbstractHandlerDefinition extends PersistentResourceDefini
         super(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name));
     }
 
-    /**
-     * @deprecated Use {@link AbstractHandlerDefinition#AbstractHandlerDefinition(org.jboss.as.controller.SimpleResourceDefinition.Parameters)} instead.
-     */
-    @Deprecated
-    protected AbstractHandlerDefinition(final Parameters parameters) {
-        super(parameters);
-    }
-
     protected AbstractHandlerDefinition(final SimpleResourceDefinition.Parameters parameters) {
         super(parameters);
     }
