@@ -40,9 +40,8 @@ import org.jboss.dmr.ModelType;
  */
 public class TracerDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_TRACER = PathElement.pathElement(TRACER, TRACER);
-    static final TracerDefinition INSTANCE = new TracerDefinition();
 
-    private TracerDefinition() {
+    TracerDefinition() {
         super(PATH_TRACER,
                 JcaExtension.getResourceDescriptionResolver(PATH_TRACER.getKey()),
                 TracerAdd.INSTANCE,
