@@ -30,9 +30,11 @@ import static org.wildfly.extension.datasources.agroal.AgroalExtension.getResolv
 import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -49,6 +51,7 @@ class DriverDefinition extends PersistentResourceDefinition {
 
     private static final String AGROAL_DRIVER_CAPABILITY_NAME = "org.wildfly.data-source.agroal-driver";
 
+    static final PathElement PATH = pathElement("driver");
     static final RuntimeCapability<Void> AGROAL_DRIVER_CAPABILITY = RuntimeCapability.Builder.of(AGROAL_DRIVER_CAPABILITY_NAME, true, Class.class).build();
 
     static final String DRIVERS_ELEMENT_NAME = "drivers";
@@ -70,13 +73,10 @@ class DriverDefinition extends PersistentResourceDefinition {
 
     static final Collection<AttributeDefinition> ATTRIBUTES = unmodifiableList(asList(MODULE_ATTRIBUTE, CLASS_ATTRIBUTE));
 
-    static final DriverDefinition INSTANCE = new DriverDefinition();
-
     // --- //
 
-    private DriverDefinition() {
-        // TODO The cast to PersistentResourceDefinition.Parameters is a workaround to WFCORE-4040
-        super((Parameters) new Parameters(pathElement("driver"), getResolver("driver"))
+    DriverDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH, getResolver("driver"))
                 .setCapabilities(AGROAL_DRIVER_CAPABILITY)
                 .setAddHandler(DriverOperations.ADD_OPERATION)
                 .setRemoveHandler(DriverOperations.REMOVE_OPERATION)

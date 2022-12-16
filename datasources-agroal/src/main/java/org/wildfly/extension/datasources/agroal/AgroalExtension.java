@@ -66,7 +66,7 @@ public class AgroalExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(AgroalSubsystemDefinition.INSTANCE);
+        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new AgroalSubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         subsystem.registerXMLElementWriter(AgroalSubsystemParser_2_0.INSTANCE);
