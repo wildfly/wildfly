@@ -33,6 +33,7 @@ import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} which processes EJB deployments and configures the
@@ -42,11 +43,11 @@ import java.util.List;
  */
 public class MissingMethodPermissionsDenyAccessMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
 
-    private volatile boolean denyAccessByDefault = false;
+    private final AtomicBoolean denyAccessByDefault;
 
-
-    public MissingMethodPermissionsDenyAccessMergingProcessor() {
+    public MissingMethodPermissionsDenyAccessMergingProcessor(AtomicBoolean denyAccessByDefault) {
         super(EJBComponentDescription.class);
+        this.denyAccessByDefault = denyAccessByDefault;
     }
 
     @Override
@@ -83,16 +84,7 @@ public class MissingMethodPermissionsDenyAccessMergingProcessor extends Abstract
         } else if (missingMethodPermissionsDenyAccessApplicableForAllBeans != null) {
             description.setMissingMethodPermissionsDenyAccess(missingMethodPermissionsDenyAccessApplicableForAllBeans);
         } else {
-            description.setMissingMethodPermissionsDenyAccess(denyAccessByDefault);
+            description.setMissingMethodPermissionsDenyAccess(this.denyAccessByDefault.get());
         }
-
-    }
-
-    public boolean isDenyAccessByDefault() {
-        return denyAccessByDefault;
-    }
-
-    public void setDenyAccessByDefault(final boolean denyAccessByDefault) {
-        this.denyAccessByDefault = denyAccessByDefault;
     }
 }

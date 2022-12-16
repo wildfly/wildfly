@@ -44,6 +44,7 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.auth.server.SecurityDomain;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
@@ -54,16 +55,16 @@ import java.util.function.Function;
  *
  * @author Jaikiran Pai
  */
-public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcessor {
+public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcessor, Function<String, ApplicationSecurityDomainConfig>, BooleanSupplier {
 
-    private volatile String defaultSecurityDomainName;
-    private volatile Function<String, ApplicationSecurityDomainConfig> knownSecurityDomain;
-    private volatile BooleanSupplier outflowSecurityDomainsConfigured;
+    private final AtomicReference<String> defaultSecurityDomainName;
+    private final Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains;
+    private final Iterable<String> outflowSecurityDomains;
 
-    public EJBDefaultSecurityDomainProcessor(final String defaultSecurityDomainName, final Function<String, ApplicationSecurityDomainConfig> knownSecurityDomain, final BooleanSupplier outflowSecurityDomainsConfigured) {
+    public EJBDefaultSecurityDomainProcessor(AtomicReference<String> defaultSecurityDomainName, Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, Iterable<String> outflowSecurityDomains) {
         this.defaultSecurityDomainName = defaultSecurityDomainName;
-        this.knownSecurityDomain = knownSecurityDomain;
-        this.outflowSecurityDomainsConfigured = outflowSecurityDomainsConfigured;
+        this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
+        this.outflowSecurityDomains = outflowSecurityDomains;
     }
 
     @Override
@@ -79,7 +80,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         }
         final String defaultSecurityDomain;
         if(eeModuleDescription.getDefaultSecurityDomain() == null) {
-            defaultSecurityDomain = this.defaultSecurityDomainName;
+            defaultSecurityDomain = this.defaultSecurityDomainName.get();
         } else {
             defaultSecurityDomain = eeModuleDescription.getDefaultSecurityDomain();
         }
@@ -91,7 +92,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
 
         final ServiceName ejbSecurityDomainServiceName = deploymentUnit.getServiceName().append(EJBSecurityDomainService.SERVICE_NAME);
 
-        final ApplicationSecurityDomainConfig defaultDomainMapping = knownSecurityDomain.apply(defaultSecurityDomain);
+        final ApplicationSecurityDomainConfig defaultDomainMapping = this.apply(defaultSecurityDomain);
         final ServiceName defaultElytronDomainServiceName;
         if (defaultDomainMapping != null) {
             defaultElytronDomainServiceName = support
@@ -116,7 +117,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
 
                     String definedSecurityDomain = ejbComponentDescription.getDefinedSecurityDomain();
                     defaultRequired = defaultRequired || definedSecurityDomain == null;
-                    ApplicationSecurityDomainConfig definedDomainMapping = definedSecurityDomain != null ? knownSecurityDomain.apply(definedSecurityDomain) : null;
+                    ApplicationSecurityDomainConfig definedDomainMapping = definedSecurityDomain != null ? this.apply(definedSecurityDomain) : null;
 
                     if (definedDomainMapping != null) {
                         if (selectedElytronDomainName == null) {
@@ -177,7 +178,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                         // The component may have had a legacy SecurityDomain defined.
                         if (useDefaultElytronMapping
                                 || selectedElytronDomainName.equals(definedSecurityDomain)) {
-                            ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
+                            ejbComponentDescription.setOutflowSecurityDomainsConfigured(this);
                             ejbComponentDescription.setSecurityDomainServiceName(elytronDomainServiceName);
                             ejbComponentDescription.setRequiresJacc(selectedElytronDomainConfig.isEnableJacc());
                             ejbComponentDescription.setLegacyCompliantPrincipalPropagation(selectedElytronDomainConfig.isLegacyCompliantPrincipalPropagation());
@@ -185,7 +186,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                                             configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.requires(ejbSecurityDomainServiceName))
                             );
                         } else if (definedSecurityDomain == null && defaultDomainMapping != null) {
-                            ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
+                            ejbComponentDescription.setOutflowSecurityDomainsConfigured(this);
                             ejbComponentDescription.setSecurityDomainServiceName(defaultElytronDomainServiceName);
                             ejbComponentDescription.setRequiresJacc(defaultDomainMapping.isEnableJacc());
                             ejbComponentDescription.setLegacyCompliantPrincipalPropagation(defaultDomainMapping.isLegacyCompliantPrincipalPropagation());
@@ -210,7 +211,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                 if (componentDescription instanceof EJBComponentDescription) {
                     EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
                     ejbComponentDescription.setSecurityDomainServiceName(elytronDomainServiceName);
-                    ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
+                    ejbComponentDescription.setOutflowSecurityDomainsConfigured(this);
                     componentDescription.getConfigurators()
                             .add((context, description, configuration) -> configuration.getCreateDependencies()
                                     .add((serviceBuilder, service) -> serviceBuilder.requires(ejbSecurityDomainServiceName)));
@@ -219,13 +220,18 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         }
     }
 
-    /**
-     * Sets the default security domain name to be used for Jakarta Enterprise Beans components, if no explicit security domain
-     * is configured for the bean.
-     *
-     * @param securityDomainName The security domain name. Can be null.
-     */
-    public void setDefaultSecurityDomainName(final String securityDomainName) {
-        this.defaultSecurityDomainName = securityDomainName;
+    @Override
+    public ApplicationSecurityDomainConfig apply(String name) {
+        for (ApplicationSecurityDomainConfig applicationSecurityDomainConfig : this.knownApplicationSecurityDomains) {
+            if (applicationSecurityDomainConfig.isSameDomain(name)) {
+                return applicationSecurityDomainConfig;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean getAsBoolean() {
+        return this.outflowSecurityDomains.iterator().hasNext();
     }
 }

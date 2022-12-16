@@ -59,10 +59,9 @@ public class EJB3AsyncResourceDefinition extends SimpleResourceDefinition {
                     .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { THREAD_POOL_NAME };
-    public static final EJB3AsyncResourceDefinition INSTANCE = new EJB3AsyncResourceDefinition();
 
-    private EJB3AsyncResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.ASYNC_SERVICE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.ASYNC))
+    EJB3AsyncResourceDefinition() {
+        super(new Parameters(EJB3SubsystemModel.ASYNC_SERVICE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.ASYNC))
                 .setAddHandler(new EJB3AsyncServiceAdd(ATTRIBUTES))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(ASYNC_SERVICE_CAPABILITY));

@@ -119,7 +119,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerChildren(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new FileDataStoreResourceDefinition(pathManager));
-        resourceRegistration.registerSubModel(DatabaseDataStoreResourceDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(new DatabaseDataStoreResourceDefinition());
     }
 
 }

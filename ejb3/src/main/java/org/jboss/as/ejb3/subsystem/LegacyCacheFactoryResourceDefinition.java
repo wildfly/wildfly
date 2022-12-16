@@ -63,9 +63,7 @@ public class LegacyCacheFactoryResourceDefinition extends SimpleResourceDefiniti
     private static final LegacyCacheFactoryAdd ADD_HANDLER = new LegacyCacheFactoryAdd(ATTRIBUTES);
     private static final LegacyCacheFactoryRemove REMOVE_HANDLER = new LegacyCacheFactoryRemove(ADD_HANDLER);
 
-    public static final LegacyCacheFactoryResourceDefinition INSTANCE = new LegacyCacheFactoryResourceDefinition();
-
-    private LegacyCacheFactoryResourceDefinition() {
+    LegacyCacheFactoryResourceDefinition() {
         super(PathElement.pathElement(EJB3SubsystemModel.CACHE),
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CACHE),
                 ADD_HANDLER, REMOVE_HANDLER,
