@@ -52,7 +52,7 @@ class BeanValidationSubsystemParser implements XMLStreamConstants, XMLElementRea
     private static final PersistentResourceXMLDescription XML_DESCRIPTION;
 
     static {
-        XML_DESCRIPTION = builder(BeanValidationRootDefinition.INSTANCE)
+        XML_DESCRIPTION = builder(BeanValidationRootDefinition.INSTANCE.getPathElement())
                 .build();
     }
 
