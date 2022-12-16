@@ -22,7 +22,7 @@
 package org.wildfly.clustering.web.hotrod.session;
 
 import java.time.Duration;
-import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.Registrar;
@@ -33,13 +33,14 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.ConcurrentSessionManager;
+import org.wildfly.clustering.web.cache.session.DelegatingSessionManagerConfiguration;
 import org.wildfly.clustering.web.cache.session.MarshalledValueSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.hotrod.session.coarse.CoarseSessionAttributesFactory;
 import org.wildfly.clustering.web.hotrod.session.fine.FineSessionAttributesFactory;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
+import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
@@ -55,7 +56,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
 public class HotRodSessionManagerFactory<S, SC, AL, LC> implements SessionManagerFactory<SC, LC, TransactionBatch> {
 
     private final HotRodConfiguration configuration;
-    private final Registrar<SessionExpirationListener> expirationListenerRegistrar;
+    private final Registrar<Consumer<ImmutableSession>> expirationListenerRegistrar;
     private final SessionFactory<SC, CompositeSessionMetaDataEntry<LC>, ?, LC> factory;
 
     public HotRodSessionManagerFactory(HotRodSessionManagerFactoryConfiguration<S, SC, AL, LC> configuration) {
@@ -69,26 +70,11 @@ public class HotRodSessionManagerFactory<S, SC, AL, LC> implements SessionManage
     @Override
     public SessionManager<LC, TransactionBatch> createSessionManager(SessionManagerConfiguration<SC> configuration) {
         Duration transactionTimeout = Duration.ofMillis(this.configuration.getCache().getRemoteCacheContainer().getConfiguration().transactionTimeout());
-        Registrar<SessionExpirationListener> expirationRegistrar = this.expirationListenerRegistrar;
-        HotRodSessionManagerConfiguration<SC> config = new AbstractHotRodSessionManagerConfiguration<>(this.configuration) {
+        Registrar<Consumer<ImmutableSession>> expirationListenerRegistrar = this.expirationListenerRegistrar;
+        HotRodSessionManagerConfiguration<SC> config = new AbstractHotRodSessionManagerConfiguration<>(configuration, this.configuration) {
             @Override
-            public SessionExpirationListener getExpirationListener() {
-                return configuration.getExpirationListener();
-            }
-
-            @Override
-            public Registrar<SessionExpirationListener> getExpirationListenerRegistrar() {
-                return expirationRegistrar;
-            }
-
-            @Override
-            public Supplier<String> getIdentifierFactory() {
-                return configuration.getIdentifierFactory();
-            }
-
-            @Override
-            public SC getServletContext() {
-                return configuration.getServletContext();
+            public Registrar<Consumer<ImmutableSession>> getExpirationListenerRegistrar() {
+                return expirationListenerRegistrar;
             }
 
             @Override
@@ -119,10 +105,11 @@ public class HotRodSessionManagerFactory<S, SC, AL, LC> implements SessionManage
         }
     }
 
-    private abstract static class AbstractHotRodSessionManagerConfiguration<SC> implements HotRodSessionManagerConfiguration<SC> {
+    private abstract static class AbstractHotRodSessionManagerConfiguration<SC> extends DelegatingSessionManagerConfiguration<SC> implements HotRodSessionManagerConfiguration<SC> {
         private final HotRodConfiguration configuration;
 
-        AbstractHotRodSessionManagerConfiguration(HotRodConfiguration configuration) {
+        AbstractHotRodSessionManagerConfiguration(SessionManagerConfiguration<SC> managerConfiguration, HotRodConfiguration configuration) {
+            super(managerConfiguration);
             this.configuration = configuration;
         }
 

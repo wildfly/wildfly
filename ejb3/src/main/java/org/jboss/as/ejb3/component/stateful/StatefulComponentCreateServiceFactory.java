@@ -29,9 +29,9 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
-import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheFactory;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.DefaultStatefulBeanSessionTimeoutWriteHandler;
 import org.jboss.ejb.client.SessionID;
@@ -57,7 +57,7 @@ public class StatefulComponentCreateServiceFactory extends EJBComponentCreateSer
             }
         });
         StatefulComponentDescription description = (StatefulComponentDescription) configuration.getComponentDescription();
-        SupplierDependency<CacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory = new InjectedValueDependency<>(description.getCacheFactoryServiceName(), (Class<CacheFactory<SessionID, StatefulSessionComponentInstance>>) (Class<?>) CacheFactory.class);
+        SupplierDependency<StatefulSessionBeanCacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory = new InjectedValueDependency<>(description.getCacheFactoryServiceName(), (Class<StatefulSessionBeanCacheFactory<SessionID, StatefulSessionComponentInstance>>) (Class<?>) StatefulSessionBeanCacheFactory.class);
         configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
             @Override
             public void configureDependency(ServiceBuilder<?> builder, ComponentStartService service) {

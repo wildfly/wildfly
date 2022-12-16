@@ -23,6 +23,7 @@
 package org.wildfly.clustering.ejb.timer;
 
 /**
+ * Enumerates the supported timer types.
  * @author Paul Ferraro
  */
 public enum TimerType {

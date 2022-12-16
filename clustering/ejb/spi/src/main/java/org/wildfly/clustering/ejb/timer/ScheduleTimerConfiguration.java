@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 /**
+ * Encapsulates the configuration of a schedule timer.
  * @author Paul Ferraro
  */
 public interface ScheduleTimerConfiguration extends TimerConfiguration {

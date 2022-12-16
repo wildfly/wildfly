@@ -31,7 +31,10 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ejb.timer.Timer;
 
 /**
+ * Factory for creating {@link Synchronization} instances for a distributed timer service.
+ * Used to defer timer activation or cancellation until an active transaction is committed.
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
  */
 public interface TimerSynchronizationFactory<I> {
 

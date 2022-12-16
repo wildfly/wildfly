@@ -23,7 +23,9 @@
 package org.wildfly.clustering.ejb.timer;
 
 /**
+ * Describes the properties of a timer, and its controlling mechanisms.
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
  */
 public interface Timer<I> {
 

@@ -30,6 +30,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -58,21 +59,20 @@ import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
  */
 @ClientListener(converterFactoryName = "___eager-key-value-version-converter", useRawData = true) // References org.infinispan.server.hotrod.KeyValueVersionConverterFactory
-public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V, L> implements Registrar<SessionExpirationListener> {
+public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V, L> implements Registrar<Consumer<ImmutableSession>> {
 
     private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
     private final RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
     private final ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory;
     private final ImmutableSessionAttributesFactory<V> attributesFactory;
     private final Remover<String> attributesRemover;
-    private final Collection<SessionExpirationListener> listeners = new CopyOnWriteArraySet<>();
+    private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
     private final ExecutorService executor = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
     private final boolean nearCacheEnabled;
 
@@ -112,7 +112,7 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
         ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory = this.metaDataFactory;
         ImmutableSessionAttributesFactory<V> attributesFactory = this.attributesFactory;
         Remover<String> attributesRemover = this.attributesRemover;
-        Collection<SessionExpirationListener> listeners = this.listeners;
+        Collection<Consumer<ImmutableSession>> listeners = this.listeners;
         boolean nearCacheEnabled = this.nearCacheEnabled;
         Runnable task = new Runnable() {
             @Override
@@ -143,8 +143,8 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
                             ImmutableSessionAttributes attributes = attributesFactory.createImmutableSessionAttributes(id, attributesValue);
                             ImmutableSession session = HotRodSessionFactory.this.createImmutableSession(id, metaData, attributes);
                             Logger.ROOT_LOGGER.tracef("Session %s has expired.", id);
-                            for (SessionExpirationListener listener : listeners) {
-                                listener.sessionExpired(session);
+                            for (Consumer<ImmutableSession> listener : listeners) {
+                                listener.accept(session);
                             }
                             attributesRemover.remove(id);
                         }
@@ -158,7 +158,7 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
     }
 
     @Override
-    public Registration register(SessionExpirationListener listener) {
+    public Registration register(Consumer<ImmutableSession> listener) {
         this.listeners.add(listener);
         return () -> this.listeners.remove(listener);
     }

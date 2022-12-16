@@ -47,7 +47,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.UUIDFactory;
-import org.wildfly.clustering.ejb.BeanConfiguration;
 import org.wildfly.clustering.ejb.timer.TimeoutListener;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
 import org.wildfly.clustering.ejb.timer.TimerManager;
@@ -55,12 +54,14 @@ import org.wildfly.clustering.ejb.timer.TimerManagerConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactory;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactoryConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
+import org.wildfly.clustering.ejb.timer.TimerServiceConfiguration;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
 
 /**
+ * Configures a service that provides a distributed {@link TimerServiceFactory}.
  * @author Paul Ferraro
  */
 public class DistributableTimerServiceFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, TimerManagerFactoryConfiguration<UUID>, ManagedTimerServiceFactory, TimerRegistry<UUID> {
@@ -83,18 +84,18 @@ public class DistributableTimerServiceFactoryServiceConfigurator extends SimpleS
 
     private final TimerServiceRegistry registry;
     private final TimedObjectInvokerFactory invokerFactory;
-    private final BeanConfiguration config;
+    private final TimerServiceConfiguration configuration;
     private final TimerListener registrar;
     private final TimerManagementProvider provider;
     private final Predicate<TimerConfig> filter;
 
     private volatile ServiceConfigurator configurator;
 
-    public DistributableTimerServiceFactoryServiceConfigurator(ServiceName name, ManagedTimerServiceFactoryConfiguration factoryConfiguration, BeanConfiguration beanConfiguration, TimerManagementProvider provider, Predicate<TimerConfig> filter) {
+    public DistributableTimerServiceFactoryServiceConfigurator(ServiceName name, ManagedTimerServiceFactoryConfiguration factoryConfiguration, TimerServiceConfiguration configuration, TimerManagementProvider provider, Predicate<TimerConfig> filter) {
         super(name);
         this.registry = factoryConfiguration.getTimerServiceRegistry();
         this.invokerFactory = factoryConfiguration.getInvokerFactory();
-        this.config = beanConfiguration;
+        this.configuration = configuration;
         this.registrar = factoryConfiguration.getTimerListener();
         this.provider = provider;
         this.filter = filter;
@@ -106,13 +107,13 @@ public class DistributableTimerServiceFactoryServiceConfigurator extends SimpleS
         TimerServiceRegistry registry = this.registry;
         TimerListener timerListener = this.registrar;
         Predicate<TimerConfig> filter = this.filter;
-        BeanConfiguration beanConfig = this.config;
+        TimerServiceConfiguration configuration = this.configuration;
         TimerSynchronizationFactory<UUID> synchronizationFactory = new DistributableTimerSynchronizationFactory<>(this.getRegistry());
         TimeoutListener<UUID, Batch> timeoutListener = new DistributableTimeoutListener<>(invoker, synchronizationFactory);
         TimerManager<UUID, Batch> manager = this.factory.get().createTimerManager(new TimerManagerConfiguration<UUID, Batch>() {
             @Override
-            public BeanConfiguration getBeanConfiguration() {
-                return beanConfig;
+            public TimerServiceConfiguration getTimerServiceConfiguration() {
+                return configuration;
             }
 
             @Override
@@ -214,7 +215,7 @@ public class DistributableTimerServiceFactoryServiceConfigurator extends SimpleS
     }
 
     @Override
-    public BeanConfiguration getBeanConfiguration() {
-        return this.config;
+    public TimerServiceConfiguration getTimerServiceConfiguration() {
+        return this.configuration;
     }
 }

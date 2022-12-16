@@ -94,6 +94,7 @@ public class CompositeSessionFactoryTestCase {
         assertSame(attributes, existingSessionResult.getValue());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void remove() {
         String id = "id";

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -33,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.distribution.DistributionManager;
@@ -145,7 +145,7 @@ public class CacheGroup implements AutoCloseableGroup<Address>, AutoCloseable, F
         if (!this.listeners.isEmpty()) {
             this.executor.execute(new GroupListenerNotificationTask(this.listeners.entrySet(), previousMembership, membership, event.isMergeView()));
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     @TopologyChanged
@@ -162,7 +162,7 @@ public class CacheGroup implements AutoCloseableGroup<Address>, AutoCloseable, F
             // Purge obsolete views
             this.views.headMap(viewId).clear();
         });
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     @Override

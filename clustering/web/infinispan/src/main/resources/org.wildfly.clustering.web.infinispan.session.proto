@@ -24,11 +24,3 @@ message SessionAccessMetaDataKey {
 enum SessionCreationMetaDataKeyFilter {
 	INSTANCE	= 0;
 }
-
-/**
- * @TypeId(203)
- */
-message SimpleSessionExpirationMetaData {
-	optional	java.time.Duration	maxInactiveInterval	 = 1;
-	optional	java.time.Instant	lastAccessEndTime	 = 2;
-}

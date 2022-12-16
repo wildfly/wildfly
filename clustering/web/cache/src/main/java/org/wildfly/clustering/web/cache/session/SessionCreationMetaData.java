@@ -33,7 +33,7 @@ public interface SessionCreationMetaData extends ImmutableSessionCreationMetaDat
      * Sets the maximum duration of time this session may remain idle before it will be expired by the session manager.
      * @param a maximum duration of time this session may remain idle before it will be expired by the session manager.
      */
-    void setMaxInactiveInterval(Duration duration);
+    void setTimeout(Duration duration);
 
     /**
      * Indicates whether or not this session has been invalidated.

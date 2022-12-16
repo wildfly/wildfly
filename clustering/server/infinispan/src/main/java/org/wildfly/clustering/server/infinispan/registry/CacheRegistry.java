@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -40,7 +41,6 @@ import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.KeyPartitioner;
@@ -239,7 +239,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
                 });
             }
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     @CacheEntryCreated
@@ -251,7 +251,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
                 this.executor.execute(() -> this.notifyListeners(event.getType(), entry));
             }
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     @CacheEntryRemoved
@@ -263,7 +263,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
                 this.executor.execute(() -> this.notifyListeners(event.getType(), entry));
             }
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     private void notifyListeners(Event.Type type, Map.Entry<K, V> entry) {

@@ -35,9 +35,9 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.session.SessionExpirationMetaData;
 
 /**
  * Unit test for {@link SessionExpirationScheduler}.
@@ -60,16 +60,18 @@ public class SessionExpirationSchedulerTestCase {
 
         when(batcher.createBatch()).thenReturn(batch);
 
-        when(immortalSessionMetaData.getMaxInactiveInterval()).thenReturn(Duration.ZERO);
-        when(expiringSessionMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofMillis(1L));
-        when(canceledSessionMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofSeconds(100L));
+        when(immortalSessionMetaData.isImmortal()).thenReturn(true);
+        when(expiringSessionMetaData.isImmortal()).thenReturn(false);
+        when(canceledSessionMetaData.isImmortal()).thenReturn(false);
+        when(expiringSessionMetaData.getTimeout()).thenReturn(Duration.ofMillis(1L));
+        when(canceledSessionMetaData.getTimeout()).thenReturn(Duration.ofSeconds(100L));
 
         Instant now = Instant.now();
-        when(expiringSessionMetaData.getLastAccessEndTime()).thenReturn(now);
-        when(canceledSessionMetaData.getLastAccessEndTime()).thenReturn(now);
+        when(expiringSessionMetaData.getLastAccessTime()).thenReturn(now);
+        when(canceledSessionMetaData.getLastAccessTime()).thenReturn(now);
         when(remover.remove(expiringSessionId)).thenReturn(true);
 
-        try (Scheduler<String, SessionExpirationMetaData> scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover, Duration.ZERO)) {
+        try (Scheduler<String, ExpirationMetaData> scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover, Duration.ZERO)) {
             scheduler.schedule(immortalSessionId, immortalSessionMetaData);
             scheduler.schedule(canceledSessionId, canceledSessionMetaData);
             scheduler.schedule(expiringSessionId, expiringSessionMetaData);

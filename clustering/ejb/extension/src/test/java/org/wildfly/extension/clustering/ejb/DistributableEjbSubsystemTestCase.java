@@ -91,12 +91,12 @@ public class DistributableEjbSubsystemTestCase extends ClusteringSubsystemTest<D
         ModelNode anotherBeanManagementProvider = Util.createAddOperation(anotherBeanManagementProviderAddress);
         anotherBeanManagementProvider.get(InfinispanBeanManagementResourceDefinition.Attribute.CACHE_CONTAINER.getName()).set("foo");
         anotherBeanManagementProvider.get(InfinispanBeanManagementResourceDefinition.Attribute.CACHE.getName()).set("bar");
-        anotherBeanManagementProvider.get(InfinispanBeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName()).set(11);
+        anotherBeanManagementProvider.get(BeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName()).set(11);
         ModelNode addResponse = ks.executeOperation(anotherBeanManagementProvider);
         assertEquals(addResponse.toString(), ModelDescriptionConstants.SUCCESS, addResponse.get(ModelDescriptionConstants.OUTCOME).asString());
 
         // check max-active-beans attribute value
-        ModelNode readMaxActiveBeansAttribute = Util.getReadAttributeOperation(anotherBeanManagementProviderAddress, InfinispanBeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName());
+        ModelNode readMaxActiveBeansAttribute = Util.getReadAttributeOperation(anotherBeanManagementProviderAddress, BeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName());
         ModelNode readMaxActiveBeansResult = ks.executeOperation(readMaxActiveBeansAttribute);
         assertEquals(readMaxActiveBeansResult.toString(), ModelDescriptionConstants.SUCCESS, readMaxActiveBeansResult.get(ModelDescriptionConstants.OUTCOME).asString());
         assertEquals(readMaxActiveBeansResult.toString(), 11, readMaxActiveBeansResult.get(ModelDescriptionConstants.RESULT).asInt());
@@ -150,7 +150,7 @@ public class DistributableEjbSubsystemTestCase extends ClusteringSubsystemTest<D
         final ModelNode beanManagement = subsystem.get(InfinispanBeanManagementResourceDefinition.pathElement("default").getKeyValuePair());
 
         // default within the expression should be 10000
-        final int maxActiveBeans = beanManagement.get(InfinispanBeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName()).resolve().asInt();
+        final int maxActiveBeans = beanManagement.get(BeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName()).resolve().asInt();
         assertEquals(10000, maxActiveBeans);
 
         ModelNode persistentTimerManagement = subsystem.get(InfinispanTimerManagementResourceDefinition.pathElement("distributed").getKeyValuePair());

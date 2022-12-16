@@ -23,6 +23,7 @@
 package org.wildfly.clustering.ejb.timer;
 
 /**
+ * Factory for creating a default timer management provider in the event that the server configuration is missing the distributable-ejb subsystem.
  * @author Paul Ferraro
  */
 public interface LegacyTimerManagementProviderFactory {

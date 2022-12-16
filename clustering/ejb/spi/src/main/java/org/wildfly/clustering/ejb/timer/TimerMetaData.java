@@ -25,6 +25,7 @@ package org.wildfly.clustering.ejb.timer;
 import java.time.Instant;
 
 /**
+ * Describes the metadata of a timer.
  * @author Paul Ferraro
  */
 public interface TimerMetaData extends ImmutableTimerMetaData {

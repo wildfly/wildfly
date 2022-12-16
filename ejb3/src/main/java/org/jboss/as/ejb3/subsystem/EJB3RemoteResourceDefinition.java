@@ -42,7 +42,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 
 import java.util.List;
 
@@ -75,7 +74,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                     // Capability references should not allow expressions
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME))
+                    .setDefaultValue(new ModelNode(org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration.DEFAULT_CONTAINER_NAME))
                     // TODO: replace this with a Requirement reference when the ejb-spi module for clustering is available
                     .setCapabilityReference(INFINISPAN_CACHE_CONTAINER_CAPABILITY_NAME, EJB_REMOTE_CAPABILITY)
                     .setDeprecated(EJB3Model.VERSION_10_0_0.getVersion())

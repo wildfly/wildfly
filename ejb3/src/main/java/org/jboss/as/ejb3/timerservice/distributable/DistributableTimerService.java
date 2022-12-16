@@ -68,6 +68,7 @@ import org.wildfly.clustering.ejb.timer.TimerManager;
 /**
  * EJB specification facade for a distributable EJB timer manager.
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
  */
 public class DistributableTimerService<I> implements ManagedTimerService, Function<I, jakarta.ejb.Timer> {
 

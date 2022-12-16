@@ -46,4 +46,9 @@ public class ScheduleWithMetaDataCommand<I, M> implements ScheduleCommand<I, M> 
     public M getMetaData() {
         return this.metaData;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s[%s]", this.getClass().getSimpleName(), this.id);
+    }
 }

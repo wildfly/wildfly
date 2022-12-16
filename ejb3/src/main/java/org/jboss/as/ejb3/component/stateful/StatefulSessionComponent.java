@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -41,14 +42,15 @@ import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentIsStoppedException;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.cache.Cache;
-import org.jboss.as.ejb3.cache.CacheFactory;
-import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCache;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheConfiguration;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheFactory;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanInstanceFactory;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.naming.ManagedReference;
@@ -63,7 +65,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RunResult;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -73,7 +74,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulSessionComponent extends SessionBeanComponent implements StatefulObjectFactory<StatefulSessionComponentInstance>, PassivationListener<StatefulSessionComponentInstance> {
+public class StatefulSessionComponent extends SessionBeanComponent implements StatefulSessionBeanInstanceFactory<StatefulSessionComponentInstance> {
 
     enum IdentifierFactory implements Supplier<SessionID> {
         UUID() {
@@ -84,7 +85,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         };
     }
 
-    private volatile Cache<SessionID, StatefulSessionComponentInstance> cache;
+    private volatile StatefulSessionBeanCache<SessionID, StatefulSessionComponentInstance> cache;
 
     private final InterceptorFactory afterBegin;
     private Interceptor afterBeginInterceptor;
@@ -101,7 +102,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     private Interceptor postActivateInterceptor;
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
-    private final Supplier<CacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory;
+    private final Supplier<StatefulSessionBeanCacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory;
     private final InterceptorFactory ejb2XRemoveMethod;
     private Interceptor ejb2XRemoveMethodInterceptor;
 
@@ -156,24 +157,6 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         return (StatefulSessionComponentInstance) super.constructComponentInstance(instance, invokePostConstruct, context);
     }
 
-    @Override
-    public void destroyInstance(StatefulSessionComponentInstance instance) {
-        instance.setRemoved(true);
-        if(!instance.isSynchronizationRegistered()) {
-            instance.destroy();
-        }
-    }
-
-    @Override
-    public void postActivate(StatefulSessionComponentInstance instance) {
-        instance.postActivate();
-    }
-
-    @Override
-    public void prePassivate(StatefulSessionComponentInstance instance) {
-        instance.prePassivate();
-    }
-
     protected SessionID getSessionIdOf(final InterceptorContext ctx) {
         final StatefulSessionComponentInstance instance = (StatefulSessionComponentInstance) ctx.getPrivateData(ComponentInstance.class);
         return instance.getId();
@@ -209,11 +192,11 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
             return AccessController.doPrivileged(new PrivilegedAction<EJBObject>() {
                 @Override
                 public EJBObject run() {
-                   return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), getCache().getStrictAffinity()));
+                   return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), getCache().getStrongAffinity()));
                 }
             });
         } else {
-            return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity()));
+            return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrongAffinity()));
         }
     }
 
@@ -236,7 +219,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     public SessionID createSession() {
-        return this.cache.create().getId();
+        return this.cache.createStatefulSessionBean();
     }
 
     /**
@@ -267,7 +250,8 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
             }
         }
     }
-    public Cache<SessionID, StatefulSessionComponentInstance> getCache() {
+
+    public StatefulSessionBeanCache<SessionID, StatefulSessionComponentInstance> getCache() {
         return this.cache;
     }
 
@@ -279,16 +263,6 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         }
         instance.setInstanceData(BasicComponentInstance.INSTANCE_KEY, context.get(BasicComponentInstance.INSTANCE_KEY));
         return instance;
-    }
-
-    /**
-     * Removes the session associated with the <code>sessionId</code>.
-     *
-     * @param sessionId The session id
-     */
-    public void removeSession(final SessionID sessionId) {
-        //The cache takes care of the transactional behavoir
-        this.cache.remove(sessionId);
     }
 
     public Interceptor getAfterBegin() {
@@ -331,7 +305,29 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     public synchronized void init() {
         super.init();
 
-        this.cache = this.cacheFactory.get().createCache(IdentifierFactory.UUID, this, this);
+        this.cache = this.cacheFactory.get().createStatefulBeanCache(new StatefulSessionBeanCacheConfiguration<>() {
+            @Override
+            public StatefulSessionBeanInstanceFactory<StatefulSessionComponentInstance> getInstanceFactory() {
+                return StatefulSessionComponent.this;
+            }
+
+            @Override
+            public Supplier<SessionID> getIdentifierFactory() {
+                return IdentifierFactory.UUID;
+            }
+
+            @Override
+            public Duration getTimeout() {
+                StatefulComponentDescription description = (StatefulComponentDescription) StatefulSessionComponent.this.getComponentDescription();
+                StatefulTimeoutInfo info = description.getStatefulTimeout();
+                return (info != null && info.getValue() >= 0) ? Duration.of(info.getValue(), info.getTimeUnit().toChronoUnit()) : null;
+            }
+
+            @Override
+            public String getComponentName() {
+                return StatefulSessionComponent.this.getComponentName();
+            }
+        });
         this.cache.start();
     }
 

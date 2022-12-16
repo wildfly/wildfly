@@ -36,7 +36,9 @@ import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 
 /**
+ * Timeout listener implementation that invokes the relevant timeout callback method of an EJB.
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
  */
 public class DistributableTimeoutListener<I> implements TimeoutListener<I, Batch> {
 

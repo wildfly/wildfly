@@ -22,7 +22,7 @@
 package org.wildfly.extension.clustering.ejb;
 
 import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
 
 /**
  * Service configurator for local client mappings registry provider.

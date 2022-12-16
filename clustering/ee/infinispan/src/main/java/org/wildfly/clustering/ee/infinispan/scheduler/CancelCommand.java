@@ -46,4 +46,9 @@ public class CancelCommand<I, M> implements Command<Void, CacheEntryScheduler<I,
         scheduler.cancel(this.id);
         return null;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s[%s]", this.getClass().getSimpleName(), this.id);
+    }
 }

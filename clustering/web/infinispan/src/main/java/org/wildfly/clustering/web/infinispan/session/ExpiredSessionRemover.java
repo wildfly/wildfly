@@ -23,6 +23,7 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Consumer;
 
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
@@ -32,7 +33,6 @@ import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
  * Session remover that removes a session if and only if it is expired.
@@ -42,10 +42,10 @@ import org.wildfly.clustering.web.session.SessionExpirationListener;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public class ExpiredSessionRemover<SC, MV, AV, LC> implements Remover<String>, Registrar<SessionExpirationListener> {
+public class ExpiredSessionRemover<SC, MV, AV, LC> implements Remover<String>, Registrar<Consumer<ImmutableSession>> {
 
     private final SessionFactory<SC, MV, AV, LC> factory;
-    private final Collection<SessionExpirationListener> listeners = new CopyOnWriteArraySet<>();
+    private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
 
     public ExpiredSessionRemover(SessionFactory<SC, MV, AV, LC> factory) {
         this.factory = factory;
@@ -62,8 +62,8 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Remover<String>, R
                     ImmutableSessionAttributes attributes = this.factory.getAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
                     ImmutableSession session = this.factory.createImmutableSession(id, metaData, attributes);
                     InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s has expired.", id);
-                    for (SessionExpirationListener listener : this.listeners) {
-                        listener.sessionExpired(session);
+                    for (Consumer<ImmutableSession> listener : this.listeners) {
+                        listener.accept(session);
                     }
                 }
                 return this.factory.remove(id);
@@ -76,7 +76,7 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Remover<String>, R
     }
 
     @Override
-    public Registration register(SessionExpirationListener listener) {
+    public Registration register(Consumer<ImmutableSession> listener) {
         this.listeners.add(listener);
         return () -> this.listeners.remove(listener);
     }

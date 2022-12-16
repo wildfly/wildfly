@@ -33,7 +33,6 @@ import org.jboss.invocation.Interceptor;
  */
 public abstract class EjbComponentInstance extends BasicComponentInstance {
 
-    private volatile boolean discarded = false;
     /**
      * Construct a new instance.
      *
@@ -49,12 +48,4 @@ public abstract class EjbComponentInstance extends BasicComponentInstance {
     }
 
     public abstract EJBContextImpl getEjbContext();
-
-    public boolean isDiscarded() {
-        return discarded;
-    }
-
-    public void discard() {
-        this.discarded = true;
-    }
 }

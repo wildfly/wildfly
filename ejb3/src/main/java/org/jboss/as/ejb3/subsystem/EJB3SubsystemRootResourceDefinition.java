@@ -395,8 +395,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
         // subsystem=ejb3/{cache=*, simple-cache=*, distributable-cache=*}
         subsystemRegistration.registerSubModel(LegacyCacheFactoryResourceDefinition.INSTANCE);
-        new SimpleCacheFactoryResourceDefinition().register(subsystemRegistration);
-        new DistributableCacheFactoryResourceDefinition().register(subsystemRegistration);
+        new SimpleStatefulSessionBeanCacheProviderResourceDefinition().register(subsystemRegistration);
+        new DistributableStatefulSessionBeanCacheProviderResourceDefinition().register(subsystemRegistration);
 
         subsystemRegistration.registerSubModel(PassivationStoreResourceDefinition.INSTANCE);
         subsystemRegistration.registerSubModel(FilePassivationStoreResourceDefinition.INSTANCE);

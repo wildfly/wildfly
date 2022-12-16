@@ -48,6 +48,7 @@ import org.wildfly.common.function.ExceptionConsumer;
  * Timer implementation for use outside the context of a timeout event.
  * Ensures that all timer methods are invoked within the context of a batch.
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
  */
 public class OOBTimer<I> implements ManagedTimer {
 
