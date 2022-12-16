@@ -23,12 +23,10 @@
 package org.jboss.as.appclient.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
@@ -42,8 +40,6 @@ import org.jboss.dmr.ModelType;
  * @author Stuart Douglas
  */
 public class AppClientSubsystemResourceDefinition extends SimpleResourceDefinition {
-
-    public static final AppClientSubsystemResourceDefinition INSTANCE = new AppClientSubsystemResourceDefinition();
 
     public static final SimpleAttributeDefinition FILE =
             new SimpleAttributeDefinitionBuilder(Constants.FILE, ModelType.STRING, false)
@@ -65,11 +61,12 @@ public class AppClientSubsystemResourceDefinition extends SimpleResourceDefiniti
             .setAllowExpression(true)
             .build();
 
-    private AppClientSubsystemResourceDefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, AppClientExtension.SUBSYSTEM_NAME),
-                AppClientExtension.getResourceDescriptionResolver(),
-                AppClientSubsystemAdd.INSTANCE, null,
-                OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+    AppClientSubsystemResourceDefinition() {
+        super(new Parameters(AppClientExtension.SUBSYSTEM_PATH, AppClientExtension.getResourceDescriptionResolver())
+                .setAddHandler(AppClientSubsystemAdd.INSTANCE)
+                .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+        );
     }
 
     static final AttributeDefinition[] ATTRIBUTES = {
