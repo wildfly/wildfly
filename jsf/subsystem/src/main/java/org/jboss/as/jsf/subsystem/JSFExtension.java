@@ -104,7 +104,7 @@ public class JSFExtension implements Extension {
         private static final PersistentResourceXMLDescription xmlDescription;
 
         static {
-            xmlDescription = builder(JSFResourceDefinition.INSTANCE, NAMESPACE_1_1)
+            xmlDescription = builder(JSFResourceDefinition.INSTANCE.getPathElement(), NAMESPACE_1_1)
                     .addAttributes(JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT)
                     .addAttributes(JSFResourceDefinition.DISALLOW_DOCTYPE_DECL)
                     .build();
