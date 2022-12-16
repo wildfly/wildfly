@@ -466,6 +466,7 @@
         <version.org.bitbucket.jose4j>0.8.0</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.12.18</version.org.bytebuddy>
         <version.org.cryptacular>1.2.5</version.org.cryptacular>
+        <version.org.codehaus.plexus.plexus-utils>3.5.0</version.org.codehaus.plexus.plexus-utils>
         <version.org.codehaus.woodstox.stax2-api>4.2.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core>6.4.0</version.org.codehaus.woodstox.woodstox-core>
         <version.org.eclipse.angus.angus-activation>1.0.0</version.org.eclipse.angus.angus-activation>
@@ -590,15 +591,14 @@
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.jvnet.staxex>2.1.0</version.org.jvnet.staxex>
         <version.org.keycloak>18.0.2</version.org.keycloak>
+        <version.org.keycloak.keycloak-saml-wildfly-subsystem>18.0.2</version.org.keycloak.keycloak-saml-wildfly-subsystem>
         <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
         <version.org.latencyutils>2.0.3</version.org.latencyutils>
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.4</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <!-- Test dependency -->
-        <version.org.keycloak.keycloak-saml-wildfly-subsystem>18.0.2</version.org.keycloak.keycloak-saml-wildfly-subsystem>
         <version.org.springframework.kafka>2.9.1</version.org.springframework.kafka>
+        <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>
         <version.org.wildfly.arquillian>5.0.0.Alpha6</version.org.wildfly.arquillian>
@@ -1514,6 +1514,13 @@
             </dependency>
 
             <!-- Required for testsuite/shared which will later be moved to a test bom (WFLY-17331) -->
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-utils</artifactId>
+                <version>${version.org.codehaus.plexus.plexus-utils}</version>
+                <scope>test</scope>
+            </dependency>
+
             <dependency>
                 <groupId>xom</groupId>
                 <artifactId>xom</artifactId>
