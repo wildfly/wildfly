@@ -10,7 +10,7 @@ public class WeldSubsystem50Parser extends PersistentResourceXMLParser {
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
-        xmlDescription = PersistentResourceXMLDescription.builder(WeldResourceDefinition.INSTANCE.getPathElement(), NAMESPACE)
+        xmlDescription = PersistentResourceXMLDescription.builder(WeldExtension.PATH_SUBSYSTEM, NAMESPACE)
                 .addAttributes(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE,
                         WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE, WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE,
                         WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE)
