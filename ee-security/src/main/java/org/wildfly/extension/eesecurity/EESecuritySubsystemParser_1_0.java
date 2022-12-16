@@ -32,7 +32,7 @@ public class EESecuritySubsystemParser_1_0 extends PersistentResourceXMLParser {
 
     @Override
     public PersistentResourceXMLDescription getParserDescription() {
-        return PersistentResourceXMLDescription.builder(EESecuritySubsystemDefinition.INSTANCE.getPathElement(), EESecurityExtension.NAMESPACE)
+        return PersistentResourceXMLDescription.builder(EESecurityExtension.SUBSYSTEM_PATH, EESecurityExtension.NAMESPACE)
                 .build();
     }
 }
