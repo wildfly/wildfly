@@ -39,9 +39,7 @@ public class RemoteNamingResourceDefinition extends SimpleResourceDefinition {
             .addRequirements(REMOTING_ENDPOINT_CAPABILITY_NAME)
             .build();
 
-    public static final RemoteNamingResourceDefinition INSTANCE = new RemoteNamingResourceDefinition();
-
-    private RemoteNamingResourceDefinition() {
+    RemoteNamingResourceDefinition() {
         super(new Parameters(NamingSubsystemModel.REMOTE_NAMING_PATH, NamingExtension.getResourceDescriptionResolver(NamingSubsystemModel.REMOTE_NAMING))
                 .setAddHandler(RemoteNamingAdd.INSTANCE)
                 .setRemoveHandler(RemoteNamingRemove.INSTANCE)

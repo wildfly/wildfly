@@ -56,8 +56,6 @@ import java.util.List;
  */
 public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
 
-    static final NamingBindingResourceDefinition INSTANCE = new NamingBindingResourceDefinition();
-
     static final SimpleAttributeDefinition BINDING_TYPE = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.BINDING_TYPE, ModelType.STRING, false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setValidator(EnumValidator.create(BindingType.class))
@@ -111,7 +109,7 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
 
     static final OperationStepHandler VALIDATE_RESOURCE_MODEL_OPERATION_STEP_HANDLER = (context, op) -> validateResourceModel(context.readResource(PathAddress.EMPTY_ADDRESS).getModel(), true);
 
-    private NamingBindingResourceDefinition() {
+    NamingBindingResourceDefinition() {
         super(NamingSubsystemModel.BINDING_PATH,
                 NamingExtension.getResourceDescriptionResolver(NamingSubsystemModel.BINDING),
                 NamingBindingAdd.INSTANCE, NamingBindingRemove.INSTANCE);
