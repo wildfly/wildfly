@@ -57,9 +57,7 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
 
     public static final ModuleIdentifier MP_REST_CLIENT = ModuleIdentifier.create("org.eclipse.microprofile.restclient");
 
-    public static final JaxrsSubsystemDefinition INSTANCE = new JaxrsSubsystemDefinition();
-
-    private JaxrsSubsystemDefinition() {
+    JaxrsSubsystemDefinition() {
          super(new Parameters(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver())
                  .setAddHandler(new JaxrsSubsystemAdd(JaxrsAttribute.ATTRIBUTES))
                  .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE));

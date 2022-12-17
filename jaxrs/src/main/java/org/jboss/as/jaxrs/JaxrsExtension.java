@@ -67,11 +67,11 @@ public class JaxrsExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         JAXRS_LOGGER.debug("Activating Jakarta RESTful Web Services Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JaxrsSubsystemDefinition.INSTANCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new JaxrsSubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         registerAttributes(registration);
-        ManagementResourceRegistration jaxrsResReg = subsystem.registerDeploymentModel(JaxrsDeploymentDefinition.INSTANCE);
-        jaxrsResReg.registerSubModel(DeploymentRestResourcesDefintion.INSTANCE);
+        ManagementResourceRegistration jaxrsResReg = subsystem.registerDeploymentModel(new JaxrsDeploymentDefinition());
+        jaxrsResReg.registerSubModel(new DeploymentRestResourcesDefintion());
         subsystem.registerXMLElementWriter(JaxrsSubsystemParser_2_0::new);
     }
 
