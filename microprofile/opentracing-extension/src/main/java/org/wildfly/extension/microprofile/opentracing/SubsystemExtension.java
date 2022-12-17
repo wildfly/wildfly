@@ -72,7 +72,7 @@ public class SubsystemExtension implements Extension {
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new SubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerDeploymentModel(TracingDeploymentDefinition.INSTANCE);
+        subsystem.registerDeploymentModel(new TracingDeploymentDefinition());
     }
 
     @Override
