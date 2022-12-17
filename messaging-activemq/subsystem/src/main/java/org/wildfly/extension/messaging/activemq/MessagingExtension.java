@@ -370,7 +370,7 @@ public class MessagingExtension implements Extension {
         subsystem.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
         subsystem.registerSubModel(new HTTPConnectorDefinition(registerRuntimeOnly));
         subsystem.registerSubModel(new ExternalConnectionFactoryDefinition(registerRuntimeOnly));
-        subsystem.registerSubModel(ExternalPooledConnectionFactoryDefinition.INSTANCE);
+        subsystem.registerSubModel(new ExternalPooledConnectionFactoryDefinition(false));
         subsystem.registerSubModel(new ExternalJMSQueueDefinition(registerRuntimeOnly));
         subsystem.registerSubModel(new ExternalJMSTopicDefinition(registerRuntimeOnly));
 
@@ -387,20 +387,20 @@ public class MessagingExtension implements Extension {
             PathDefinition.registerResolveOperationHandler(context, pathRegistry);
         }
 
-        subsystem.registerSubModel(JMSBridgeDefinition.INSTANCE);
+        subsystem.registerSubModel(new JMSBridgeDefinition());
 
         if (registerRuntimeOnly) {
             final ManagementResourceRegistration deployment = subsystemRegistration.registerDeploymentModel(new SimpleResourceDefinition(
                     new Parameters(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployed")).setFeature(false).setRuntime()));
             deployment.registerSubModel(new ExternalConnectionFactoryDefinition(registerRuntimeOnly));
-            deployment.registerSubModel(ExternalPooledConnectionFactoryDefinition.DEPLOYMENT_INSTANCE);
+            deployment.registerSubModel(new ExternalPooledConnectionFactoryDefinition(true));
             deployment.registerSubModel(new ExternalJMSQueueDefinition(registerRuntimeOnly));
             deployment.registerSubModel(new ExternalJMSTopicDefinition(registerRuntimeOnly));
             final ManagementResourceRegistration deployedServer = deployment.registerSubModel(new SimpleResourceDefinition(
                     new Parameters(SERVER_PATH, getResourceDescriptionResolver(SERVER)).setFeature(false).setRuntime()));
             deployedServer.registerSubModel(new JMSQueueDefinition(true, registerRuntimeOnly));
             deployedServer.registerSubModel(new JMSTopicDefinition(true, registerRuntimeOnly));
-            deployedServer.registerSubModel(PooledConnectionFactoryDefinition.DEPLOYMENT_INSTANCE);
+            deployedServer.registerSubModel(new PooledConnectionFactoryDefinition(true));
         }
     }
 

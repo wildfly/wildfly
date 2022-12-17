@@ -92,10 +92,6 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
 
     private final boolean runtimeOnly;
 
-    static final SecurityRoleDefinition RUNTIME_INSTANCE = new SecurityRoleDefinition(true);
-
-    static final SecurityRoleDefinition INSTANCE = new SecurityRoleDefinition(false);
-
     static Role transform(final OperationContext context, final String name, final ModelNode node) throws OperationFailedException {
         final boolean send = SEND.resolveModelAttribute(context, node).asBoolean();
         final boolean consume = CONSUME.resolveModelAttribute(context, node).asBoolean();
@@ -107,7 +103,7 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
         return new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
     }
 
-    private SecurityRoleDefinition(final boolean runtimeOnly) {
+    SecurityRoleDefinition(final boolean runtimeOnly) {
         super(MessagingExtension.ROLE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SECURITY_ROLE),
                 runtimeOnly ? null : SecurityRoleAdd.INSTANCE,

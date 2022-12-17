@@ -236,9 +236,7 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             AUTO_DELETE_CREATED_QUEUES
     };
 
-    static final AddressSettingDefinition INSTANCE = new AddressSettingDefinition();
-
-    private AddressSettingDefinition() {
+    AddressSettingDefinition() {
         super(MessagingExtension.ADDRESS_SETTING_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.ADDRESS_SETTING),
                 AddressSettingAdd.INSTANCE,

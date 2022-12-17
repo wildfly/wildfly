@@ -71,9 +71,7 @@ public class HTTPAcceptorDefinition extends PersistentResourceDefinition {
             .build();
     static AttributeDefinition[] ATTRIBUTES = { HTTP_LISTENER, PARAMS, UPGRADE_LEGACY };
 
-    static final HTTPAcceptorDefinition INSTANCE = new HTTPAcceptorDefinition();
-
-    private HTTPAcceptorDefinition() {
+    HTTPAcceptorDefinition() {
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.HTTP_ACCEPTOR_PATH,
                 new StandardResourceDescriptionResolver(CommonAttributes.ACCEPTOR, MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
                     @Override
