@@ -608,7 +608,7 @@
         <version.org.wildfly.core>20.0.0.Beta4</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.http-client>1.1.15.Final</legacy.version.org.wildfly.http-client>
-        <version.org.wildfly.http-client>2.0.0.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>2.0.1.Final</version.org.wildfly.http-client>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
         <version.org.wildfly.naming-client>2.0.0.Final</version.org.wildfly.naming-client>
         <legacy.version.org.wildfly.security.elytron>1.20.2.Final</legacy.version.org.wildfly.security.elytron>
