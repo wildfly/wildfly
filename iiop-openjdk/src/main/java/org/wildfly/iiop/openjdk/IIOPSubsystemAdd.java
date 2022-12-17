@@ -292,7 +292,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected Properties getConfigurationProperties(OperationContext context, ModelNode model) throws OperationFailedException {
         Properties properties = new Properties();
 
-        for (AttributeDefinition attrDefinition : IIOPRootDefinition.INSTANCE.getAttributes()) {
+        for (AttributeDefinition attrDefinition : IIOPRootDefinition.ALL_ATTRIBUTES) {
             if(attrDefinition instanceof PropertiesAttributeDefinition){
                 ModelNode resolvedModelAttribute = attrDefinition.resolveModelAttribute(context, model);
                 if(resolvedModelAttribute.isDefined()) {
