@@ -24,23 +24,13 @@ package org.jboss.as.ee.metadata.property;
 
 import java.util.Properties;
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.metadata.property.PropertyReplacer;
-import org.jboss.metadata.property.PropertyResolver;
 
 /**
  * @author John Bailey
  */
 public class Attachments {
     public static final AttachmentKey<Properties> DEPLOYMENT_PROPERTIES = AttachmentKey.create(Properties.class);
-
-    public static final AttachmentKey<AttachmentList<PropertyResolver>> DEPLOYMENT_PROPERTY_RESOLVERS = AttachmentKey.createList(PropertyResolver.class);
-
-    /**
-     * @deprecated Code processing text for expressions should use {@link #FINAL_PROPERTY_REPLACER a PropertyReplacer} not a PropertyResolver
-     */
-    @Deprecated
-    public static final AttachmentKey<PropertyResolver> FINAL_PROPERTY_RESOLVER = AttachmentKey.create(PropertyResolver.class);
 
     public static final AttachmentKey<PropertyReplacer> FINAL_PROPERTY_REPLACER = AttachmentKey.create(PropertyReplacer.class);
 }
