@@ -22,7 +22,6 @@
 
 package org.jboss.as.mail.extension;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -36,9 +35,8 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
  * @created 19.12.11 20:04
  */
 class MailSubsystemResource extends PersistentResourceDefinition {
-    public static final MailSubsystemResource INSTANCE = new MailSubsystemResource();
 
-    private MailSubsystemResource() {
+    MailSubsystemResource() {
         super(MailExtension.SUBSYSTEM_PATH,
                 MailExtension.getResourceDescriptionResolver(),
                 MailSubsystemAdd.INSTANCE,
@@ -52,6 +50,6 @@ class MailSubsystemResource extends PersistentResourceDefinition {
 
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
-        return Arrays.asList(MailSessionDefinition.INSTANCE);
+        return List.of(new MailSessionDefinition());
     }
 }
