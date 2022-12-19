@@ -108,7 +108,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Test dependencies -->
+        <!-- Internal test dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-el-expressly</artifactId>
@@ -141,6 +141,13 @@
             <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
+        </dependency>
+
+        <!-- External test dependencies -->
+        <dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>protoparser</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

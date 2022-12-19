@@ -172,6 +172,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>protoparser</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>${legacy.version.com.squareup.okhttp}</version>
