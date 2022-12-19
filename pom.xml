@@ -2079,7 +2079,6 @@
                 <checkstyle.skip>true</checkstyle.skip>
                 <enforcer.skip>true</enforcer.skip>
                 <license.skip>true</license.skip>
-                <maven.test.skip>true</maven.test.skip>
             </properties>
             <build>
                 <defaultGoal>clean install</defaultGoal>
