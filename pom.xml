@@ -447,7 +447,7 @@
         <version.org.wildfly.arquillian>2.2.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.core>13.0.3-13-PSI-SNAPSHOT</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
-        <version.org.wildfly.http-client>1.1.11.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>1.1.12.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.15.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.transaction.client>2.0.1.Final</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.32</version.org.yaml.snakeyaml>
