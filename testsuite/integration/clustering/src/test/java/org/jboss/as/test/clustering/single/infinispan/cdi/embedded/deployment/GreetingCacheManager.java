@@ -55,7 +55,7 @@ public class GreetingCacheManager {
     }
 
     public long getMemorySize() {
-        return cache.getCacheConfiguration().memory().size();
+        return cache.getCacheConfiguration().memory().maxCount();
     }
 
     public long getExpirationLifespan() {

@@ -20,15 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.single.infinispan.query;
+package org.jboss.as.test.clustering.single.infinispan.query.data;
 
-import org.infinispan.protostream.SerializationContextInitializer;
+import org.infinispan.protostream.GeneratedSchema;
 import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
-import org.jboss.as.test.clustering.single.infinispan.query.data.Person;
 
 /**
+ * Adopted and adapted from Infinispan testsuite.
+ *
  * @author Radoslav Husar
+ * @since 27
  */
-@AutoProtoSchemaBuilder(includeClasses = { Person.class }, service = false)
-public interface PersonSerializationContextInitializer extends SerializationContextInitializer {
+@AutoProtoSchemaBuilder(includeClasses = { Book.class }, service = false)
+public interface BookSchema extends GeneratedSchema {
 }

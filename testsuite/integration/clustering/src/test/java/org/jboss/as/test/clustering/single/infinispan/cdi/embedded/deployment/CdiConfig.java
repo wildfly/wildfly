@@ -61,9 +61,7 @@ public class CdiConfig {
     @ConfigureCache("greeting-cache")
     @Produces
     public Configuration greetingCache() {
-        return new ConfigurationBuilder()
-                .memory().storageType(StorageType.OBJECT).size(128)
-                .build();
+        return new ConfigurationBuilder().memory().storage(StorageType.HEAP).maxCount(128).build();
     }
 
     /**

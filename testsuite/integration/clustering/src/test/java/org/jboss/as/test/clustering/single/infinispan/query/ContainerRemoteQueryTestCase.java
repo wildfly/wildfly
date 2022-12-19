@@ -22,23 +22,21 @@
 
 package org.jboss.as.test.clustering.single.infinispan.query;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_PASSWORD;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_USER;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_ADDRESS;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Resource;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.Search;
-import org.infinispan.client.hotrod.marshall.MarshallerUtil;
+import org.infinispan.commons.marshall.ProtoStreamMarshaller;
+import org.infinispan.protostream.GeneratedSchema;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.infinispan.query.dsl.Query;
@@ -48,9 +46,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Book;
-import org.jboss.as.test.clustering.single.infinispan.query.data.Person;
-import org.jboss.as.test.clustering.single.infinispan.query.proto.BookQuerySchema;
-import org.jboss.as.test.shared.ManagementServerSetupTask;
+import org.jboss.as.test.clustering.single.infinispan.query.data.BookSchema;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -67,95 +63,42 @@ import org.junit.runner.RunWith;
  * @since 27
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ContainerRemoteQueryTestCase.ServerSetupTask.class})
+@ServerSetup(ServerSetupTask.class)
 public class ContainerRemoteQueryTestCase {
-
-    static class ServerSetupTask extends ManagementServerSetupTask {
-        public ServerSetupTask() {
-            super("default", createContainerConfigurationBuilder()
-                    .setupScript(createScriptBuilder()
-                            .startBatch()
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=%d, host=%s)", INFINISPAN_SERVER_PORT, INFINISPAN_SERVER_ADDRESS)
-                            .add("/subsystem=infinispan/remote-cache-container=query:add(default-remote-cluster=infinispan-server-cluster, tcp-keep-alive=true, marshaller=PROTOSTREAM, modules=[org.infinispan.query.client], properties={infinispan.client.hotrod.auth_username=%s, infinispan.client.hotrod.auth_password=%s}, statistics-enabled=true)", INFINISPAN_APPLICATION_USER, INFINISPAN_APPLICATION_PASSWORD)
-                            .add("/subsystem=infinispan/remote-cache-container=query/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
-                            .endBatch()
-                            .build()
-                    )
-                    .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                            .add("/subsystem=infinispan/remote-cache-container=query:remove")
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
-                            .endBatch()
-                            .build())
-                    .build()
-            );
-        }
-    }
 
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap
                 .create(WebArchive.class, ContainerRemoteQueryTestCase.class.getSimpleName() + ".war")
-                .addClasses(ContainerRemoteQueryTestCase.class, ContainerRemoteQueryTestCase.class)
-                .addClasses(Person.class, Book.class)
-                .addPackage(BookQuerySchema.class.getPackage().getName())
-                .addAsResource("proto/book.proto")
-                .addAsServiceProvider(SerializationContextInitializer.class.getName(), BookQuerySchema.class.getName() + "Impl")
-                .add(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan meta-inf, org.infinispan.commons meta-inf, org.infinispan.client.hotrod meta-inf, org.infinispan.protostream meta-inf, org.infinispan.query meta-inf, org.infinispan.query.dsl meta-inf,org.infinispan.query.client meta-inf, org.infinispan.query.core meta-inf").exportAsString()), "META-INF/MANIFEST.MF")
+                .addClasses(ContainerRemoteQueryTestCase.class)
+                .addPackage(Book.class.getPackage())
+                .addAsServiceProvider(SerializationContextInitializer.class.getName(), BookSchema.class.getName() + "Impl")
+                .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan, org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.protostream, org.infinispan.query, org.infinispan.query.dsl, org.infinispan.query.client").exportAsString()))
                 ;
     }
 
     @Resource(lookup = "java:jboss/infinispan/remote-container/query")
-    private RemoteCacheContainer remoteCacheContainer;
+    private RemoteCacheContainer container;
 
     @Test
     public void testRemoteBookQuery() {
-        RemoteCache<String, Book> cache = remoteCacheContainer.getCache();
+        RemoteCache<String, Book> cache = this.container.getCache();
+        cache.clear();
 
-        SerializationContext serializationContext = MarshallerUtil.getSerializationContext(cache.getRemoteCacheManager());
+        List<GeneratedSchema> schemas = ServiceLoader.load(SerializationContextInitializer.class, this.getClass().getClassLoader()).stream().map(ServiceLoader.Provider::get).filter(GeneratedSchema.class::isInstance).map(GeneratedSchema.class::cast).collect(Collectors.toList());
 
-        for (SerializationContextInitializer serializationContextInitializer : ServiceLoader.load(SerializationContextInitializer.class)) {
-            serializationContextInitializer.registerSchema(serializationContext);
-            serializationContextInitializer.registerMarshallers(serializationContext);
+        ProtoStreamMarshaller marshaller = (ProtoStreamMarshaller) cache.getRemoteCacheContainer().getMarshaller();
+        SerializationContext context = marshaller.getSerializationContext();
+        RemoteCache<String, String> schemaCache = this.container.getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
+        for (GeneratedSchema schema : schemas) {
+            schema.registerSchema(context);
+            schema.registerMarshallers(context);
+
+            schemaCache.put(schema.getProtoFileName(), schema.getProtoFile());
+            assertFalse(schemaCache.containsKey(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX));
         }
 
         QueryFactory queryFactory = Search.getQueryFactory(cache);
-
-        cache.clear();
-
-        String protoKey = "book.proto";
-        String protoFile = "// File name: book.proto\n" +
-                "// Generated from : org.jboss.as.test.clustering.single.infinispan.query.proto.BookQuerySchema\n" +
-                "\n" +
-                "syntax = \"proto2\";\n" +
-                "\n" +
-                "\n" +
-                "\n" +
-                "/**\n" +
-                " * @Indexed\n" +
-                " */\n" +
-                "message Book {\n" +
-                "   \n" +
-                "   /**\n" +
-                "    * @Field(index=Index.YES, analyze = Analyze.YES, store = Store.NO)\n" +
-                "    */\n" +
-                "   optional string title = 1;\n" +
-                "   \n" +
-                "   /**\n" +
-                "    * @Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)\n" +
-                "    */\n" +
-                "   optional string author = 2;\n" +
-                "   \n" +
-                "   /**\n" +
-                "    * @Field(index=Index.YES, store = Store.NO)\n" +
-                "    */\n" +
-                "   optional int32 publicationYear = 3 [default = 0];\n" +
-                "}\n";
-
-        // Yuck!
-        RemoteCache<String, String> metadataCache = remoteCacheContainer.getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
-        metadataCache.put(protoKey, protoFile);
-        assertFalse(metadataCache.containsKey(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX));
 
         cache.put("A", new Book("A1", "A2", 2021));
         cache.put("B", new Book("B1", "B2", 2022));

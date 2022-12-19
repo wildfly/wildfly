@@ -22,10 +22,6 @@
 
 package org.jboss.as.test.clustering.single.infinispan.query;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_PASSWORD;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_USER;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_ADDRESS;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_PORT;
 import static org.junit.Assert.assertEquals;
 
 import jakarta.annotation.Resource;
@@ -37,7 +33,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Person;
-import org.jboss.as.test.shared.ManagementServerSetupTask;
+import org.jboss.as.test.clustering.single.infinispan.query.data.PersonSchema;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -54,7 +50,7 @@ import org.junit.runner.RunWith;
  * @since 27
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ ContainerManagedHotRodClientTestCase.ServerSetupTask.class })
+@ServerSetup({ ServerSetupTask.class })
 public class ContainerManagedHotRodClientTestCase {
 
     @Deployment
@@ -62,34 +58,10 @@ public class ContainerManagedHotRodClientTestCase {
         return ShrinkWrap
                 .create(WebArchive.class, ContainerManagedHotRodClientTestCase.class.getSimpleName() + ".war")
                 .addClass(ContainerManagedHotRodClientTestCase.class)
-                .addClass(Person.class)
-                .addClass(PersonSerializationContextInitializer.class)
-                .addClass(PersonSerializationContextInitializer.class.getName() + "Impl")
-                .addAsServiceProvider(SerializationContextInitializer.class.getName(), PersonSerializationContextInitializer.class.getName() + "Impl")
-                .add(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan, org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.query, org.infinispan.protostream").exportAsString()), "META-INF/MANIFEST.MF")
+                .addPackage(PersonSchema.class.getPackage())
+                .addAsServiceProvider(SerializationContextInitializer.class.getName(), PersonSchema.class.getName() + "Impl")
+                .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan, org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.query, org.infinispan.protostream").exportAsString()))
                 ;
-    }
-
-    static class ServerSetupTask extends ManagementServerSetupTask {
-        public ServerSetupTask() {
-            super("default", createContainerConfigurationBuilder()
-                    .setupScript(createScriptBuilder()
-                            .startBatch()
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=%d,host=%s)", INFINISPAN_SERVER_PORT, INFINISPAN_SERVER_ADDRESS)
-                            .add("/subsystem=infinispan/remote-cache-container=query:add(default-remote-cluster=infinispan-server-cluster, tcp-keep-alive=true, marshaller=PROTOSTREAM, modules=[org.wildfly.clustering.web.hotrod], properties={infinispan.client.hotrod.auth_username=%s, infinispan.client.hotrod.auth_password=%s}, statistics-enabled=true)", INFINISPAN_APPLICATION_USER, INFINISPAN_APPLICATION_PASSWORD)
-                            .add("/subsystem=infinispan/remote-cache-container=query/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
-                            .endBatch()
-                            .build()
-                    )
-                    .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                            .add("/subsystem=infinispan/remote-cache-container=query:remove")
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
-                            .endBatch()
-                            .build())
-                    .build()
-            );
-        }
     }
 
     @Resource(lookup = "java:jboss/infinispan/remote-container/query")

@@ -20,26 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.single.infinispan.query.proto;
+package org.jboss.as.test.clustering.single.infinispan.query.data;
 
 import org.infinispan.protostream.GeneratedSchema;
 import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
-import org.jboss.as.test.clustering.single.infinispan.query.data.Book;
 
 /**
- * Adopted and adapted from Infinispan testsuite.
- *
  * @author Radoslav Husar
- * @since 27
  */
-@AutoProtoSchemaBuilder(
-        // There are multiple builders in this module so don't generate org.infinispan.protostream.SerializationContextInitializer
-        service = false,
-        includeClasses = {
-                Book.class
-        },
-        schemaFileName = "book.proto",
-        schemaFilePath = "proto/"
-)
-public interface BookQuerySchema extends GeneratedSchema {
+@AutoProtoSchemaBuilder(includeClasses = { Person.class }, service = false)
+public interface PersonSchema extends GeneratedSchema {
 }
