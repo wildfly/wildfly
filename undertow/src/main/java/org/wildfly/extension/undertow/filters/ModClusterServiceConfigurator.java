@@ -66,12 +66,15 @@ import org.xnio.XnioWorker;
 import org.xnio.ssl.XnioSsl;
 
 /**
+ * Configures a service that provides both {@link ModCluster} and {@link MCMPConfig}.
  * @author Paul Ferraro
- *
  */
 public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider implements ResourceServiceConfigurator, Supplier<Map.Entry<ModCluster, MCMPConfig>>, Consumer<Map.Entry<ModCluster, MCMPConfig>> {
 
-    private static final Map<PathElement, RouteParsingStrategy> ROUTE_PARSING_STRATEGIES = Map.of(NoAffinityResourceDefinition.PATH, RouteParsingStrategy.NONE, SingleAffinityResourceDefinition.PATH, RouteParsingStrategy.SINGLE, RankedAffinityResourceDefinition.PATH, RouteParsingStrategy.RANKED);
+    private static final Map<PathElement, RouteParsingStrategy> ROUTE_PARSING_STRATEGIES = Map.of(
+            NoAffinityResourceDefinition.PATH, RouteParsingStrategy.NONE,
+            SingleAffinityResourceDefinition.PATH, RouteParsingStrategy.SINGLE,
+            RankedAffinityResourceDefinition.PATH, RouteParsingStrategy.RANKED);
 
     private volatile SupplierDependency<XnioWorker> worker;
     private volatile SupplierDependency<SocketBinding> managementBinding;

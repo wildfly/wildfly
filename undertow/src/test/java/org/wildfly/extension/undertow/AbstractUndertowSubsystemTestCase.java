@@ -30,8 +30,8 @@ import java.util.function.Consumer;
 
 import javax.net.ssl.SSLContext;
 
-import io.undertow.predicate.Predicates;
 import io.undertow.server.DefaultByteBufferPool;
+import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
@@ -59,9 +59,6 @@ import org.jboss.msc.service.StopContext;
 import org.junit.Assert;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.WorkerService;
-import org.wildfly.extension.undertow.filters.FilterRef;
-import org.wildfly.extension.undertow.filters.FilterService;
-import org.wildfly.extension.undertow.filters.ModClusterService;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.xnio.OptionMap;
 import org.xnio.Options;
@@ -97,24 +94,24 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         ServiceController connectionLimiter = mainServices.getContainer()
                 .getService(UndertowService.FILTER.append("limit-connections"));
         connectionLimiter.setMode(ServiceController.Mode.ACTIVE);
-        FilterService connectionLimiterService = (FilterService) awaitServiceValue(connectionLimiter);
-        HttpHandler result = connectionLimiterService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
+        HandlerWrapper connectionLimiterService = (HandlerWrapper) awaitServiceValue(connectionLimiter);
+        HttpHandler result = connectionLimiterService.wrap(new PathHandler());
         Assert.assertNotNull("handler should have been created", result);
 
         ServiceController headersFilter = mainServices.getContainer().getService(UndertowService.FILTER.append("headers"));
         headersFilter.setMode(ServiceController.Mode.ACTIVE);
-        FilterService headersService = (FilterService) awaitServiceValue(headersFilter);
-        HttpHandler headerHandler = headersService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
+        HandlerWrapper headersService = (HandlerWrapper) awaitServiceValue(headersFilter);
+        HttpHandler headerHandler = headersService.wrap(new PathHandler());
         Assert.assertNotNull("handler should have been created", headerHandler);
 
         if (schemaVersion >= 3) {
             ServiceController modClusterServiceServiceController = mainServices.getContainer()
                     .getService(UndertowService.FILTER.append("mod-cluster"));
             modClusterServiceServiceController.setMode(ServiceController.Mode.ACTIVE);
-            ModClusterService modClusterService = (ModClusterService) awaitServiceValue(modClusterServiceServiceController);
+            HandlerWrapper modClusterService = (HandlerWrapper) awaitServiceValue(modClusterServiceServiceController);
             Assert.assertNotNull(modClusterService);
 
-            HttpHandler modClusterHandler = modClusterService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
+            HttpHandler modClusterHandler = modClusterService.wrap(new PathHandler());
             Assert.assertNotNull("handler should have been created", modClusterHandler);
         }
 
@@ -180,7 +177,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
         ServiceController gzipFilterController = mainServices.getContainer().getService(filterRefName);
         gzipFilterController.setMode(ServiceController.Mode.ACTIVE);
-        FilterRef gzipFilterRef = (FilterRef) awaitServiceValue(gzipFilterController);
+        UndertowFilter gzipFilterRef = (UndertowFilter) awaitServiceValue(gzipFilterController);
         HttpHandler gzipHandler = gzipFilterRef.wrap(new PathHandler());
         Assert.assertNotNull("handler should have been created", gzipHandler);
 

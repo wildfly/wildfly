@@ -31,13 +31,15 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import io.undertow.Handlers;
 import io.undertow.UndertowOptions;
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.PredicateParser;
 import io.undertow.protocols.ajp.AjpClientRequestClientStreamSinkChannel;
 import io.undertow.protocols.http2.Http2Channel;
+import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.proxy.ProxyHandler;
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.proxy.mod_cluster.MCMPConfig;
 import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
 
@@ -68,6 +70,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.OptionAttributeDefinition;
@@ -91,7 +94,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
     public static final ModClusterDefinition INSTANCE = new ModClusterDefinition();
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        MOD_CLUSTER_FILTER_CAPABILITY(CAPABILITY_MOD_CLUSTER_FILTER, FilterService.class),
+        MOD_CLUSTER_FILTER_CAPABILITY(CAPABILITY_MOD_CLUSTER_FILTER, HandlerWrapper.class),
         ;
         private final RuntimeCapability<Void> definition;
 
@@ -334,16 +337,6 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
     }
 
     @Override
-    public Class<? extends HttpHandler> getHandlerClass() {
-        return ProxyHandler.class;
-    }
-
-    @Override
-    public HttpHandler createHttpHandler(Predicate predicate, ModelNode model, HttpHandler next) {
-        throw new IllegalStateException(); //this is not used for mod_cluster, as it required injection and socket binding
-    }
-
-    @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(ATTRIBUTES)
@@ -376,17 +369,43 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
         public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
 
             String managementAccessPredicateString = ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE.resolveModelAttribute(context, model).asStringOrNull();
-            Predicate managementAccessPredicate = (managementAccessPredicateString != null) ? PredicateParser.parse(managementAccessPredicateString, ModClusterService.class.getClassLoader()) : null;
+            Predicate managementAccessPredicate = (managementAccessPredicateString != null) ? PredicateParser.parse(managementAccessPredicateString, this.getClass().getClassLoader()) : null;
 
             ModClusterServiceConfigurator configurator = new ModClusterServiceConfigurator(context.getCurrentAddress());
             configurator.configure(context, model).build(context.getServiceTarget()).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
             RuntimeCapability<Void> capability = ModClusterDefinition.Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition();
             CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(capability);
-            Consumer<FilterService> filter = builder.provides(capability, UndertowService.FILTER.append(context.getCurrentAddressValue()));
-            Supplier<ModCluster> service = builder.requires(configurator.getServiceName());
-            Supplier<MCMPConfig> config = builder.requires(configurator.getConfigServiceName());
-            builder.setInstance(new ModClusterService(filter, service, config, managementAccessPredicate)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+            Consumer<HandlerWrapper> filter = builder.provides(capability, UndertowService.FILTER.append(context.getCurrentAddressValue()));
+            Supplier<ModCluster> serviceRequirement = builder.requires(configurator.getServiceName());
+            Supplier<MCMPConfig> configRequirement = builder.requires(configurator.getConfigServiceName());
+
+            HandlerWrapper wrapper = new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(HttpHandler next) {
+                    ModCluster modCluster = serviceRequirement.get();
+                    MCMPConfig config = configRequirement.get();
+                    //this is a bit of a hack at the moment. Basically we only want to create a single mod_cluster instance
+                    //not matter how many filter refs use it, also mod_cluster at this point has no way
+                    //to specify the next handler. To get around this we invoke the mod_proxy handler
+                    //and then if it has not dispatched or handled the request then we know that we can
+                    //just pass it on to the next handler
+                    final HttpHandler proxyHandler = modCluster.createProxyHandler(next);
+                    final HttpHandler realNext = new HttpHandler() {
+                        @Override
+                        public void handleRequest(HttpServerExchange exchange) throws Exception {
+                            proxyHandler.handleRequest(exchange);
+                            if (!exchange.isDispatched() && !exchange.isComplete()) {
+                                exchange.setStatusCode(200);
+                                next.handleRequest(exchange);
+                            }
+                        }
+                    };
+                    return (managementAccessPredicate != null)  ? Handlers.predicate(managementAccessPredicate, config.create(modCluster, realNext), next)  :  config.create(modCluster, realNext);
+                }
+            };
+
+            builder.setInstance(Service.newInstance(filter, wrapper)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
             new ServiceValueCaptorServiceConfigurator<>(new ModClusterResourceServiceValueCaptor(context, this.registry.add(configurator.getServiceName()))).build(context.getServiceTarget()).install();
         }

@@ -25,11 +25,15 @@ package org.wildfly.extension.undertow.filters;
 import java.util.Arrays;
 import java.util.Collection;
 
-import io.undertow.server.HttpHandler;
+import io.undertow.server.HandlerWrapper;
 import io.undertow.server.handlers.SetHeaderHandler;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -37,6 +41,7 @@ import org.jboss.dmr.ModelType;
  */
 public class ResponseHeaderFilter extends Filter {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement("response-header");
+
     public static final AttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("header-name", ModelType.STRING)
             .setRequired(true)
             .setAllowExpression(true)
@@ -51,7 +56,7 @@ public class ResponseHeaderFilter extends Filter {
     public static final ResponseHeaderFilter INSTANCE = new ResponseHeaderFilter();
 
     private ResponseHeaderFilter() {
-        super(PATH_ELEMENT);
+        super(PATH_ELEMENT, ResponseHeaderFilter::createHandlerWrapper);
     }
 
     @Override
@@ -59,14 +64,9 @@ public class ResponseHeaderFilter extends Filter {
         return Arrays.asList(NAME, VALUE);
     }
 
-    @Override
-    public Class<? extends HttpHandler> getHandlerClass() {
-        return SetHeaderHandler.class;
-    }
-
-
-    @Override
-    protected Class[] getConstructorSignature() {
-        return new Class[] {HttpHandler.class, String.class, String.class};
+    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
+        String name = NAME.resolveModelAttribute(context, model).asString();
+        String value = VALUE.resolveModelAttribute(context, model).asString();
+        return next -> new SetHeaderHandler(next, name, value);
     }
 }

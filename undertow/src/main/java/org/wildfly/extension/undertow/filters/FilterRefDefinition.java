@@ -29,6 +29,8 @@ import java.util.function.Supplier;
 
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.PredicateParser;
+import io.undertow.server.HandlerWrapper;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -50,6 +52,7 @@ import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.FilterLocation;
 import org.wildfly.extension.undertow.PredicateValidator;
 import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.extension.undertow.UndertowFilter;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
@@ -130,10 +133,10 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             final ServiceTarget target = context.getServiceTarget();
             final ServiceName sn = UndertowService.getFilterRefServiceName(address, name);
             final ServiceBuilder<?> sb = target.addService(sn);
-            final Consumer<FilterRef> frConsumer = sb.provides(sn);
-            final Supplier<FilterService> fSupplier = sb.requires(UndertowService.FILTER.append(name));
+            final Consumer<UndertowFilter> frConsumer = sb.provides(sn);
+            final Supplier<HandlerWrapper> fSupplier = sb.requires(UndertowService.FILTER.append(name));
             final Supplier<FilterLocation> lSupplier = sb.requires(locationSN);
-            sb.setInstance(new FilterRef(frConsumer, fSupplier, lSupplier, predicate, priority));
+            sb.setInstance(new FilterService(frConsumer, fSupplier, lSupplier, predicate, priority));
             sb.install();
         }
     }

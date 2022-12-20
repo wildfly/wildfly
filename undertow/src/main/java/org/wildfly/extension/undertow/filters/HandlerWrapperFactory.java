@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,27 +23,15 @@
 package org.wildfly.extension.undertow.filters;
 
 import io.undertow.server.HandlerWrapper;
-import io.undertow.server.handlers.encoding.ContentEncodingRepository;
-import io.undertow.server.handlers.encoding.EncodingHandler;
-import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
- * @author Tomaz Cerar (c) 2014 Red Hat Inc.
+ * Factory for creating a {@link HandlerWrapper}.
+ * @author Paul Ferraro
  */
-public class GzipFilter extends Filter {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement("gzip");
-    public static final GzipFilter INSTANCE = new GzipFilter();
-
-    private GzipFilter() {
-        super(PATH_ELEMENT, GzipFilter::createHandlerWrapper);
-    }
-
-    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) {
-        ContentEncodingRepository repository = new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50);
-        return next -> new EncodingHandler(next, repository);
-    }
+public interface HandlerWrapperFactory {
+    HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException;
 }

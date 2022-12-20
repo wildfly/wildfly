@@ -25,9 +25,11 @@ package org.wildfly.extension.undertow.filters;
 import java.util.Arrays;
 import java.util.Collection;
 
-import io.undertow.server.HttpHandler;
+import io.undertow.server.HandlerWrapper;
 import io.undertow.server.handlers.RequestLimitingHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -57,9 +59,8 @@ public class RequestLimitHandler extends Filter {
             .setRestartAllServices()
             .build();
 
-
     private RequestLimitHandler() {
-        super(PATH_ELEMENT);
+        super(PATH_ELEMENT, RequestLimitHandler::createHandlerWrapper);
     }
 
     @Override
@@ -67,14 +68,9 @@ public class RequestLimitHandler extends Filter {
         return Arrays.asList(MAX_CONCURRENT_REQUESTS, QUEUE_SIZE);
     }
 
-
-    @Override
-    public Class<? extends HttpHandler> getHandlerClass() {
-        return RequestLimitingHandler.class;
-    }
-
-    @Override
-    protected Class[] getConstructorSignature() {
-        return new Class[] {int.class, int.class, HttpHandler.class};
+    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
+        int maxConcurrentRequests = MAX_CONCURRENT_REQUESTS.resolveModelAttribute(context, model).asInt();
+        int queueSize = QUEUE_SIZE.resolveModelAttribute(context, model).asInt();
+        return next -> new RequestLimitingHandler(maxConcurrentRequests, queueSize, next);
     }
 }

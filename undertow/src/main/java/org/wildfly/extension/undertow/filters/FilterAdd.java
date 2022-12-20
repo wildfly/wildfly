@@ -27,13 +27,16 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.extension.undertow.Handler;
 import org.wildfly.extension.undertow.UndertowService;
 
+import java.util.Collection;
 import java.util.function.Consumer;
+
+import io.undertow.server.HandlerWrapper;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
@@ -41,11 +44,11 @@ import java.util.function.Consumer;
  */
 class FilterAdd extends AbstractAddStepHandler {
 
-    private Handler handler;
+    private HandlerWrapperFactory factory;
 
-    FilterAdd(Handler handler) {
-        super(handler.getAttributes());
-        this.handler = handler;
+    FilterAdd(HandlerWrapperFactory factory, Collection<AttributeDefinition> attributes) {
+        super(attributes);
+        this.factory = factory;
     }
 
     @Override
@@ -53,18 +56,10 @@ class FilterAdd extends AbstractAddStepHandler {
         final String name = context.getCurrentAddressValue();
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<?> sb = target.addService(UndertowService.FILTER.append(name));
-        final Consumer<FilterService> serviceConsumer = sb.provides(UndertowService.FILTER.append(name));
-        sb.setInstance(new FilterService(serviceConsumer, handler, getResolvedModel(context, model)));
+        final Consumer<HandlerWrapper> serviceConsumer = sb.provides(UndertowService.FILTER.append(name));
+        HandlerWrapper wrapper = this.factory.createHandlerWrapper(context, model);
+        sb.setInstance(Service.newInstance(serviceConsumer, wrapper));
         sb.setInitialMode(ServiceController.Mode.ON_DEMAND);
         sb.install();
     }
-
-    private ModelNode getResolvedModel(OperationContext context, ModelNode model) throws OperationFailedException {
-        ModelNode resolved = new ModelNode();
-        for (AttributeDefinition attribute : attributes) {
-            resolved.get(attribute.getName()).set(attribute.resolveModelAttribute(context, model));
-        }
-        return resolved;
-    }
-
 }

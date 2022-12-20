@@ -26,10 +26,12 @@ import java.util.Collection;
 import java.util.Collections;
 
 import io.undertow.security.handlers.AuthenticationCallHandler;
-import io.undertow.server.HttpHandler;
+import io.undertow.server.HandlerWrapper;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -49,7 +51,7 @@ public class BasicAuthHandler extends Filter {
             .build();
 
     private BasicAuthHandler() {
-        super(PATH_ELEMENT);
+        super(PATH_ELEMENT, BasicAuthHandler::createHandlerWrapper);
     }
 
     @Override
@@ -57,13 +59,7 @@ public class BasicAuthHandler extends Filter {
         return Collections.singleton(SECURITY_DOMAIN);
     }
 
-    @Override
-    public Class<? extends HttpHandler> getHandlerClass() {
-        return AuthenticationCallHandler.class;
-    }
-
-    @Override
-    protected Class[] getConstructorSignature() {
-        return new Class[] {HttpHandler.class};
+    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) {
+        return AuthenticationCallHandler::new;
     }
 }

@@ -22,12 +22,18 @@
 
 package org.wildfly.extension.undertow.filters;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import io.undertow.Handlers;
-import io.undertow.predicate.Predicate;
-import io.undertow.server.HttpHandler;
+import io.undertow.server.HandlerWrapper;
 import io.undertow.server.handlers.builder.PredicatedHandler;
 import io.undertow.server.handlers.builder.PredicatedHandlersParser;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -38,15 +44,12 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
 public class ExpressionFilterDefinition extends Filter {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement("expression-filter");
+
     public static final AttributeDefinition EXPRESSION = new SimpleAttributeDefinitionBuilder("expression", ModelType.STRING)
             .setRequired(true)
             .setAllowExpression(true)
@@ -61,7 +64,7 @@ public class ExpressionFilterDefinition extends Filter {
     public static final ExpressionFilterDefinition INSTANCE = new ExpressionFilterDefinition();
 
     private ExpressionFilterDefinition() {
-        super(PATH_ELEMENT);
+        super(PATH_ELEMENT, ExpressionFilterDefinition::createHandlerWrapper);
     }
 
     @Override
@@ -69,37 +72,23 @@ public class ExpressionFilterDefinition extends Filter {
         return Arrays.asList(EXPRESSION, MODULE);
     }
 
-    @Override
-    public HttpHandler createHttpHandler(Predicate predicate, ModelNode model, HttpHandler next) {
-        String expression = model.get(EXPRESSION.getName()).asString();
-        String moduleName = null;
-        if (model.hasDefined(MODULE.getName())) {
-            moduleName = model.get(MODULE.getName()).asString();
-        }
-        ClassLoader classLoader;
-        if (moduleName == null) {
-            classLoader = getClass().getClassLoader();
-        } else {
+    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
+        String expression = EXPRESSION.resolveModelAttribute(context, model).asString();
+        String moduleName = MODULE.resolveModelAttribute(context, model).asStringOrNull();
+        ClassLoader loader = ExpressionFilterDefinition.class.getClassLoader();
+        if (moduleName != null) {
             try {
                 ModuleLoader moduleLoader = Module.getBootModuleLoader();
                 Module filterModule = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
-                classLoader = filterModule.getClassLoader();
+                loader = filterModule.getClassLoader();
             } catch (ModuleLoadException e) {
                 throw UndertowLogger.ROOT_LOGGER.couldNotLoadHandlerFromModule(expression, moduleName, e);
             }
         }
-        List<PredicatedHandler> handlers = PredicatedHandlersParser.parse(expression, classLoader);
+
+        List<PredicatedHandler> handlers = PredicatedHandlersParser.parse(expression, loader);
         UndertowLogger.ROOT_LOGGER.debugf("Creating http handler %s from module %s", expression, moduleName);
 
-        if (predicate != null) {
-            return Handlers.predicate(predicate, Handlers.predicates(handlers, next), next);
-        } else {
-            return Handlers.predicates(handlers, next);
-        }
-    }
-
-    @Override
-    protected Class[] getConstructorSignature() {
-        throw new IllegalStateException(); //should not be used, as the handler is constructed above
+        return next -> Handlers.predicates(handlers, next);
     }
 }

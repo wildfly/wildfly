@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -44,11 +43,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public abstract class AbstractHandlerDefinition extends PersistentResourceDefinition implements Handler {
-
-    private static final List<AccessConstraintDefinition> CONSTRAINTS = new SensitiveTargetAccessConstraintDefinition(
-            new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-filter", false, false, false)
-    ).wrapAsList();
+public abstract class AbstractHandlerDefinition extends PersistentResourceDefinition {
 
     protected AbstractHandlerDefinition(PathElement path, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {
         this(path, Constants.HANDLER, addHandler, removeHandler);
@@ -82,13 +77,8 @@ public abstract class AbstractHandlerDefinition extends PersistentResourceDefini
     }
 
     @Override
-    public Class<? extends HttpHandler> getHandlerClass() {
-        return null;
-    }
-
-    @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return CONSTRAINTS;
+        return List.of(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-filter", false, false, false)));
     }
 
     @Override
@@ -101,5 +91,4 @@ public abstract class AbstractHandlerDefinition extends PersistentResourceDefini
 
         }
     }
-
 }
