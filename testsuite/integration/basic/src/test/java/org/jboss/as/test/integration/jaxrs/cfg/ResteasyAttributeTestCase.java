@@ -185,10 +185,16 @@ public class ResteasyAttributeTestCase {
         setAttributeValue(client, JaxrsAttribute.RESTEASY_LANGUAGE_MAPPINGS, map);
         map.clear();
 
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_MATCH_CACHE_ENABLED, VALUE_EXPRESSION_BOOLEAN_TRUE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_MATCH_CACHE_SIZE, VALUE_EXPRESSION_INT);
+
         map.add(new Property("unusual", VALUE_EXPRESSION_APPLICATION_UNUSUAL));
         map.add(new Property("xml", new ModelNode("application/xml")));
         setAttributeValue(client, JaxrsAttribute.RESTEASY_MEDIA_TYPE_MAPPINGS, map);
         map.clear();
+
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_PATCH_FILTER_DISABLED, VALUE_EXPRESSION_BOOLEAN_TRUE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_PATCH_FILTER_LEGACY, VALUE_EXPRESSION_BOOLEAN_TRUE);
 
         setAttributeValue(client, JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB, VALUE_EXPRESSION_BOOLEAN_TRUE);
         setAttributeValue(client, JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, VALUE_EXPRESSION_STRING);
@@ -267,6 +273,7 @@ public class ResteasyAttributeTestCase {
     public void testAttributes() throws IOException {
         WebTarget target = jaxrsClient.target(url.toString() + "myjaxrs/attribute");
         for (AttributeDefinition attribute : JaxrsAttribute.ATTRIBUTES) {
+           System.out.println("attribute: " + attribute.getName());
             testAttribute(target, attribute);
         }
     }
