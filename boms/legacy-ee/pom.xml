@@ -65,11 +65,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-bean-validation-legacy-namespace</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-connector-legacy-namespace</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
@@ -255,12 +250,6 @@
             </dependency>
 
             <dependency>
-                <groupId>jakarta.validation</groupId>
-                <artifactId>jakarta.validation-api</artifactId>
-                <version>${version.jakarta.validation}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>javax.jws</groupId>
                 <artifactId>jsr181-api</artifactId>
                 <version>${version.javax.jws.jsr181-api}</version>
@@ -432,26 +421,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate.validator</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>${legacy.version.org.hibernate.validator}</version>
-                <exclusions>
-                    <!-- TODO remove this exclusion once this supports Jakarta Validation -->
-                    <!-- Superceded by jakarta.validation:jakarta.validation-api -->
-                    <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>validation-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate.validator</groupId>
-                <artifactId>hibernate-validator-cdi</artifactId>
-                <version>${legacy.version.org.hibernate.validator}</version>
             </dependency>
 
             <dependency>

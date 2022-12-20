@@ -23,15 +23,15 @@ package org.jboss.as.ee.beanvalidation.testprovider;
 
 import java.io.InputStream;
 
-import javax.validation.BootstrapConfiguration;
-import javax.validation.ClockProvider;
-import javax.validation.Configuration;
-import javax.validation.ConstraintValidatorFactory;
-import javax.validation.MessageInterpolator;
-import javax.validation.ParameterNameProvider;
-import javax.validation.TraversableResolver;
-import javax.validation.ValidatorFactory;
-import javax.validation.valueextraction.ValueExtractor;
+import jakarta.validation.BootstrapConfiguration;
+import jakarta.validation.ClockProvider;
+import jakarta.validation.Configuration;
+import jakarta.validation.ConstraintValidatorFactory;
+import jakarta.validation.MessageInterpolator;
+import jakarta.validation.ParameterNameProvider;
+import jakarta.validation.TraversableResolver;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.valueextraction.ValueExtractor;
 
 /**
  * A {@link Configuration} implementation for testing purposes.

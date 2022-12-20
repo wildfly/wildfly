@@ -47,7 +47,6 @@
     </properties>
 
     <modules>
-        <module>bean-validation</module>
         <module>ee</module>
         <module>weld/common</module>
         <module>weld/spi</module>

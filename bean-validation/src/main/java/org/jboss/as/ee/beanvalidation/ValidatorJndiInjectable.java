@@ -21,8 +21,8 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ImmediateManagedReference;

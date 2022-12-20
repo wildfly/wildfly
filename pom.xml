@@ -55,6 +55,7 @@
     <modules>
         <module>appclient</module>
         <module>batch-jberet</module>
+        <module>bean-validation</module>
         <module>boms/common-ee</module>
         <module>boms/common-expansion</module>
         <module>boms/legacy-ee</module>
@@ -431,7 +432,6 @@
         <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
         <legacy.version.jakarta.transaction>2.0.1</legacy.version.jakarta.transaction>
         <version.jakarta.transaction.jakarta-transaction-api>2.0.1</version.jakarta.transaction.jakarta-transaction-api>
-        <version.jakarta.validation>2.0.2</version.jakarta.validation>
         <version.jakarta.validation.jakarta-validation-api>3.0.2</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.1.0-jbossorg-2</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
@@ -511,7 +511,6 @@
         <legacy.version.org.hibernate.commons.annotations>5.0.5.Final</legacy.version.org.hibernate.commons.annotations>
         <version.org.hibernate.commons.annotations>6.0.1.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>6.1.7.Final</version.org.hibernate.search>
-        <legacy.version.org.hibernate.validator>6.0.23.Final</legacy.version.org.hibernate.validator>
         <version.org.hibernate.validator>8.0.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
         <version.org.infinispan>14.0.3.Final</version.org.infinispan>
@@ -2094,8 +2093,6 @@
                 </property>
             </activation>
             <modules>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>bean-validation</module>
                 <!-- TODO once moved to jakarta.* move to main module set-->
                 <module>ee</module>
             </modules>

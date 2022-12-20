@@ -23,7 +23,7 @@ package org.jboss.as.ee.beanvalidation;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 
-import javax.validation.ValidatorFactory;
+import jakarta.validation.ValidatorFactory;
 
 /**
  * @author Stuart Douglas
