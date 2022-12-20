@@ -139,8 +139,8 @@ public class ModClusterLoadBalancingGroupDefinition extends SimpleResourceDefini
 
         @Override
         public ModelNode execute(OperationContext context, ModelNode op, Operation<Map.Entry<ModClusterStatus.LoadBalancer, String>> operation) throws OperationFailedException {
-            String serviceName = context.getCurrentAddress().getParent().getParent().getLastElement().getValue();
-            FunctionExecutor<ModCluster> executor = this.registry.get(new ModClusterServiceNameProvider(serviceName).getServiceName());
+            PathAddress serviceAddress = context.getCurrentAddress().getParent().getParent();
+            FunctionExecutor<ModCluster> executor = this.registry.get(new ModClusterServiceNameProvider(serviceAddress).getServiceName());
             Function<ModCluster, Map.Entry<ModClusterStatus.LoadBalancer, String>> mapper = LOAD_BALANCING_GROUP_FUNCTION_FACTORY.apply(context);
             return (executor != null) ? executor.execute(new OperationFunction<>(context, op, mapper, operation)) : null;
         }

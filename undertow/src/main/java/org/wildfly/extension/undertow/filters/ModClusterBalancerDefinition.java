@@ -151,8 +151,7 @@ class ModClusterBalancerDefinition extends SimpleResourceDefinition {
             PathAddress balancerAddress = context.getCurrentAddress();
             String balancerName = balancerAddress.getLastElement().getValue();
             PathAddress serviceAddress = balancerAddress.getParent();
-            String serviceName = serviceAddress.getLastElement().getValue();
-            FunctionExecutor<ModCluster> executor = this.registry.get(new ModClusterServiceNameProvider(serviceName).getServiceName());
+            FunctionExecutor<ModCluster> executor = this.registry.get(new ModClusterServiceNameProvider(serviceAddress).getServiceName());
             return (executor != null) ? executor.execute(new MetricFunction<>(new LoadBalancerFunction(balancerName), metric)) : null;
         }
     }

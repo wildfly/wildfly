@@ -280,8 +280,8 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
         @Override
         public FunctionExecutor<ModCluster> apply(OperationContext context) {
-            String serviceName = context.getCurrentAddress().getParent().getParent().getLastElement().getValue();
-            return this.registry.get(new ModClusterServiceNameProvider(serviceName).getServiceName());
+            PathAddress serviceAddress = context.getCurrentAddress().getParent().getParent();
+            return this.registry.get(new ModClusterServiceNameProvider(serviceAddress).getServiceName());
         }
     }
 

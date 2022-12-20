@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow.filters;
 
+import org.jboss.as.controller.PathAddress;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.extension.undertow.UndertowService;
 
@@ -31,7 +32,7 @@ import org.wildfly.extension.undertow.UndertowService;
  */
 public class ModClusterServiceNameProvider extends SimpleServiceNameProvider {
 
-    public ModClusterServiceNameProvider(String name) {
-        super(UndertowService.FILTER.append(name, "service"));
+    public ModClusterServiceNameProvider(PathAddress address) {
+        super(UndertowService.FILTER.append(address.getLastElement().getValue(), "service"));
     }
 }

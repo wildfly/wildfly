@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow.filters;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
@@ -32,14 +33,14 @@ import org.wildfly.extension.undertow.UndertowExtension;
  *
  * @author Radoslav Husar
  */
-public abstract class AffinityResourceDefinition extends ChildResourceDefinition {
+public abstract class AffinityResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     protected static PathElement pathElement(String value) {
         return PathElement.pathElement(Constants.AFFINITY, value);
     }
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     AffinityResourceDefinition(PathElement path) {
         super(path, UndertowExtension.getResolver(Constants.HANDLER, Constants.AFFINITY, path.getValue()));
     }
-
 }

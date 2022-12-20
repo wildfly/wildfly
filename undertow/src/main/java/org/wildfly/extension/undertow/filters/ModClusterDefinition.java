@@ -29,13 +29,16 @@ import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import io.undertow.UndertowOptions;
 import io.undertow.predicate.Predicate;
+import io.undertow.predicate.PredicateParser;
 import io.undertow.protocols.ajp.AjpClientRequestClientStreamSinkChannel;
 import io.undertow.protocols.http2.Http2Channel;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.proxy.ProxyHandler;
+import io.undertow.server.handlers.proxy.mod_cluster.MCMPConfig;
 import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -47,6 +50,7 @@ import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -62,9 +66,9 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
@@ -370,20 +374,30 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
         @Override
         public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
-            String name = context.getCurrentAddressValue();
-            ModelNode recursiveModel = Resource.Tools.readModel(context.readResourceFromRoot(context.getCurrentAddress(), true));
-            ModClusterService.install(name, context.getCapabilityServiceTarget(), recursiveModel, context);
 
-            ServiceName serviceName = new ModClusterServiceNameProvider(name).getServiceName();
-            new ServiceValueCaptorServiceConfigurator<>(new ModClusterResourceServiceValueCaptor(context, this.registry.add(serviceName))).build(context.getServiceTarget()).install();
+            String managementAccessPredicateString = ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE.resolveModelAttribute(context, model).asStringOrNull();
+            Predicate managementAccessPredicate = (managementAccessPredicateString != null) ? PredicateParser.parse(managementAccessPredicateString, ModClusterService.class.getClassLoader()) : null;
+
+            ModClusterServiceConfigurator configurator = new ModClusterServiceConfigurator(context.getCurrentAddress());
+            configurator.configure(context, model).build(context.getServiceTarget()).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+
+            RuntimeCapability<Void> capability = ModClusterDefinition.Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition();
+            CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(capability);
+            Consumer<FilterService> filter = builder.provides(capability, UndertowService.FILTER.append(context.getCurrentAddressValue()));
+            Supplier<ModCluster> service = builder.requires(configurator.getServiceName());
+            Supplier<MCMPConfig> config = builder.requires(configurator.getConfigServiceName());
+            builder.setInstance(new ModClusterService(filter, service, config, managementAccessPredicate)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+
+            new ServiceValueCaptorServiceConfigurator<>(new ModClusterResourceServiceValueCaptor(context, this.registry.add(configurator.getServiceName()))).build(context.getServiceTarget()).install();
         }
 
         @Override
         public void removeServices(OperationContext context, ModelNode model) {
-            ServiceName serviceName = new ModClusterServiceNameProvider(context.getCurrentAddressValue()).getServiceName();
+            ServiceName serviceName = new ModClusterServiceNameProvider(context.getCurrentAddress()).getServiceName();
             context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.registry.remove(serviceName)).getServiceName());
+            context.removeService(serviceName);
 
-            context.removeService(UndertowService.FILTER.append(Constants.MOD_CLUSTER));
+            context.removeService(ModClusterDefinition.Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition().getCapabilityServiceName(context.getCurrentAddress()));
         }
     }
 
