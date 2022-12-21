@@ -86,7 +86,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
           return properties;
       }
 
-    public static void testRuntime(KernelServices mainServices, final String virtualHostName, int schemaVersion) throws InterruptedException {
+    public static void testRuntime(KernelServices mainServices, int schemaVersion) throws InterruptedException {
         if (!mainServices.isSuccessfulBoot()) {
             Throwable t = mainServices.getBootError();
             Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
@@ -132,7 +132,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Assert.assertEquals("default-virtual-host", undertowService.getDefaultVirtualHost());
 
         // We need to wait for the server to register itself with the undertow service
-        awaitServiceValue(mainServices.getContainer().getService(ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName(virtualHostName)));
+        awaitServiceValue(mainServices.getContainer().getService(ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName("some-server")));
 
         // Don't verify servers until we know they are registered
         Assert.assertEquals(1, undertowService.getServers().size());
@@ -140,9 +140,9 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Assert.assertEquals("other-host", server.getDefaultHost());
 
         // We need to wait for each host to register itself with the server
-        awaitServiceValue(mainServices.getContainer().getService(HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(virtualHostName, "default-virtual-host")));
+        awaitServiceValue(mainServices.getContainer().getService(HostDefinition.HOST_CAPABILITY.getCapabilityServiceName("some-server", "default-virtual-host")));
 
-        final ServiceName hostServiceName = HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(virtualHostName, "other-host");
+        final ServiceName hostServiceName = HostDefinition.HOST_CAPABILITY.getCapabilityServiceName("some-server", "other-host");
         ServiceController hostSC = mainServices.getContainer().getService(hostServiceName);
         Assert.assertNotNull(hostSC);
         hostSC.setMode(ServiceController.Mode.ACTIVE);
@@ -159,7 +159,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             Assert.assertTrue(host.getAllAliases().contains("default-alias"));
         }
 
-        final ServiceName locationServiceName = UndertowService.locationServiceName(virtualHostName, "default-virtual-host", "/");
+        final ServiceName locationServiceName = UndertowService.locationServiceName("some-server", "default-virtual-host", "/");
         ServiceController locationSC = mainServices.getContainer().getService(locationServiceName);
         Assert.assertNotNull(locationSC);
         locationSC.setMode(ServiceController.Mode.ACTIVE);
@@ -173,7 +173,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Assert.assertNotNull(jspConfig);
         Assert.assertNotNull(jspConfig.createJSPServletInfo());
 
-        final ServiceName filterRefName = UndertowService.filterRefName(virtualHostName, "other-host", "/", "static-gzip");
+        final ServiceName filterRefName = UndertowService.filterRefName("some-server", "other-host", "/", "static-gzip");
 
         ServiceController gzipFilterController = mainServices.getContainer().getService(filterRefName);
         gzipFilterController.setMode(ServiceController.Mode.ACTIVE);
@@ -182,7 +182,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Assert.assertNotNull("handler should have been created", gzipHandler);
 
         // We need to ensure filter has registered itself with the host
-        awaitServiceValue(mainServices.getContainer().getService(UndertowService.filterRefName(virtualHostName, "other-host", "headers")));
+        awaitServiceValue(mainServices.getContainer().getService(UndertowService.filterRefName("some-server", "other-host", "headers")));
         Assert.assertEquals(1, host.getFilters().size());
 
         ModelNode op = Util.createOperation("write-attribute",
@@ -199,7 +199,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         // WFLY-14648 Check expression in enabled attribute is resolved.
         op = Util.createOperation("write-attribute",
                 PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT)
-                        .append("server", virtualHostName)
+                        .append("server", "some-server")
                         .append("http-listener", "default")
         );
         op.get("name").set("enabled");

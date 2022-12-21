@@ -21,14 +21,14 @@
   -->
 
 <subsystem xmlns="urn:jboss:domain:undertow:1.0" default-virtual-host="default-virtual-host" default-servlet-container="myContainer"
-           default-server="default-server" instance-id="some-id">
+           default-server="some-server" instance-id="some-id">
 
     <buffer-caches>
         <buffer-cache name="default" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
         <buffer-cache name="extra" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
     </buffer-caches>
 
-    <server name="default-server" default-host="other-host" servlet-container="myContainer">
+    <server name="some-server" default-host="other-host" servlet-container="myContainer">
         <ajp-listener name="ajp-connector" socket-binding="ajp" redirect-socket="ajps" max-parameters="5000"/>
         <http-listener name="default" socket-binding="http" certificate-forwarding="true" always-set-keep-alive="${prop.smth:false}" redirect-socket="ajp" proxy-address-forwarding="${prop.smth:false}"/>
         <http-listener name="second" socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30" redirect-socket="https-non-default"/>

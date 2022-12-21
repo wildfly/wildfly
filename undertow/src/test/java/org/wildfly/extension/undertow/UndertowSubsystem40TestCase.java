@@ -36,7 +36,6 @@ import java.io.IOException;
 public class UndertowSubsystem40TestCase extends AbstractUndertowSubsystemTestCase {
 
     private static final int SCHEMA_VERSION = 4;
-    private final String virtualHostName = "some-server";
 
     @Override
     protected String getSubsystemXml() throws IOException {
@@ -58,7 +57,7 @@ public class UndertowSubsystem40TestCase extends AbstractUndertowSubsystemTestCa
         setProperty();
         KernelServicesBuilder builder = createKernelServicesBuilder(RUNTIME).setSubsystemXml(getSubsystemXml());
         KernelServices mainServices = builder.build();
-        testRuntime(mainServices, virtualHostName, SCHEMA_VERSION);
+        testRuntime(mainServices, SCHEMA_VERSION);
         testRuntimeOther(mainServices);
         testRuntimeLast(mainServices);
     }
