@@ -36,28 +36,28 @@ class MailSubsystemParser3_0 extends PersistentResourceXMLParser {
 
     @Override
     public PersistentResourceXMLDescription getParserDescription() {
-        return builder(MailSubsystemResource.INSTANCE.getPathElement(), Namespace.MAIL_3_0.getUriString())
+        return builder(MailExtension.SUBSYSTEM_PATH, Namespace.MAIL_3_0.getUriString())
                 .addChild(
-                        builder(MailSessionDefinition.INSTANCE.getPathElement())
+                        builder(MailExtension.MAIL_SESSION_PATH)
                                 .addAttributes(MailSessionDefinition.DEBUG, MailSessionDefinition.JNDI_NAME, MailSessionDefinition.FROM)
                                 .addChild(
-                                        builder(MailServerDefinition.INSTANCE_SMTP.getPathElement())
+                                        builder(MailSubsystemModel.SMTP_SERVER_PATH)
                                                 .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.SMTP_SERVER)
 
                                 )
                                 .addChild(
-                                        builder(MailServerDefinition.INSTANCE_POP3.getPathElement())
+                                        builder(MailSubsystemModel.POP3_SERVER_PATH)
                                                 .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.POP3_SERVER)
                                 )
                                 .addChild(
-                                        builder(MailServerDefinition.INSTANCE_IMAP.getPathElement())
+                                        builder(MailSubsystemModel.IMAP_SERVER_PATH)
                                                 .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.IMAP_SERVER)
                                 )
                                 .addChild(
-                                        builder(MailServerDefinition.INSTANCE_CUSTOM.getPathElement())
+                                        builder(MailSubsystemModel.CUSTOM_SERVER_PATH)
                                                 .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF_OPTIONAL, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE, MailServerDefinition.PROPERTIES)
                                                 .setXmlElementName(MailSubsystemModel.CUSTOM_SERVER)
                                 )

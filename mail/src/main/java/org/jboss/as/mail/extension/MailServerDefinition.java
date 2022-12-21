@@ -39,6 +39,7 @@ import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.DynamicNameMappers;
@@ -137,15 +138,10 @@ class MailServerDefinition extends PersistentResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES_CUSTOM = {OUTBOUND_SOCKET_BINDING_REF_OPTIONAL, SSL, TLS, USERNAME, PASSWORD, CREDENTIAL_REFERENCE, PROPERTIES};
 
 
-    static final MailServerDefinition INSTANCE_SMTP = new MailServerDefinition(MailSubsystemModel.SMTP_SERVER_PATH, ATTRIBUTES);
-    static final MailServerDefinition INSTANCE_IMAP = new MailServerDefinition(MailSubsystemModel.IMAP_SERVER_PATH, ATTRIBUTES);
-    static final MailServerDefinition INSTANCE_POP3 = new MailServerDefinition(MailSubsystemModel.POP3_SERVER_PATH, ATTRIBUTES);
-    static final MailServerDefinition INSTANCE_CUSTOM = new MailServerDefinition(MailSubsystemModel.CUSTOM_SERVER_PATH, ATTRIBUTES_CUSTOM);
-
     private final List<AttributeDefinition> attributes;
 
-    private MailServerDefinition(final PathElement path, AttributeDefinition[] attributes) {
-        super(new Parameters(path,
+    MailServerDefinition(final PathElement path, AttributeDefinition[] attributes) {
+        super(new SimpleResourceDefinition.Parameters(path,
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION, MailSubsystemModel.SERVER_TYPE))
                 .setAddHandler(new MailServerAdd(attributes))
                 .setRemoveHandler(new MailServerRemove(attributes))

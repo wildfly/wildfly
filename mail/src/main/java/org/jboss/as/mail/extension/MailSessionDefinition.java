@@ -31,6 +31,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
@@ -73,22 +74,8 @@ class MailSessionDefinition extends PersistentResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = {DEBUG, JNDI_NAME, FROM};
 
-    private static final List<MailServerDefinition> CHILDREN = Arrays.asList(
-            // /subsystem=mail/mail-session=java:/Mail/server=imap
-            MailServerDefinition.INSTANCE_IMAP,
-            // /subsystem=mail/mail-session=java:/Mail/server=pop3
-            MailServerDefinition.INSTANCE_POP3,
-            // /subsystem=mail/mail-session=java:/Mail/server=smtp
-            MailServerDefinition.INSTANCE_SMTP,
-            // /subsystem=mail/mail-session=java:/Mail/custom=*
-            MailServerDefinition.INSTANCE_CUSTOM
-
-    );
-
-    static final MailSessionDefinition INSTANCE = new MailSessionDefinition();
-
-    private MailSessionDefinition() {
-        super(new Parameters(MailExtension.MAIL_SESSION_PATH,
+    MailSessionDefinition() {
+        super(new SimpleResourceDefinition.Parameters(MailExtension.MAIL_SESSION_PATH,
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION))
                 .setAddHandler(MailSessionAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(), MailSessionAdd.INSTANCE))
@@ -113,7 +100,16 @@ class MailSessionDefinition extends PersistentResourceDefinition {
 
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
-        return CHILDREN;
+        return List.of(
+                // /subsystem=mail/mail-session=java:/Mail/server=imap
+                new MailServerDefinition(MailSubsystemModel.IMAP_SERVER_PATH, MailServerDefinition.ATTRIBUTES),
+                // /subsystem=mail/mail-session=java:/Mail/server=pop3
+                new MailServerDefinition(MailSubsystemModel.POP3_SERVER_PATH, MailServerDefinition.ATTRIBUTES),
+                // /subsystem=mail/mail-session=java:/Mail/server=smtp
+                new MailServerDefinition(MailSubsystemModel.SMTP_SERVER_PATH, MailServerDefinition.ATTRIBUTES),
+                // /subsystem=mail/mail-session=java:/Mail/custom=*
+                new MailServerDefinition(MailSubsystemModel.CUSTOM_SERVER_PATH, MailServerDefinition.ATTRIBUTES_CUSTOM)
+        );
     }
 
     @Override
