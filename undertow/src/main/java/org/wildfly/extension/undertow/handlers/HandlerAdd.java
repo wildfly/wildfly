@@ -54,11 +54,11 @@ final class HandlerAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = context.getCurrentAddressValue();
-        final RuntimeCapability<Void> newCapability = Handler.CAPABILITY.fromBaseCapability(context.getCurrentAddress());
+        final RuntimeCapability<Void> newCapability = HandlerDefinition.CAPABILITY.fromBaseCapability(context.getCurrentAddress());
         final boolean capabilityAvailable = context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, newCapability.getName(), null);
 
-        final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(Handler.CAPABILITY);
-        final Consumer<HttpHandler> hhConsumer = sb.provides(Handler.CAPABILITY);
+        final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(HandlerDefinition.CAPABILITY);
+        final Consumer<HttpHandler> hhConsumer = sb.provides(HandlerDefinition.CAPABILITY);
         final Supplier<RequestController> rcSupplier = capabilityAvailable ? sb.requiresCapability(Capabilities.REF_REQUEST_CONTROLLER, RequestController.class) : null;
         sb.setInstance(new HandlerService(hhConsumer, rcSupplier, this.factory.createHandler(context, model), name));
         sb.setInitialMode(ServiceController.Mode.ON_DEMAND);

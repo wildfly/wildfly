@@ -56,7 +56,7 @@ public class HandlerDefinitions extends PersistentResourceDefinition {
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
         return List.of(
-                new FileHandler(),
-                new ReverseProxyHandler());
+                new FileHandlerDefinition(),
+                new ReverseProxyHandlerDefinition());
     }
 }

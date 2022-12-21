@@ -38,10 +38,10 @@ import org.wildfly.extension.undertow.filters.ModClusterDefinition;
 import org.wildfly.extension.undertow.filters.RequestLimitHandler;
 import org.wildfly.extension.undertow.filters.ResponseHeaderFilter;
 import org.wildfly.extension.undertow.filters.RewriteFilterDefinition;
-import org.wildfly.extension.undertow.handlers.FileHandler;
+import org.wildfly.extension.undertow.handlers.FileHandlerDefinition;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
-import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
-import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
+import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerDefinition;
+import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHostDefinition;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -214,35 +214,35 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                                 .setXmlElementName(Constants.HANDLERS)
                                 .setNoAddOperation(true)
                                 .addChild(
-                                        builder(FileHandler.PATH_ELEMENT)
+                                        builder(FileHandlerDefinition.PATH_ELEMENT)
                                                 .addAttributes(
-                                                        FileHandler.PATH,
-                                                        FileHandler.CACHE_BUFFER_SIZE,
-                                                        FileHandler.CACHE_BUFFERS,
-                                                        FileHandler.DIRECTORY_LISTING,
-                                                        FileHandler.FOLLOW_SYMLINK,
-                                                        FileHandler.SAFE_SYMLINK_PATHS,
-                                                        FileHandler.CASE_SENSITIVE
+                                                        FileHandlerDefinition.PATH,
+                                                        FileHandlerDefinition.CACHE_BUFFER_SIZE,
+                                                        FileHandlerDefinition.CACHE_BUFFERS,
+                                                        FileHandlerDefinition.DIRECTORY_LISTING,
+                                                        FileHandlerDefinition.FOLLOW_SYMLINK,
+                                                        FileHandlerDefinition.SAFE_SYMLINK_PATHS,
+                                                        FileHandlerDefinition.CASE_SENSITIVE
                                                 )
                                 )
                                 .addChild(
-                                        builder(ReverseProxyHandler.PATH_ELEMENT)
+                                        builder(ReverseProxyHandlerDefinition.PATH_ELEMENT)
                                                 .addAttributes(
-                                                        ReverseProxyHandler.CONNECTIONS_PER_THREAD,
-                                                        ReverseProxyHandler.SESSION_COOKIE_NAMES,
-                                                        ReverseProxyHandler.PROBLEM_SERVER_RETRY,
-                                                        ReverseProxyHandler.MAX_REQUEST_TIME,
-                                                        ReverseProxyHandler.REQUEST_QUEUE_SIZE,
-                                                        ReverseProxyHandler.CACHED_CONNECTIONS_PER_THREAD,
-                                                        ReverseProxyHandler.CONNECTION_IDLE_TIMEOUT)
-                                                .addChild(builder(ReverseProxyHandlerHost.PATH_ELEMENT)
+                                                        ReverseProxyHandlerDefinition.CONNECTIONS_PER_THREAD,
+                                                        ReverseProxyHandlerDefinition.SESSION_COOKIE_NAMES,
+                                                        ReverseProxyHandlerDefinition.PROBLEM_SERVER_RETRY,
+                                                        ReverseProxyHandlerDefinition.MAX_REQUEST_TIME,
+                                                        ReverseProxyHandlerDefinition.REQUEST_QUEUE_SIZE,
+                                                        ReverseProxyHandlerDefinition.CACHED_CONNECTIONS_PER_THREAD,
+                                                        ReverseProxyHandlerDefinition.CONNECTION_IDLE_TIMEOUT)
+                                                .addChild(builder(ReverseProxyHandlerHostDefinition.PATH_ELEMENT)
                                                         .setXmlElementName(Constants.HOST)
                                                         .addAttributes(
-                                                                ReverseProxyHandlerHost.OUTBOUND_SOCKET_BINDING,
-                                                                ReverseProxyHandlerHost.SCHEME,
-                                                                ReverseProxyHandlerHost.PATH,
-                                                                ReverseProxyHandlerHost.INSTANCE_ID,
-                                                                ReverseProxyHandlerHost.SECURITY_REALM))
+                                                                ReverseProxyHandlerHostDefinition.OUTBOUND_SOCKET_BINDING,
+                                                                ReverseProxyHandlerHostDefinition.SCHEME,
+                                                                ReverseProxyHandlerHostDefinition.PATH,
+                                                                ReverseProxyHandlerHostDefinition.INSTANCE_ID,
+                                                                ReverseProxyHandlerHostDefinition.SECURITY_REALM))
                                 )
 
 

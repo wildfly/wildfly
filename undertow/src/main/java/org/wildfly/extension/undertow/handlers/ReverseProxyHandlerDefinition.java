@@ -46,7 +46,7 @@ import java.util.List;
 /**
  * @author Stuart Douglas
  */
-public class ReverseProxyHandler extends Handler {
+public class ReverseProxyHandlerDefinition extends HandlerDefinition {
     public static final PathElement PATH_ELEMENT =PathElement.pathElement(Constants.REVERSE_PROXY);
 
     public static final AttributeDefinition PROBLEM_SERVER_RETRY = new SimpleAttributeDefinitionBuilder(Constants.PROBLEM_SERVER_RETRY, ModelType.INT)
@@ -108,8 +108,8 @@ public class ReverseProxyHandler extends Handler {
             .setDefaultValue(new ModelNode(1L))
             .build();
 
-    ReverseProxyHandler() {
-        super(PATH_ELEMENT, ReverseProxyHandler::createHandler);
+    ReverseProxyHandlerDefinition() {
+        super(PATH_ELEMENT, ReverseProxyHandlerDefinition::createHandler);
     }
 
     @Override
@@ -122,7 +122,7 @@ public class ReverseProxyHandler extends Handler {
 
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
-        return List.of(new ReverseProxyHandlerHost());
+        return List.of(new ReverseProxyHandlerHostDefinition());
     }
 
     static HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException {

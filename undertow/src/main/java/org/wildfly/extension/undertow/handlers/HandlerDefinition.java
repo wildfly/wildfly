@@ -44,26 +44,19 @@ import org.wildfly.extension.undertow.UndertowService;
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-abstract class Handler extends PersistentResourceDefinition {
+abstract class HandlerDefinition extends PersistentResourceDefinition {
 
-    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HANDLER, true, HttpHandler.class)
-            //.addRuntimeOnlyRequirements(Capabilities.REF_REQUEST_CONTROLLER) -- has no function so don't use it
-            .build();
-
-    private static final List<AccessConstraintDefinition> CONSTRAINTS = new SensitiveTargetAccessConstraintDefinition(
-            new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-handler", false, false, false)
-    ).wrapAsList();
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HANDLER, true, HttpHandler.class).build();
 
     private final HandlerFactory factory;
 
-    protected Handler(PathElement path, HandlerFactory factory) {
+    protected HandlerDefinition(PathElement path, HandlerFactory factory) {
         super(new SimpleResourceDefinition.Parameters(path, UndertowExtension.getResolver(Constants.HANDLER, path.getKey())));
         this.factory = factory;
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
         HandlerAdd add = new HandlerAdd(this.factory, this.getAttributes());
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.HANDLER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
@@ -71,11 +64,11 @@ abstract class Handler extends PersistentResourceDefinition {
 
     @Override
     public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        super.registerCapabilities(resourceRegistration);
         resourceRegistration.registerCapability(CAPABILITY);
     }
+
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return CONSTRAINTS;
+        return List.of(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-handler", false, false, false)));
     }
 }

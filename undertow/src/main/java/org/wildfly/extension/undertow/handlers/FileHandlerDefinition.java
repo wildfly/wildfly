@@ -47,7 +47,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class FileHandler extends Handler {
+public class FileHandlerDefinition extends HandlerDefinition {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.FILE);
 
     /*<file path="/opt/data" cache-buffer-size="1024" cache-buffers="1024"/>*/
@@ -95,8 +95,8 @@ public class FileHandler extends Handler {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    FileHandler() {
-        super(PATH_ELEMENT, FileHandler::createHandler);
+    FileHandlerDefinition() {
+        super(PATH_ELEMENT, FileHandlerDefinition::createHandler);
     }
 
     @Override
