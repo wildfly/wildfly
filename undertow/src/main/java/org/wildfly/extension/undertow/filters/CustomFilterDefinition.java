@@ -27,6 +27,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -81,8 +83,14 @@ public class CustomFilterDefinition extends SimpleFilterDefinition {
         String moduleName = MODULE.resolveModelAttribute(context, model).asString();
         Map<String, String> parameters = PARAMETERS.unwrap(context, model);
         UndertowLogger.ROOT_LOGGER.debugf("Creating http handler %s from module %s with parameters %s", className, moduleName, parameters);
-        Class<?> handlerClass = getHandlerClass(className, moduleName);
-        return new ConfiguredHandlerWrapper(handlerClass, parameters);
+        // Resolve module lazily
+        return new HandlerWrapper() {
+            @Override
+            public HttpHandler wrap(HttpHandler handler) {
+                Class<?> handlerClass = getHandlerClass(className, moduleName);
+                return new ConfiguredHandlerWrapper(handlerClass, parameters).wrap(handler);
+            }
+        };
     }
 
     private static Class<?> getHandlerClass(String className, String moduleName) {
