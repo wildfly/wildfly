@@ -42,7 +42,7 @@ import org.wildfly.extension.undertow.Constants;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class ErrorPageDefinition extends Filter {
+public class ErrorPageDefinition extends SimpleFilterDefinition {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.ERROR_PAGE);
 
     public static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)

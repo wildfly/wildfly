@@ -42,7 +42,7 @@ import java.util.Collection;
 /**
  * @author Stuart Douglas
  */
-public class RewriteFilterDefinition extends Filter {
+public class RewriteFilterDefinition extends SimpleFilterDefinition {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.REWRITE);
 
     public static final AttributeDefinition TARGET = new SimpleAttributeDefinitionBuilder("target", ModelType.STRING)

@@ -60,7 +60,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -74,11 +73,9 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.OptionAttributeDefinition;
-import org.wildfly.extension.undertow.AbstractHandlerDefinition;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.PredicateValidator;
-import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
@@ -88,7 +85,7 @@ import org.wildfly.extension.undertow.UndertowService;
  * @author Stuart Douglas
  * @author Radoslav Husar
  */
-public class ModClusterDefinition extends AbstractHandlerDefinition {
+public class ModClusterDefinition extends AbstractFilterDefinition {
 
     public static final PathElement PATH_ELEMENT = pathElement(Constants.MOD_CLUSTER);
 
@@ -332,7 +329,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
     private final ServiceValueExecutorRegistry<ModCluster> registry = new ServiceValueExecutorRegistry<>();
 
     ModClusterDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.HANDLER, PATH_ELEMENT.getKey())));
+        super(PATH_ELEMENT);
     }
 
     @Override

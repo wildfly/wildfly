@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 @Deprecated
-public class BasicAuthHandler extends Filter {
+public class BasicAuthHandler extends SimpleFilterDefinition {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement("basic-auth");
 
     public static final AttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder("security-domain", ModelType.STRING)

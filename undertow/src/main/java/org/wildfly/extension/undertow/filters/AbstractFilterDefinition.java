@@ -22,30 +22,35 @@
 
 package org.wildfly.extension.undertow.filters;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ServiceRemoveStepHandler;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.wildfly.extension.undertow.AbstractHandlerDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
- * @author Tomaz Cerar (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-abstract class Filter extends AbstractHandlerDefinition {
+public abstract class AbstractFilterDefinition extends PersistentResourceDefinition {
 
-    private final HandlerWrapperFactory factory;
-
-    protected Filter(PathElement path, HandlerWrapperFactory factory) {
-        super(path, Constants.FILTER);
-        this.factory = factory;
+    protected AbstractFilterDefinition(PathElement path) {
+        super(path, UndertowExtension.getResolver(Constants.FILTER, path.getKey()));
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        FilterAdd add = new FilterAdd(this.factory, this.getAttributes());
-        registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-        registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.FILTER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return List.of(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-filter", false, false, false)));
+    }
+
+    @Override
+    public Collection<AttributeDefinition> getAttributes() {
+        return Collections.emptyList();
     }
 }

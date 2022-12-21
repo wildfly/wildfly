@@ -70,7 +70,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
 public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.NODE);
-    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER, Constants.BALANCER, Constants.NODE);
+    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), ModClusterBalancerDefinition.PATH_ELEMENT.getKey(), PATH_ELEMENT.getKey());
     static final BiFunction<String, ModelType, PrimitiveListAttributeDefinition.Builder> PRIMITIVE_LIST_BUILDER_FACTORY = PrimitiveListAttributeDefinition.Builder::new;
 
     enum NodeMetric implements Metric<ModClusterStatus.Node> {

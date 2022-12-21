@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class RequestLimitHandler extends Filter {
+public class RequestLimitHandler extends SimpleFilterDefinition {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement("request-limit");
 
     public static final AttributeDefinition MAX_CONCURRENT_REQUESTS = new SimpleAttributeDefinitionBuilder("max-concurrent-requests", ModelType.INT)

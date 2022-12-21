@@ -120,7 +120,7 @@ class ModClusterBalancerDefinition extends SimpleResourceDefinition {
     private final FunctionExecutorRegistry<ModCluster> registry;
 
     ModClusterBalancerDefinition(FunctionExecutorRegistry<ModCluster> registry) {
-        super(new Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER, PATH_ELEMENT.getKey())).setRuntime());
+        super(new Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), PATH_ELEMENT.getKey())).setRuntime());
         this.registry = registry;
     }
 

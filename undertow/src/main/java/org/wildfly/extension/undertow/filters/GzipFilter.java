@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
-public class GzipFilter extends Filter {
+public class GzipFilter extends SimpleFilterDefinition {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement("gzip");
 
     GzipFilter() {

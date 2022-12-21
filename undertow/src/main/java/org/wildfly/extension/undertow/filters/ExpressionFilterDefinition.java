@@ -47,7 +47,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
-public class ExpressionFilterDefinition extends Filter {
+public class ExpressionFilterDefinition extends SimpleFilterDefinition {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement("expression-filter");
 
     public static final AttributeDefinition EXPRESSION = new SimpleAttributeDefinitionBuilder("expression", ModelType.STRING)

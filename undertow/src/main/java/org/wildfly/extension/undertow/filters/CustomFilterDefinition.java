@@ -44,7 +44,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
-public class CustomFilterDefinition extends Filter {
+public class CustomFilterDefinition extends SimpleFilterDefinition {
 
     public static final PathElement PATH_ELEMENT = PathElement.pathElement("custom-filter");
 

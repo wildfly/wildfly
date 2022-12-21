@@ -65,7 +65,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
 class ModClusterContextDefinition extends SimpleResourceDefinition {
 
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.CONTEXT);
-    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER, Constants.BALANCER, Constants.NODE, Constants.CONTEXT);
+    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), ModClusterBalancerDefinition.PATH_ELEMENT.getKey(), ModClusterNodeDefinition.PATH_ELEMENT.getKey(), PATH_ELEMENT.getKey());
 
     enum ContextMetric implements Metric<ModClusterStatus.Context> {
         STATUS(Constants.STATUS, ModelType.STRING) {

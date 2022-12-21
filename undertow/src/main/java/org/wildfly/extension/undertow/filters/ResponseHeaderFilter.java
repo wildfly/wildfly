@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class ResponseHeaderFilter extends Filter {
+public class ResponseHeaderFilter extends SimpleFilterDefinition {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement("response-header");
 
     public static final AttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("header-name", ModelType.STRING)

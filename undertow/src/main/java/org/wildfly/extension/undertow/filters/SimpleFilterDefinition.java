@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,25 +22,28 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.UndertowExtension;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.wildfly.extension.undertow.UndertowService;
 
 /**
- * Base class for affinity resources.
- *
- * @author Radoslav Husar
+ * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-public abstract class AffinityResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+abstract class SimpleFilterDefinition extends AbstractFilterDefinition {
 
-    protected static PathElement pathElement(String value) {
-        return PathElement.pathElement(Constants.AFFINITY, value);
+    private final HandlerWrapperFactory factory;
+
+    protected SimpleFilterDefinition(PathElement path, HandlerWrapperFactory factory) {
+        super(path);
+        this.factory = factory;
     }
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    AffinityResourceDefinition(PathElement path) {
-        super(path, UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), path.getKey(), path.getValue()));
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        FilterAdd add = new FilterAdd(this.factory, this.getAttributes());
+        registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.FILTER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 }

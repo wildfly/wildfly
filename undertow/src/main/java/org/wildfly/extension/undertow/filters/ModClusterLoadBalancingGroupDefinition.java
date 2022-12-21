@@ -56,7 +56,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
  */
 public class ModClusterLoadBalancingGroupDefinition extends SimpleResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.LOAD_BALANCING_GROUP);
-    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER, Constants.BALANCER, Constants.LOAD_BALANCING_GROUP);
+    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), ModClusterBalancerDefinition.PATH_ELEMENT.getKey(), PATH_ELEMENT.getKey());
 
     enum LoadBalancingGroupOperation implements Operation<Map.Entry<ModClusterStatus.LoadBalancer, String>> {
         ENABLE_NODES(Constants.ENABLE_NODES, ModClusterStatus.Context::enable),
