@@ -45,8 +45,8 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.WorkerService;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
@@ -56,15 +56,9 @@ import org.xnio.Xnio;
 import org.xnio.XnioWorker;
 
 class RuntimeInitialization extends DefaultInitialization {
-    private final String serverName;
     private final Map<ServiceName, Supplier<Object>> values;
 
-    RuntimeInitialization(String serverName) {
-        this(serverName, null);
-    }
-
-    RuntimeInitialization(String serverName, Map<ServiceName, Supplier<Object>> values) {
-        this.serverName = serverName;
+    RuntimeInitialization(Map<ServiceName, Supplier<Object>> values) {
         this.values = values;
     }
 
@@ -96,16 +90,18 @@ class RuntimeInitialization extends DefaultInitialization {
             this.start(target, UndertowService.FILTER.append("headers"));
             this.start(target, UndertowService.FILTER.append("mod-cluster"));
             this.record(target, UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName());
-            this.record(target, ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName(this.serverName));
-            this.start(target, HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(this.serverName, "default-virtual-host"));
-            this.start(target, HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(this.serverName, "other-host"));
-            this.record(target, UndertowService.locationServiceName(this.serverName, "default-virtual-host", "/"));
+            this.record(target, ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName("some-server"));
+            this.start(target, HostDefinition.HOST_CAPABILITY.getCapabilityServiceName("some-server", "default-virtual-host"));
+            this.start(target, HostDefinition.HOST_CAPABILITY.getCapabilityServiceName("some-server", "other-host"));
+            this.record(target, UndertowService.locationServiceName("some-server", "default-virtual-host", "/"));
             this.start(target, ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName("myContainer"));
-            this.start(target, UndertowService.filterRefName(this.serverName, "other-host", "/", "static-gzip"));
-            this.start(target, UndertowService.filterRefName(this.serverName, "other-host", "headers"));
+            this.start(target, UndertowService.filterRefName("some-server", "other-host", "/", "static-gzip"));
+            this.start(target, UndertowService.filterRefName("some-server", "other-host", "headers"));
             this.record(target, UndertowService.DEFAULT_HOST);
             this.record(target, UndertowService.DEFAULT_SERVER);
             this.record(target, UndertowService.accessLogServiceName("some-server", "default-virtual-host"));
+            this.record(target, ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName("undertow-server"));
+            this.record(target, ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName("default-server"));
         }
         try {
             SSLContext sslContext = SSLContext.getDefault();
@@ -133,7 +129,7 @@ class RuntimeInitialization extends DefaultInitialization {
                             Xnio.getInstance().createWorkerBuilder().populateFromOptions(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap())));
             builder2.install();
 
-            target.addService(ControlledProcessStateService.SERVICE_NAME).setInstance(new ValueService<>(new ImmediateValue<>(null))).install();
+            target.addService(ControlledProcessStateService.SERVICE_NAME).setInstance(new NullService()).install();
 
             final ServiceBuilder<?> sb0 = target.addService(ServiceName.parse(Capabilities.CAPABILITY_BYTE_BUFFER_POOL + ".default"));
             final Consumer<DefaultByteBufferPool> dbbpConsumer = sb0.provides(ServiceName.parse(Capabilities.CAPABILITY_BYTE_BUFFER_POOL + ".default"));
@@ -166,4 +162,20 @@ class RuntimeInitialization extends DefaultInitialization {
         }
 
     }
-}
+
+    private static final class NullService implements org.jboss.msc.service.Service<ControlledProcessStateService> {
+        @Override
+        public void start(StartContext context) {
+
+        }
+
+        @Override
+        public void stop(StopContext context) {
+
+        }
+
+        @Override
+        public ControlledProcessStateService getValue() throws IllegalStateException, IllegalArgumentException {
+            return null;
+        }
+    }}
