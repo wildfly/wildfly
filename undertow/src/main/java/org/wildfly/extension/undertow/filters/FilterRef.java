@@ -65,14 +65,7 @@ public class FilterRef implements Service<FilterRef>, UndertowFilter {
         location.get().removeFilter(this);
     }
 
-    public HttpHandler createHttpHandler(HttpHandler next) {
-        return filter.get().createHttpHandler(predicate, next);
-    }
-
-    public Predicate getPredicate() {
-        return predicate;
-    }
-
+    @Override
     public int getPriority() {
         return priority;
     }

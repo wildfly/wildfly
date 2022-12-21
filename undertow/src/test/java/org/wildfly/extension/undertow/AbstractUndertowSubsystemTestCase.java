@@ -181,7 +181,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         ServiceController gzipFilterController = mainServices.getContainer().getService(filterRefName);
         gzipFilterController.setMode(ServiceController.Mode.ACTIVE);
         FilterRef gzipFilterRef = (FilterRef) awaitServiceValue(gzipFilterController);
-        HttpHandler gzipHandler = gzipFilterRef.createHttpHandler(new PathHandler());
+        HttpHandler gzipHandler = gzipFilterRef.wrap(new PathHandler());
         Assert.assertNotNull("handler should have been created", gzipHandler);
 
         // We need to ensure filter has registered itself with the host
