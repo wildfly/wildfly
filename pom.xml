@@ -393,7 +393,7 @@
         <version.org.bytebuddy>1.11.12</version.org.bytebuddy>
         <version.org.cryptacular>1.2.5</version.org.cryptacular>
         <version.org.codehaus.woodstox.stax2-api>4.2.1</version.org.codehaus.woodstox.stax2-api>
-        <version.org.codehaus.woodstox.woodstox-core>6.2.8</version.org.codehaus.woodstox.woodstox-core>
+        <version.org.codehaus.woodstox.woodstox-core>6.4.0</version.org.codehaus.woodstox.woodstox-core>
         <version.org.eclipse.jdt>3.26.0</version.org.eclipse.jdt>
         <!-- Required by the Wiremock used in the MicroProfile REST Client TCK -->
         <version.org.eclipse.jetty>9.2.30.v20200428</version.org.eclipse.jetty>
