@@ -48,7 +48,6 @@ import java.util.List;
  */
 public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HTTP_LISTENER);
-    protected static final HttpListenerResourceDefinition INSTANCE = new HttpListenerResourceDefinition();
 
     protected static final SimpleAttributeDefinition CERTIFICATE_FORWARDING = new SimpleAttributeDefinitionBuilder(Constants.CERTIFICATE_FORWARDING, ModelType.BOOLEAN)
             .setRequired(false)
@@ -134,7 +133,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    private HttpListenerResourceDefinition() {
+    HttpListenerResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
                 .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY)
         );
@@ -145,6 +144,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
         return new HttpListenerAdd(this);
     }
 
+    @Override
     public Collection<AttributeDefinition> getAttributes() {
         List<AttributeDefinition> attrs = new ArrayList<>(super.getAttributes());
         attrs.add(CERTIFICATE_FORWARDING);

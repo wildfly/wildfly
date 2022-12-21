@@ -25,9 +25,6 @@ package org.wildfly.extension.undertow;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.access.constraint.SensitivityClassification;
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
-import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -41,8 +38,6 @@ public class UndertowExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "undertow";
     private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
-    static final AccessConstraintDefinition LISTENER_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
-                    new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", false, false, false));
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -70,12 +65,12 @@ public class UndertowExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, UndertowModel.CURRENT.getVersion());
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(UndertowRootDefinition.INSTANCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new UndertowRootDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE, false);
 
-        final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(DeploymentDefinition.INSTANCE);
-        deployments.registerSubModel(DeploymentServletDefinition.INSTANCE);
-        deployments.registerSubModel(DeploymentWebSocketDefinition.INSTANCE);
+        final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(new DeploymentDefinition());
+        deployments.registerSubModel(new DeploymentServletDefinition());
+        deployments.registerSubModel(new DeploymentWebSocketDefinition());
 
         subsystem.registerXMLElementWriter(UndertowSubsystemParser_13_0::new);
     }

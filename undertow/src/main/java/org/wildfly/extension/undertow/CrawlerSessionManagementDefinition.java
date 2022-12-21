@@ -49,7 +49,6 @@ import java.util.List;
  */
 class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT);
-    static final CrawlerSessionManagementDefinition INSTANCE = new CrawlerSessionManagementDefinition();
 
     protected static final SimpleAttributeDefinition USER_AGENTS =
             new SimpleAttributeDefinitionBuilder(Constants.USER_AGENTS, ModelType.STRING, true)
@@ -68,7 +67,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
             SESSION_TIMEOUT
     };
 
-    private CrawlerSessionManagementDefinition() {
+    CrawlerSessionManagementDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
                 .setAddHandler(new CrawlerSessionManagementAdd())
                 .setRemoveHandler(new CrawlerSessionManagementRemove())
@@ -80,7 +79,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
         return List.of(ATTRIBUTES);
     }
 
-    public CrawlerSessionManagerConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    static CrawlerSessionManagerConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
         if(!model.isDefined()) {
             return null;
         }
@@ -99,7 +98,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
 
     private static class CrawlerSessionManagementAdd extends RestartParentResourceAddHandler {
         protected CrawlerSessionManagementAdd() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override
@@ -123,7 +122,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
     private static class CrawlerSessionManagementRemove extends RestartParentResourceRemoveHandler {
 
         protected CrawlerSessionManagementRemove() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override

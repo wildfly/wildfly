@@ -47,7 +47,6 @@ import java.util.List;
  */
 class SessionCookieDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
-    static final SessionCookieDefinition INSTANCE = new SessionCookieDefinition();
 
     protected static final SimpleAttributeDefinition NAME =
             new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)
@@ -92,7 +91,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
             MAX_AGE
     };
 
-    private SessionCookieDefinition() {
+    SessionCookieDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
                 .setAddHandler(new SessionCookieAdd())
                 .setRemoveHandler(new SessionCookieRemove())
@@ -104,7 +103,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
         return List.of(ATTRIBUTES);
     }
 
-    public SessionCookieConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    static SessionCookieConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
         if(!model.isDefined()) {
             return null;
         }
@@ -124,7 +123,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
 
     private static class SessionCookieAdd extends RestartParentResourceAddHandler {
         protected SessionCookieAdd() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override
@@ -148,7 +147,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
     private static class SessionCookieRemove extends RestartParentResourceRemoveHandler {
 
         protected SessionCookieRemove() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override

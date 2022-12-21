@@ -90,8 +90,7 @@ import org.wildfly.extension.undertow.UndertowService;
  */
 public class ModClusterDefinition extends AbstractHandlerDefinition {
 
-    public static final PathElement PATH = pathElement(Constants.MOD_CLUSTER);
-    public static final ModClusterDefinition INSTANCE = new ModClusterDefinition();
+    public static final PathElement PATH_ELEMENT = pathElement(Constants.MOD_CLUSTER);
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
         MOD_CLUSTER_FILTER_CAPABILITY(CAPABILITY_MOD_CLUSTER_FILTER, HandlerWrapper.class),
@@ -332,8 +331,8 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     private final ServiceValueExecutorRegistry<ModCluster> registry = new ServiceValueExecutorRegistry<>();
 
-    public ModClusterDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH, UndertowExtension.getResolver(Constants.HANDLER, PATH.getKey())));
+    ModClusterDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.HANDLER, PATH_ELEMENT.getKey())));
     }
 
     @Override

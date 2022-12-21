@@ -59,9 +59,7 @@ public class RewriteFilterDefinition extends Filter {
             .setRestartAllServices()
             .build();
 
-    public static final RewriteFilterDefinition INSTANCE = new RewriteFilterDefinition();
-
-    private RewriteFilterDefinition() {
+    RewriteFilterDefinition() {
         super(PATH_ELEMENT, RewriteFilterDefinition::createHandlerWrapper);
     }
 

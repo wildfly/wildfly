@@ -61,9 +61,7 @@ public class ExpressionFilterDefinition extends Filter {
             .setRestartAllServices()
             .build();
 
-    public static final ExpressionFilterDefinition INSTANCE = new ExpressionFilterDefinition();
-
-    private ExpressionFilterDefinition() {
+    ExpressionFilterDefinition() {
         super(PATH_ELEMENT, ExpressionFilterDefinition::createHandlerWrapper);
     }
 

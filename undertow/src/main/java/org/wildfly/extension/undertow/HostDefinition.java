@@ -91,18 +91,9 @@ class HostDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    static final HostDefinition INSTANCE = new HostDefinition();
     private static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE, DISABLE_CONSOLE_REDIRECT, QUEUE_REQUESTS_ON_START));
-    private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(
-            LocationDefinition.INSTANCE,
-            AccessLogDefinition.INSTANCE,
-            ConsoleAccessLogDefinition.INSTANCE,
-            FilterRefDefinition.INSTANCE,
-            HttpInvokerDefinition.INSTANCE,
-            new HostSingleSignOnDefinition()
-    ));
 
-    private HostDefinition() {
+    HostDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(HostAdd.INSTANCE)
                 .setRemoveHandler(new HostRemove())
@@ -117,7 +108,13 @@ class HostDefinition extends PersistentResourceDefinition {
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return CHILDREN;
+        return List.of(
+                new LocationDefinition(),
+                new AccessLogDefinition(),
+                new ConsoleAccessLogDefinition(),
+                new FilterRefDefinition(),
+                new HttpInvokerDefinition(),
+                new HostSingleSignOnDefinition());
     }
 
 }

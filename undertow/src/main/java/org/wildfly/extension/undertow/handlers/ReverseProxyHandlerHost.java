@@ -141,9 +141,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             .build();
 
 
-    public static final ReverseProxyHandlerHost INSTANCE = new ReverseProxyHandlerHost();
-
-    private ReverseProxyHandlerHost() {
+    ReverseProxyHandlerHost() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.HANDLER, Constants.REVERSE_PROXY, PATH_ELEMENT.getKey()))
                 .setCapabilities(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY)
         );

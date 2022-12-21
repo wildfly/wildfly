@@ -41,15 +41,14 @@ import org.wildfly.extension.undertow.Constants;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Stuart Douglas
  */
 public class ReverseProxyHandler extends Handler {
+    public static final PathElement PATH_ELEMENT =PathElement.pathElement(Constants.REVERSE_PROXY);
 
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.REVERSE_PROXY);
     public static final AttributeDefinition PROBLEM_SERVER_RETRY = new SimpleAttributeDefinitionBuilder(Constants.PROBLEM_SERVER_RETRY, ModelType.INT)
             .setRequired(false)
             .setAllowExpression(true)
@@ -109,9 +108,7 @@ public class ReverseProxyHandler extends Handler {
             .setDefaultValue(new ModelNode(1L))
             .build();
 
-    public static final ReverseProxyHandler INSTANCE = new ReverseProxyHandler();
-
-    private ReverseProxyHandler() {
+    ReverseProxyHandler() {
         super(PATH_ELEMENT, ReverseProxyHandler::createHandler);
     }
 
@@ -125,7 +122,7 @@ public class ReverseProxyHandler extends Handler {
 
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
-        return Collections.<PersistentResourceDefinition>singletonList(ReverseProxyHandlerHost.INSTANCE);
+        return List.of(new ReverseProxyHandlerHost());
     }
 
     static HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException {

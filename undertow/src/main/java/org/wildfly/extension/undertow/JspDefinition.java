@@ -199,9 +199,8 @@ class JspDefinition extends PersistentResourceDefinition {
             DISPLAY_SOURCE_FRAGMENT,
             OPTIMIZE_SCRIPTLETS
     };
-    static final JspDefinition INSTANCE = new JspDefinition();
 
-    private JspDefinition() {
+    JspDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
                 .setAddHandler(new JSPAdd())
                 .setRemoveHandler(new JSPRemove())
@@ -213,7 +212,7 @@ class JspDefinition extends PersistentResourceDefinition {
         return List.of(ATTRIBUTES);
     }
 
-    public JSPConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    static JSPConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
         if (!model.isDefined()) {
             return null;
         }
@@ -245,7 +244,7 @@ class JspDefinition extends PersistentResourceDefinition {
 
     private static class JSPAdd extends RestartParentResourceAddHandler {
         protected JSPAdd() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override
@@ -269,7 +268,7 @@ class JspDefinition extends PersistentResourceDefinition {
     private static class JSPRemove extends RestartParentResourceRemoveHandler {
 
         protected JSPRemove() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override

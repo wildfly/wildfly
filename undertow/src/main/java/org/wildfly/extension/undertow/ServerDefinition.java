@@ -59,15 +59,8 @@ class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
     static final AttributeDefinition[] ATTRIBUTES = {DEFAULT_HOST, SERVLET_CONTAINER};
-    private static final List<PersistentResourceDefinition> CHILDREN = Arrays.asList(
-            AjpListenerResourceDefinition.INSTANCE,
-            HttpListenerResourceDefinition.INSTANCE,
-            HttpsListenerResourceDefinition.INSTANCE,
-            HostDefinition.INSTANCE);
 
-    static final ServerDefinition INSTANCE = new ServerDefinition();
-
-    private ServerDefinition() {
+    ServerDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new ServerAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
@@ -83,6 +76,10 @@ class ServerDefinition extends PersistentResourceDefinition {
 
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
-        return CHILDREN;
+        return List.of(
+                new AjpListenerResourceDefinition(),
+                new HttpListenerResourceDefinition(),
+                new HttpsListenerResourceDefinition(),
+                new HostDefinition());
     }
 }

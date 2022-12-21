@@ -49,7 +49,6 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  */
 public class FileHandler extends Handler {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.FILE);
-    public static final FileHandler INSTANCE = new FileHandler();
 
     /*<file path="/opt/data" cache-buffer-size="1024" cache-buffers="1024"/>*/
     public static final AttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING)
@@ -96,7 +95,7 @@ public class FileHandler extends Handler {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    private FileHandler() {
+    FileHandler() {
         super(PATH_ELEMENT, FileHandler::createHandler);
     }
 

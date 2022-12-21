@@ -67,8 +67,6 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
 
     private static final ResourceDescriptionResolver DEFAULT_RESOLVER = UndertowExtension.getResolver("deployment");
 
-    public static final DeploymentDefinition INSTANCE = new DeploymentDefinition();
-
     public static final AttributeDefinition SERVER = new SimpleAttributeDefinitionBuilder("server", ModelType.STRING).setStorageRuntime().build();
     public static final AttributeDefinition CONTEXT_ROOT = new SimpleAttributeDefinitionBuilder("context-root", ModelType.STRING).setStorageRuntime().build();
     public static final AttributeDefinition VIRTUAL_HOST = new SimpleAttributeDefinitionBuilder("virtual-host", ModelType.STRING).setStorageRuntime().build();
@@ -143,7 +141,7 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
             .setReplyType(ModelType.LONG)
             .build();
 
-    private DeploymentDefinition() {
+    DeploymentDefinition() {
         super(new Parameters(PathElement.pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), DEFAULT_RESOLVER)
                 .setFeature(false).setRuntime());
     }

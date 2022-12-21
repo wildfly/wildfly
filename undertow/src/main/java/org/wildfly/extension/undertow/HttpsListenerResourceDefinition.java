@@ -55,7 +55,6 @@ import org.xnio.SslClientAuthMode;
  */
 public class HttpsListenerResourceDefinition extends ListenerResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HTTPS_LISTENER);
-    protected static final HttpsListenerResourceDefinition INSTANCE = new HttpsListenerResourceDefinition();
 
     protected static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, false)
             .setAlternatives(Constants.SECURITY_REALM, Constants.VERIFY_CLIENT, Constants.ENABLED_CIPHER_SUITES, Constants.ENABLED_PROTOCOLS, Constants.SSL_SESSION_CACHE_SIZE, Constants.SSL_SESSION_TIMEOUT)
@@ -120,7 +119,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
     public static final OptionAttributeDefinition SSL_SESSION_TIMEOUT = OptionAttributeDefinition.builder(Constants.SSL_SESSION_TIMEOUT, Options.SSL_SERVER_SESSION_TIMEOUT)
             .setDeprecated(ModelVersion.create(4, 0, 0)).setMeasurementUnit(MeasurementUnit.SECONDS).setRequired(false).setAllowExpression(true).setAlternatives(Constants.SSL_CONTEXT).build();
 
-    private HttpsListenerResourceDefinition() {
+    HttpsListenerResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
                 .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY)
         );

@@ -126,11 +126,9 @@ class AccessLogDefinition extends PersistentResourceDefinition {
             EXTENDED,
             PREDICATE
     );
-    static final AccessLogDefinition INSTANCE = new AccessLogDefinition();
     private final List<AccessConstraintDefinition> accessConstraints;
 
-
-    private AccessLogDefinition() {
+    AccessLogDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
                 .setAddHandler(AccessLogAdd.INSTANCE)
                 .setRemoveHandler(AccessLogRemove.INSTANCE)

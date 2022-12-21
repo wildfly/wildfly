@@ -46,7 +46,6 @@ import org.wildfly.extension.io.OptionAttributeDefinition;
  */
 public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.AJP_LISTENER);
-    protected static final AjpListenerResourceDefinition INSTANCE = new AjpListenerResourceDefinition();
 
     protected static final SimpleAttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder(Constants.SCHEME, ModelType.STRING)
             .setRequired(false)
@@ -62,7 +61,7 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
             .setValidator(new IntRangeValidator(1))
             .build();
 
-    private AjpListenerResourceDefinition() {
+    AjpListenerResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER)));
     }
 

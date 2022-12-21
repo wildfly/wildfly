@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -57,11 +56,8 @@ class LocationDefinition extends PersistentResourceDefinition {
             .setCapabilityReference(Capabilities.CAPABILITY_HANDLER)
             .setRestartAllServices()
             .build();
-    private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(FilterRefDefinition.INSTANCE));
-    static final LocationDefinition INSTANCE = new LocationDefinition();
 
-
-    private LocationDefinition() {
+    LocationDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.HOST, PATH_ELEMENT.getKey()))
                 .setAddHandler(LocationAdd.INSTANCE)
                 .setRemoveHandler( new ServiceRemoveStepHandler(LocationAdd.INSTANCE) {
@@ -81,6 +77,6 @@ class LocationDefinition extends PersistentResourceDefinition {
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return CHILDREN;
+        return List.of(new FilterRefDefinition());
     }
 }

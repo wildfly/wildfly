@@ -788,8 +788,8 @@ public class WebMigrateOperation implements OperationStepHandler {
 
     private void migrateVirtualHostChildren(Map<PathAddress, ModelNode> newAddOperations, Set<String> hosts) {
 
-        final PathAddress customFilterAddresses = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(CustomFilterDefinition.INSTANCE.getPathElement().getKey()));
-        final PathAddress expressionFilterAddresses = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey()));
+        final PathAddress customFilterAddresses = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(CustomFilterDefinition.PATH_ELEMENT.getKey()));
+        final PathAddress expressionFilterAddresses = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.PATH_ELEMENT.getKey()));
         List<PathAddress> filterAddresses = new ArrayList<>();
         for(PathAddress a : newAddOperations.keySet()) {
             if(wildcardEquals(customFilterAddresses, a) || wildcardEquals(expressionFilterAddresses, a)) {
@@ -840,14 +840,14 @@ public class WebMigrateOperation implements OperationStepHandler {
                     break;
                 case "org.apache.catalina.valves.RequestDumperValve":
                     newAddOperations.putIfAbsent(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT), createAddOperation(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT)));
-                    PathAddress filterAddress = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey(), valveName));
+                    PathAddress filterAddress = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.PATH_ELEMENT.getKey(), valveName));
                     ModelNode filterAdd = createAddOperation(filterAddress);
                     filterAdd.get(ExpressionFilterDefinition.EXPRESSION.getName()).set("dump-request");
                     newAddOperations.put(filterAddress, filterAdd);
                     break;
                 case "org.apache.catalina.valves.StuckThreadDetectionValve":
                     newAddOperations.putIfAbsent(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT), createAddOperation(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT)));
-                    PathAddress filterAddressStuckThread = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey(), valveName));
+                    PathAddress filterAddressStuckThread = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.PATH_ELEMENT.getKey(), valveName));
                     ModelNode filterAddStuckThread = createAddOperation(filterAddressStuckThread);
                     StringBuilder expressionStruckThread = new StringBuilder("stuck-thread-detector");
                     if (newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
@@ -958,7 +958,7 @@ public class WebMigrateOperation implements OperationStepHandler {
 
     private void createExpressionFilter(Map<PathAddress, ModelNode> newAddOperations, String name, String expression) {
         newAddOperations.putIfAbsent(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT), createAddOperation(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT)));
-        PathAddress filterAddress = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey(), name));
+        PathAddress filterAddress = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.PATH_ELEMENT.getKey(), name));
         ModelNode filterAdd = createAddOperation(filterAddress);
         filterAdd.get(ExpressionFilterDefinition.EXPRESSION.getName()).set(expression);
         newAddOperations.put(filterAddress, filterAdd);

@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow.handlers;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -41,13 +40,8 @@ import org.wildfly.extension.undertow.UndertowExtension;
  */
 public class HandlerDefinitions extends PersistentResourceDefinition {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.CONFIGURATION, Constants.HANDLER);
-    public static final HandlerDefinitions INSTANCE = new HandlerDefinitions();
-    private static final List<? extends PersistentResourceDefinition> HANDLERS = Collections.unmodifiableList(Arrays.asList(
-            FileHandler.INSTANCE,
-            ReverseProxyHandler.INSTANCE
-    ));
 
-    private HandlerDefinitions() {
+    public HandlerDefinitions() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
                 .setAddHandler(new AbstractAddStepHandler())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
@@ -61,6 +55,8 @@ public class HandlerDefinitions extends PersistentResourceDefinition {
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return HANDLERS;
+        return List.of(
+                new FileHandler(),
+                new ReverseProxyHandler());
     }
 }

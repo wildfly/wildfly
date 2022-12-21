@@ -105,10 +105,8 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
             DEFLATER_LEVEL
     );
 
-    static final WebsocketsDefinition INSTANCE = new WebsocketsDefinition();
 
-
-    private WebsocketsDefinition() {
+    WebsocketsDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
                 .setAddHandler(new WebsocketsAdd())
                 .setRemoveHandler(new WebsocketsRemove())
@@ -121,7 +119,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
         return ATTRIBUTES;
     }
 
-    public WebSocketInfo getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    static WebSocketInfo getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
         if (!model.isDefined()) {
             return null;
         }
@@ -136,7 +134,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
     private static class WebsocketsAdd extends RestartParentResourceAddHandler {
         protected WebsocketsAdd() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey(), Collections.singleton(WEBSOCKET_CAPABILITY), ATTRIBUTES);
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey(), Collections.singleton(WEBSOCKET_CAPABILITY), ATTRIBUTES);
         }
 
         @Override
@@ -160,7 +158,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
     private static class WebsocketsRemove extends RestartParentResourceRemoveHandler {
 
         protected WebsocketsRemove() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override

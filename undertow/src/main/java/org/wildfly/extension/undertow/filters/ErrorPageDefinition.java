@@ -56,9 +56,8 @@ public class ErrorPageDefinition extends Filter {
             .setRestartAllServices()
             .build();
     public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(CODE, PATH));
-    public static final ErrorPageDefinition INSTANCE = new ErrorPageDefinition();
 
-    private ErrorPageDefinition() {
+    ErrorPageDefinition() {
         super(PATH_ELEMENT, ErrorPageDefinition::createHandlerWrapper);
     }
 

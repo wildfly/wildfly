@@ -62,19 +62,19 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         installRuntimeServices(context, resource.getModel(), context.getCurrentAddressValue());
     }
 
-    void installRuntimeServices(OperationContext context, ModelNode model, String name) throws OperationFailedException {
+    static void installRuntimeServices(OperationContext context, ModelNode model, String name) throws OperationFailedException {
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS), 2);
 
-        final SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        final CrawlerSessionManagerConfig crawlerSessionManagerConfig = CrawlerSessionManagementDefinition.INSTANCE.getConfig(context, fullModel.get(CrawlerSessionManagementDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        final boolean persistentSessions = PersistentSessionsDefinition.isEnabled(context, fullModel.get(PersistentSessionsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        final SessionCookieConfig config = SessionCookieDefinition.getConfig(context, fullModel.get(SessionCookieDefinition.PATH_ELEMENT.getKeyValuePair()));
+        final CrawlerSessionManagerConfig crawlerSessionManagerConfig = CrawlerSessionManagementDefinition.getConfig(context, fullModel.get(CrawlerSessionManagementDefinition.PATH_ELEMENT.getKeyValuePair()));
+        final boolean persistentSessions = PersistentSessionsDefinition.isEnabled(context, fullModel.get(PersistentSessionsDefinition.PATH_ELEMENT.getKeyValuePair()));
         final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
         final boolean proactiveAuth = ServletContainerDefinition.PROACTIVE_AUTHENTICATION.resolveModelAttribute(context, model).asBoolean();
         final String bufferCache = ServletContainerDefinition.DEFAULT_BUFFER_CACHE.resolveModelAttribute(context, model).asString();
         final boolean disableFileWatchService = ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE.resolveModelAttribute(context, model).asBoolean();
         final boolean disableSessionIdReususe = ServletContainerDefinition.DISABLE_SESSION_ID_REUSE.resolveModelAttribute(context, model).asBoolean();
 
-        JSPConfig jspConfig = JspDefinition.INSTANCE.getConfig(context, fullModel.get(JspDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        JSPConfig jspConfig = JspDefinition.getConfig(context, fullModel.get(JspDefinition.PATH_ELEMENT.getKeyValuePair()));
 
         final String stackTracesString = ServletContainerDefinition.STACK_TRACE_ON_ERROR.resolveModelAttribute(context, model).asString();
         final ModelNode defaultEncodingValue = ServletContainerDefinition.DEFAULT_ENCODING.resolveModelAttribute(context, model);
@@ -102,7 +102,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
 
         final int sessionTimeout = ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT.resolveModelAttribute(context, model).asInt();
 
-        WebsocketsDefinition.WebSocketInfo webSocketInfo = WebsocketsDefinition.INSTANCE.getConfig(context, fullModel.get(WebsocketsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        WebsocketsDefinition.WebSocketInfo webSocketInfo = WebsocketsDefinition.getConfig(context, fullModel.get(WebsocketsDefinition.PATH_ELEMENT.getKeyValuePair()));
 
         final Map<String, String> mimeMappings = new HashMap<>();
         if (fullModel.hasDefined(Constants.MIME_MAPPING)) {

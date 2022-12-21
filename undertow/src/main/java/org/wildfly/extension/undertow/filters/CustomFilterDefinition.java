@@ -67,9 +67,7 @@ public class CustomFilterDefinition extends Filter {
             .setRestartAllServices()
             .build();
 
-    public static final CustomFilterDefinition INSTANCE = new CustomFilterDefinition();
-
-    private CustomFilterDefinition() {
+    CustomFilterDefinition() {
         super(PATH_ELEMENT, CustomFilterDefinition::createHandlerWrapper);
     }
 

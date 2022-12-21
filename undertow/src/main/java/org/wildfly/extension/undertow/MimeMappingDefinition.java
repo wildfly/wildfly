@@ -54,9 +54,7 @@ class MimeMappingDefinition extends PersistentResourceDefinition {
             VALUE
     };
 
-    static final MimeMappingDefinition INSTANCE = new MimeMappingDefinition();
-
-    private MimeMappingDefinition() {
+    MimeMappingDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new ReloadRequiredAddStepHandler(ATTRIBUTES))
                 .setRemoveHandler(new ReloadRequiredRemoveStepHandler())

@@ -97,9 +97,7 @@ public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
     private static final List<AttributeDefinition> ATTRIBUTES = Arrays.asList(BUFFER_SIZE, MAX_POOL_SIZE, DIRECT, THREAD_LOCAL_CACHE_SIZE, LEAK_DETECTION_PERCENT);
 
 
-    public static final ByteBufferPoolDefinition INSTANCE = new ByteBufferPoolDefinition();
-
-    private ByteBufferPoolDefinition() {
+    ByteBufferPoolDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new BufferPoolAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)

@@ -39,9 +39,8 @@ import java.util.List;
  */
 class WelcomeFileDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.WELCOME_FILE);
-    static final WelcomeFileDefinition INSTANCE = new WelcomeFileDefinition();
 
-    private WelcomeFileDefinition() {
+    WelcomeFileDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new ReloadRequiredAddStepHandler())
                 .setRemoveHandler(new ReloadRequiredRemoveStepHandler())

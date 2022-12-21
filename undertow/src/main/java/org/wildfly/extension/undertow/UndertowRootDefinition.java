@@ -28,6 +28,8 @@ import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_HTTP_INVOKE
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
@@ -111,27 +113,22 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                     .build();
 
 
-    static final ApplicationSecurityDomainDefinition APPLICATION_SECURITY_DOMAIN = ApplicationSecurityDomainDefinition.INSTANCE;
     static final AttributeDefinition[] ATTRIBUTES = { DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID,
             OBFUSCATE_SESSION_ROUTE, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN };
-    static final PersistentResourceDefinition[] CHILDREN = {
-            ByteBufferPoolDefinition.INSTANCE,
-            BufferCacheDefinition.INSTANCE,
-            ServerDefinition.INSTANCE,
-            ServletContainerDefinition.INSTANCE,
-            HandlerDefinitions.INSTANCE,
-            FilterDefinitions.INSTANCE,
-            APPLICATION_SECURITY_DOMAIN
-    };
 
-    public static final UndertowRootDefinition INSTANCE = new UndertowRootDefinition();
+    private final Set<String> knownApplicationSecurityDomains;
 
-    private UndertowRootDefinition() {
+    UndertowRootDefinition() {
+        this(new CopyOnWriteArraySet<>());
+    }
+
+    private UndertowRootDefinition(Set<String> knownApplicationSecurityDomains) {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver())
-                .setAddHandler(new UndertowSubsystemAdd(APPLICATION_SECURITY_DOMAIN.getKnownSecurityDomainPredicate()))
+                .setAddHandler(new UndertowSubsystemAdd(knownApplicationSecurityDomains::contains))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addCapabilities(UNDERTOW_CAPABILITY, HTTP_INVOKER_RUNTIME_CAPABILITY)
         );
+        this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
     }
 
     @Override
@@ -141,7 +138,14 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return Arrays.asList(CHILDREN);
+        return List.of(
+                new ByteBufferPoolDefinition(),
+                new BufferCacheDefinition(),
+                new ServerDefinition(),
+                new ServletContainerDefinition(),
+                new HandlerDefinitions(),
+                new FilterDefinitions(),
+                new ApplicationSecurityDomainDefinition(this.knownApplicationSecurityDomains));
     }
 
     @Override

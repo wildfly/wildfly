@@ -93,9 +93,8 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             HTTP_AUTHENTICATION_FACTORY,
             SECURITY_REALM
     );
-    static final HttpInvokerDefinition INSTANCE = new HttpInvokerDefinition();
 
-    private HttpInvokerDefinition() {
+    HttpInvokerDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
                 .setAddHandler(new HttpInvokerAdd())
                 .setRemoveHandler(new HttpInvokerRemove())

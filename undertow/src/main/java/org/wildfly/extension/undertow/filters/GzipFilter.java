@@ -36,9 +36,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class GzipFilter extends Filter {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement("gzip");
-    public static final GzipFilter INSTANCE = new GzipFilter();
 
-    private GzipFilter() {
+    GzipFilter() {
         super(PATH_ELEMENT, GzipFilter::createHandlerWrapper);
     }
 

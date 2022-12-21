@@ -65,10 +65,10 @@ public class BufferCacheDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(10))
             .build();
-    static final BufferCacheDefinition INSTANCE = new BufferCacheDefinition();
-    private static final List<SimpleAttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(BUFFER_SIZE, BUFFERS_PER_REGION, MAX_REGIONS));
 
-    private BufferCacheDefinition() {
+    static final List<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(BUFFER_SIZE, BUFFERS_PER_REGION, MAX_REGIONS));
+
+    BufferCacheDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(BufferCacheAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(BufferCacheService.SERVICE_NAME, BufferCacheAdd.INSTANCE))
@@ -77,6 +77,6 @@ public class BufferCacheDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return (Collection) ATTRIBUTES;
+        return ATTRIBUTES;
     }
 }

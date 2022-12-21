@@ -29,7 +29,6 @@ import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -51,6 +50,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -229,7 +229,6 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     }
 
     protected static final Collection<AttributeDefinition> ATTRIBUTES;
-    private static final List<AccessConstraintDefinition> CONSTRAINTS = Collections.singletonList(UndertowExtension.LISTENER_CONSTRAINT);
 
     static final List<OptionAttributeDefinition> LISTENER_OPTIONS = Arrays.asList(MAX_HEADER_SIZE, MAX_ENTITY_SIZE,
             BUFFER_PIPELINED_DATA, MAX_PARAMETERS, MAX_HEADERS, MAX_COOKIES, ALLOW_ENCODED_SLASH, DECODE_URL,
@@ -281,7 +280,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return CONSTRAINTS;
+        return List.of(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "web-connector", false, false, false)));
     }
 
     protected abstract ListenerAdd getAddHandler();

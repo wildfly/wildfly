@@ -43,7 +43,6 @@ import org.jboss.dmr.ModelType;
 @Deprecated
 public class BasicAuthHandler extends Filter {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement("basic-auth");
-    public static final BasicAuthHandler INSTANCE = new BasicAuthHandler();
 
     public static final AttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder("security-domain", ModelType.STRING)
             .setRequired(true)

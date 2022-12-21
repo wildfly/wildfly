@@ -75,10 +75,8 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
             AccessLogDefinition.PREDICATE,
             METADATA
     );
-    static final ConsoleAccessLogDefinition INSTANCE = new ConsoleAccessLogDefinition();
 
-
-    private ConsoleAccessLogDefinition() {
+    ConsoleAccessLogDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
                 .setAddHandler(AddHandler.INSTANCE)
                 .setRemoveHandler(RemoveHandler.INSTANCE)

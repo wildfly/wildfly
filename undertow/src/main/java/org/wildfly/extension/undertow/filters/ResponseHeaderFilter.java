@@ -53,9 +53,7 @@ public class ResponseHeaderFilter extends Filter {
             .setRestartAllServices()
             .build();
 
-    public static final ResponseHeaderFilter INSTANCE = new ResponseHeaderFilter();
-
-    private ResponseHeaderFilter() {
+    ResponseHeaderFilter() {
         super(PATH_ELEMENT, ResponseHeaderFilter::createHandlerWrapper);
     }
 

@@ -75,10 +75,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public static final FilterRefDefinition INSTANCE = new FilterRefDefinition();
-
-
-    private FilterRefDefinition() {
+    public FilterRefDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new FilterRefAdd())
                 .setRemoveHandler(new ServiceRemoveStepHandler(new FilterRefAdd()) {

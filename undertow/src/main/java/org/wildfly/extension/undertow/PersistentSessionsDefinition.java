@@ -57,7 +57,6 @@ import java.util.function.Supplier;
  */
 class PersistentSessionsDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.PERSISTENT_SESSIONS);
-    static final PersistentSessionsDefinition INSTANCE = new PersistentSessionsDefinition();
 
     protected static final SimpleAttributeDefinition PATH =
             new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)
@@ -76,7 +75,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
             RELATIVE_TO
     };
 
-    private PersistentSessionsDefinition() {
+    PersistentSessionsDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
                 .setAddHandler(new PersistentSessionsAdd())
                 .setRemoveHandler(new PersistentSessionsRemove())
@@ -95,7 +94,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
 
     private static class PersistentSessionsAdd extends RestartParentResourceAddHandler {
         protected PersistentSessionsAdd() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -160,7 +159,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
     private static class PersistentSessionsRemove extends RestartParentResourceRemoveHandler {
 
         protected PersistentSessionsRemove() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override
