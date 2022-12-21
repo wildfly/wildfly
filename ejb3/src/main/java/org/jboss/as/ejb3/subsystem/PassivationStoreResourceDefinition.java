@@ -73,10 +73,8 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
 
     static final PassivationStoreAdd ADD_HANDLER = new PassivationStoreAdd(ATTRIBUTES);
 
-    static final PassivationStoreResourceDefinition INSTANCE = new PassivationStoreResourceDefinition(EJB3SubsystemModel.PASSIVATION_STORE);
-
-    private PassivationStoreResourceDefinition(String element, AttributeDefinition... attributes) {
-        super(new Parameters(PathElement.pathElement(element), EJB3Extension.getResourceDescriptionResolver(element))
+    PassivationStoreResourceDefinition() {
+        super(new Parameters(PathElement.pathElement(EJB3SubsystemModel.PASSIVATION_STORE), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.PASSIVATION_STORE))
                 .setAddHandler(ADD_HANDLER)
                 .setRemoveHandler(new PassivationStoreRemove(ADD_HANDLER, PASSIVATION_STORE_CAPABILITY))
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)

@@ -88,10 +88,7 @@ public class FilePassivationStoreResourceDefinition extends LegacyPassivationSto
     private static final FilePassivationStoreAdd ADD = new FilePassivationStoreAdd(ATTRIBUTES);
     private static final PassivationStoreRemove REMOVE = new PassivationStoreRemove(ADD);
 
-    @Deprecated
-    public static final FilePassivationStoreResourceDefinition INSTANCE = new FilePassivationStoreResourceDefinition();
-
-    private FilePassivationStoreResourceDefinition() {
+    FilePassivationStoreResourceDefinition() {
         super(EJB3SubsystemModel.FILE_PASSIVATION_STORE, ADD, REMOVE, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, ATTRIBUTES);
     }
 

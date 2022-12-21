@@ -54,10 +54,8 @@ public class RemotingProfileResourceDefinition extends SimpleResourceDefinition 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { EXCLUDE_LOCAL_RECEIVER, LOCAL_RECEIVER_PASS_BY_VALUE, StaticEJBDiscoveryDefinition.INSTANCE };
     static final RemotingProfileAdd ADD_HANDLER = new RemotingProfileAdd(ATTRIBUTES);
 
-    public static final RemotingProfileResourceDefinition INSTANCE = new RemotingProfileResourceDefinition();
-
-    private RemotingProfileResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.REMOTING_PROFILE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.REMOTING_PROFILE))
+    RemotingProfileResourceDefinition() {
+        super(new Parameters(EJB3SubsystemModel.REMOTING_PROFILE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.REMOTING_PROFILE))
                 .setAddHandler(ADD_HANDLER)
                 .setRemoveHandler(new ServiceRemoveStepHandler(ADD_HANDLER, REMOTING_PROFILE_CAPABILITY))
                 .setCapabilities(REMOTING_PROFILE_CAPABILITY));
@@ -65,8 +63,8 @@ public class RemotingProfileResourceDefinition extends SimpleResourceDefinition 
 
     @Override
     public void registerChildren(ManagementResourceRegistration subsystemRegistration) {
-        subsystemRegistration.registerSubModel(RemotingEjbReceiverDefinition.INSTANCE);
-        subsystemRegistration.registerSubModel(RemoteHttpConnectionDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(new RemotingEjbReceiverDefinition());
+        subsystemRegistration.registerSubModel(new RemoteHttpConnectionDefinition());
     }
 
     @Override

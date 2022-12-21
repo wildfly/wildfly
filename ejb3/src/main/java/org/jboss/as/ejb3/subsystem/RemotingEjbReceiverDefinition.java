@@ -50,9 +50,7 @@ public class RemotingEjbReceiverDefinition extends SimpleResourceDefinition {
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { OUTBOUND_CONNECTION_REF, CONNECT_TIMEOUT };
 
-    public static final RemotingEjbReceiverDefinition INSTANCE = new RemotingEjbReceiverDefinition();
-
-    private RemotingEjbReceiverDefinition() {
+    RemotingEjbReceiverDefinition() {
         super(PathElement.pathElement(EJB3SubsystemModel.REMOTING_EJB_RECEIVER), EJB3Extension
                 .getResourceDescriptionResolver(EJB3SubsystemModel.REMOTING_EJB_RECEIVER), new RemotingProfileChildResourceAddHandler(
                 ATTRIBUTES), new RemotingProfileChildResourceRemoveHandler());

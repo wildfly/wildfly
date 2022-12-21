@@ -116,9 +116,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
 
     static final EJB3RemoteServiceAdd ADD_HANDLER = new EJB3RemoteServiceAdd(ATTRIBUTES);
 
-    public static final EJB3RemoteResourceDefinition INSTANCE = new EJB3RemoteResourceDefinition();
-
-    private EJB3RemoteResourceDefinition() {
+    EJB3RemoteResourceDefinition() {
         super(new Parameters(EJB3SubsystemModel.REMOTE_SERVICE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.REMOTE))
                 .setAddHandler(ADD_HANDLER)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)

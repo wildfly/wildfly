@@ -23,11 +23,9 @@
 package org.jboss.as.ejb3.subsystem;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -80,15 +78,11 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.ELYTRON_SECURITY_DOMAIN_REF)
             .build();
 
-    static final IdentityResourceDefinition INSTANCE = new IdentityResourceDefinition();
-
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { OUTFLOW_SECURITY_DOMAINS };
 
-    private static List<String> outflowSecurityDomains = Collections.synchronizedList(new ArrayList<>());
-
-    private IdentityResourceDefinition() {
+    IdentityResourceDefinition(List<String> outflowSecurityDomains) {
         super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.IDENTITY_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.IDENTITY))
-                .setAddHandler(new AddHandler())
+                .setAddHandler(new AddHandler(outflowSecurityDomains))
                 // .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
@@ -97,7 +91,6 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        outflowSecurityDomains.clear();
         ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attribute: ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
@@ -105,15 +98,18 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
     }
 
     private static class AddHandler extends AbstractAddStepHandler {
+        private final List<String> outflowSecurityDomains;
 
-        private AddHandler() {
+        private AddHandler(List<String> outflowSecurityDomains) {
             super(OUTFLOW_SECURITY_DOMAINS);
+            this.outflowSecurityDomains = outflowSecurityDomains;
         }
 
         @Override
         protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
             super.populateModel(context, operation, resource);
-            outflowSecurityDomains = OUTFLOW_SECURITY_DOMAINS.unwrap(context, resource.getModel());
+            this.outflowSecurityDomains.clear();
+            this.outflowSecurityDomains.addAll(OUTFLOW_SECURITY_DOMAINS.unwrap(context, resource.getModel()));
         }
 
         @Override
@@ -176,9 +172,5 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
             return injectedValue;
         }
 
-    }
-
-    BooleanSupplier getOutflowSecurityDomainsConfiguredSupplier() {
-        return () -> ! outflowSecurityDomains.isEmpty();
     }
 }

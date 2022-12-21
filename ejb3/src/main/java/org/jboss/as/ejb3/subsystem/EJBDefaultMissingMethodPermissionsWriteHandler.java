@@ -22,12 +22,13 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ejb3.deployment.processors.merging.MissingMethodPermissionsDenyAccessMergingProcessor;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,12 +39,12 @@ import org.jboss.dmr.ModelNode;
 class EJBDefaultMissingMethodPermissionsWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
     private final AttributeDefinition attributeDefinition;
-    private final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor;
+    private final AtomicBoolean denyAccessByDefault;
 
-    EJBDefaultMissingMethodPermissionsWriteHandler(final AttributeDefinition attributeDefinition, final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor) {
+    EJBDefaultMissingMethodPermissionsWriteHandler(final AttributeDefinition attributeDefinition, final AtomicBoolean denyAccessByDefault) {
         super(attributeDefinition);
         this.attributeDefinition = attributeDefinition;
-        this.missingMethodPermissionsDenyAccessMergingProcessor = missingMethodPermissionsDenyAccessMergingProcessor;
+        this.denyAccessByDefault = denyAccessByDefault;
     }
 
     @Override
@@ -65,12 +66,9 @@ class EJBDefaultMissingMethodPermissionsWriteHandler extends AbstractWriteAttrib
 
     private void updateDefaultMethodPermissionsDenyAccess(final OperationContext context, final ModelNode model) throws OperationFailedException {
 
-        if (this.missingMethodPermissionsDenyAccessMergingProcessor == null) {
-            return;
-        }
         final ModelNode modelNode = this.attributeDefinition.resolveModelAttribute(context, model);
         final boolean value = modelNode.asBoolean();
-        this.missingMethodPermissionsDenyAccessMergingProcessor.setDenyAccessByDefault(value);
+        this.denyAccessByDefault.set(value);
     }
 
 }
