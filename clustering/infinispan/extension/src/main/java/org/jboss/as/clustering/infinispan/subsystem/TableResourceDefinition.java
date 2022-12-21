@@ -24,15 +24,12 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -43,7 +40,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Paul Ferraro
  */
-public abstract class TableResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfiguratorFactory {
+public abstract class TableResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
     static PathElement pathElement(String value) {
@@ -131,14 +128,9 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
                 .addAttributes(Attribute.class)
                 .addAttributes(ColumnAttribute.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(address -> new TableServiceConfigurator(this.prefixAttribute, address));
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         return registration;
-    }
-
-    @Override
-    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-        return new TableServiceConfigurator(this.prefixAttribute, address);
     }
 }

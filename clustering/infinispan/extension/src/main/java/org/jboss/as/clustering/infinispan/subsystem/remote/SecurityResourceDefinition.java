@@ -26,15 +26,12 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -48,7 +45,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Radoslav Husar
  */
-public class SecurityResourceDefinition extends ComponentResourceDefinition implements ResourceServiceConfiguratorFactory {
+public class SecurityResourceDefinition extends ComponentResourceDefinition {
 
     public static final PathElement PATH = pathElement("security");
 
@@ -101,14 +98,9 @@ public class SecurityResourceDefinition extends ComponentResourceDefinition impl
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(SecurityServiceConfigurator::new);
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         return registration;
-    }
-
-    @Override
-    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-        return new SecurityServiceConfigurator(address);
     }
 }

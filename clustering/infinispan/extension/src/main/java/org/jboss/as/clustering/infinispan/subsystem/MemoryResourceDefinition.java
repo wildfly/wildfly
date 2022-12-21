@@ -28,14 +28,12 @@ import org.infinispan.configuration.cache.StorageType;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -45,7 +43,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Paul Ferraro
  */
-public class MemoryResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfiguratorFactory {
+public class MemoryResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -102,15 +100,13 @@ public class MemoryResourceDefinition extends ChildResourceDefinition<Management
         }
     }
 
-    private final StorageType type;
     private final UnaryOperator<ResourceDescriptor> configurator;
-    private final org.jboss.as.clustering.controller.Attribute sizeUnitAttribute;
+    private final ResourceServiceConfiguratorFactory factory;
 
     MemoryResourceDefinition(StorageType type, PathElement path, UnaryOperator<ResourceDescriptor> configurator, org.jboss.as.clustering.controller.Attribute sizeUnitAttribute) {
         super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
-        this.type = type;
         this.configurator = configurator;
-        this.sizeUnitAttribute = sizeUnitAttribute;
+        this.factory = address -> new MemoryServiceConfigurator(type, address, sizeUnitAttribute);
     }
 
     @Override
@@ -121,14 +117,9 @@ public class MemoryResourceDefinition extends ChildResourceDefinition<Management
                 .addAttributes(Attribute.class)
                 ;
 
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.factory);
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         return registration;
-    }
-
-    @Override
-    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-        return new MemoryServiceConfigurator(this.type, address, this.sizeUnitAttribute);
     }
 }
