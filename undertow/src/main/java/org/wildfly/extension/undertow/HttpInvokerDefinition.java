@@ -33,7 +33,6 @@ import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -77,7 +76,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .setAlternatives(Constants.HTTP_AUTHENTICATION_FACTORY)
-            .setDeprecated(ModelVersion.create(12))
+            .setDeprecated(UndertowModel.VERSION_12_0_0.getVersion())
             .build();
 
     protected static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)

@@ -324,9 +324,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 if (defaultSessionConfig.getMaxAge() != null) {
                     config.setMaxAge(defaultSessionConfig.getMaxAge());
                 }
-                if (defaultSessionConfig.getComment() != null) {
-                    config.setComment(defaultSessionConfig.getComment());
-                }
             }
             SecureRandomSessionIdGenerator sessionIdGenerator = new SecureRandomSessionIdGenerator();
             sessionIdGenerator.setLength(container.get().getSessionIdLength());
@@ -348,9 +345,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     }
                     if (cookieConfig.getDomain() != null) {
                         config.setDomain(cookieConfig.getDomain());
-                    }
-                    if (cookieConfig.getComment() != null) {
-                        config.setComment(cookieConfig.getComment());
                     }
                     config.setSecure(cookieConfig.getSecure());
                     config.setPath(cookieConfig.getPath());

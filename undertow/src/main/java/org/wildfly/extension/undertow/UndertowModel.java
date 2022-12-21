@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,48 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.extension.undertow;
 
+import org.jboss.as.clustering.controller.Model;
+import org.jboss.as.controller.ModelVersion;
+
 /**
- *
- * Service that provides the default session cookie config. The config can be overriden on a per
- * app basis, and may not be present.
- *
- * @author Stuart Douglas
+ * Enumerates the supported versions of the Undertow subsystem model.
+ * @author Paul Ferraro
  */
-public class SessionCookieConfig {
+public enum UndertowModel implements Model {
 
-    private final String name;
-    private final String domain;
-    private final Boolean httpOnly;
-    private final Boolean secure;
-    private final Integer maxAge;
+    VERSION_11_0_0(11), // WildFly 23-26.x, EAP 7.4.x
+    VERSION_12_0_0(12), // WildFly 27
+    VERSION_13_0_0(13), // WildFly 28-present
+    ;
+    static final UndertowModel CURRENT = VERSION_13_0_0;
 
-    public SessionCookieConfig(final String name, final String domain, final Boolean httpOnly, final Boolean secure, final Integer maxAge) {
-        this.name = name;
-        this.domain = domain;
-        this.httpOnly = httpOnly;
-        this.secure = secure;
-        this.maxAge = maxAge;
+    private final ModelVersion version;
+
+    UndertowModel(int major) {
+        this(major, 0, 0);
     }
 
-    public String getName() {
-        return name;
+    UndertowModel(int major, int minor) {
+        this(major, minor, 0);
     }
 
-    public String getDomain() {
-        return domain;
+    UndertowModel(int major, int minor, int micro) {
+        this.version = ModelVersion.create(major, minor, micro);
     }
 
-    public Boolean getHttpOnly() {
-        return httpOnly;
-    }
-
-    public Boolean getSecure() {
-        return secure;
-    }
-
-    public Integer getMaxAge() {
-        return maxAge;
+    @Override
+    public ModelVersion getVersion() {
+        return this.version;
     }
 }

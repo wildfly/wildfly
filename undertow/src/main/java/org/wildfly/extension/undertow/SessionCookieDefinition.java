@@ -61,6 +61,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.COMMENT, ModelType.STRING, true)
                     .setRestartAllServices()
                     .setAllowExpression(true)
+                    .setDeprecated(UndertowModel.VERSION_13_0_0.getVersion())
                     .build();
     protected static final SimpleAttributeDefinition HTTP_ONLY =
             new SimpleAttributeDefinitionBuilder(Constants.HTTP_ONLY, ModelType.BOOLEAN, true)
@@ -107,17 +108,15 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
         }
         ModelNode nameValue = NAME.resolveModelAttribute(context, model);
         ModelNode domainValue = DOMAIN.resolveModelAttribute(context, model);
-        ModelNode commentValue = COMMENT.resolveModelAttribute(context, model);
         ModelNode secureValue = SECURE.resolveModelAttribute(context, model);
         ModelNode httpOnlyValue = HTTP_ONLY.resolveModelAttribute(context, model);
         ModelNode maxAgeValue = MAX_AGE.resolveModelAttribute(context, model);
         final String name = nameValue.isDefined() ? nameValue.asString() : null;
         final String domain = domainValue.isDefined() ? domainValue.asString() : null;
-        final String comment = commentValue.isDefined() ? commentValue.asString() : null;
         final Boolean secure = secureValue.isDefined() ? secureValue.asBoolean() : null;
         final Boolean httpOnly = httpOnlyValue.isDefined() ? httpOnlyValue.asBoolean() : null;
         final Integer maxAge = maxAgeValue.isDefined() ? maxAgeValue.asInt() : null;
-        return new SessionCookieConfig(name, domain, comment, httpOnly, secure, maxAge);
+        return new SessionCookieConfig(name, domain, httpOnly, secure, maxAge);
     }
 
 
