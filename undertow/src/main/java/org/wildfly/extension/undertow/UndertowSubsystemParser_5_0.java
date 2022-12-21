@@ -33,10 +33,10 @@ import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.ExpressionFilterDefinition;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
-import org.wildfly.extension.undertow.filters.GzipFilter;
+import org.wildfly.extension.undertow.filters.GzipFilterDefinition;
 import org.wildfly.extension.undertow.filters.ModClusterDefinition;
-import org.wildfly.extension.undertow.filters.RequestLimitHandler;
-import org.wildfly.extension.undertow.filters.ResponseHeaderFilter;
+import org.wildfly.extension.undertow.filters.RequestLimitHandlerDefinition;
+import org.wildfly.extension.undertow.filters.ResponseHeaderFilterDefinition;
 import org.wildfly.extension.undertow.filters.RewriteFilterDefinition;
 import org.wildfly.extension.undertow.handlers.FileHandlerDefinition;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
@@ -272,13 +272,13 @@ public class UndertowSubsystemParser_5_0 extends PersistentResourceXMLParser {
                                 .setXmlElementName(Constants.FILTERS)
                                 .setNoAddOperation(true)
                                 .addChild(
-                                        builder(RequestLimitHandler.PATH_ELEMENT)
-                                                .addAttributes(RequestLimitHandler.MAX_CONCURRENT_REQUESTS, RequestLimitHandler.QUEUE_SIZE)
+                                        builder(RequestLimitHandlerDefinition.PATH_ELEMENT)
+                                                .addAttributes(RequestLimitHandlerDefinition.MAX_CONCURRENT_REQUESTS, RequestLimitHandlerDefinition.QUEUE_SIZE)
                                 ).addChild(
-                                builder(ResponseHeaderFilter.PATH_ELEMENT)
-                                        .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
+                                builder(ResponseHeaderFilterDefinition.PATH_ELEMENT)
+                                        .addAttributes(ResponseHeaderFilterDefinition.NAME, ResponseHeaderFilterDefinition.VALUE)
                         ).addChild(
-                                builder(GzipFilter.PATH_ELEMENT)
+                                builder(GzipFilterDefinition.PATH_ELEMENT)
                         ).addChild(
                                 builder(ErrorPageDefinition.PATH_ELEMENT)
                                         .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)

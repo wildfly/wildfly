@@ -34,11 +34,11 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
-public class GzipFilter extends SimpleFilterDefinition {
+public class GzipFilterDefinition extends SimpleFilterDefinition {
     public static final PathElement PATH_ELEMENT = PathElement.pathElement("gzip");
 
-    GzipFilter() {
-        super(PATH_ELEMENT, GzipFilter::createHandlerWrapper);
+    GzipFilterDefinition() {
+        super(PATH_ELEMENT, GzipFilterDefinition::createHandlerWrapper);
     }
 
     static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) {

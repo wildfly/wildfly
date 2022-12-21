@@ -58,9 +58,9 @@ public class FilterDefinitions extends PersistentResourceDefinition {
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
         return List.of(
-                new RequestLimitHandler(),
-                new ResponseHeaderFilter(),
-                new GzipFilter(),
+                new RequestLimitHandlerDefinition(),
+                new ResponseHeaderFilterDefinition(),
+                new GzipFilterDefinition(),
                 new ErrorPageDefinition(),
                 new CustomFilterDefinition(),
                 new ModClusterDefinition(),
@@ -72,7 +72,7 @@ public class FilterDefinitions extends PersistentResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
 
-        PathElement targetPe = RequestLimitHandler.PATH_ELEMENT;
+        PathElement targetPe = RequestLimitHandlerDefinition.PATH_ELEMENT;
         AliasEntry aliasEntry = new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(targetPe))) {
             @Override
             public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
