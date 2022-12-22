@@ -405,17 +405,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.resteasy.spring</groupId>
-      <artifactId>resteasy-spring</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.spec.javax.annotation</groupId>
       <artifactId>jboss-annotations-api_1.3_spec</artifactId>
       <licenses>

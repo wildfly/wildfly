@@ -30,13 +30,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.ejb.EJBException;
 import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.cache.Contextual;
-import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.InvokeMethodOnTargetInterceptor;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanInstance;
 import org.jboss.as.ejb3.tx.OwnableReentrantLock;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb.client.SessionID;
@@ -48,7 +48,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Identifiable<SessionID>, Contextual<Object> {
+public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements StatefulSessionBeanInstance<SessionID> {
     private static final long serialVersionUID = 3803978357389448971L;
 
     private final SessionID id;
@@ -71,11 +71,6 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     private final OwnableReentrantLock lock = new OwnableReentrantLock();
 
     /**
-     * true if this bean has been enrolled in a transaction
-     */
-    private boolean synchronizationRegistered = false;
-
-    /**
      * The thread based lock for the stateful bean
      */
     private final Object threadLock = new Object();
@@ -88,21 +83,11 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
      * 2 = Invocation in progress, afterCompletion delayed
      *
      */
-    private final AtomicInteger invocationSynchState = new AtomicInteger();
+    private final AtomicInteger invocationSyncState = new AtomicInteger();
     public static final int SYNC_STATE_NO_INVOCATION = 0;
     public static final int SYNC_STATE_INVOCATION_IN_PROGRESS = 1;
     public static final int SYNC_STATE_AFTER_COMPLETE_DELAYED_NO_COMMIT = 2;
     public static final int SYNC_STATE_AFTER_COMPLETE_DELAYED_COMMITTED = 3;
-
-    private boolean removed = false;
-
-    boolean isSynchronizationRegistered() {
-        return synchronizationRegistered;
-    }
-
-    void setSynchronizationRegistered(boolean synchronizationRegistered) {
-        this.synchronizationRegistered = synchronizationRegistered;
-    }
 
     Object getThreadLock() {
         return threadLock;
@@ -112,8 +97,8 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         return lock;
     }
 
-    AtomicInteger getInvocationSynchState() {
-        return invocationSynchState;
+    AtomicInteger getInvocationSyncState() {
+        return invocationSyncState;
     }
 
     /**
@@ -161,21 +146,14 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         }
     }
 
-    protected void prePassivate() {
+    @Override
+    public void prePassivate() {
         this.execute(prePassivate, null);
     }
 
-    protected void postActivate() {
-        this.execute(postActivate, null);
-    }
-
-
     @Override
-    public void discard() {
-        if (!isDiscarded()) {
-            super.discard();
-            getComponent().getCache().discard(this);
-        }
+    public void postActivate() {
+        this.execute(postActivate, null);
     }
 
     private Object execute(final Interceptor interceptor, final Method method, final Object... parameters) {
@@ -209,7 +187,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
 
     @Override
     public SessionID getId() {
-        return id;
+        return this.id;
     }
 
     public Interceptor getEjb2XRemoveInterceptor() {
@@ -239,21 +217,13 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         this.transaction = transaction;
     }
 
-    void setRemoved(boolean removed) {
-        this.removed = removed;
-    }
-
-    boolean isRemoved() {
-        return removed;
-    }
-
     @Override
-    public Object getCacheContext() {
-        return this.getInstanceData(Contextual.class);
-    }
-
-    @Override
-    public void setCacheContext(Object context) {
-        this.setInstanceData(Contextual.class, context);
+    public void removed() {
+        TransactionSynchronizationRegistry tsr = this.getComponent().getTransactionSynchronizationRegistry();
+        // Trigger preDestroy callback, but only if bean is not associated with a current tx
+        // Otherwise, bean destroy is deferred until tx commit
+        if ((tsr.getTransactionKey() == null) || (tsr.getResource(this.id) == null)) {
+            this.destroy();
+        }
     }
 }

@@ -22,16 +22,15 @@
 package org.jboss.as.weld.ejb;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.security.AccessController;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBean;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.weld._private.WeldEjbLogger;
@@ -47,9 +46,7 @@ import org.jboss.weld.ejb.api.SessionObjectReference;
  *
  * @author Stuart Douglas
  */
-public class StatefulSessionObjectReferenceImpl implements SessionObjectReference, Serializable {
-
-    private volatile boolean removed = false;
+public class StatefulSessionObjectReferenceImpl implements SessionObjectReference {
 
     private final ServiceName createServiceName;
     private final SessionID id;
@@ -124,23 +121,17 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
 
     @Override
     public void remove() {
-        if (!isRemoved()) {
-            ejbComponent.removeSession(id);
-            removed = true;
+        try (StatefulSessionBean<SessionID, StatefulSessionComponentInstance> bean = this.ejbComponent.getCache().findStatefulSessionBean(this.id)) {
+            if (bean != null) {
+                bean.remove();
+            }
         }
     }
 
     @Override
     public boolean isRemoved() {
-        if (!removed) {
-            Cache<SessionID, StatefulSessionComponentInstance> cache = ejbComponent.getCache();
-            if(cache == null) {
-                return true;
-            }
-            return !cache.contains(id);
+        try (StatefulSessionBean<SessionID, StatefulSessionComponentInstance> bean = this.ejbComponent.getCache().findStatefulSessionBean(this.id)) {
+            return (bean == null) || bean.isRemoved();
         }
-        return true;
     }
-
-
 }

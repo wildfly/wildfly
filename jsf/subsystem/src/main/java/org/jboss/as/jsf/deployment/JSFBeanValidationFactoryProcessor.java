@@ -22,9 +22,9 @@
 
 package org.jboss.as.jsf.deployment;
 
-import static javax.faces.validator.BeanValidator.VALIDATOR_FACTORY_KEY;
+import static jakarta.faces.validator.BeanValidator.VALIDATOR_FACTORY_KEY;
 
-import javax.validation.ValidatorFactory;
+import jakarta.validation.ValidatorFactory;
 
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;

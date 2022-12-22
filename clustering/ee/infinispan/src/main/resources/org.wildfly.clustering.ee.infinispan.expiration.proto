@@ -1,0 +1,13 @@
+package org.wildfly.clustering.ee.infinispan.expiration;
+
+import "java.time.proto";
+
+// IDs: 188 - 189
+
+/**
+ * @TypeId(188)
+ */
+message SimpleExpirationMetaData {
+	optional	java.time.Duration	timeout	 = 1;
+	optional	java.time.Instant	lastAccessTime	 = 2;
+}

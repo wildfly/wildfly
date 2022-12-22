@@ -30,8 +30,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.ServiceLoader;
 
@@ -95,7 +93,7 @@ public class ContainerRemoteQueryTestCase {
     }
 
     @Deployment
-    public static Archive<?> deployment() throws IOException, URISyntaxException {
+    public static Archive<?> deployment() {
         return ShrinkWrap
                 .create(WebArchive.class, ContainerRemoteQueryTestCase.class.getSimpleName() + ".war")
                 .addClasses(ContainerRemoteQueryTestCase.class, ContainerRemoteQueryTestCase.class)
@@ -171,5 +169,4 @@ public class ContainerRemoteQueryTestCase {
         assertEquals(Book.class, list.get(0).getClass());
         assertEquals("A2", list.get(0).author);
     }
-
 }

@@ -40,7 +40,7 @@ public class DirectMailSessionService extends MailSessionService {
     private final SessionProvider provider;
 
     public DirectMailSessionService(final SessionProvider provider) {
-        super(null);
+        super(null, null);
         MailLogger.ROOT_LOGGER.tracef("service constructed with config: %s", provider);
         this.provider = provider;
     }

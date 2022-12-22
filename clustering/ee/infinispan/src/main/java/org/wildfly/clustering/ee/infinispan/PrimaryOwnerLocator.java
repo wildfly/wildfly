@@ -50,7 +50,12 @@ public class PrimaryOwnerLocator<K> implements Function<K, Node> {
 
     @Override
     public Node apply(K key) {
-        Address address = this.distribution.getPrimaryOwner(key);
-        return this.memberFactory.createNode(address);
+        Node member = null;
+        while (member == null) {
+            Address address = this.distribution.getPrimaryOwner(key);
+            // This can return null if member has left the cluster
+            member = this.memberFactory.createNode(address);
+        }
+        return member;
     }
 }

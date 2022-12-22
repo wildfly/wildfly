@@ -26,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 
 import jakarta.inject.Inject;
 
-import org.infinispan.eviction.EvictionType;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.deployment.CdiConfig;
@@ -81,7 +80,6 @@ public class GreetingCacheManagerTestCase {
 
         // Eviction
         assertEquals(128, greetingCacheManager.getMemorySize());
-        assertEquals(EvictionType.COUNT, greetingCacheManager.getEvictionType());
 
         // Lifespan
         assertEquals(-1, greetingCacheManager.getExpirationLifespan());

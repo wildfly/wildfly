@@ -25,6 +25,7 @@ package org.wildfly.clustering.ejb.timer;
 import java.time.Duration;
 
 /**
+ * Encapsulates the configuration of an interval timer.
  * @author Paul Ferraro
  */
 public interface IntervalTimerConfiguration extends TimerConfiguration {

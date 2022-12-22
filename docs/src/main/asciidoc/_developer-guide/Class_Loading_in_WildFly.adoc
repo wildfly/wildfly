@@ -29,9 +29,9 @@ Even though in WildFly modules are isolated by default, as part of the
 deployment process some dependencies on modules defined by the
 application server are set up for you automatically. For instance, if
 you are deploying a Jakarta EE application a dependency on the Java EE
-API's will be added to your module automatically. Similarly if your
+API's will be added to your module automatically. Similarly, if your
 module contains a beans.xml file a dependency on
-http://seamframework.org/Weld[Weld] will be added automatically, along
+https://weld.cdi-spec.org/[Weld] will be added automatically, along
 with any supporting modules that weld needs to operate.
 
 For a complete list of the automatic dependencies that are added, please

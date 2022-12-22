@@ -106,6 +106,7 @@ public class PrimaryOwnerScheduler<I, K, M> implements Scheduler<I, M>, Function
             @Override
             public CompletionStage<R> get() throws CommandDispatcherException {
                 Node node = primaryOwnerLocator.apply(key);
+                Logger.ROOT_LOGGER.tracef("Executing command %s on %s", command, node);
                 // This should only go remote following a failover
                 return dispatcher.executeOnMember(command, node);
             }

@@ -47,47 +47,6 @@ public class MessagingDependencies {
             "org.apache.activemq:artemis-ra:2.16.0.redhat-00022",
             "org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec:2.0.0.Final"
         });
-        map.put(ModelTestControllerVersion.EAP_7_3_0, new String[]{
-            "org.apache.activemq:artemis-commons:2.9.0.redhat-00005",
-            "org.apache.activemq:artemis-journal:2.9.0.redhat-00005",
-            "org.apache.activemq:artemis-server:2.9.0.redhat-00005",
-            "org.apache.activemq:artemis-jms-server:2.9.0.redhat-00005",
-            "org.apache.activemq:artemis-core-client:2.9.0.redhat-00005",
-            "org.apache.activemq:artemis-jms-client:2.9.0.redhat-00005",
-            "org.apache.activemq:artemis-ra:2.9.0.redhat-00005",
-            "org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec:2.0.0.Final"
-        });
-        map.put(ModelTestControllerVersion.EAP_7_2_0, new String[]{
-            "org.apache.activemq:artemis-commons:2.6.3.redhat-00014",
-            "org.apache.activemq:artemis-journal:2.6.3.redhat-00014",
-            "org.apache.activemq:artemis-server:2.6.3.redhat-00014",
-            "org.apache.activemq:artemis-jms-server:2.6.3.redhat-00014",
-            "org.apache.activemq:artemis-core-client:2.6.3.redhat-00014",
-            "org.apache.activemq:artemis-jms-client:2.6.3.redhat-00014",
-            "org.apache.activemq:artemis-ra:2.6.3.redhat-00014",
-            "org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec:2.0.0.Final"
-        });
-        map.put(ModelTestControllerVersion.EAP_7_1_0, new String[]{
-            "org.apache.activemq:artemis-commons:1.5.5.008-redhat-1",
-            "org.apache.activemq:artemis-journal:1.5.5.008-redhat-1",
-            "org.apache.activemq:artemis-server:1.5.5.008-redhat-1",
-            "org.apache.activemq:artemis-jms-server:1.5.5.008-redhat-1",
-            "org.apache.activemq:artemis-core-client:1.5.5.008-redhat-1",
-            "org.apache.activemq:artemis-jms-client:1.5.5.008-redhat-1",
-            "org.apache.activemq:artemis-ra:1.5.5.008-redhat-1",
-            "org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec:2.0.0.Final"
-        });
-
-        map.put(ModelTestControllerVersion.EAP_7_0_0, new String[]{
-            "org.apache.activemq:artemis-commons:1.1.0.SP16-redhat-1",
-            "org.apache.activemq:artemis-journal:1.1.0.SP16-redhat-1",
-            "org.apache.activemq:artemis-server:1.1.0.SP16-redhat-1",
-            "org.apache.activemq:artemis-jms-server:1.1.0.SP16-redhat-1",
-            "org.apache.activemq:artemis-core-client:1.1.0.SP16-redhat-1",
-            "org.apache.activemq:artemis-jms-client:1.1.0.SP16-redhat-1",
-            "org.apache.activemq:artemis-ra:1.1.0.SP16-redhat-1",
-            "org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec:2.0.0.Final"
-        });
         ACTIVEMQ_DEPENDENCIES = Collections.unmodifiableMap(map);
     }
 

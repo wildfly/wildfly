@@ -57,9 +57,9 @@ public class SimpleSessionAccessMetaData implements SessionAccessMetaData {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append('{');
-        builder.append("since-creation=").append(this.sinceCreation);
-        builder.append("last-access=").append(this.lastAccess);
-        return builder.append('}').toString();
+        StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append(" { ");
+        builder.append("since-creation = ").append(this.sinceCreation);
+        builder.append(", last-access = ").append(this.lastAccess);
+        return builder.append("}").toString();
     }
 }

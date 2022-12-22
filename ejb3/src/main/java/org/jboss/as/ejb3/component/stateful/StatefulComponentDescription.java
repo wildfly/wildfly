@@ -49,12 +49,12 @@ import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
 import org.jboss.as.ejb3.cache.CacheInfo;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvider;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProviderServiceNameProvider;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
@@ -221,11 +221,11 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 StatefulComponentDescription statefulDescription = (StatefulComponentDescription) description;
                 ServiceTarget target = context.getServiceTarget();
                 ServiceBuilder<?> builder = target.addService(statefulDescription.getCacheFactoryServiceName().append("installer"));
-                Supplier<CacheFactoryBuilder<SessionID, StatefulSessionComponentInstance>> cacheFactoryBuilder = builder.requires(this.getCacheFactoryBuilderRequirement(statefulDescription));
+                Supplier<StatefulSessionBeanCacheProvider<SessionID, StatefulSessionComponentInstance>> provider = builder.requires(this.getCacheFactoryBuilderRequirement(statefulDescription));
                 Service service = new ChildTargetService(new Consumer<ServiceTarget>() {
                     @Override
                     public void accept(ServiceTarget target) {
-                        cacheFactoryBuilder.get().getServiceConfigurator(unit, statefulDescription, configuration).configure(support).build(target).install();
+                        provider.get().getStatefulBeanCacheFactoryServiceConfigurator(unit, statefulDescription, configuration).configure(support).build(target).install();
                     }
                 });
                 builder.setInstance(service).install();
@@ -233,10 +233,10 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
             private ServiceName getCacheFactoryBuilderRequirement(StatefulComponentDescription description) {
                 if (!description.isPassivationApplicable()) {
-                    return CacheFactoryBuilderServiceNameProvider.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME;
+                    return StatefulSessionBeanCacheProviderServiceNameProvider.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME;
                 }
                 CacheInfo cache = description.getCache();
-                return (cache != null) ? new CacheFactoryBuilderServiceNameProvider(cache.getName()).getServiceName() : CacheFactoryBuilderServiceNameProvider.DEFAULT_CACHE_SERVICE_NAME;
+                return (cache != null) ? new StatefulSessionBeanCacheProviderServiceNameProvider(cache.getName()).getServiceName() : StatefulSessionBeanCacheProviderServiceNameProvider.DEFAULT_CACHE_SERVICE_NAME;
             }
         });
 

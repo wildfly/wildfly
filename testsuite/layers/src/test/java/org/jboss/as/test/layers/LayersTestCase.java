@@ -54,8 +54,6 @@ public class LayersTestCase {
             // end legacy subsystems ^^^
             // TODO nothing references this
             "org.wildfly.security.http.sfbasic",
-            // TODO Legacy Seam integration. Does it even work with EE 10?
-            "org.jboss.integration.ext-content",
             // TODO move eclipse link support to an external feature pack
             "org.eclipse.persistence",
             // RA not associated with any layer

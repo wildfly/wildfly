@@ -32,7 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.ejb.EjbProviderRequirement;
+import org.wildfly.clustering.ejb.bean.BeanProviderRequirement;
 import org.wildfly.extension.clustering.ejb.DistributableEjbResourceDefinition.Capability;
 
 /**
@@ -45,7 +45,7 @@ public class DistributableEjbResourceServiceHandler implements ResourceServiceHa
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = DEFAULT_BEAN_MANAGEMENT.resolveModelAttribute(context, model).asString();
-        new IdentityCapabilityServiceConfigurator<>(DEFAULT_BEAN_MANAGEMENT_PROVIDER.getServiceName(context.getCurrentAddress()), EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER, name)
+        new IdentityCapabilityServiceConfigurator<>(DEFAULT_BEAN_MANAGEMENT_PROVIDER.getServiceName(context.getCurrentAddress()), BeanProviderRequirement.BEAN_MANAGEMENT_PROVIDER, name)
                 .configure(context)
                 .build(context.getServiceTarget())
                 .install();

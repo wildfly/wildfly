@@ -34,7 +34,7 @@ import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.cache.Cache;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCache;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
@@ -65,7 +65,6 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
         };
     }
 
-
     /**
      * After the bean is accessed within a tx and the tx has committed, the
      * association should be gone (and thus it is ready for another tx).
@@ -78,7 +77,7 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
         final StatefulSessionComponent component = mock(StatefulSessionComponent.class);
         context.putPrivateData(Component.class, component);
         when(component.getAccessTimeout(null)).thenReturn(defaultAccessTimeout());
-        Cache<SessionID, StatefulSessionComponentInstance> cache = mock(Cache.class);
+        StatefulSessionBeanCache<SessionID, StatefulSessionComponentInstance> cache = mock(StatefulSessionBeanCache.class);
         when(component.getCache()).thenReturn(cache);
         Supplier<SessionID> identifierFactory = mock(Supplier.class);
         when(cache.getIdentifierFactory()).thenReturn(identifierFactory);

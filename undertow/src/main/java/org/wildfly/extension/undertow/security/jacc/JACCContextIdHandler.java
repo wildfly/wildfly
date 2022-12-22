@@ -24,7 +24,7 @@ package org.wildfly.extension.undertow.security.jacc;
 
 import java.security.PrivilegedAction;
 
-import javax.security.jacc.PolicyContext;
+import jakarta.security.jacc.PolicyContext;
 
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HandlerWrapper;

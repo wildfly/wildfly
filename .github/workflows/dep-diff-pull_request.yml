@@ -41,7 +41,7 @@ jobs:
 
       # Run the caching against the base version only
       - name: Cache local Maven repository
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -103,7 +103,7 @@ jobs:
           done
           echo "${newVersionFiles}" > ${ARTIFACTS}/newVersions
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: input-artifacts
           path: ${{ steps.prepare.outputs.artifacts }}

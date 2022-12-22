@@ -22,12 +22,12 @@
 
 package org.wildfly.clustering.infinispan.listener;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 
 /**
@@ -48,8 +48,12 @@ public class NonBlockingCacheEventListener<K, V> implements Function<CacheEntryE
 
     @Override
     public CompletionStage<Void> apply(CacheEntryEvent<K, V> event) {
-        this.accept(event);
-        return CompletableFutures.completedNull();
+        try {
+            this.accept(event);
+            return CompletableFuture.completedStage(null);
+        } catch (RuntimeException | Error e) {
+            return CompletableFuture.failedStage(e);
+        }
     }
 
     @Override

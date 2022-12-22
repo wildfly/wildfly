@@ -51,5 +51,14 @@
         <!-- It is used only if org.wildfly.undertow.http-invoker capability is available -->
         <module name="io.undertow.core" optional="true"/>
         <module name="sun.jdk" />
+        <!--
+        The Angus Mail services are required to be able to load the Jakarta Mail Session from this Module context classloader
+        when listing the Mail context stored in the JNDI tree.
+        -->
+        <module name="org.eclipse.angus.mail" services="import" optional="true">
+            <imports>
+                <include path="META-INF"/>
+            </imports>
+        </module>
     </dependencies>
 </module>

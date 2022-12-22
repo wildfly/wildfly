@@ -38,8 +38,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Global session cookie config
@@ -66,14 +65,6 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
             USER_AGENTS,
             SESSION_TIMEOUT
     };
-    static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
-
-    static {
-        for (SimpleAttributeDefinition attr : ATTRIBUTES) {
-            ATTRIBUTES_MAP.put(attr.getName(), attr);
-        }
-    }
-
 
     private CrawlerSessionManagementDefinition() {
         super(UndertowExtension.CRAWLER_SESSION_MANAGEMENT,
@@ -84,7 +75,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES_MAP.values();
+        return List.of(ATTRIBUTES);
     }
 
     public CrawlerSessionManagerConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {

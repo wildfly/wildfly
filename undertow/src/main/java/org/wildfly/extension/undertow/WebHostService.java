@@ -24,7 +24,7 @@ package org.wildfly.extension.undertow;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.servlet.Servlet;
+import jakarta.servlet.Servlet;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.resource.PathResourceManager;

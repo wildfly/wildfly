@@ -29,13 +29,12 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
-import org.wildfly.clustering.provider.ServiceProviderRegistry;
 
 /**
  * Factory that provides a non-clustered {@link ServiceProviderRegistrationFactory} implementation.
  * @author Paul Ferraro
  */
-public class LocalServiceProviderRegistry<T> implements ServiceProviderRegistry<T> {
+public class LocalServiceProviderRegistry<T> implements AutoCloseableServiceProviderRegistry<T> {
 
     private final Set<T> services = ConcurrentHashMap.newKeySet();
     private final Group group;
@@ -68,5 +67,10 @@ public class LocalServiceProviderRegistry<T> implements ServiceProviderRegistry<
     @Override
     public Set<T> getServices() {
         return Collections.unmodifiableSet(this.services);
+    }
+
+    @Override
+    public void close() {
+        // Do nothing
     }
 }

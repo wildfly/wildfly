@@ -26,7 +26,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 
 /**
- * Configuration object used to store a {@link javax.servlet.ServletContext} attribute name and value.
+ * Configuration object used to store a {@link jakarta.servlet.ServletContext} attribute name and value.
  *
  * @author John Bailey
  */

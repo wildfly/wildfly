@@ -39,8 +39,10 @@ import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.Group;
+import org.wildfly.clustering.server.infinispan.provider.AutoCloseableServiceProviderRegistry;
 import org.wildfly.clustering.server.infinispan.provider.CacheServiceProviderRegistry;
 import org.wildfly.clustering.server.infinispan.provider.CacheServiceProviderRegistryConfiguration;
+import org.wildfly.clustering.server.infinispan.provider.LocalServiceProviderRegistry;
 import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
 import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
@@ -55,7 +57,7 @@ import org.wildfly.clustering.service.SupplierDependency;
  * Builds a clustered {@link ServiceProviderRegistrationFactory} service.
  * @author Paul Ferraro
  */
-public class CacheServiceProviderRegistryServiceConfigurator<T> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, CacheServiceProviderRegistryConfiguration<T>, Supplier<CacheServiceProviderRegistry<T>> {
+public class CacheServiceProviderRegistryServiceConfigurator<T> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, CacheServiceProviderRegistryConfiguration<T>, Supplier<AutoCloseableServiceProviderRegistry<T>> {
 
     private final String containerName;
     private final String cacheName;
@@ -71,8 +73,9 @@ public class CacheServiceProviderRegistryServiceConfigurator<T> extends SimpleSe
     }
 
     @Override
-    public CacheServiceProviderRegistry<T> get() {
-        return new CacheServiceProviderRegistry<>(this);
+    public AutoCloseableServiceProviderRegistry<T> get() {
+        Cache<?, ?> cache = this.cache.get();
+        return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new CacheServiceProviderRegistry<>(this) : new LocalServiceProviderRegistry<>(this.group.get());
     }
 
     @Override

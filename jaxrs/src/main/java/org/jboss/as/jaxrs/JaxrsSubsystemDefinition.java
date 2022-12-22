@@ -85,10 +85,9 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
                     RuntimePackageDependency.optional(RESTEASY_MULTIPART.getName()),
                     RuntimePackageDependency.optional(RESTEASY_CRYPTO.getName()),
                     RuntimePackageDependency.optional(JACKSON_DATATYPE_JDK8.getName()),
-                    RuntimePackageDependency.optional(JACKSON_DATATYPE_JSR310.getName()));
+                    RuntimePackageDependency.optional(JACKSON_DATATYPE_JSR310.getName()),
                     // The following ones are optional dependencies located in org.jboss.as.jaxrs module.xml
                     // To be provisioned, they need to be explicitly added as optional packages.
-                    // TODO this needs to be added back once RESTEasy Spring is moved back from WildFly Preview
-                    //RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-spring"));
+                    RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-spring"));
     }
 }

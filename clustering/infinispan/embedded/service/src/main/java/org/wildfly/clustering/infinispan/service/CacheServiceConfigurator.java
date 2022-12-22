@@ -58,17 +58,11 @@ public class CacheServiceConfigurator<K, V> extends SimpleServiceNameProvider im
 
     private volatile SupplierDependency<EmbeddedCacheManager> container;
     private volatile Dependency configuration;
-    private volatile Dependency dependency;
 
     public CacheServiceConfigurator(ServiceName name, String containerName, String cacheName) {
         super(name);
         this.containerName = containerName;
         this.cacheName = cacheName;
-    }
-
-    public CacheServiceConfigurator<K, V> require(Dependency dependency) {
-        this.dependency = dependency;
-        return this;
     }
 
     @Override
@@ -93,7 +87,7 @@ public class CacheServiceConfigurator<K, V> extends SimpleServiceNameProvider im
     @Override
     public final ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
-        Consumer<Cache<K, V>> cache = new CompositeDependency(this.configuration, this.container, this.dependency).register(builder).provides(this.getServiceName());
+        Consumer<Cache<K, V>> cache = new CompositeDependency(this.configuration, this.container).register(builder).provides(this.getServiceName());
         Service service = new FunctionalService<>(cache, ManagedCache::new, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }

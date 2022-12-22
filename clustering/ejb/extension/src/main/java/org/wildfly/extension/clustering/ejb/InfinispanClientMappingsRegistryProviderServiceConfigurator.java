@@ -28,8 +28,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
-import org.wildfly.clustering.ejb.infinispan.InfinispanClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.infinispan.remote.InfinispanClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
 import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**

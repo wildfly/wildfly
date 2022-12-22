@@ -34,6 +34,7 @@ import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.infinispan.registry.CacheRegistry;
 import org.wildfly.clustering.server.infinispan.registry.CacheRegistryConfiguration;
+import org.wildfly.clustering.server.infinispan.registry.LocalRegistry;
 import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -60,7 +61,8 @@ public class CacheRegistryFactoryServiceConfigurator<K, V> extends FunctionalReg
 
     @Override
     public Registry<K, V> apply(Map.Entry<K, V> entry, Runnable closeTask) {
-        return new CacheRegistry<>(this, entry, closeTask);
+        Cache<?, ?> cache = this.cache.get();
+        return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new CacheRegistry<>(this, entry, closeTask) : new LocalRegistry<>(this.group.get(), entry, closeTask);
     }
 
     @Override

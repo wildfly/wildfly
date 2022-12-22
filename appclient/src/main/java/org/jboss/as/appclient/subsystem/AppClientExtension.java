@@ -65,7 +65,7 @@ public class AppClientExtension implements Extension {
     @Override
     public void initialize(final ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(Constants.SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystem.registerSubsystemModel(AppClientSubsystemResourceDefinition.INSTANCE);
+        subsystem.registerSubsystemModel(new AppClientSubsystemResourceDefinition());
         subsystem.registerXMLElementWriter(parser);
     }
 

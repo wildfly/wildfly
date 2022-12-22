@@ -46,7 +46,7 @@ import org.jboss.modules.Module;
 
 /**
  * {@link DeploymentUnitProcessor} implementation responsible for extracting Jakarta Server Faces annotations from a deployment and attaching them
- * to the deployment unit to eventually be added to the {@link javax.servlet.ServletContext}.
+ * to the deployment unit to eventually be added to the {@link jakarta.servlet.ServletContext}.
  *
  * @author John Bailey
  */

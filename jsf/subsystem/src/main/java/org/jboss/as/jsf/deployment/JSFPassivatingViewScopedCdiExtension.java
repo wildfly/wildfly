@@ -22,11 +22,11 @@
 
 package org.jboss.as.jsf.deployment;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.faces.view.ViewScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.faces.view.ViewScoped;
 
 /**
  * Workaround for WFLY-3044 / JAVASERVERFACES-3191 making {@link ViewScoped} annotation passivating. Proper fix

@@ -28,6 +28,7 @@ import org.jboss.as.clustering.controller.UnaryServiceNameFactoryProvider;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
+ * Enumerates the distributed timer service capabilities.
  * @author Paul Ferraro
  */
 public enum TimerServiceRequirement implements UnaryRequirement, UnaryServiceNameFactoryProvider {

@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +45,6 @@ import java.util.function.Supplier;
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.notifications.Listener;
@@ -220,7 +220,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
             LOGGER.debugf("Restarting key generation based on new consistent hash for topology %d", event.getNewTopologyId());
             this.accept(event.getWriteConsistentHashAtEnd());
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     private Map<Address, Set<Integer>> getSegments(ConsistentHash hash) {

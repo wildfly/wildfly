@@ -57,7 +57,7 @@ public class BatchSubsystemExtension implements Extension {
         // Register the deployment resources
         if (context.isRuntimeOnlyRegistrationValid()) {
             final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(new BatchDeploymentResourceDefinition());
-            final ManagementResourceRegistration jobRegistration = deployments.registerSubModel(BatchJobResourceDefinition.INSTANCE);
+            final ManagementResourceRegistration jobRegistration = deployments.registerSubModel(new BatchJobResourceDefinition());
             jobRegistration.registerSubModel(new BatchJobExecutionResourceDefinition());
         }
 

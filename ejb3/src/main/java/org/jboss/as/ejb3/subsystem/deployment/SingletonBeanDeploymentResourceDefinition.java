@@ -37,8 +37,6 @@ import org.jboss.dmr.ModelType;
  */
 public class SingletonBeanDeploymentResourceDefinition extends AbstractEJBComponentResourceDefinition {
 
-    public static final SingletonBeanDeploymentResourceDefinition INSTANCE = new SingletonBeanDeploymentResourceDefinition();
-
     static final SimpleAttributeDefinition INIT_ON_STARTUP = new SimpleAttributeDefinitionBuilder("init-on-startup", ModelType.BOOLEAN)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
@@ -51,7 +49,7 @@ public class SingletonBeanDeploymentResourceDefinition extends AbstractEJBCompon
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-    private SingletonBeanDeploymentResourceDefinition() {
+    public SingletonBeanDeploymentResourceDefinition() {
         super(EJBComponentType.SINGLETON);
     }
 

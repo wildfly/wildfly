@@ -16,15 +16,15 @@
  */
 package org.jboss.as.jsf.injection.weld;
 
-import org.jboss.weld.module.web.el.WeldELContextListener;
-
-import javax.el.ELResolver;
-import javax.el.ExpressionFactory;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.faces.application.Application;
-import javax.faces.application.ApplicationWrapper;
+import jakarta.el.ELResolver;
+import jakarta.el.ExpressionFactory;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.faces.application.Application;
+import jakarta.faces.application.ApplicationWrapper;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
+import org.jboss.weld.module.web.el.WeldELContextListener;
 
 /**
  * @author pmuir

@@ -1,6 +1,6 @@
 package org.wildfly.clustering.ee.infinispan.scheduler;
 
-// IDs: 180 - 189
+// IDs: 180 - 187
 
 /**
  * @TypeId(180)

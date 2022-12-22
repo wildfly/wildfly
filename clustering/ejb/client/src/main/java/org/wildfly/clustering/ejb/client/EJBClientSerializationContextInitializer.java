@@ -25,7 +25,6 @@ package org.wildfly.clustering.ejb.client;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.ejb.client.SessionID;
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
@@ -34,7 +33,6 @@ import org.wildfly.clustering.marshalling.protostream.Scalar;
  * {@link SerializationContextInitializer} service for this module
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
 public class EJBClientSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public EJBClientSerializationContextInitializer() {

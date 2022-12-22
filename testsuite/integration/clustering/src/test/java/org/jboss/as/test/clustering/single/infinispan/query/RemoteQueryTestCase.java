@@ -30,7 +30,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.security.PrivilegedAction;
 import java.util.List;
 
 import org.infinispan.client.hotrod.RemoteCache;
@@ -50,7 +51,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Book;
 import org.jboss.as.test.clustering.single.infinispan.query.proto.BookQuerySchema;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Person;
-import org.jboss.as.test.clustering.single.infinispan.query.proto.BookQuerySchemaImpl;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -60,6 +60,7 @@ import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Test remote query.
@@ -73,7 +74,7 @@ import org.junit.runner.RunWith;
 public class RemoteQueryTestCase {
 
     @Deployment
-    public static Archive<?> deployment() throws IOException {
+    public static Archive<?> deployment() {
         return ShrinkWrap
                 .create(WebArchive.class, RemoteQueryTestCase.class.getSimpleName() + ".war")
                 .addClasses(RemoteQueryTestCase.class, RemoteQueryTestCase.class, Person.class, Book.class)
@@ -84,7 +85,17 @@ public class RemoteQueryTestCase {
 
     @Test
     public void testIndexed() {
-        BookQuerySchema schema = new BookQuerySchemaImpl();
+        BookQuerySchema schema = WildFlySecurityManager.doUnchecked(new PrivilegedAction<>() {
+            @Override
+            public BookQuerySchema run() {
+                try {
+                    Class<? extends BookQuerySchema> targetClass = BookQuerySchema.class.getClassLoader().loadClass(BookQuerySchema.class.getName() + "Impl").asSubclass(BookQuerySchema.class);
+                    return targetClass.getConstructor().newInstance();
+                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        });
         ConfigurationBuilder config = localServerConfiguration();
         config.addContextInitializer(schema);
 

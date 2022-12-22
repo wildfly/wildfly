@@ -24,6 +24,7 @@ package org.wildfly.clustering.ee.infinispan.scheduler;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,7 +36,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.notifications.Listener;
@@ -125,6 +125,6 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
                 }
             }
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 }

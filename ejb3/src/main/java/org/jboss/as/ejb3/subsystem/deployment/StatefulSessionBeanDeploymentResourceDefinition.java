@@ -37,8 +37,6 @@ import org.jboss.dmr.ModelType;
  */
 public class StatefulSessionBeanDeploymentResourceDefinition extends AbstractEJBComponentResourceDefinition {
 
-    public static final StatefulSessionBeanDeploymentResourceDefinition INSTANCE = new StatefulSessionBeanDeploymentResourceDefinition();
-
     static final SimpleAttributeDefinition STATEFUL_TIMEOUT = new SimpleAttributeDefinitionBuilder("stateful-timeout", ModelType.STRING)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
@@ -68,7 +66,7 @@ public class StatefulSessionBeanDeploymentResourceDefinition extends AbstractEJB
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-    private StatefulSessionBeanDeploymentResourceDefinition() {
+    public StatefulSessionBeanDeploymentResourceDefinition() {
         super(EJBComponentType.STATEFUL);
     }
 
