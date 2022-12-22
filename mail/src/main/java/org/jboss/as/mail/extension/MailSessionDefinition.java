@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -39,6 +40,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceName;
 
 import jakarta.mail.Session;
 
@@ -78,7 +80,13 @@ class MailSessionDefinition extends PersistentResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(MailExtension.MAIL_SESSION_PATH,
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION))
                 .setAddHandler(MailSessionAdd.INSTANCE)
-                .setRemoveHandler(new ServiceRemoveStepHandler(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(), MailSessionAdd.INSTANCE))
+                .setRemoveHandler(new ServiceRemoveStepHandler(MailSessionAdd.INSTANCE) {
+                    @Override
+                    protected ServiceName serviceName(String name, PathAddress address) {
+                        // Also remove SessionProvider service
+                        return SESSION_CAPABILITY.getCapabilityServiceName(address).append("provider");
+                    }
+                })
                 .setCapabilities(SESSION_CAPABILITY)
         );
         ApplicationTypeConfig atc = new ApplicationTypeConfig(MailExtension.SUBSYSTEM_NAME, MailSubsystemModel.MAIL_SESSION);

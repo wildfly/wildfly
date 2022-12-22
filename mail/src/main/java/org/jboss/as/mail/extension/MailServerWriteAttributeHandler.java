@@ -86,12 +86,13 @@ class MailServerWriteAttributeHandler extends RestartParentWriteAttributeHandler
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(parentAddress.getLastElement().getValue());
+        return MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(parentAddress);
     }
 
     @Override
     protected void removeServices(OperationContext context, ServiceName parentService, ModelNode parentModel) throws OperationFailedException {
         super.removeServices(context, parentService, parentModel);
+        context.removeService(parentService.append("provider"));
         String jndiName = MailSessionAdd.getJndiName(parentModel, context);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         context.removeService(bindInfo.getBinderServiceName());

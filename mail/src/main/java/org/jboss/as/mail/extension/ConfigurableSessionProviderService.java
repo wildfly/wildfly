@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,23 +22,33 @@
 
 package org.jboss.as.mail.extension;
 
-import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Consumer;
 
-import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
+ * Service that provides a {@link SessionProvider} and its {@link MailSessionConfig} (for use by tests).
+ * @author Paul Ferraro
  */
-final class CustomServerConfig extends ServerConfig {
-    private String protocol;
+class ConfigurableSessionProviderService implements Service {
+    private final Consumer<ConfigurableSessionProvider> provider;
+    private final MailSessionConfig config;
 
-    public CustomServerConfig(final String protocol, final Supplier<OutboundSocketBinding> socketBinding, Credentials credentials, boolean ssl, boolean tls, Map<String, String> properties) {
-        super(socketBinding, credentials, ssl, tls, properties);
-        this.protocol = protocol;
+    ConfigurableSessionProviderService(Consumer<ConfigurableSessionProvider> provider, MailSessionConfig config) {
+        this.provider = provider;
+        this.config = config;
     }
 
-    public String getProtocol() {
-        return protocol;
+    @Override
+    public void start(final StartContext startContext) throws StartException {
+        this.provider.accept(SessionProviderFactory.create(this.config));
+    }
+
+    @Override
+    public void stop(final StopContext stopContext) {
+        // Nothing to stop
     }
 }

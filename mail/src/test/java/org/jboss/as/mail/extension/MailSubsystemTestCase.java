@@ -36,7 +36,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
+
 import javax.net.ssl.SSLContext;
+
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -55,9 +61,11 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.junit.Assert;
 import org.junit.Test;
@@ -65,9 +73,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.wildfly.security.credential.store.CredentialStore;
-
-import jakarta.mail.PasswordAuthentication;
-import jakarta.mail.Session;
 
 /**
  * @author Tomaz Cerar (c) 2017 Red Hat Inc.
@@ -86,6 +91,7 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
                 new Object[] { 4, 0 });
     }
 
+    private final Map<ServiceName, Supplier<Object>> values = new ConcurrentHashMap<>();
     private final int major;
     private final int minor;
 
@@ -118,15 +124,14 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testRuntime() throws Exception {
         if (this.major >= 2) {
-            KernelServicesBuilder builder = createKernelServicesBuilder(new DefaultInitializer()).setSubsystemXml(getSubsystemXml());
-            KernelServices mainServices = builder.build();
-            if (!mainServices.isSuccessfulBoot()) {
-                Assert.fail(mainServices.getBootError().toString());
+            KernelServices services = createKernelServicesBuilder(new DefaultInitializer(this.values)).setSubsystemXml(getSubsystemXml()).build();
+            if (!services.isSuccessfulBoot()) {
+                Assert.fail(services.getBootError().toString());
             }
-            ServiceController<?> javaMailService = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("defaultMail"));
-            javaMailService.setMode(ServiceController.Mode.ACTIVE);
-            Session session = (Session) javaMailService.getValue();
-            Assert.assertNotNull("session should not be null", session);
+
+            SessionProvider provider = (SessionProvider) this.values.get(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("defaultMail").append("provider")).get();
+            Assert.assertNotNull("session should not be null", provider);
+            Session session = provider.getSession();
             Properties properties = session.getProperties();
             Assert.assertNotNull("smtp host should be set", properties.getProperty("mail.smtp.host"));
             Assert.assertNotNull("pop3 host should be set", properties.getProperty("mail.pop3.host"));
@@ -137,12 +142,13 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
                 Assert.assertEquals("nobody", auth.getUserName());
                 Assert.assertEquals("pass", auth.getPassword());
             }
-            ServiceController<?> defaultMailService = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("default2"));
-            session = (Session) defaultMailService.getValue();
+
+            provider = (SessionProvider) this.values.get(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("default2").append("provider")).get();
+            session = provider.getSession();
             Assert.assertEquals("Debug should be true", true, session.getDebug());
 
-            ServiceController<?> customMailService = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("custom"));
-            session = (Session) customMailService.getValue();
+            provider = (SessionProvider) this.values.get(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("custom").append("provider")).get();
+            session = provider.getSession();
             properties = session.getProperties();
             String host = properties.getProperty("mail.smtp.host");
             Assert.assertNotNull("smtp host should be set", host);
@@ -151,11 +157,6 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
             Assert.assertEquals("localhost", properties.get("mail.pop3.host")); //this one should be read out of socket binding
             Assert.assertEquals("some-custom-prop-value", properties.get("mail.pop3.custom_prop")); //this one should be extra property
             Assert.assertEquals("fully-qualified-prop-name", properties.get("some.fully.qualified.property")); //this one should be extra property
-
-            MailSessionService service = (MailSessionService) customMailService.getService();
-            Credentials credentials = service.getConfig().getCustomServers()[0].getCredentials();
-            Assert.assertEquals("username", credentials.getUsername());
-            Assert.assertEquals("password", credentials.getPassword());
         }
     }
 
@@ -167,24 +168,19 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testExpressionsRuntime() throws Exception {
         if (this.major >= 4) {
-            KernelServicesBuilder builder = createKernelServicesBuilder(new DefaultInitializer())
-                    .setSubsystemXml(getSubsystemXml());
-            KernelServices mainServices = builder.build();
-            if (!mainServices.isSuccessfulBoot()) {
-                Assert.fail(mainServices.getBootError().toString());
+            KernelServices services = createKernelServicesBuilder(new DefaultInitializer(this.values)).setSubsystemXml(getSubsystemXml()).build();
+            if (!services.isSuccessfulBoot()) {
+                Assert.fail(services.getBootError().toString());
             }
 
-            ServiceController<?> defaultMailSession3 = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("default3"));
-            defaultMailSession3.setMode(ServiceController.Mode.ACTIVE);
+            ConfigurableSessionProvider provider = (ConfigurableSessionProvider) this.values.get(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("default3").append("provider")).get();
+            MailSessionConfig config = provider.getConfig();
 
-            MailSessionService mailService = (MailSessionService) defaultMailSession3.getService();
-            MailSessionConfig config = mailService.getConfig();
             Assert.assertEquals("Unexpected value for mail-session=default3 from attribute", "from@from.org", config.getFrom());
             Assert.assertEquals("Unexpected value for mail-session=default3 jndi-name attribute", "java:jboss/mail/Default3", config.getJndiName());
             Assert.assertEquals("Unexpected value for mail-session=default3 debug attribute", Boolean.TRUE, config.isDebug());
 
             ServerConfig smtpServerConfig = config.getSmtpServer();
-            Assert.assertEquals("Unexpected value for mail-session=default3 smtp-server/outbound-socket-binding-ref attribute", "mail-smtp", smtpServerConfig.getOutgoingSocketBinding());
             Assert.assertEquals("Unexpected value for mail-session=default3 smtp-server/tls attribute", Boolean.TRUE, smtpServerConfig.isTlsEnabled());
             Assert.assertEquals("Unexpected value for mail-session=default3 smtp-server/ssl attribute", Boolean.FALSE, smtpServerConfig.isSslEnabled());
 
@@ -192,10 +188,8 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
             Assert.assertEquals("Unexpected value for mail-session=default3 smtp-server/username attribute", "nobody", credentials.getUsername());
             Assert.assertEquals("Unexpected value for mail-session=default3 smtp-server/password attribute", "empty", credentials.getPassword());
 
-            ServiceController<?> customMailService3 = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("custom3"));
-            customMailService3.setMode(ServiceController.Mode.ACTIVE);
-            mailService = (MailSessionService) customMailService3.getService();
-            config = mailService.getConfig();
+            provider = (ConfigurableSessionProvider) this.values.get(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("custom3").append("provider")).get();
+            config = provider.getConfig();
             CustomServerConfig customServerConfig = config.getCustomServers()[0];
             Map<String, String> properties = customServerConfig.getProperties();
             Assert.assertEquals("Unexpected value for mail-session=custom3 custom-server/property value attribute", "mail.example.com", properties.get("host"));
@@ -205,11 +199,9 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testOperations() throws Exception {
         if (this.major >= 2) {
-            KernelServicesBuilder builder = createKernelServicesBuilder(new DefaultInitializer())
-                    .setSubsystemXml(getSubsystemXml());
-            KernelServices mainServices = builder.build();
-            if (!mainServices.isSuccessfulBoot()) {
-                Assert.fail(mainServices.getBootError().toString());
+            KernelServices services = createKernelServicesBuilder(new DefaultInitializer(this.values)).setSubsystemXml(getSubsystemXml()).build();
+            if (!services.isSuccessfulBoot()) {
+                Assert.fail(services.getBootError().toString());
             }
 
             PathAddress sessionAddress = PathAddress.pathAddress(MailExtension.SUBSYSTEM_PATH, PathElement.pathElement(MailExtension.MAIL_SESSION_PATH.getKey(), "defaultMail"));
@@ -217,7 +209,7 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
 
             ModelNode removeServerOp = Util.createRemoveOperation(sessionAddress.append("server", "imap"));
             removeServerOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            result = mainServices.executeOperation(removeServerOp);
+            result = services.executeOperation(removeServerOp);
             checkResult(result);
 
             ModelNode addServerOp = Util.createAddOperation(sessionAddress.append("server", "imap"));
@@ -226,22 +218,21 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
             addServerOp.get("username").set("user");
             addServerOp.get("password").set("pswd");
 
-            result = mainServices.executeOperation(addServerOp);
+            result = services.executeOperation(addServerOp);
             checkResult(result);
 
-            checkResult(mainServices.executeOperation(removeServerOp)); //to make sure noting is left behind
-            checkResult(mainServices.executeOperation(addServerOp));
+            checkResult(services.executeOperation(removeServerOp)); //to make sure noting is left behind
+            checkResult(services.executeOperation(addServerOp));
 
             ModelNode writeOp = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, sessionAddress);
             writeOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             writeOp.get("name").set("debug");
             writeOp.get("value").set(false);
-            result = mainServices.executeOperation(writeOp);
+            result = services.executeOperation(writeOp);
             checkResult(result);
 
-            ServiceController<?> javaMailService = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("defaultMail"));
-            javaMailService.setMode(ServiceController.Mode.ACTIVE);
-            Session session = (Session) javaMailService.getValue();
+            SessionProvider provider = (SessionProvider) this.values.get(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("defaultMail").append("provider")).get();
+            Session session = provider.getSession();
             Assert.assertNotNull("session should not be null", session);
             Properties properties = session.getProperties();
             Assert.assertNotNull("smtp host should be set", properties.getProperty("mail.smtp.host"));
@@ -250,10 +241,10 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
             PathAddress nonExisting = PathAddress.pathAddress(MailExtension.SUBSYSTEM_PATH, PathElement.pathElement(MailExtension.MAIL_SESSION_PATH.getKey(), "non-existing-session"));
             ModelNode addSession = Util.createAddOperation(nonExisting);
             addSession.get("jndi-name").set("java:/bah");
-            checkResult(mainServices.executeOperation(addSession));
+            checkResult(services.executeOperation(addSession));
             removeServerOp = Util.createRemoveOperation(nonExisting.append("server", "imap"));
             //removeServerOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            result = mainServices.executeOperation(removeServerOp);
+            result = services.executeOperation(removeServerOp);
             checkForFailure(result);
         }
     }
@@ -274,14 +265,21 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     public static class DefaultInitializer extends AdditionalInitialization {
-        protected final Map<String, Integer> sockets = new HashMap<>();
+        private final Map<String, Integer> sockets = new HashMap<>();
+        private final Map<ServiceName, Supplier<Object>> values;
 
-        public DefaultInitializer() {
+        public DefaultInitializer(Map<ServiceName, Supplier<Object>> values) {
+            this.values = values;
             sockets.put("mail-imap", 432);
             sockets.put("mail-pop3", 1234);
             sockets.put("mail-smtp", 25);
         }
 
+        private void record(ServiceTarget target, ServiceName name) {
+            ServiceBuilder<?> builder = target.addService(name.append("test-recorder"));
+            this.values.put(name, builder.requires(name));
+            builder.setInstance(Service.NULL).setInitialMode(ServiceController.Mode.ACTIVE).install();
+        }
 
         @Override
         protected void setupController(ControllerInitializer controllerInitializer) {
@@ -297,7 +295,7 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         @Override
         protected void addExtraServices(ServiceTarget target) {
-            super.addExtraServices(target);
+
             target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService())
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
@@ -305,6 +303,11 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
 
+            this.record(target, MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("defaultMail").append("provider"));
+            this.record(target, MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("default2").append("provider"));
+            this.record(target, MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("custom").append("provider"));
+            this.record(target, MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("default3").append("provider"));
+            this.record(target, MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("custom3").append("provider"));
         }
 
         @Override
@@ -330,13 +333,6 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
         @Override
         protected RunningMode getRunningMode() {
             return RunningMode.NORMAL;
-        }
-    }
-
-    public static class TransformersInitializer extends DefaultInitializer implements java.io.Serializable {
-        @Override
-        protected RunningMode getRunningMode() {
-            return RunningMode.ADMIN_ONLY;
         }
     }
 }
