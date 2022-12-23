@@ -255,8 +255,8 @@
         <version.antlr>2.7.7</version.antlr>
         <version.com.beust>1.78</version.com.beust>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.13.4</version.com.fasterxml.jackson>
-        <version.com.fasterxml.jackson.databind>2.13.4.1</version.com.fasterxml.jackson.databind>
+        <version.com.fasterxml.jackson>2.14.1</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson.databind>2.14.1</version.com.fasterxml.jackson.databind>
         <version.com.github.ben-manes.caffeine>2.8.5</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
@@ -450,7 +450,7 @@
         <version.org.wildfly.http-client>1.1.12.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.15.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.transaction.client>2.0.1.Final</version.org.wildfly.transaction.client>
-        <version.org.yaml.snakeyaml>1.32</version.org.yaml.snakeyaml>
+        <version.org.yaml.snakeyaml>1.33</version.org.yaml.snakeyaml>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.sun.jaxb>2.3.3-b02</version.sun.jaxb>
         <version.sun.saaj-impl>1.4.1.SP1</version.sun.saaj-impl>
