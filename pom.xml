@@ -446,7 +446,7 @@
         <version.org.apache.activemq.artemis>2.26.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>1.0.2</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.11.0</version.org.apache.avro>
-        <version.org.apache.cxf>3.5.2-jbossorg-4</version.org.apache.cxf>
+        <version.org.apache.cxf>4.0.0</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>4.0.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0.AM26</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
@@ -459,10 +459,10 @@
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
         <version.org.apache.openjpa>3.1.2</version.org.apache.openjpa>
         <version.org.apache.qpid.proton>0.34.0</version.org.apache.qpid.proton>
-        <version.org.apache.santuario>3.0.0</version.org.apache.santuario>
+        <version.org.apache.santuario>3.0.1</version.org.apache.santuario>
         <version.org.apache.thrift>0.14.1</version.org.apache.thrift>
         <version.org.apache.velocity>2.3</version.org.apache.velocity>
-        <version.org.apache.wss4j>2.4.1-jbossorg-1</version.org.apache.wss4j>
+        <version.org.apache.wss4j>3.0.0</version.org.apache.wss4j>
         <version.org.apache.ws.xmlschema>2.3.0</version.org.apache.ws.xmlschema>
         <version.org.apache.xerces>2.12.0.SP05</version.org.apache.xerces>
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
