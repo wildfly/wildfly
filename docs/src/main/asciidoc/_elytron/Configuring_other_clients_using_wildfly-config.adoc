@@ -106,7 +106,7 @@ Example configuration:
             <bearer-token value="bearerTokenValue"/>
         </credentials>
         <key-stores>
-            <key-store name="truststore" type="JKS">
+            <key-store name="truststore" type="PKCS12">
                 <file name="src/test/resources/org/jboss/resteasy/test/security/client-different-cert.truststore"/>
             </key-store>
         </key-stores>
