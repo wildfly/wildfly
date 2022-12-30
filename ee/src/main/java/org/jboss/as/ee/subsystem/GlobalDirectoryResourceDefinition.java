@@ -75,9 +75,7 @@ public class GlobalDirectoryResourceDefinition extends PersistentResourceDefinit
     private static final AbstractAddStepHandler ADD = new GlobalDirectoryAddHandler();
     private static final AbstractRemoveStepHandler REMOVE = new ReloadRequiredRemoveStepHandler();
 
-    public static final GlobalDirectoryResourceDefinition INSTANCE = new GlobalDirectoryResourceDefinition();
-
-    public GlobalDirectoryResourceDefinition() {
+    GlobalDirectoryResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.GLOBAL_DIRECTORY), EeExtension.getResourceDescriptionResolver(EESubsystemModel.GLOBAL_DIRECTORY))
                 .setAddHandler(GlobalDirectoryResourceDefinition.ADD)
                 .setRemoveHandler(GlobalDirectoryResourceDefinition.REMOVE)
