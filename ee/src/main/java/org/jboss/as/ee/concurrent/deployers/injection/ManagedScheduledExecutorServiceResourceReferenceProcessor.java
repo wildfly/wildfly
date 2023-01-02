@@ -27,7 +27,7 @@ import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessor;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentDefaultBindingProcessor;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
 
 /**
  * @author Eduardo Martins

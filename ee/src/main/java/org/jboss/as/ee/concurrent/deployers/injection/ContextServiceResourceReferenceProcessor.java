@@ -27,7 +27,7 @@ import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessor;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentDefaultBindingProcessor;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
-import javax.enterprise.concurrent.ContextService;
+import jakarta.enterprise.concurrent.ContextService;
 
 /**
  * @author Eduardo Martins

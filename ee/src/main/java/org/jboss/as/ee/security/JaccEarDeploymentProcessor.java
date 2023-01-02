@@ -22,7 +22,7 @@
 
 package org.jboss.as.ee.security;
 
-import javax.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyConfiguration;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;

@@ -27,7 +27,7 @@ import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.concurrent.handle.NullContextHandle;
 
-import javax.enterprise.concurrent.ContextService;
+import jakarta.enterprise.concurrent.ContextService;
 import java.util.Map;
 
 /**

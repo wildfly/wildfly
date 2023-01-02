@@ -45,10 +45,10 @@ import org.jboss.vfs.VirtualFile;
  */
 public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static final DotName STATELESS = DotName.createSimple("javax.ejb.Stateless");
-    private static final DotName STATEFUL = DotName.createSimple("javax.ejb.Stateful");
-    private static final DotName MESSAGE_DRIVEN = DotName.createSimple("javax.ejb.MessageDriven");
-    private static final DotName SINGLETON = DotName.createSimple("javax.ejb.Singleton");
+    private static final DotName STATELESS = DotName.createSimple("jakarta.ejb.Stateless");
+    private static final DotName STATEFUL = DotName.createSimple("jakarta.ejb.Stateful");
+    private static final DotName MESSAGE_DRIVEN = DotName.createSimple("jakarta.ejb.MessageDriven");
+    private static final DotName SINGLETON = DotName.createSimple("jakarta.ejb.Singleton");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

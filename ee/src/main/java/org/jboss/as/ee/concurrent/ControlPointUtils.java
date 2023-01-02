@@ -26,9 +26,9 @@ import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RunResult;
 
-import javax.enterprise.concurrent.ManagedExecutorService;
-import javax.enterprise.concurrent.ManagedTask;
-import javax.enterprise.concurrent.ManagedTaskListener;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
+import jakarta.enterprise.concurrent.ManagedTask;
+import jakarta.enterprise.concurrent.ManagedTaskListener;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -211,7 +211,7 @@ public class ControlPointUtils {
         public T call() throws Exception {
             if (controlPoint == null) {
                 return callable.call();
-            } else {
+            } else  {
                 try {
                     if (controlPoint.beginRequest() == RunResult.RUN) {
                         try {
