@@ -374,7 +374,7 @@
         <version.io.grpc>1.38.1</version.io.grpc>
         <version.io.jaegertracing>1.6.0</version.io.jaegertracing>
         <version.io.micrometer>1.9.3</version.io.micrometer>
-        <version.io.netty>4.1.84.Final</version.io.netty>
+        <version.io.netty>4.1.86.Final</version.io.netty>
         <version.io.opentelemetry.opentelemetry>1.12.0</version.io.opentelemetry.opentelemetry>
         <version.io.opentracing>0.33.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.4.0</version.io.opentracing.concurrent>
@@ -403,7 +403,7 @@
         <version.io.smallrye.smallrye-mutiny-vertx>2.26.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-opentracing>3.0.0</version.io.smallrye.smallrye-opentracing>
         <version.io.smallrye.smallrye-reactive-messaging>4.1.0</version.io.smallrye.smallrye-reactive-messaging>
-        <version.io.undertow.jastow>2.2.4.Final</version.io.undertow.jastow>
+        <version.io.undertow.jastow>2.2.5.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.3.4</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.1.jbossorg-1</version.jakarta.activation.jakarta.activation-api>
@@ -586,7 +586,7 @@
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.9.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>2.1.2</version.org.jctools.jctools-core>
         <version.org.jetbrains.kotlin>1.7.10</version.org.jetbrains.kotlin>
-        <version.org.jgroups>5.2.10.Final</version.org.jgroups>
+        <version.org.jgroups>5.2.11.Final</version.org.jgroups>
         <version.org.jgroups.aws>2.0.1.Final</version.org.jgroups.aws>
         <version.org.jgroups.azure>2.0.2.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>2.0.1.Final</version.org.jgroups.kubernetes>

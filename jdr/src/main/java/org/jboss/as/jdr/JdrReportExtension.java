@@ -64,10 +64,11 @@ public class JdrReportExtension implements Extension {
 
     static final SensitiveTargetAccessConstraintDefinition JDR_SENSITIVITY_DEF = new SensitiveTargetAccessConstraintDefinition(JDR_SENSITIVITY);
 
+    @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
-        ManagementResourceRegistration root = subsystemRegistration.registerSubsystemModel(JdrReportSubsystemDefinition.INSTANCE);
+        ManagementResourceRegistration root = subsystemRegistration.registerSubsystemModel(new JdrReportSubsystemDefinition());
         root.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
 
@@ -77,6 +78,7 @@ public class JdrReportExtension implements Extension {
         subsystemRegistration.registerXMLElementWriter(JdrReportSubsystemParser.INSTANCE);
     }
 
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), () -> JdrReportSubsystemParser.INSTANCE);
     }

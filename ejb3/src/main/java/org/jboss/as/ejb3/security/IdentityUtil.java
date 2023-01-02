@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jdr;
+package org.jboss.as.ejb3.security;
 
-import org.jboss.as.controller.SimpleResourceDefinition;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
+ * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class JdrReportSubsystemDefinition extends SimpleResourceDefinition {
+class IdentityUtil {
 
-    JdrReportSubsystemDefinition() {
-        super(JdrReportExtension.SUBSYSTEM_PATH, JdrReportExtension.getResourceDescriptionResolver(),
-                JdrReportSubsystemAdd.INSTANCE,
-                JdrReportSubsystemRemove.INSTANCE);
+    public static SecurityDomain getCurrentSecurityDomain() {
+        if (WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged((PrivilegedAction<SecurityDomain>) SecurityDomain::getCurrent);
+        } else {
+            return SecurityDomain.getCurrent();
+        }
     }
-
 }

@@ -25,18 +25,19 @@ jobs:
           mkdir ${ARTIFACTS}
           echo ${{ github.event.number }} > "${ARTIFACTS}/pr"
 
-          echo "::set-output name=base::${GITHUB_BASE_REF}"
-          echo "::set-output name=artifacts::${ARTIFACTS}"
+          echo "base=${GITHUB_BASE_REF}" >> $GITHUB_OUTPUT
+          echo "artifacts=${ARTIFACTS}" >> $GITHUB_OUTPUT
 
       - name: Clone base version
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ steps.prepare.outputs.base }}
           path: base
 
       - name: Setup Java
-        uses: actions/setup-java@v1.4.3
+        uses: actions/setup-java@v3
         with:
+          distribution: 'temurin'
           java-version: 11
 
       # Run the caching against the base version only
@@ -49,7 +50,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Clone PR version
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: pr
 

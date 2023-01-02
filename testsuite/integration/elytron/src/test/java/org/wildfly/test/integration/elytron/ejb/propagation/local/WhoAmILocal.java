@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.test.integration.elytron.ejb.propagation.local;
 
-package org.jboss.as.jdr;
-
-import org.jboss.as.controller.SimpleResourceDefinition;
+import java.security.Principal;
+import jakarta.ejb.Local;
 
 /**
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
+ * The local interface to the simple WhoAmI bean.
+ *
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class JdrReportSubsystemDefinition extends SimpleResourceDefinition {
+@Local
+public interface WhoAmILocal {
 
-    JdrReportSubsystemDefinition() {
-        super(JdrReportExtension.SUBSYSTEM_PATH, JdrReportExtension.getResourceDescriptionResolver(),
-                JdrReportSubsystemAdd.INSTANCE,
-                JdrReportSubsystemRemove.INSTANCE);
-    }
+    /**
+     * @return the caller principal obtained from the EJBContext.
+     */
+    Principal getCallerPrincipal();
+
+    /**
+     * @param roleName - The role to check.
+     * @return The result of calling EJBContext.isCallerInRole() with the supplied role name.
+     */
+    boolean doIHaveRole(String roleName);
 
 }

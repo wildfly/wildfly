@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.test.integration.elytron.ejb.propagation.local;
 
-package org.jboss.as.jdr;
+import jakarta.ejb.Stateless;
 
-import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
+ * Concrete implementation to allow deployment of bean.
+ *
+ * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class JdrReportSubsystemDefinition extends SimpleResourceDefinition {
-
-    JdrReportSubsystemDefinition() {
-        super(JdrReportExtension.SUBSYSTEM_PATH, JdrReportExtension.getResourceDescriptionResolver(),
-                JdrReportSubsystemAdd.INSTANCE,
-                JdrReportSubsystemRemove.INSTANCE);
-    }
-
+@Stateless
+@SecurityDomain("ejb-domain")
+public class WhoAmIBeanLocal extends org.wildfly.test.integration.elytron.ejb.base.WhoAmIBean implements WhoAmILocal {
 }
