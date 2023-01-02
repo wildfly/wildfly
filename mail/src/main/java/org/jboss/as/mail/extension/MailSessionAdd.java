@@ -66,8 +66,6 @@ import org.jboss.msc.service.ServiceName;
 class MailSessionAdd extends AbstractAddStepHandler {
 
     static final MailSessionAdd INSTANCE = new MailSessionAdd();
-    @Deprecated
-    static final ServiceName MAIL_SESSION_SERVICE_NAME = ServiceName.JBOSS.append("mail-session");
 
     protected MailSessionAdd() {
         super(ATTRIBUTES);
@@ -135,7 +133,7 @@ class MailSessionAdd extends AbstractAddStepHandler {
 
         // TODO Consider removing this service (and either changing or removing its corresponding capability) - it is never referenced.
         CapabilityServiceBuilder<?> mailSessionBuilder = serviceTarget.addCapability(SESSION_CAPABILITY);
-        Service mailService = new MailSessionService(mailSessionBuilder.provides(sessionServiceName, MAIL_SESSION_SERVICE_NAME.append(address.getLastElement().getValue())), mailSessionBuilder.requires(providerServiceName));
+        Service mailService = new MailSessionService(mailSessionBuilder.provides(sessionServiceName), mailSessionBuilder.requires(providerServiceName));
         mailSessionBuilder.setInstance(mailService).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
