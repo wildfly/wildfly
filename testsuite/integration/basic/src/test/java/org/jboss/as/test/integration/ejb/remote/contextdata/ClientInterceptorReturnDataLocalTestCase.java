@@ -55,10 +55,10 @@ public class ClientInterceptorReturnDataLocalTestCase {
     TestRemote testSingleton;
 
     @Test
-    public void testInvokeWithClientInterceptorData() throws Exception {
+    public void testInvokeWithClientInterceptorData() {
         try {
             UseCaseValidator useCaseValidator = new UseCaseValidator(UseCaseValidator.Interface.LOCAL);
-            useCaseValidator = testSingleton.invoke(useCaseValidator);
+            testSingleton.invoke(useCaseValidator);
         } catch(TestException te) {
             Assert.fail(te.getMessage());
         }

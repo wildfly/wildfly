@@ -69,7 +69,7 @@ public class ClientInterceptorReturnDataRemoteTestCase {
         REMOTE_HTTP("remote+http"),
         HTTP("http");
 
-        private String value;
+        private final String value;
 
         Protocol(String value){
             this.value = value;

@@ -34,8 +34,8 @@ import org.jboss.logging.Logger;
 
 public class UseCaseValidator implements Serializable {
 
-    private List<UseCase> useCases = new ArrayList<>();
-    private Interface iface;
+    private final List<UseCase> useCases = new ArrayList<>();
+    private final Interface iface;
 
     public UseCaseValidator(Interface iface) {
         this.iface = iface;
@@ -321,9 +321,6 @@ public class UseCaseValidator implements Serializable {
 
         public static final String RETURNED_CONTEXT_DATA_KEY = "jboss.returned.keys";
 
-        public UseCase() {
-        }
-
         public UseCase(int useCaseNumber, String description) {
             this.useCaseNumber = useCaseNumber;
             this.description = description;
@@ -355,15 +352,14 @@ public class UseCaseValidator implements Serializable {
             // changes to the expectations happen after the test
             // so we need to have a before / after
 
-            contextData.keySet().stream().forEach(k -> {
-                logger.debugf("%s: ContextData %s -> %s", phase, k, contextData.get(k));
-            });
+            contextData.keySet().forEach(k ->
+                    logger.debugf("%s: ContextData %s -> %s", phase, k, contextData.get(k)));
 
             // test first before making any changes to expectations
             logger.debugf("phase: %s Test the current expectation: expected: %s contextDataUseCaseKey: %s value: %s", phase, expected, contextDataUseCaseKey, contextData.get(contextDataUseCaseKey));
             // Test the current expectation
             if(!equal(expected, contextData.get(contextDataUseCaseKey)))
-                throw new TestException(String.format("%s : phase: %s expected: %s != actual: %s", this.toString(), phase, expected, contextData.get(contextDataUseCaseKey)));
+                throw new TestException(String.format("%s : phase: %s expected: %s != actual: %s", this, phase, expected, contextData.get(contextDataUseCaseKey)));
 
 
             // remove the expected

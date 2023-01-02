@@ -23,11 +23,15 @@ package org.jboss.as.test.integration.ejb.remote.contextdata;
 
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.InvocationContext;
+import org.junit.Assert;
 
 public class EjbInterceptor {
 
     @AroundInvoke
     public Object interceptor(InvocationContext context) throws Exception {
+        Assert.assertNotNull(context.getParameters());
+        Assert.assertEquals(1, context.getParameters().length);
+        Assert.assertTrue(context.getParameters()[0] instanceof UseCaseValidator);
 
         // test before the ejb is invoked
         UseCaseValidator useCaseValidator = (UseCaseValidator) context.getParameters()[0];
