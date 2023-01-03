@@ -16,20 +16,6 @@
     <artifactId>wildfly-weld-ejb</artifactId>
     <name>WildFly: Weld EJB</name>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- TODO remove this dependencyManagement element once the following
-            dependency is added to the parent pom -->
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>jakarta.ejb</groupId>

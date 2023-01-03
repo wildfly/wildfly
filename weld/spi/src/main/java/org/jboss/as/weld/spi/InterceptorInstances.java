@@ -23,8 +23,8 @@ package org.jboss.as.weld.spi;
 
 import java.util.Map;
 
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Interceptor;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.Interceptor;
 
 import org.jboss.weld.serialization.spi.helpers.SerializableContextualInstance;
 

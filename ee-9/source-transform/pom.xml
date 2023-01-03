@@ -48,8 +48,6 @@
 
     <modules>
         <module>ee</module>
-        <module>weld/common</module>
-        <module>weld/spi</module>
     </modules>
 
     <dependencyManagement>

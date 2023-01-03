@@ -26,9 +26,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
-import javax.annotation.Resource;
-import javax.enterprise.inject.spi.Annotated;
-import javax.enterprise.inject.spi.InjectionPoint;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.inject.spi.Annotated;
+import jakarta.enterprise.inject.spi.InjectionPoint;
 
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.metadata.property.PropertyReplacer;
