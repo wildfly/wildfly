@@ -292,6 +292,7 @@
             In cases where multiple artifacts use the same groupId but have different
             versions, add the artifactId or other qualifier to the property name.
          -->
+        <version.ant.junit>1.10.12</version.ant.junit>
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.7</version.org.jacoco>
         <version.org.jboss.galleon>5.0.7.Final</version.org.jboss.galleon>
