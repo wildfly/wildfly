@@ -2021,15 +2021,15 @@
                     <artifactId>asciidoctor-maven-plugin</artifactId>
                     <version>${version.asciidoctor.plugin}</version>
                     <configuration>
-                        <sourceHighlighter>coderay</sourceHighlighter>
                         <attributes>
+                            <sourceHighlighter>coderay</sourceHighlighter>
                             <icons>font</icons>
                             <pagenums></pagenums>
                             <version>${project.version}</version>
                             <idprefix></idprefix>
                             <idseparator>-</idseparator>
                             <allow-uri-read>true</allow-uri-read>
-                            <wildflyVersion>13</wildflyVersion>
+                            <wildflyVersion>${product.docs.server.version}</wildflyVersion>
                             <revnumber>${project.version}</revnumber>
                             <revdate>${maven.build.timestamp}</revdate>
                             <organization>${project.organization.name}</organization>
