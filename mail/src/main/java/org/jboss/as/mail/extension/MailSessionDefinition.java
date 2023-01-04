@@ -37,7 +37,9 @@ import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -59,11 +61,11 @@ class MailSessionDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.JNDI_NAME, ModelType.STRING, false)
                     .setAllowExpression(true)
-                    .setRestartAllServices()
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
     protected static final SimpleAttributeDefinition FROM =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.FROM, ModelType.STRING, true)
-                    .setRestartAllServices()
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .build();
@@ -71,7 +73,7 @@ class MailSessionDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.DEBUG, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
                     .setDefaultValue(ModelNode.FALSE)
-                    .setRestartAllServices()
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
     static final AttributeDefinition[] ATTRIBUTES = {DEBUG, JNDI_NAME, FROM};
@@ -86,7 +88,7 @@ class MailSessionDefinition extends PersistentResourceDefinition {
                         // Also remove SessionProvider service
                         return SESSION_CAPABILITY.getCapabilityServiceName(address).append("provider");
                     }
-                })
+                }).setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(SESSION_CAPABILITY)
         );
         ApplicationTypeConfig atc = new ApplicationTypeConfig(MailExtension.SUBSYSTEM_NAME, MailSubsystemModel.MAIL_SESSION);

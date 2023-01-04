@@ -47,6 +47,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -74,19 +75,20 @@ class MailServerDefinition extends PersistentResourceDefinition {
     static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF, ModelType.STRING, false)
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                     .build();
 
     static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF_OPTIONAL = SimpleAttributeDefinitionBuilder.create(OUTBOUND_SOCKET_BINDING_REF)
             .setCapabilityReference(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setRequired(false)
             .build();
 
     protected static final SimpleAttributeDefinition SSL =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.SSL, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDefaultValue(ModelNode.FALSE)
                     .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
                     .build();
@@ -95,7 +97,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition TLS =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.TLS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDefaultValue(ModelNode.FALSE)
                     .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
                     .build();
@@ -104,14 +106,14 @@ class MailServerDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.USER_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setXmlName("username")
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
                     .build();
 
     static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
             CredentialReference.getAttributeBuilder(true, false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
                     .addAlternatives(MailSubsystemModel.PASSWORD)
@@ -121,7 +123,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition PASSWORD =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.PASSWORD, ModelType.STRING, true)
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
                     .setAlternatives(CredentialReference.CREDENTIAL_REFERENCE)
@@ -131,6 +133,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
             .setAttributeMarshaller(AttributeMarshaller.PROPERTIES_MARSHALLER_UNWRAPPED)
             .setAttributeParser(AttributeParser.PROPERTIES_PARSER_UNWRAPPED)
             .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
 
@@ -144,7 +147,9 @@ class MailServerDefinition extends PersistentResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(path,
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION, MailSubsystemModel.SERVER_TYPE))
                 .setAddHandler(new MailServerAdd(attributes))
+                .setAddRestartLevel(Flag.RESTART_RESOURCE_SERVICES)
                 .setRemoveHandler(new MailServerRemove(attributes))
+                .setRemoveRestartLevel(Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(SERVER_CAPABILITY)
         );
         this.attributes = Arrays.asList(attributes);
