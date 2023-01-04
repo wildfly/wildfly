@@ -37,14 +37,6 @@ import org.jboss.dmr.ModelNode;
  */
 class MailSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    static final MailSubsystemAdd INSTANCE = new MailSubsystemAdd();
-
-    private MailSubsystemAdd() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         model.setEmptyObject();
@@ -53,6 +45,7 @@ class MailSubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         context.addStep(new AbstractDeploymentChainStep() {
+            @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(MailExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_RESOURCE_DEF_ANNOTATION_MAIL_SESSION, new MailSessionDefinitionAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(MailExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MAIL, new MailDependenciesProcessor());

@@ -39,7 +39,7 @@ class MailSubsystemResource extends PersistentResourceDefinition {
     MailSubsystemResource() {
         super(MailExtension.SUBSYSTEM_PATH,
                 MailExtension.getResourceDescriptionResolver(),
-                MailSubsystemAdd.INSTANCE,
+                new MailSubsystemAdd(),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
