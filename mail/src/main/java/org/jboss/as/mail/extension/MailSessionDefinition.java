@@ -27,9 +27,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -42,7 +42,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
+import org.wildfly.common.function.ExceptionBiConsumer;
 
 import jakarta.mail.Session;
 
@@ -81,14 +81,9 @@ class MailSessionDefinition extends PersistentResourceDefinition {
     MailSessionDefinition() {
         super(new SimpleResourceDefinition.Parameters(MailExtension.MAIL_SESSION_PATH,
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION))
-                .setAddHandler(MailSessionAdd.INSTANCE)
-                .setRemoveHandler(new ServiceRemoveStepHandler(MailSessionAdd.INSTANCE) {
-                    @Override
-                    protected ServiceName serviceName(String name, PathAddress address) {
-                        // Also remove SessionProvider service
-                        return SESSION_CAPABILITY.getCapabilityServiceName(address).append("provider");
-                    }
-                }).setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
+                .setAddHandler(new MailSessionAdd())
+                .setRemoveHandler(new MailSessionRemove())
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(SESSION_CAPABILITY)
         );
         ApplicationTypeConfig atc = new ApplicationTypeConfig(MailExtension.SUBSYSTEM_NAME, MailSubsystemModel.MAIL_SESSION);
@@ -96,11 +91,15 @@ class MailSessionDefinition extends PersistentResourceDefinition {
     }
 
     @Override
-    public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {
-        MailServerWriteAttributeHandler handler = new MailServerWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            rootResourceRegistration.registerReadWriteAttribute(attr, null, handler);
+    public void registerAttributes(final ManagementResourceRegistration registration) {
+        ExceptionBiConsumer<OperationContext, ModelNode, OperationFailedException> remover = MailSessionRemove::removeSessionProviderService;
+        ExceptionBiConsumer<OperationContext, ModelNode, OperationFailedException> installer = MailSessionAdd::installSessionProviderService;
+        for (AttributeDefinition attribute : ATTRIBUTES) {
+            if (!attribute.getName().equals(JNDI_NAME.getName())) {
+                registration.registerReadWriteAttribute(attribute, null, new MailSessionWriteAttributeHandler(attribute, remover, installer));
+            }
         }
+        registration.registerReadWriteAttribute(JNDI_NAME, null, new MailSessionWriteAttributeHandler(JNDI_NAME, MailSessionRemove::removeBinderService, MailSessionAdd::installBinderService));
     }
 
     @Override
@@ -126,5 +125,4 @@ class MailSessionDefinition extends PersistentResourceDefinition {
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return accessConstraints;
     }
-
 }

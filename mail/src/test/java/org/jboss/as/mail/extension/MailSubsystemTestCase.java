@@ -243,7 +243,7 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
             addSession.get("jndi-name").set("java:/bah");
             checkResult(services.executeOperation(addSession));
             removeServerOp = Util.createRemoveOperation(nonExisting.append("server", "imap"));
-            //removeServerOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            removeServerOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             result = services.executeOperation(removeServerOp);
             checkForFailure(result);
         }
@@ -257,7 +257,7 @@ public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private static void checkResult(ModelNode result) {
-        Assert.assertEquals(result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString(), "success", result.get(ModelDescriptionConstants.OUTCOME).asString());
+        Assert.assertEquals(result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString(), ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
         if (result.hasDefined(ModelDescriptionConstants.RESPONSE_HEADERS)) {
             boolean reload = result.get(ModelDescriptionConstants.RESPONSE_HEADERS, ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD).asBoolean(false);
             Assert.assertFalse("Operation should not return requires reload", reload);

@@ -30,13 +30,9 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -48,12 +44,9 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Tomaz Cerar
@@ -148,7 +141,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION, MailSubsystemModel.SERVER_TYPE))
                 .setAddHandler(new MailServerAdd(attributes))
                 .setAddRestartLevel(Flag.RESTART_RESOURCE_SERVICES)
-                .setRemoveHandler(new MailServerRemove(attributes))
+                .setRemoveHandler(new MailServerRemove())
                 .setRemoveRestartLevel(Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(SERVER_CAPABILITY)
         );
@@ -163,54 +156,9 @@ class MailServerDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        MailServerWriteAttributeHandler handler = new MailServerWriteAttributeHandler(getAttributes());
+        MailServerWriteAttributeHandler handler = new MailServerWriteAttributeHandler(this.attributes);
         for (AttributeDefinition attr : getAttributes()) {
             resourceRegistration.registerReadWriteAttribute(attr, null, handler);
         }
-    }
-
-    private static final class MailServerRemove extends RestartParentResourceRemoveHandler {
-        private final AttributeDefinition[] attributes;
-        private MailServerRemove(AttributeDefinition ... attributes) {
-            super(MailSubsystemModel.MAIL_SESSION);
-            this.attributes = attributes;
-        }
-
-        @Override
-        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-            Resource r = context.readResource(PathAddress.EMPTY_ADDRESS, false); //to make sure resource we are removing exists! it will throw exception.
-            super.updateModel(context, operation);
-            recordCapabilitiesAndRequirements(context, r);
-        }
-
-        @Override
-        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel);
-        }
-
-        @Override
-        protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(parentAddress);
-        }
-
-        @Override
-        protected void removeServices(OperationContext context, ServiceName parentService, ModelNode parentModel) throws OperationFailedException {
-            super.removeServices(context, parentService, parentModel);
-            context.removeService(parentService.append("provider"));
-            String jndiName = MailSessionAdd.getJndiName(parentModel, context);
-            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-            context.removeService(bindInfo.getBinderServiceName());
-        }
-        //todo workaround until it is supported on abstract classes
-        private void recordCapabilitiesAndRequirements(OperationContext context, Resource resource) throws OperationFailedException {
-            context.deregisterCapability(MailServerDefinition.SERVER_CAPABILITY.getDynamicName(context.getCurrentAddress()));
-            ModelNode model = resource.getModel();
-            for (AttributeDefinition ad : attributes) {
-                if (ad != null && (model.hasDefined(ad.getName()) || ad.hasCapabilityRequirements())) {
-                    ad.removeCapabilityRequirements(context, resource, model.get(ad.getName()));
-                }
-            }
-        }
-
     }
 }

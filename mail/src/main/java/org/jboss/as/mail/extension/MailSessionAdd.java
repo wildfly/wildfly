@@ -23,6 +23,7 @@
 package org.jboss.as.mail.extension;
 
 import static org.jboss.as.controller.security.CredentialReference.KEY_DELIMITER;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 import static org.jboss.as.mail.extension.MailServerDefinition.OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME;
 import static org.jboss.as.mail.extension.MailSessionDefinition.ATTRIBUTES;
 import static org.jboss.as.mail.extension.MailSessionDefinition.SESSION_CAPABILITY;
@@ -38,12 +39,12 @@ import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
-import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -59,15 +60,14 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
+ * Add operation handler for the session resource.
  * @author Tomaz Cerar
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @created 27.7.11 0:55
  */
 class MailSessionAdd extends AbstractAddStepHandler {
 
-    static final MailSessionAdd INSTANCE = new MailSessionAdd();
-
-    protected MailSessionAdd() {
+    MailSessionAdd() {
         super(ATTRIBUTES);
     }
 
@@ -85,9 +85,24 @@ class MailSessionAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = context.getCurrentAddress();
-        ModelNode fullTree = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-        installRuntimeServices(context, address, fullTree);
+        ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        installRuntimeServices(context, fullModel);
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        try {
+            MailSessionRemove.removeRuntimeServices(context, resource.getModel());
+
+            for (ResourceEntry entry : resource.getChildren(MailSubsystemModel.SERVER_TYPE)) {
+                ModelNode resolvedValue = MailServerDefinition.CREDENTIAL_REFERENCE.resolveModelAttribute(context, entry.getModel());
+                if (resolvedValue.isDefined()) {
+                    rollbackCredentialStoreUpdate(MailServerDefinition.CREDENTIAL_REFERENCE, context, resolvedValue);
+                }
+            }
+        } catch (OperationFailedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private static void addCredentialStoreReference(ServerConfig serverConfig, OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder, final PathElement credRefParentAddress) throws OperationFailedException {
@@ -106,67 +121,80 @@ class MailSessionAdd extends AbstractAddStepHandler {
             ModelNode value = MailServerDefinition.CREDENTIAL_REFERENCE.resolveModelAttribute(context, filteredModelNode);
             if (value.isDefined()) {
                 serverConfig.getCredentialSourceSupplierInjector()
-                        .inject(
-                                CredentialReference.getCredentialSourceSupplier(context, MailServerDefinition.CREDENTIAL_REFERENCE, filteredModelNode, serviceBuilder, keySuffix));
+                        .inject(CredentialReference.getCredentialSourceSupplier(context, MailServerDefinition.CREDENTIAL_REFERENCE, filteredModelNode, serviceBuilder, keySuffix));
             }
         }
     }
 
-    static void installRuntimeServices(OperationContext context, PathAddress address, ModelNode fullModel) throws OperationFailedException {
-        final String jndiName = getJndiName(fullModel, context);
-        final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
-        ServiceName sessionServiceName = SESSION_CAPABILITY.getCapabilityServiceName(address);
+    static void installSessionProviderService(OperationContext context, ModelNode fullModel) throws OperationFailedException {
+        installSessionProviderService(context, context.getCurrentAddress(), fullModel);
+    }
+
+    static void installSessionProviderService(OperationContext context, PathAddress address, ModelNode fullModel) throws OperationFailedException {
+        ServiceName serviceName = SESSION_CAPABILITY.getCapabilityServiceName(address).append("provider");
+
+        ServiceBuilder<?> builder = context.getServiceTarget().addService(serviceName);
+
+        MailSessionConfig config = from(context, fullModel, builder);
+
+        addCredentialStoreReference(config.getImapServer(), context, fullModel, builder, MailSubsystemModel.IMAP_SERVER_PATH);
+        addCredentialStoreReference(config.getPop3Server(), context, fullModel, builder, MailSubsystemModel.POP3_SERVER_PATH);
+        addCredentialStoreReference(config.getSmtpServer(), context, fullModel, builder, MailSubsystemModel.SMTP_SERVER_PATH);
+        for (CustomServerConfig server : config.getCustomServers()) {
+            addCredentialStoreReference(server, context, fullModel, builder, PathElement.pathElement(MailSubsystemModel.CUSTOM_SERVER_PATH.getKey(), server.getProtocol()));
+        }
+        Service providerService = new ConfigurableSessionProviderService(builder.provides(serviceName), config);
+        builder.setInstance(providerService).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+    }
+
+    static void installBinderService(OperationContext context, ModelNode fullModel) throws OperationFailedException {
+        String jndiName = getJndiName(fullModel, context);
+
+        ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        String bindName = bindInfo.getBindName();
+        BinderService service = new BinderService(bindName);
+        ServiceBuilder<?> builder = context.getServiceTarget().addService(bindInfo.getBinderServiceName(), service).addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(bindName));
+        Supplier<SessionProvider> provider = builder.requires(SESSION_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress()).append("provider"));
+        service.getManagedObjectInjector().inject(new MailSessionManagedReferenceFactory(provider));
+        builder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
+        builder.addListener(new LifecycleListener() {
+            private volatile boolean bound;
+            @Override
+            public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                switch (event) {
+                    case UP: {
+                        MailLogger.ROOT_LOGGER.boundMailSession(jndiName);
+                        bound = true;
+                        break;
+                    }
+                    case DOWN: {
+                        if (bound) {
+                            MailLogger.ROOT_LOGGER.unboundMailSession(jndiName);
+                        }
+                        break;
+                    }
+                    case REMOVED: {
+                        MailLogger.ROOT_LOGGER.removedMailSession(jndiName);
+                        break;
+                    }
+                }
+            }
+        });
+        builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+    }
+
+    static void installRuntimeServices(OperationContext context, ModelNode fullModel) throws OperationFailedException {
+        installSessionProviderService(context, fullModel);
+
+        ServiceName sessionServiceName = SESSION_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress());
         ServiceName providerServiceName = sessionServiceName.append("provider");
 
-        ServiceBuilder<?> providerBuilder = serviceTarget.addService(providerServiceName);
-
-        MailSessionConfig config = from(context, fullModel, providerBuilder);
-
-        addCredentialStoreReference(config.getImapServer(), context, fullModel, providerBuilder, MailSubsystemModel.IMAP_SERVER_PATH);
-        addCredentialStoreReference(config.getPop3Server(), context, fullModel, providerBuilder, MailSubsystemModel.POP3_SERVER_PATH);
-        addCredentialStoreReference(config.getSmtpServer(), context, fullModel, providerBuilder, MailSubsystemModel.SMTP_SERVER_PATH);
-        for (CustomServerConfig server : config.getCustomServers()) {
-            addCredentialStoreReference(server, context, fullModel, providerBuilder, PathElement.pathElement(MailSubsystemModel.CUSTOM_SERVER_PATH.getKey(), server.getProtocol()));
-        }
-        Service providerService = new ConfigurableSessionProviderService(providerBuilder.provides(providerServiceName), config);
-        providerBuilder.setInstance(providerService).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-
         // TODO Consider removing this service (and either changing or removing its corresponding capability) - it is never referenced.
-        CapabilityServiceBuilder<?> mailSessionBuilder = serviceTarget.addCapability(SESSION_CAPABILITY);
+        CapabilityServiceBuilder<?> mailSessionBuilder = context.getCapabilityServiceTarget().addCapability(SESSION_CAPABILITY);
         Service mailService = new MailSessionService(mailSessionBuilder.provides(sessionServiceName), mailSessionBuilder.requires(providerServiceName));
         mailSessionBuilder.setInstance(mailService).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-        final BinderService binderService = new BinderService(bindInfo.getBindName());
-        ServiceBuilder<?> binderBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService);
-        Supplier<SessionProvider> providerSupplier = binderBuilder.requires(providerServiceName);
-        binderService.getManagedObjectInjector().inject(new MailSessionManagedReferenceFactory(providerSupplier));
-        binderBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new LifecycleListener() {
-                    private volatile boolean bound;
-                    @Override
-                    public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
-                        switch (event) {
-                            case UP: {
-                                MailLogger.ROOT_LOGGER.boundMailSession(jndiName);
-                                bound = true;
-                                break;
-                            }
-                            case DOWN: {
-                                if (bound) {
-                                    MailLogger.ROOT_LOGGER.unboundMailSession(jndiName);
-                                }
-                                break;
-                            }
-                            case REMOVED: {
-                                MailLogger.ROOT_LOGGER.removedMailSession(jndiName);
-                                break;
-                            }
-                        }
-                    }
-                });
-        binderBuilder
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        installBinderService(context, fullModel);
     }
 
     /**
