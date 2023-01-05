@@ -39,9 +39,8 @@ import org.jboss.dmr.ModelType;
  */
 public class JcaArchiveValidationDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_ARCHIVE_VALIDATION = PathElement.pathElement(ARCHIVE_VALIDATION, ARCHIVE_VALIDATION);
-    static final JcaArchiveValidationDefinition INSTANCE = new JcaArchiveValidationDefinition();
 
-    private JcaArchiveValidationDefinition() {
+    JcaArchiveValidationDefinition() {
         super(PATH_ARCHIVE_VALIDATION,
                 JcaExtension.getResourceDescriptionResolver(PATH_ARCHIVE_VALIDATION.getKey()),
                 ArchiveValidationAdd.INSTANCE,

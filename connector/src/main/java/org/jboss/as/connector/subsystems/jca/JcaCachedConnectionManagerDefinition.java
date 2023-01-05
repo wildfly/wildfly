@@ -44,9 +44,8 @@ import org.jboss.dmr.ModelType;
  */
 public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_CACHED_CONNECTION_MANAGER = PathElement.pathElement(CACHED_CONNECTION_MANAGER, CACHED_CONNECTION_MANAGER);
-    static final JcaCachedConnectionManagerDefinition INSTANCE = new JcaCachedConnectionManagerDefinition();
 
-    private JcaCachedConnectionManagerDefinition() {
+    JcaCachedConnectionManagerDefinition() {
         super(PATH_CACHED_CONNECTION_MANAGER,
                 JcaExtension.getResourceDescriptionResolver(PATH_CACHED_CONNECTION_MANAGER.getKey()),
                  CachedConnectionManagerAdd.INSTANCE,
