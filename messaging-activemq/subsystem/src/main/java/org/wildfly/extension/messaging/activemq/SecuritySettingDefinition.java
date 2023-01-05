@@ -41,13 +41,7 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
  */
 public class SecuritySettingDefinition extends PersistentResourceDefinition {
 
-    private static final PersistentResourceDefinition[] CHILDREN = {
-            SecurityRoleDefinition.INSTANCE
-    };
-
-    static final SecuritySettingDefinition INSTANCE = new SecuritySettingDefinition();
-
-    private SecuritySettingDefinition() {
+    SecuritySettingDefinition() {
         super(SECURITY_SETTING_PATH,
                 MessagingExtension.getResourceDescriptionResolver(false, SECURITY_SETTING_PATH.getKey()),
                 SecuritySettingAdd.INSTANCE,
@@ -61,7 +55,7 @@ public class SecuritySettingDefinition extends PersistentResourceDefinition {
 
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
-        return Arrays.asList(CHILDREN);
+        return List.of(new SecurityRoleDefinition(false));
     }
 
     @Override

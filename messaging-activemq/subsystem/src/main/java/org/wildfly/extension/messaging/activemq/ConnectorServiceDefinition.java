@@ -48,9 +48,7 @@ public class ConnectorServiceDefinition extends PersistentResourceDefinition {
             CommonAttributes.FACTORY_CLASS,
             CommonAttributes.PARAMS };
 
-    static final ConnectorServiceDefinition INSTANCE = new ConnectorServiceDefinition();
-
-    private ConnectorServiceDefinition() {
+    ConnectorServiceDefinition() {
         super(MessagingExtension.CONNECTOR_SERVICE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(false, CommonAttributes.CONNECTOR_SERVICE),
                 new ConnectorServiceAddHandler(ATTRIBUTES),

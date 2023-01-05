@@ -248,9 +248,7 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             PAUSE, RESUME
     };
 
-    public static final JMSBridgeDefinition INSTANCE = new JMSBridgeDefinition();
-
-    private JMSBridgeDefinition() {
+    public JMSBridgeDefinition() {
         super(MessagingExtension.JMS_BRIDGE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.JMS_BRIDGE),
                 JMSBridgeAdd.INSTANCE,

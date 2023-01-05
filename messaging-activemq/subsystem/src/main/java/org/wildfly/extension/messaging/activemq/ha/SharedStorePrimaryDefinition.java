@@ -48,11 +48,7 @@ public class SharedStorePrimaryDefinition extends PersistentResourceDefinition {
             FAILOVER_ON_SERVER_SHUTDOWN
     ));
 
-    public static final SharedStorePrimaryDefinition INSTANCE = new SharedStorePrimaryDefinition(MessagingExtension.SHARED_STORE_PRIMARY_PATH, false);
-    public static final SharedStorePrimaryDefinition CONFIGURATION_INSTANCE = new SharedStorePrimaryDefinition(MessagingExtension.CONFIGURATION_PRIMARY_PATH, true);
-
-
-    private SharedStorePrimaryDefinition(PathElement path, boolean allowSibling) {
+    public SharedStorePrimaryDefinition(PathElement path, boolean allowSibling) {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(path.getKey(), allowSibling, ATTRIBUTES),

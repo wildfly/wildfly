@@ -998,27 +998,27 @@ public class ServerDefinition extends PersistentResourceDefinition {
         List<PersistentResourceDefinition> children = new ArrayList<>();
         // Static resources
         children.addAll(Arrays.asList(// HA policy
-                LiveOnlyDefinition.INSTANCE,
-                registerRuntimeOnly ? ReplicationPrimaryDefinition.INSTANCE : ReplicationPrimaryDefinition.HC_INSTANCE,
-                registerRuntimeOnly ? ReplicationSecondaryDefinition.INSTANCE : ReplicationSecondaryDefinition.HC_INSTANCE,
-                ReplicationColocatedDefinition.INSTANCE,
-                SharedStorePrimaryDefinition.INSTANCE,
-                SharedStoreSecondaryDefinition.INSTANCE,
-                SharedStoreColocatedDefinition.INSTANCE,
+                new LiveOnlyDefinition(),
+                new ReplicationPrimaryDefinition(MessagingExtension.REPLICATION_PRIMARY_PATH, false, registerRuntimeOnly),
+                new ReplicationSecondaryDefinition(MessagingExtension.REPLICATION_SECONDARY_PATH, false, registerRuntimeOnly),
+                new ReplicationColocatedDefinition(),
+                new SharedStorePrimaryDefinition(MessagingExtension.SHARED_STORE_PRIMARY_PATH, false),
+                new SharedStoreSecondaryDefinition(MessagingExtension.SHARED_STORE_SECONDARY_PATH, false),
+                new SharedStoreColocatedDefinition(),
 
-                AddressSettingDefinition.INSTANCE,
-                SecuritySettingDefinition.INSTANCE,
+                new AddressSettingDefinition(),
+                new SecuritySettingDefinition(),
 
                 // Acceptors
-                HTTPAcceptorDefinition.INSTANCE,
+                new HTTPAcceptorDefinition(),
 
-                DivertDefinition.INSTANCE,
-                ConnectorServiceDefinition.INSTANCE,
-                GroupingHandlerDefinition.INSTANCE,
+                new DivertDefinition(false),
+                new ConnectorServiceDefinition(),
+                new GroupingHandlerDefinition(),
 
                 // Jakarta Messaging resources
-                LegacyConnectionFactoryDefinition.INSTANCE,
-                PooledConnectionFactoryDefinition.INSTANCE));
+                new LegacyConnectionFactoryDefinition(),
+                new PooledConnectionFactoryDefinition(false)));
 
         // Dynamic resources (depending on registerRuntimeOnly)
         // acceptors
@@ -1058,7 +1058,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
         // runtime queues and core-address are only registered when it is ok to register runtime resource (ie they are not registered on HC).
         if (registerRuntimeOnly) {
             resourceRegistration.registerSubModel(new QueueDefinition(registerRuntimeOnly, MessagingExtension.RUNTIME_QUEUE_PATH));
-            resourceRegistration.registerSubModel(CoreAddressDefinition.INSTANCE);
+            resourceRegistration.registerSubModel(new CoreAddressDefinition());
         }
     }
 
