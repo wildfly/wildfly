@@ -346,22 +346,22 @@ public class MessagingSubsystemParser_5_0 extends PersistentResourceXMLParser {
                                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS)))
                                 .addChild(
-                                        builder(PathDefinition.BINDINGS_INSTANCE.getPathElement())
+                                        builder(MessagingExtension.BINDINGS_DIRECTORY_PATH)
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.BINDINGS_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
                                 .addChild(
-                                        builder(PathDefinition.JOURNAL_INSTANCE.getPathElement())
+                                        builder(MessagingExtension.JOURNAL_DIRECTORY_PATH)
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.JOURNAL_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
                                 .addChild(
-                                        builder(PathDefinition.LARGE_MESSAGES_INSTANCE.getPathElement())
+                                        builder(MessagingExtension.LARGE_MESSAGES_DIRECTORY_PATH)
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.LARGE_MESSAGES_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
                                 .addChild(
-                                        builder(PathDefinition.PAGING_INSTANCE.getPathElement())
+                                        builder(MessagingExtension.PAGING_DIRECTORY_PATH)
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.PAGING_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))

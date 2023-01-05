@@ -69,6 +69,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SOCKET_B
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -377,13 +378,8 @@ public class MessagingExtension implements Extension {
         // ActiveMQ Servers
         final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(broadcastCommandDispatcherFactoryInstaller, registerRuntimeOnly));
 
-        for (PathDefinition path : new PathDefinition[] {
-                PathDefinition.JOURNAL_INSTANCE,
-                PathDefinition.BINDINGS_INSTANCE,
-                PathDefinition.LARGE_MESSAGES_INSTANCE,
-                PathDefinition.PAGING_INSTANCE
-        }) {
-            ManagementResourceRegistration pathRegistry = server.registerSubModel(path);
+        for (PathElement path : List.of(JOURNAL_DIRECTORY_PATH, BINDINGS_DIRECTORY_PATH, LARGE_MESSAGES_DIRECTORY_PATH, PAGING_DIRECTORY_PATH)) {
+            ManagementResourceRegistration pathRegistry = server.registerSubModel(new PathDefinition(path));
             PathDefinition.registerResolveOperationHandler(context, pathRegistry);
         }
 
