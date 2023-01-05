@@ -94,10 +94,9 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
             .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE, NON_PORTABLE_MODE_ATTRIBUTE, DEVELOPMENT_MODE_ATTRIBUTE, THREAD_POOL_SIZE_ATTRIBUTE };
-    static final WeldResourceDefinition INSTANCE = new WeldResourceDefinition();
 
-    private WeldResourceDefinition() {
-        super( new SimpleResourceDefinition.Parameters(WeldExtension.PATH_SUBSYSTEM, WeldExtension.getResourceDescriptionResolver())
+    WeldResourceDefinition() {
+        super(new SimpleResourceDefinition.Parameters(WeldExtension.PATH_SUBSYSTEM, WeldExtension.getResourceDescriptionResolver())
                 .setAddHandler(new WeldSubsystemAdd(ATTRIBUTES))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(WELD_CAPABILITY)
