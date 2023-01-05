@@ -1172,4 +1172,12 @@
         <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
         <vulnerabilityName>CVE-2022-1471</vulnerabilityName>
     </suppress>
+	<!-- Wildfly uses json-patch from java-json-tools/json-patch. CVE is about Starcounter-Jack/JSON-Patch -->
+	<suppress>
+		<notes><![CDATA[
+   file name: json-patch-1.9.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/com\.github\.fge/json\-patch@.*$</packageUrl>
+		<cve>cpe:/a:json-patch_project:json-patch</cve>
+	</suppress>
 </suppressions>
