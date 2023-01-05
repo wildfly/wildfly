@@ -22,7 +22,6 @@
 
 package org.wildfly.iiop.openjdk;
 
-import static org.wildfly.iiop.openjdk.Capabilities.IIOP_CAPABILITY;
 import static org.wildfly.iiop.openjdk.Capabilities.LEGACY_SECURITY;
 
 import java.util.ArrayList;
@@ -440,9 +439,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
         ALL_ATTRIBUTES.addAll(IOR_ATTRIBUTES);
     }
 
-    public static final IIOPRootDefinition INSTANCE = new IIOPRootDefinition();
-
-    private IIOPRootDefinition() {
+    IIOPRootDefinition() {
         super(new SimpleResourceDefinition.Parameters(IIOPExtension.PATH_SUBSYSTEM, IIOPExtension.getResourceDescriptionResolver())
                 .setAddHandler(new IIOPSubsystemAdd(ALL_ATTRIBUTES))
                 .setRemoveHandler(new ReloadRequiredRemoveStepHandler() {
