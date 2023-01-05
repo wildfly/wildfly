@@ -146,10 +146,6 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        if (deployed) {
-            resourceRegistration.registerSubModel(ConnectionPropertyDefinition.DEPLOYED_INSTANCE);
-        } else {
-            resourceRegistration.registerSubModel(ConnectionPropertyDefinition.INSTANCE);
-        }
+        resourceRegistration.registerSubModel(new ConnectionPropertyDefinition(this.deployed));
     }
 }

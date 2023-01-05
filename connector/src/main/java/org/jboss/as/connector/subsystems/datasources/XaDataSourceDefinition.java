@@ -140,10 +140,6 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        if (deployed) {
-            resourceRegistration.registerSubModel(XaDataSourcePropertyDefinition.DEPLOYED_INSTANCE);
-        } else {
-            resourceRegistration.registerSubModel(XaDataSourcePropertyDefinition.INSTANCE);
-        }
+        resourceRegistration.registerSubModel(new XaDataSourcePropertyDefinition(this.deployed));
     }
 }

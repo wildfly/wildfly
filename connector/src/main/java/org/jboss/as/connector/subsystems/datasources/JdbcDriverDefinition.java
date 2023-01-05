@@ -42,12 +42,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class JdbcDriverDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_DRIVER = PathElement.pathElement(JDBC_DRIVER_NAME);
-    static final JdbcDriverDefinition INSTANCE = new JdbcDriverDefinition();
-
 
     private final List<AccessConstraintDefinition> accessConstraints;
 
-    private JdbcDriverDefinition() {
+    JdbcDriverDefinition() {
         super(PATH_DRIVER,
                 DataSourcesExtension.getResourceDescriptionResolver(JDBC_DRIVER_NAME),
                 JdbcDriverAdd.INSTANCE,
