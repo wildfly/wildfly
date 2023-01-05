@@ -70,10 +70,7 @@ public class JPADefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(ExtendedPersistenceInheritance.DEEP.toString()))
                     .build();
 
-    public static final JPADefinition INSTANCE = new JPADefinition(true);
-    public static final JPADefinition DEPLOYMENT_INSTANCE = new JPADefinition(false);
-
-    private JPADefinition(boolean feature) {
+    JPADefinition(boolean feature) {
         super(getParameters(feature));
     }
 
