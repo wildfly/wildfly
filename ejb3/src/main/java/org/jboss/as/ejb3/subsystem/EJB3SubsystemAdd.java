@@ -153,12 +153,13 @@ import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
 import org.wildfly.clustering.registry.Registry;
@@ -337,8 +338,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         this.denyAccessByDefault.set(defaultMissingMethodValue);
 
         final ModelNode defaultStatefulSessionTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT.resolveModelAttribute(context, model);
-        final ValueService<AtomicLong> defaultStatefulSessionTimeoutService = new ValueService<>(new ImmediateValue<>(
-                defaultStatefulSessionTimeout.isDefined() ? new AtomicLong(defaultStatefulSessionTimeout.asLong()) : DefaultStatefulBeanSessionTimeoutWriteHandler.INITIAL_TIMEOUT_VALUE));
+        final AtomicLong defaultTimeout = defaultStatefulSessionTimeout.isDefined() ? new AtomicLong(defaultStatefulSessionTimeout.asLong()) : DefaultStatefulBeanSessionTimeoutWriteHandler.INITIAL_TIMEOUT_VALUE;
+        final ValueService defaultStatefulSessionTimeoutService = new ValueService(defaultTimeout);
         context.getServiceTarget().addService(DefaultStatefulBeanSessionTimeoutWriteHandler.SERVICE_NAME, defaultStatefulSessionTimeoutService).install();
 
         final boolean defaultMdbPoolAvailable = model.hasDefined(DEFAULT_MDB_INSTANCE_POOL);
@@ -610,6 +611,25 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceBuilder<?> builder = target.addService(SingletonBarrierService.SERVICE_NAME);
             Supplier<SingletonPolicy> policy = builder.requires(context.getCapabilityServiceName(SingletonDefaultRequirement.POLICY.getName(), SingletonDefaultRequirement.POLICY.getType()));
             builder.setInstance(new SingletonBarrierService(policy)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        }
+    }
+
+    private static final class ValueService implements Service<AtomicLong> {
+        private final AtomicLong value;
+        public ValueService(final AtomicLong value) {
+            this.value = value;
+        }
+
+        public void start(final StartContext context) {
+            // noop
+        }
+
+        public void stop(final StopContext context) {
+            // noop
+        }
+
+        public AtomicLong getValue() throws IllegalStateException {
+            return value;
         }
     }
 }

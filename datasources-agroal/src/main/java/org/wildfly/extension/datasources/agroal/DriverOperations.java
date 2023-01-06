@@ -30,8 +30,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.datasources.agroal.logging.AgroalLogger;
 
 import java.lang.reflect.Method;
@@ -102,7 +102,17 @@ class DriverOperations {
             boolean classDefined = DriverDefinition.CLASS_ATTRIBUTE.resolveModelAttribute(context, model).isDefined();
             String className = classDefined ? DriverDefinition.CLASS_ATTRIBUTE.resolveModelAttribute(context, model).asString() : null;
 
-            Service<?> driverService = new ValueService<>(new Value<Class<?>>() {
+            Service<?> driverService = new Service<Class<?>>() {
+                @Override
+                public void start(final StartContext startContext) {
+                    // noop
+                }
+
+                @Override
+                public void stop(final StopContext stopContext) {
+                    // noop
+                }
+
                 @Override
                 public Class<?> getValue() throws IllegalStateException, IllegalArgumentException {
                     if (className != null) {
@@ -111,7 +121,7 @@ class DriverOperations {
                         return loadDriver(driverName, moduleName);
                     }
                 }
-            });
+            };
 
             context.getCapabilityServiceTarget().addCapability(DriverDefinition.AGROAL_DRIVER_CAPABILITY.fromBaseCapability(driverName)).setInstance(driverService).install();
         }
