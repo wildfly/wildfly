@@ -100,7 +100,8 @@ public class DatabaseTimerServiceMultiNodeTestCase {
 
             if(server == null) {
                 //we need a TCP server that can be shared between the two servers
-                server = Server.createTcpServer().start();
+                //To allow remote connections, start the TCP server using the option -tcpAllowOthers
+                server = Server.createTcpServer("-tcpAllowOthers").start();
             }
 
             final ModelNode compositeOp = new ModelNode();

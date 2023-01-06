@@ -38,6 +38,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
@@ -128,7 +130,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * Holds the {@link java.util.concurrent.Future} of each of the timer tasks that have been scheduled
      */
-    private final Map<String, java.util.TimerTask> scheduledTimerFutures = new HashMap<String, java.util.TimerTask>();
+    private final ConcurrentMap<String, java.util.TimerTask> scheduledTimerFutures = new ConcurrentHashMap<>();
 
     /**
      * Key that is used to store timers that are waiting on transaction completion in the transaction local

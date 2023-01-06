@@ -100,7 +100,7 @@
         <dependency>
             <!-- This is only required for the InfinispanExtension to initialize Netty's InternalLoggerFactory -->
             <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <artifactId>netty-common</artifactId>
         </dependency>
         <dependency>
             <groupId>io.reactivex.rxjava3</groupId>

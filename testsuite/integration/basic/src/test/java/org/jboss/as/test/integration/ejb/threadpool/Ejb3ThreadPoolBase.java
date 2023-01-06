@@ -70,9 +70,10 @@ public class Ejb3ThreadPoolBase {
     void waitUntilThreadPoolProcessedAtLeast(int tasks, long timeoutInMillis) throws Exception {
         long startTime = System.currentTimeMillis();
         ModelNode readTasks = Util.getReadAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "completed-task-count");
-        while (executeOperation(readTasks).asInt() < tasks) {
+        int actualTaskCount;
+        while ((actualTaskCount = executeOperation(readTasks).asInt()) < tasks) {
             if (System.currentTimeMillis() - startTime > timeoutInMillis) {
-                Assert.fail("There are not enough tasks (expected: " + tasks + ") processed by thread pool in timeout " + timeoutInMillis);
+                Assert.fail("There are not enough tasks (expected: " + tasks + ", actual: " + actualTaskCount + ") processed by thread pool in timeout " + timeoutInMillis);
             }
             Thread.sleep(500);
         }

@@ -36,7 +36,18 @@
     <dependencies>
         <!-- io.undertow.core is required only if http-acceptor are used -->
         <module name="io.undertow.core" optional="true" />
-        <module name="io.netty" />
+        <!--<module name="io.netty"/>-->
+        <module name="io.netty.netty-buffer"/>
+        <module name="io.netty.netty-transport"/>
+        <module name="io.netty.netty-handler"/>
+        <module name="io.netty.netty-handler-proxy"/>
+        <module name="io.netty.netty-codec"/>
+        <module name="io.netty.netty-codec-socks"/>
+        <module name="io.netty.netty-common"/>
+        <module name="io.netty.netty-resolver"/>
+        <module name="io.netty.netty-transport-native-epoll"/>
+        <module name="io.netty.netty-transport-native-kqueue"/>
+        <module name="io.netty.netty-codec-http"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.jms.api"/>

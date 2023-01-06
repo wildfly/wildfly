@@ -22,18 +22,20 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="io.netty">
+<module xmlns="urn:jboss:module:1.9" name="io.netty.netty-common">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${io.netty:netty-all}"/>
+        <artifact name="${io.netty:netty-common}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
-        <module name="sun.jdk"/>
-        <module name="org.javassist" optional="true"/>
+        <module name="java.logging"/>
+        <module name="jdk.unsupported"/>
+        <module name="io.netty.netty-transport-native-unix-common"/>
+        <module name="io.netty.netty-transport-native-epoll"/>
+        <module name="io.netty.netty-transport-native-kqueue"/>
     </dependencies>
 </module>

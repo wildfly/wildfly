@@ -396,7 +396,7 @@ public class TimerImpl implements Timer {
      * @return
      */
     public boolean isActive() {
-        return timerService.isStarted() && !isCanceled() && !isExpired() && (timerService.isScheduled(getId()) || timerState == TimerState.CREATED);
+        return timerService.isStarted() && !isCanceled() && !isExpired() && (timerState == TimerState.CREATED || timerService.isScheduled(getId()));
     }
 
     /**

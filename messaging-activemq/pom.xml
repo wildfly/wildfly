@@ -41,6 +41,7 @@
     <name>WildFly: Messaging Subsystem With ActiveMQ Artemis</name>
 
     <dependencies>
+
         <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
@@ -135,6 +136,17 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-ra</artifactId>
+        </dependency>
+
+        <!-- This is only required for the MessagingExtension to initialize Netty's InternalLoggerFactory -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+        </dependency>
+        <!-- This is only required for the HTTPUpgradeService to initialize Netty's channel -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
         </dependency>
 
         <dependency>

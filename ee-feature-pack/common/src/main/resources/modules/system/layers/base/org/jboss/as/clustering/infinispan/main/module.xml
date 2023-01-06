@@ -39,7 +39,18 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <!-- The io.netty module is only require to initialize Netty's InternalLoggingFactory -->
-        <module name="io.netty"/>
+        <!--<module name="io.netty"/>-->
+        <module name="io.netty.netty-buffer"/>
+        <module name="io.netty.netty-transport"/>
+        <module name="io.netty.netty-handler"/>
+        <module name="io.netty.netty-handler-proxy"/>
+        <module name="io.netty.netty-codec"/>
+        <module name="io.netty.netty-codec-socks"/>
+        <module name="io.netty.netty-common"/>
+        <module name="io.netty.netty-resolver"/>
+        <module name="io.netty.netty-transport-native-epoll"/>
+        <module name="io.netty.netty-transport-native-kqueue"/>
+        <module name="io.netty.netty-codec-http"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="net.jcip"/>
         <module name="org.infinispan" services="import"/>
