@@ -22,13 +22,14 @@
 
 package org.jboss.as.txn.service;
 
-import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -49,7 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Thomas.Diesler@jboss.com
  * @since 29-Oct-2010
  */
-public class TransactionManagerService extends AbstractService<TransactionManager> {
+public class TransactionManagerService implements Service<TransactionManager> {
 
     /** @deprecated Use the "org.wildfly.transactions.global-default-local-provider" capability to confirm existence of a local provider
      *              and org.wildfly.transaction.client.ContextTransactionManager to obtain a TransactionManager reference. */
@@ -100,6 +101,11 @@ public class TransactionManagerService extends AbstractService<TransactionManage
                 }
             }
         });
+    }
+
+    @Override
+    public void stop(final StopContext stopContext) {
+        // noop
     }
 
     @Override

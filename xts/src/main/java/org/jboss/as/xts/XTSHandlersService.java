@@ -22,7 +22,7 @@
 
 package org.jboss.as.xts;
 
-import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
@@ -36,7 +36,7 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
-public class XTSHandlersService extends AbstractService<UnifiedHandlerChainMetaData> {
+public class XTSHandlersService implements Service<UnifiedHandlerChainMetaData> {
     private final boolean isDefaultContextPropagation;
     private volatile UnifiedHandlerChainMetaData handlerChainMetaData;
 
