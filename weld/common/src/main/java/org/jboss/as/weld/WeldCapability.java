@@ -19,8 +19,8 @@
 package org.jboss.as.weld;
 
 import java.util.function.Supplier;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Extension;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.inject.Injector;

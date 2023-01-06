@@ -21,7 +21,7 @@
  */
 package org.jboss.as.weld.spi;
 
-import javax.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.inject.spi.InjectionTarget;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.weld.manager.api.WeldInjectionTarget;
