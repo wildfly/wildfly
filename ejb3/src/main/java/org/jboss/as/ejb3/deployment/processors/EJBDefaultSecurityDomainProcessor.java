@@ -39,8 +39,12 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.security.SecurityMetaData;
+import org.jboss.as.server.security.VirtualDomainMarkerUtility;
+import org.jboss.as.server.security.VirtualDomainMetaData;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.security.auth.server.SecurityDomain;
 
 import java.util.Collection;
@@ -127,7 +131,14 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                             throw EjbLogger.ROOT_LOGGER.multipleSecurityDomainsDetected();
                         }
                     } else if (definedSecurityDomain != null) {
-                        legacyDomainDefined = true;
+                        if (isVirtualDomain(definedSecurityDomain, phaseContext)) {
+                            elytronDomainServiceName = VirtualDomainMarkerUtility.virtualDomainName(definedSecurityDomain);
+                        }
+                        if (elytronDomainServiceName != null) {
+                            selectedElytronDomainName = definedSecurityDomain;
+                        } else {
+                            legacyDomainDefined = true;
+                        }
                     }
                 }
             }
@@ -137,12 +148,23 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
              * We only need to fall into the default handling if at least one Jakarta Enterprise Beans Component has no defined
              * security domain.
              */
-            if (defaultRequired && selectedElytronDomainName == null && defaultDomainMapping != null) {
-                selectedElytronDomainName = defaultSecurityDomain;
-                selectedElytronDomainConfig = defaultDomainMapping;
-                elytronDomainServiceName = defaultElytronDomainServiceName;
-                // Only apply a default domain to the whole deployment if no legacy domain was defined.
-                useDefaultElytronMapping = !legacyDomainDefined;
+            if (defaultRequired && selectedElytronDomainName == null) {
+                DeploymentUnit topLevelDeployment = toRoot(deploymentUnit);
+                final SecurityMetaData topLevelSecurityMetaData = topLevelDeployment.getAttachment(ATTACHMENT_KEY);
+                ServiceName topLevelElytronDomainServiceName = topLevelSecurityMetaData != null ? topLevelSecurityMetaData.getSecurityDomain() : null;
+                if (topLevelElytronDomainServiceName != null) {
+                    // use the ServiceName from the top level deployment if the security domain has not been explicitly defined
+                    elytronDomainServiceName = topLevelElytronDomainServiceName;
+                    useDefaultElytronMapping = true;
+                } else if (defaultDomainMapping != null) {
+                    selectedElytronDomainName = defaultSecurityDomain;
+                    selectedElytronDomainConfig = defaultDomainMapping;
+                    elytronDomainServiceName = defaultElytronDomainServiceName;
+                    // Only apply a default domain to the whole deployment if no legacy domain was defined.
+                    useDefaultElytronMapping = !legacyDomainDefined;
+                } else {
+                    useDefaultElytronMapping = false;
+                }
             } else {
                 useDefaultElytronMapping = false;
             }
@@ -196,7 +218,27 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                         }
                     }
                 }
+            } else if (elytronDomainServiceName != null) {
+                // virtual domain
+                final EJBSecurityDomainService ejbSecurityDomainService = new EJBSecurityDomainService(deploymentUnit);
+
+                final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(ejbSecurityDomainServiceName, ejbSecurityDomainService)
+                        .addDependency(elytronDomainServiceName, SecurityDomain.class, ejbSecurityDomainService.getSecurityDomainInjector());
+
+                builder.install();
+
+                for (final ComponentDescription componentDescription : componentDescriptions) {
+                    if (componentDescription instanceof EJBComponentDescription) {
+                        EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
+                        ejbComponentDescription.setSecurityDomainServiceName(elytronDomainServiceName);
+                        ejbComponentDescription.setOutflowSecurityDomainsConfigured(this);
+                        componentDescription.getConfigurators()
+                                .add((context, description, configuration) -> configuration.getCreateDependencies()
+                                        .add((serviceBuilder, service) -> serviceBuilder.requires(ejbSecurityDomainServiceName)));
+                    }
+                }
             }
+
         } else {
             // We will use the defined Elytron domain for all Jakarta Enterprise Beans and ignore individual configuration.
             // Bean level activation remains dependent on configuration of bean - i.e. does it actually need security?
@@ -233,5 +275,33 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
     @Override
     public boolean getAsBoolean() {
         return this.outflowSecurityDomains.iterator().hasNext();
+    }
+
+    private <T> ServiceController<T> getService(ServiceRegistry serviceRegistry, ServiceName serviceName, Class<T> serviceType) {
+        ServiceController<?> controller = serviceRegistry.getService(serviceName);
+        return (ServiceController<T>) controller;
+    }
+
+    private boolean isVirtualDomain(String definedSecurityDomain, DeploymentPhaseContext phaseContext) {
+        ServiceName virtualDomainMetaDataName = VirtualDomainMarkerUtility.virtualDomainMetaDataName(phaseContext, definedSecurityDomain);
+        ServiceController<VirtualDomainMetaData> serviceContainer = getService(phaseContext.getServiceRegistry(), virtualDomainMetaDataName, VirtualDomainMetaData.class);
+        if (serviceContainer != null) {
+            ServiceController.State serviceState = serviceContainer.getState();
+            if (serviceState == ServiceController.State.UP) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static DeploymentUnit toRoot(final DeploymentUnit deploymentUnit) {
+        DeploymentUnit result = deploymentUnit;
+        DeploymentUnit parent = result.getParent();
+        while (parent != null) {
+            result = parent;
+            parent = result.getParent();
+        }
+
+        return result;
     }
 }

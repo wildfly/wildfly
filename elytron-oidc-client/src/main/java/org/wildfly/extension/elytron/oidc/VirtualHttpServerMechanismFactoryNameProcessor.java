@@ -18,6 +18,7 @@ package org.wildfly.extension.elytron.oidc;
 
 import static org.jboss.as.server.security.SecurityMetaData.ATTACHMENT_KEY;
 import static org.jboss.as.server.security.VirtualDomainMarkerUtility.virtualDomainName;
+import static org.jboss.as.server.security.VirtualDomainUtil.setTopLevelDeploymentSecurityMetaData;
 import static org.jboss.as.web.common.VirtualHttpServerMechanismFactoryMarkerUtility.isVirtualMechanismFactoryRequired;
 import static org.jboss.as.web.common.VirtualHttpServerMechanismFactoryMarkerUtility.virtualMechanismFactoryName;
 
@@ -27,6 +28,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.security.SecurityMetaData;
 import org.jboss.as.web.common.AdvancedSecurityMetaData;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * A {@code DeploymentUnitProcessor} to set the {@code ServiceName} of any virtual HTTP server mechanism factory to be used
@@ -43,8 +45,11 @@ public class VirtualHttpServerMechanismFactoryNameProcessor implements Deploymen
         if (securityMetaData != null && isVirtualMechanismFactoryRequired(deploymentUnit)) {
             AdvancedSecurityMetaData advancedSecurityMetaData = new AdvancedSecurityMetaData();
             advancedSecurityMetaData.setHttpServerAuthenticationMechanismFactory(virtualMechanismFactoryName(deploymentUnit));
-            advancedSecurityMetaData.setSecurityDomain(virtualDomainName(deploymentUnit)); // virtual mechanism factory implies virtual security domain
+            ServiceName virtualDomainName = virtualDomainName(deploymentUnit);
+            advancedSecurityMetaData.setSecurityDomain(virtualDomainName); // virtual mechanism factory implies virtual security domain
             deploymentUnit.putAttachment(ATTACHMENT_KEY, advancedSecurityMetaData);
+            setTopLevelDeploymentSecurityMetaData(deploymentUnit, virtualDomainName);
         }
     }
+
 }
