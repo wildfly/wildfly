@@ -92,7 +92,8 @@ public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandl
         if (updated && (this.handler != null)) {
             PathAddress address = context.getCurrentAddress();
             if (context.isResourceServiceRestartAllowed() && this.getAttributeDefinition(attributeName).getFlags().contains(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES) && context.markResourceRestarted(address, this.handler)) {
-                this.restartServices(context);
+                this.handler.removeServices(context, context.getOriginalRootResource().navigate(context.getCurrentAddress()).getModel());
+                this.handler.installServices(context, context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel());
                 // Returning false prevents going into reload required state
                 return false;
             }
@@ -104,12 +105,8 @@ public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandl
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode resolvedValue, Void handback) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         if (context.isResourceServiceRestartAllowed() && this.getAttributeDefinition(attributeName).getFlags().contains(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES) && context.revertResourceRestarted(address, this.handler)) {
-            this.restartServices(context);
+            this.handler.removeServices(context, context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel());
+            this.handler.installServices(context, context.getOriginalRootResource().navigate(context.getCurrentAddress()).getModel());
         }
-    }
-
-    private void restartServices(OperationContext context) throws OperationFailedException {
-        this.handler.removeServices(context, context.getOriginalRootResource().navigate(context.getCurrentAddress()).getModel());
-        this.handler.installServices(context, context.readResource(PathAddress.EMPTY_ADDRESS).getModel());
     }
 }
