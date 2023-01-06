@@ -91,8 +91,6 @@ import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
 @SuppressWarnings("deprecation")
 public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
 
-    public static final DeploymentRestResourcesDefintion INSTANCE = new DeploymentRestResourcesDefintion();
-
     public static final String REST_RESOURCE_NAME = "rest-resource";
 
     public static final AttributeDefinition RESOURCE_CLASS = new SimpleAttributeDefinitionBuilder("resource-class",
@@ -138,7 +136,7 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
     private AttachmentKey<Map<PathAddress, Module>> deploymentModuleKey = AttachmentKey.create(Map.class);
     private AttachmentKey<Map<String, ResourceMeta>> resourceMetaKey = AttachmentKey.create(Map.class);
 
-    private DeploymentRestResourcesDefintion() {
+    DeploymentRestResourcesDefintion() {
         super(PathElement.pathElement(REST_RESOURCE_NAME), JaxrsExtension.getResolver("deployment"));
     }
 
