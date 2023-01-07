@@ -19,19 +19,18 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.jaxrs;
+package org.wildfly.extension.eesecurity;
 
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.wildfly.extension.eesecurity.EESecurityExtension;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class JavaEESecuritySubsystemTestCase extends AbstractSubsystemBaseTest {
+public class EESecuritySubsystemTestCase extends AbstractSubsystemBaseTest {
 
-    public JavaEESecuritySubsystemTestCase() {
+    public EESecuritySubsystemTestCase() {
         super(EESecurityExtension.SUBSYSTEM_NAME, new EESecurityExtension());
     }
 
