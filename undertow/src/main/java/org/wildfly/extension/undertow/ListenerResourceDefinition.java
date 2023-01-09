@@ -49,6 +49,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -266,7 +267,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         AbstractAddStepHandler addHandler = this.addHandlerFactory.apply(this.getAttributes());
         super.registerAddOperation(resourceRegistration, addHandler, OperationEntry.Flag.RESTART_NONE);
-        super.registerRemoveOperation(resourceRegistration, new ListenerRemoveHandler(addHandler), OperationEntry.Flag.RESTART_NONE);
+        super.registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(addHandler), OperationEntry.Flag.RESTART_NONE);
         resourceRegistration.registerOperationHandler(ResetConnectorStatisticsHandler.DEFINITION, ResetConnectorStatisticsHandler.INSTANCE);
     }
 
