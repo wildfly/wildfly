@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.msc.service.ServiceName;
 
@@ -30,7 +31,7 @@ import org.jboss.msc.service.ServiceName;
  */
 class ListenerRemoveHandler extends ServiceRemoveStepHandler {
 
-    ListenerRemoveHandler(ListenerAdd addOperation) {
+    ListenerRemoveHandler(AbstractAddStepHandler addOperation) {
         super(addOperation);
     }
 

@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,20 +32,21 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.xnio.OptionMap;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class AjpListenerAdd extends ListenerAdd {
+class AjpListenerAdd extends ListenerAdd<AjpListenerService> {
 
-    AjpListenerAdd(AjpListenerResourceDefinition def) {
-        super(def);
+    AjpListenerAdd(Collection<AttributeDefinition> attributes) {
+        super(attributes);
     }
 
     @Override
-    ListenerService createService(final Consumer<ListenerService> serviceConsumer, final String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
+    AjpListenerService createService(final Consumer<ListenerService> serviceConsumer, final String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
         ModelNode schemeNode = AjpListenerResourceDefinition.SCHEME.resolveModelAttribute(context, model);
         String scheme = null;
         if (schemeNode.isDefined()) {
@@ -56,7 +58,7 @@ class AjpListenerAdd extends ListenerAdd {
     }
 
     @Override
-    void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<?> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
+    void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<?> serviceBuilder, ModelNode model, AjpListenerService service) throws OperationFailedException {
         ModelNode redirectBindingRef = ListenerResourceDefinition.REDIRECT_SOCKET.resolveModelAttribute(context, model);
         if (redirectBindingRef.isDefined()) {
             service.getRedirectSocket().set(serviceBuilder.requiresCapability(REF_SOCKET_BINDING, SocketBinding.class, redirectBindingRef.asString()));
