@@ -51,9 +51,7 @@ class ResourceAdaptersSubsystemAdd extends AbstractAddStepHandler {
     static final ResourceAdaptersSubsystemAdd INSTANCE = new ResourceAdaptersSubsystemAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(REPORT_DIRECTORY_NAME)) {
-            model.get(REPORT_DIRECTORY_NAME).set(operation.get(REPORT_DIRECTORY_NAME));
-        }
+        Constants.REPORT_DIRECTORY.validateAndSet(operation, model);
     }
 
 
