@@ -320,7 +320,7 @@ public class RuntimeJMSTopicManagementTestCase {
 
     protected static InitialContext createJNDIContext() throws NamingException {
         final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
         String ipAdddress = TestSuiteEnvironment.formatPossibleIpv6Address(TestSuiteEnvironment.getServerAddress());
         env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://" + ipAdddress + ":8080"));
         env.put(Context.SECURITY_PRINCIPAL, "guest");

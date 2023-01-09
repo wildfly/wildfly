@@ -29,7 +29,7 @@ can be found in the `bin/client` directory of WildFly's distribution.
 [source,java,options="nowrap"]
 ----
 final Properties env = new Properties();
-env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+env.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
 env.put(Context.PROVIDER_URL, "http-remoting://localhost:8080");
 // the property below is required ONLY if there is no ejb client configuration loaded (such as a
 // jboss-ejb-client.properties in the class path) and the context will be used to lookup EJBs
