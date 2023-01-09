@@ -32,12 +32,12 @@ This also suppose you have already followed <<Simple_SSL_Migration,Simple SSL Mi
         <key-stores>
             <key-store name="LocalhostKeyStore">
                 <credential-reference clear-text="keystore_password"/>
-                <implementation type="JKS"/>
+                <implementation type="PKCS12"/>
                 <file path="server.keystore" relative-to="jboss.server.config.dir"/>
             </key-store>
             <key-store name="TrustStore">
                 <credential-reference clear-text="truststore_password"/>
-                <implementation type="JKS"/>
+                <implementation type="PKCS12"/>
                 <file path="server.truststore" relative-to="jboss.server.config.dir"/>
             </key-store>
         </key-stores>
@@ -279,11 +279,11 @@ In such case, following wildfly-config.xml can be created in the location the JB
 <configuration>
     <authentication-client xmlns="urn:elytron:1.0">
         <key-stores>
-            <key-store name="admin" type="jks" >
+            <key-store name="admin" type="PKCS12" >
                 <file name="admin.keystore"/>
                 <key-store-clear-password password="keystore_password" />
             </key-store>
-            <key-store name="ca" type="jks">
+            <key-store name="ca" type="PKCS12">
                 <file name="ca.truststore"/>
                 <key-store-clear-password password="truststore_password" />
             </key-store>
