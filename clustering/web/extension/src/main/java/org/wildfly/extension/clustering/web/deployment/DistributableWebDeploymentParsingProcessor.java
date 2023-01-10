@@ -54,7 +54,7 @@ public class DistributableWebDeploymentParsingProcessor implements DeploymentUni
 
     public DistributableWebDeploymentParsingProcessor() {
         for (DistributableWebDeploymentSchema schema : EnumSet.allOf(DistributableWebDeploymentSchema.class)) {
-            this.mapper.registerRootElement(schema.getRoot(), new DistributableWebDeploymentXMLReader(schema));
+            this.mapper.registerRootElement(schema.getName(), new DistributableWebDeploymentXMLReader(schema));
         }
     }
 

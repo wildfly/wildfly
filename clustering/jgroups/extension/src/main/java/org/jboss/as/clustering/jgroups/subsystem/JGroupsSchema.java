@@ -23,13 +23,13 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Locale;
 
-import org.jboss.as.clustering.controller.Schema;
+import org.jboss.as.clustering.controller.SubsystemSchema;
 
 /**
  * Enumeration of the supported subsystem xml schemas.
  * @author Paul Ferraro
  */
-public enum JGroupsSchema implements Schema<JGroupsSchema> {
+public enum JGroupsSchema implements SubsystemSchema<JGroupsSchema> {
 
     VERSION_1_0(1, 0), // AS 7.0
     VERSION_1_1(1, 1), // AS 7.1
@@ -63,7 +63,7 @@ public enum JGroupsSchema implements Schema<JGroupsSchema> {
     }
 
     @Override
-    public String getNamespaceUri() {
+    public String getUri() {
         return String.format(Locale.ROOT, "urn:jboss:domain:jgroups:%d.%d", this.major, this.minor);
     }
 }

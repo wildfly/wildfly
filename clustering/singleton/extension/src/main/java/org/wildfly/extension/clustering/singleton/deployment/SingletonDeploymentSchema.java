@@ -24,9 +24,7 @@ package org.wildfly.extension.clustering.singleton.deployment;
 
 import java.util.Locale;
 
-import javax.xml.namespace.QName;
-
-import org.jboss.as.clustering.controller.Schema;
+import org.jboss.as.clustering.xml.Schema;
 
 /**
  * Enumerates the singleton deployment configuration schemas.
@@ -37,7 +35,6 @@ public enum SingletonDeploymentSchema implements Schema<SingletonDeploymentSchem
     VERSION_1_0(1, 0),
     ;
     public static final SingletonDeploymentSchema CURRENT = VERSION_1_0;
-    private static final String ROOT = "singleton-deployment";
 
     private final int major;
     private final int minor;
@@ -58,11 +55,12 @@ public enum SingletonDeploymentSchema implements Schema<SingletonDeploymentSchem
     }
 
     @Override
-    public String getNamespaceUri() {
-        return String.format(Locale.ROOT, "urn:jboss:%s:%d.%d", ROOT, this.major, this.minor);
+    public String getUri() {
+        return String.format(Locale.ROOT, "urn:jboss:%s:%d.%d", this.getLocalName(), this.major, this.minor);
     }
 
-    public QName getRoot() {
-        return new QName(this.getNamespaceUri(), ROOT);
+    @Override
+    public String getLocalName() {
+        return "singleton-deployment";
     }
 }

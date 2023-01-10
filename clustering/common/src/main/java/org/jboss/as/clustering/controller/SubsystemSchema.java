@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,43 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.web;
+package org.jboss.as.clustering.controller;
 
-import java.util.Locale;
-
-import org.jboss.as.clustering.controller.SubsystemSchema;
+import org.jboss.as.clustering.xml.Schema;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 /**
- * Enumerates the schema versions for the distributable-web subsystem.
+ * Defines the XML schema version for a subsystem.
  * @author Paul Ferraro
  */
-public enum DistributableWebSchema implements SubsystemSchema<DistributableWebSchema> {
-    VERSION_1_0(1, 0), // WildFly 17
-    VERSION_2_0(2, 0), // WildFly 18-26.1
-    VERSION_3_0(3, 0), // WildFly 27
-    ;
-    static final DistributableWebSchema CURRENT = VERSION_3_0;
-
-    private final int major;
-    private final int minor;
-
-    DistributableWebSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
-    }
+public interface SubsystemSchema<S extends SubsystemSchema<S>> extends Schema<S> {
 
     @Override
-    public int major() {
-        return this.major;
-    }
-
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:jboss:domain:distributable-web:%d.%d", this.major, this.minor);
+    default String getLocalName() {
+        return ModelDescriptionConstants.SUBSYSTEM;
     }
 }

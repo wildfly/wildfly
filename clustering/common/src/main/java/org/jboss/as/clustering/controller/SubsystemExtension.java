@@ -45,7 +45,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * Generic extension implementation that registers a single subsystem.
  * @author Paul Ferraro
  */
-public class SubsystemExtension<S extends Enum<S> & Schema<S>> implements Extension {
+public class SubsystemExtension<S extends Enum<S> & SubsystemSchema<S>> implements Extension {
 
     private final String name;
     private final Model currentModel;
@@ -107,10 +107,10 @@ public class SubsystemExtension<S extends Enum<S> & Schema<S>> implements Extens
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         // Register reader for current schema version
-        context.setSubsystemXmlMapping(this.name, this.currentSchema.getNamespaceUri(), this.currentReader);
+        context.setSubsystemXmlMapping(this.name, this.currentSchema.getUri(), this.currentReader);
         // Register readers for legacy schema versions
         for (S schema : EnumSet.complementOf(EnumSet.of(this.currentSchema))) {
-            context.setSubsystemXmlMapping(this.name, schema.getNamespaceUri(), this.readerFactory.apply(schema));
+            context.setSubsystemXmlMapping(this.name, schema.getUri(), this.readerFactory.apply(schema));
         }
     }
 

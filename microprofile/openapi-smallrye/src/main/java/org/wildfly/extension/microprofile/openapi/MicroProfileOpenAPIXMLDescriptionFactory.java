@@ -36,6 +36,6 @@ public class MicroProfileOpenAPIXMLDescriptionFactory implements Function<MicroP
 
     @Override
     public PersistentResourceXMLDescription apply(MicroProfileOpenAPISchema schema) {
-        return builder(MicroProfileOpenAPISubsystemDefinition.PATH, schema.getNamespaceUri()).build();
+        return builder(MicroProfileOpenAPISubsystemDefinition.PATH, schema.getUri()).build();
     }
 }

@@ -38,7 +38,7 @@ public class DistributableWebXMLDescriptionFactory implements Function<Distribut
 
     @Override
     public PersistentResourceXMLDescription apply(DistributableWebSchema schema) {
-        return builder(DistributableWebResourceDefinition.PATH, schema.getNamespaceUri())
+        return builder(DistributableWebResourceDefinition.PATH, schema.getUri())
                 .addAttribute(DistributableWebResourceDefinition.Attribute.DEFAULT_SESSION_MANAGEMENT.getDefinition())
                 .addAttribute(DistributableWebResourceDefinition.Attribute.DEFAULT_SSO_MANAGEMENT.getDefinition())
                 .addChild(this.getInfinispanSessionManagementResourceXMLBuilder(schema))

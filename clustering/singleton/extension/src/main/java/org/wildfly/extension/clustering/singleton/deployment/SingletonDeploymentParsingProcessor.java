@@ -55,7 +55,7 @@ public class SingletonDeploymentParsingProcessor implements DeploymentUnitProces
 
     public SingletonDeploymentParsingProcessor() {
         for (SingletonDeploymentSchema schema : SingletonDeploymentSchema.values()) {
-            this.mapper.registerRootElement(schema.getRoot(), new SingletonDeploymentXMLReader(schema));
+            this.mapper.registerRootElement(schema.getName(), new SingletonDeploymentXMLReader(schema));
         }
     }
 

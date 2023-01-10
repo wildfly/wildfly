@@ -23,14 +23,14 @@ package org.wildfly.extension.microprofile.faulttolerance;
 
 import java.util.Locale;
 
-import org.jboss.as.clustering.controller.Schema;
+import org.jboss.as.clustering.controller.SubsystemSchema;
 
 /**
  * Enumeration of supported subsystem schemas.
  *
  * @author Radoslav Husar
  */
-public enum MicroProfileFaultToleranceSchema implements Schema<MicroProfileFaultToleranceSchema> {
+public enum MicroProfileFaultToleranceSchema implements SubsystemSchema<MicroProfileFaultToleranceSchema> {
 
     VERSION_1_0(1, 0), // WildFly 19-present
     ;
@@ -55,7 +55,7 @@ public enum MicroProfileFaultToleranceSchema implements Schema<MicroProfileFault
     }
 
     @Override
-    public String getNamespaceUri() {
+    public String getUri() {
         return String.format(Locale.ROOT, "urn:wildfly:microprofile-fault-tolerance-smallrye:%d.%d", this.major, this.minor);
     }
 }

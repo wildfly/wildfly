@@ -130,7 +130,7 @@ public class DistributableWebResourceDefinition extends SubsystemResourceDefinit
     public void accept(DeploymentProcessorTarget target) {
         JBossAllXmlParserRegisteringProcessor.Builder builder = JBossAllXmlParserRegisteringProcessor.builder();
         for (DistributableWebDeploymentSchema schema : EnumSet.allOf(DistributableWebDeploymentSchema.class)) {
-            builder.addParser(schema.getRoot(), DistributableWebDeploymentDependencyProcessor.CONFIGURATION_KEY, new DistributableWebDeploymentXMLReader(schema));
+            builder.addParser(schema.getName(), DistributableWebDeploymentDependencyProcessor.CONFIGURATION_KEY, new DistributableWebDeploymentXMLReader(schema));
         }
         target.addDeploymentProcessor(DistributableWebExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_DISTRIBUTABLE_WEB, builder.build());
         target.addDeploymentProcessor(DistributableWebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_DISTRIBUTABLE_WEB, new DistributableWebDeploymentParsingProcessor());

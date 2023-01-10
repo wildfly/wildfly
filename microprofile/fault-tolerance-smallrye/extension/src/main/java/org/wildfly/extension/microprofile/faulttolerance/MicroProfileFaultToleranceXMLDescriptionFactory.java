@@ -36,6 +36,6 @@ public class MicroProfileFaultToleranceXMLDescriptionFactory implements Function
 
     @Override
     public PersistentResourceXMLDescription apply(MicroProfileFaultToleranceSchema schema) {
-        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, schema.getNamespaceUri()).build();
+        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, schema.getUri()).build();
     }
 }

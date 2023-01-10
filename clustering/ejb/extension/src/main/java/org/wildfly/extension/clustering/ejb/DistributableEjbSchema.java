@@ -23,14 +23,14 @@ package org.wildfly.extension.clustering.ejb;
 
 import java.util.Locale;
 
-import org.jboss.as.clustering.controller.Schema;
+import org.jboss.as.clustering.controller.SubsystemSchema;
 
 /**
  * Enumerates the schema versions for the distributable-ejb subsystem.
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public enum DistributableEjbSchema implements Schema<DistributableEjbSchema> {
+public enum DistributableEjbSchema implements SubsystemSchema<DistributableEjbSchema> {
     VERSION_1_0(1, 0), // WildFly 27
     ;
     static final DistributableEjbSchema CURRENT = VERSION_1_0;
@@ -54,7 +54,7 @@ public enum DistributableEjbSchema implements Schema<DistributableEjbSchema> {
     }
 
     @Override
-    public String getNamespaceUri() {
+    public String getUri() {
         return String.format(Locale.ROOT, "urn:jboss:domain:distributable-ejb:%d.%d", this.major, this.minor);
     }
 }
