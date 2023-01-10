@@ -939,11 +939,11 @@
         <cve>CVE-2022-42004</cve>
     </suppress>
 	<!-- Wildfly uses json-patch from java-json-tools/json-patch. CVE is about Starcounter-Jack/JSON-Patch -->
-	<suppress>
-		<notes><![CDATA[
-   file name: json-patch-1.9.jar
-   ]]></notes>
-		<packageUrl regex="true">^pkg:maven/com\.github\.fge/json\-patch@.*$</packageUrl>
-		<cve>cpe:/a:json-patch_project:json-patch</cve>
-	</suppress>
+    <suppress>
+        <notes><![CDATA[
+    file name: json-patch-1.9.jar
+    ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.github\.fge/json\-patch@.*$</packageUrl>
+        <cve>CVE-2021-4279</cve>
+    </suppress>
 </suppressions>
