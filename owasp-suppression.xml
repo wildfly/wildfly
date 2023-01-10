@@ -567,10 +567,12 @@
     <!-- The snakeyaml's upstream is not considering this a security vulnerability.-->
     <suppress>
         <notes><![CDATA[
-   file name: snakeyaml-1.18.jar
+   file name: snakeyaml-1.33.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
         <cve>CVE-2017-18640</cve>
+	<!-- Based on https://nvd.nist.gov/vuln/detail/CVE-2022-3064 - CVE affects yaml support in GO language which is not part of WildFly -->
+	<cve>CVE-2022-3064</cve>
     </suppress>
     <!-- WSO2 is not part of WildFly-->
     <suppress>
