@@ -34,7 +34,6 @@ import static org.wildfly.security.http.HttpConstants.FORM_NAME;
 
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -123,7 +122,7 @@ import io.undertow.servlet.api.LoginConfig;
  */
 public class ApplicationSecurityDomainDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN);
-    private static Predicate<String> SERVLET_MECHANISM;
+    private static final Predicate<String> SERVLET_MECHANISM;
 
     static {
         Set<String> defaultMechanisms = new HashSet<>(4);
@@ -187,7 +186,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .setRestartAllServices()
             .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SECURITY_DOMAIN, HTTP_AUTHENTICATION_FACTORY, OVERRIDE_DEPLOYMENT_CONFIG, ENABLE_JACC, ENABLE_JASPI, INTEGRATED_JASPI };
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(SECURITY_DOMAIN, HTTP_AUTHENTICATION_FACTORY, OVERRIDE_DEPLOYMENT_CONFIG, ENABLE_JACC, ENABLE_JASPI, INTEGRATED_JASPI);
 
     private static final AttachmentKey<KnownDeploymentsApi> KNOWN_DEPLOYMENTS_KEY = AttachmentKey.create(KnownDeploymentsApi.class);
 
@@ -416,7 +415,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
     Predicate<String> getKnownSecurityDomainPredicate() {

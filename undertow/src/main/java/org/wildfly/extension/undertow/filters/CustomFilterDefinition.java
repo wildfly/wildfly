@@ -22,8 +22,8 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import io.undertow.server.HandlerWrapper;
@@ -69,13 +69,15 @@ public class CustomFilterDefinition extends SimpleFilterDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CLASS_NAME, MODULE, PARAMETERS);
+
     CustomFilterDefinition() {
         super(PATH_ELEMENT, CustomFilterDefinition::createHandlerWrapper);
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(CLASS_NAME, MODULE, PARAMETERS);
+        return ATTRIBUTES;
     }
 
     static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {

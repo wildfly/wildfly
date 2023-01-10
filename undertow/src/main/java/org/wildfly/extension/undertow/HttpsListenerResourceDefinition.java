@@ -125,7 +125,7 @@ public class HttpsListenerResourceDefinition extends AbstractHttpListenerResourc
         Collection<AttributeDefinition> attributes = new ArrayList<>(ListenerResourceDefinition.ATTRIBUTES.size() + AbstractHttpListenerResourceDefinition.ATTRIBUTES.size() + ATTRIBUTES.size());
         attributes.addAll(ListenerResourceDefinition.ATTRIBUTES);
         attributes.addAll(AbstractHttpListenerResourceDefinition.ATTRIBUTES);
-        attributes.addAll(attributes);
+        attributes.addAll(ATTRIBUTES);
         return Collections.unmodifiableCollection(attributes);
     }
 }

@@ -23,7 +23,6 @@
 package org.wildfly.extension.undertow;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -57,6 +56,8 @@ class LocationDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(HANDLER);
+
     LocationDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.HOST, PATH_ELEMENT.getKey()))
                 .setAddHandler(LocationAdd.INSTANCE)
@@ -72,7 +73,7 @@ class LocationDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.singleton(HANDLER);
+        return ATTRIBUTES;
     }
 
     @Override

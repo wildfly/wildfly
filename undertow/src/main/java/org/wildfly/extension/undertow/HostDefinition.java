@@ -22,9 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -91,7 +89,7 @@ class HostDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    private static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE, DISABLE_CONSOLE_REDIRECT, QUEUE_REQUESTS_ON_START));
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE, DISABLE_CONSOLE_REDIRECT, QUEUE_REQUESTS_ON_START);
 
     HostDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))

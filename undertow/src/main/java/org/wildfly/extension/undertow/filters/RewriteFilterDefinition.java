@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.undertow.filters;
 
+import java.util.Collection;
+import java.util.List;
+
 import io.undertow.attribute.ExchangeAttributes;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.handlers.RedirectHandler;
@@ -35,9 +38,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
-
-import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * @author Stuart Douglas
@@ -59,13 +59,15 @@ public class RewriteFilterDefinition extends SimpleFilterDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(TARGET, REDIRECT);
+
     RewriteFilterDefinition() {
         super(PATH_ELEMENT, RewriteFilterDefinition::createHandlerWrapper);
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(TARGET, REDIRECT);
+        return ATTRIBUTES;
     }
 
     static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {

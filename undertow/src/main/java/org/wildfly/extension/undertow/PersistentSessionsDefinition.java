@@ -70,10 +70,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
-            PATH,
-            RELATIVE_TO
-    };
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(PATH, RELATIVE_TO);
 
     PersistentSessionsDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
@@ -84,7 +81,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return List.of(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
     public static boolean isEnabled(final OperationContext context, final ModelNode model) throws OperationFailedException {

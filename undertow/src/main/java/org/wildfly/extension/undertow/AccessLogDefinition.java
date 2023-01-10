@@ -21,7 +21,6 @@
  */
 package org.wildfly.extension.undertow;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -113,7 +112,7 @@ class AccessLogDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    static final Collection<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
             WORKER,
             PATTERN,

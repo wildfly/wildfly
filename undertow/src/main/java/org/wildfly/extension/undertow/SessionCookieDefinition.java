@@ -82,14 +82,13 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
                     .build();
 
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
             NAME,
             DOMAIN,
             COMMENT,
             HTTP_ONLY,
             SECURE,
-            MAX_AGE
-    };
+            MAX_AGE);
 
     SessionCookieDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
@@ -100,7 +99,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return List.of(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
     static SessionCookieConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {

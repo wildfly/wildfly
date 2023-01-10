@@ -50,9 +50,7 @@ class MimeMappingDefinition extends PersistentResourceDefinition {
                     .build();
 
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
-            VALUE
-    };
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(VALUE);
 
     MimeMappingDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
@@ -63,6 +61,6 @@ class MimeMappingDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return List.of(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 }

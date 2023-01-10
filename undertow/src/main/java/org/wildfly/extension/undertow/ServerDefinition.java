@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -58,7 +57,8 @@ class ServerDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode("default"))
             .setRestartAllServices()
             .build();
-    static final AttributeDefinition[] ATTRIBUTES = {DEFAULT_HOST, SERVLET_CONTAINER};
+
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(DEFAULT_HOST, SERVLET_CONTAINER);
 
     ServerDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
@@ -70,8 +70,7 @@ class ServerDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        //noinspection unchecked
-        return Arrays.asList(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
     @Override

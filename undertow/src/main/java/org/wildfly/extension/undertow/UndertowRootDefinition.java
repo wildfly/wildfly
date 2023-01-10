@@ -25,7 +25,6 @@ package org.wildfly.extension.undertow;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_HTTP_INVOKER;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -113,8 +112,8 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                     .build();
 
 
-    static final AttributeDefinition[] ATTRIBUTES = { DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID,
-            OBFUSCATE_SESSION_ROUTE, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN };
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID,
+            OBFUSCATE_SESSION_ROUTE, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN);
 
     private final Set<String> knownApplicationSecurityDomains;
 
@@ -133,7 +132,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
     @Override

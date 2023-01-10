@@ -62,10 +62,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
-            USER_AGENTS,
-            SESSION_TIMEOUT
-    };
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(USER_AGENTS, SESSION_TIMEOUT);
 
     CrawlerSessionManagementDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
@@ -76,7 +73,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return List.of(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
     static CrawlerSessionManagerConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
