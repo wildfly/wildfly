@@ -21,9 +21,12 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.clustering.controller.SubsystemSchema;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * Enumeration of the supported subsystem xml schemas.
@@ -76,5 +79,10 @@ public enum InfinispanSchema implements SubsystemSchema<InfinispanSchema> {
     @Override
     public String getUri() {
         return String.format(Locale.ROOT, "urn:jboss:domain:infinispan:%d.%d", this.major, this.minor);
+    }
+
+    @Override
+    public XMLElementReader<List<ModelNode>> get() {
+        return new InfinispanSubsystemXMLReader(this);
     }
 }

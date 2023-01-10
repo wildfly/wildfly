@@ -23,14 +23,16 @@ package org.wildfly.extension.clustering.ejb;
 
 import java.util.Locale;
 
-import org.jboss.as.clustering.controller.SubsystemSchema;
+import org.jboss.as.clustering.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
 
 /**
  * Enumerates the schema versions for the distributable-ejb subsystem.
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public enum DistributableEjbSchema implements SubsystemSchema<DistributableEjbSchema> {
+public enum DistributableEjbSchema implements PersistentSubsystemSchema<DistributableEjbSchema> {
+
     VERSION_1_0(1, 0), // WildFly 27
     ;
     static final DistributableEjbSchema CURRENT = VERSION_1_0;
@@ -56,5 +58,10 @@ public enum DistributableEjbSchema implements SubsystemSchema<DistributableEjbSc
     @Override
     public String getUri() {
         return String.format(Locale.ROOT, "urn:jboss:domain:distributable-ejb:%d.%d", this.major, this.minor);
+    }
+
+    @Override
+    public PersistentResourceXMLDescription getXMLDescription() {
+        return DistributableEjbXMLDescriptionFactory.INSTANCE.apply(this);
     }
 }

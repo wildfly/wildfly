@@ -24,13 +24,14 @@ package org.wildfly.extension.microprofile.openapi;
 
 import java.util.Locale;
 
-import org.jboss.as.clustering.controller.SubsystemSchema;
+import org.jboss.as.clustering.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
 
 /**
  * Enumeration of MicroProfile OpenAPI subsystem schema versions.
  * @author Paul Ferraro
  */
-public enum MicroProfileOpenAPISchema implements SubsystemSchema<MicroProfileOpenAPISchema> {
+public enum MicroProfileOpenAPISchema implements PersistentSubsystemSchema<MicroProfileOpenAPISchema> {
 
     VERSION_1_0(1, 0), // WildFly 19
     ;
@@ -57,5 +58,10 @@ public enum MicroProfileOpenAPISchema implements SubsystemSchema<MicroProfileOpe
     @Override
     public String getUri() {
         return String.format(Locale.ROOT, "urn:wildfly:%s:%d.%d", MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, this.major, this.minor);
+    }
+
+    @Override
+    public PersistentResourceXMLDescription getXMLDescription() {
+        return MicroProfileOpenAPIXMLDescriptionFactory.INSTANCE.apply(this);
     }
 }

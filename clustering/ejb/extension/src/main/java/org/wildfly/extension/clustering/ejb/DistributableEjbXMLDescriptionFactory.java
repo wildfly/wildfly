@@ -33,7 +33,8 @@ import org.jboss.as.controller.PersistentResourceXMLDescription;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class DistributableEjbXMLDescriptionFactory implements Function<DistributableEjbSchema, PersistentResourceXMLDescription> {
+public enum DistributableEjbXMLDescriptionFactory implements Function<DistributableEjbSchema, PersistentResourceXMLDescription> {
+    INSTANCE;
 
     @Override
     public PersistentResourceXMLDescription apply(DistributableEjbSchema schema) {

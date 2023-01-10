@@ -32,7 +32,8 @@ import org.jboss.as.controller.PersistentResourceXMLDescription;
  * @author Michael Edgar
  * @author Paul Ferraro
  */
-public class MicroProfileOpenAPIXMLDescriptionFactory implements Function<MicroProfileOpenAPISchema, PersistentResourceXMLDescription> {
+public enum MicroProfileOpenAPIXMLDescriptionFactory implements Function<MicroProfileOpenAPISchema, PersistentResourceXMLDescription> {
+    INSTANCE;
 
     @Override
     public PersistentResourceXMLDescription apply(MicroProfileOpenAPISchema schema) {

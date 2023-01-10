@@ -21,9 +21,12 @@
  */
 package org.wildfly.extension.mod_cluster;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.clustering.controller.SubsystemSchema;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * @author Jean-Frederic Clere
@@ -64,5 +67,10 @@ public enum ModClusterSchema implements SubsystemSchema<ModClusterSchema> {
     @Override
     public String getUri() {
         return String.format(Locale.ROOT, "urn:jboss:domain:%s:%d.%d", ModClusterExtension.SUBSYSTEM_NAME, this.major, this.minor);
+    }
+
+    @Override
+    public XMLElementReader<List<ModelNode>> get() {
+        return new ModClusterSubsystemXMLReader(this);
     }
 }

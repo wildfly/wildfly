@@ -24,19 +24,19 @@ package org.wildfly.extension.clustering.web;
 
 import java.util.Locale;
 
-import org.jboss.as.clustering.controller.SubsystemSchema;
+import org.jboss.as.clustering.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
 
 /**
  * Enumerates the schema versions for the distributable-web subsystem.
  * @author Paul Ferraro
  */
-public enum DistributableWebSchema implements SubsystemSchema<DistributableWebSchema> {
+public enum DistributableWebSchema implements PersistentSubsystemSchema<DistributableWebSchema> {
+
     VERSION_1_0(1, 0), // WildFly 17
     VERSION_2_0(2, 0), // WildFly 18-26.1
     VERSION_3_0(3, 0), // WildFly 27
     ;
-    static final DistributableWebSchema CURRENT = VERSION_3_0;
-
     private final int major;
     private final int minor;
 
@@ -58,5 +58,10 @@ public enum DistributableWebSchema implements SubsystemSchema<DistributableWebSc
     @Override
     public String getUri() {
         return String.format(Locale.ROOT, "urn:jboss:domain:distributable-web:%d.%d", this.major, this.minor);
+    }
+
+    @Override
+    public PersistentResourceXMLDescription getXMLDescription() {
+        return DistributableWebXMLDescriptionFactory.INSTANCE.apply(this);
     }
 }

@@ -34,7 +34,8 @@ import org.jboss.as.controller.PersistentResourceXMLDescription.PersistentResour
  * XML description factory for the distributable-web subsystem.
  * @author Paul Ferraro
  */
-public class DistributableWebXMLDescriptionFactory implements Function<DistributableWebSchema, PersistentResourceXMLDescription> {
+public enum DistributableWebXMLDescriptionFactory implements Function<DistributableWebSchema, PersistentResourceXMLDescription> {
+    INSTANCE;
 
     @Override
     public PersistentResourceXMLDescription apply(DistributableWebSchema schema) {

@@ -22,14 +22,17 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.clustering.xml.Schema;
+import java.util.List;
+
+import org.jboss.as.clustering.xml.XMLElementSchema;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Defines the XML schema version for a subsystem.
  * @author Paul Ferraro
  */
-public interface SubsystemSchema<S extends SubsystemSchema<S>> extends Schema<S> {
+public interface SubsystemSchema<S extends SubsystemSchema<S>> extends XMLElementSchema<List<ModelNode>, S> {
 
     @Override
     default String getLocalName() {
