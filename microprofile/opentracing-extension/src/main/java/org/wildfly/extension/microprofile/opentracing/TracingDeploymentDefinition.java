@@ -28,8 +28,6 @@ import org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstant
  */
 public class TracingDeploymentDefinition extends SimpleResourceDefinition {
 
-    public static final TracingDeploymentDefinition INSTANCE = new TracingDeploymentDefinition();
-
     public static final AttributeDefinition TRACER_CONFIGURATION_NAME = new SimpleAttributeDefinitionBuilder(
             TracerConfigurationConstants.TRACER_CONFIGURATION_NAME, ModelType.STRING, true)
             .setStorageRuntime()
@@ -39,7 +37,7 @@ public class TracingDeploymentDefinition extends SimpleResourceDefinition {
             .setStorageRuntime()
             .build();
 
-    private TracingDeploymentDefinition() {
+    TracingDeploymentDefinition() {
           super(new Parameters(SubsystemExtension.SUBSYSTEM_PATH, SubsystemExtension.getResourceDescriptionResolver())
                   .setFeature(false).setRuntime());
     }
