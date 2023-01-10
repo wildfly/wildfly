@@ -24,8 +24,8 @@ package org.jboss.as.ee.concurrent;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 
-import javax.enterprise.concurrent.LastExecution;
-import javax.enterprise.concurrent.Trigger;
+import jakarta.enterprise.concurrent.LastExecution;
+import jakarta.enterprise.concurrent.Trigger;
 import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -121,7 +121,7 @@ public class ManagedScheduledExecutorServiceImpl extends org.glassfish.enterpris
     }
 
     /**
-     * A {@link javax.enterprise.concurrent.Trigger} wrapper that stops scheduling if the related {@link java.util.concurrent.ScheduledFuture} is cancelled.
+     * A {@link jakarta.enterprise.concurrent.Trigger} wrapper that stops scheduling if the related {@link java.util.concurrent.ScheduledFuture} is cancelled.
      */
     private static class CancellableTrigger implements Trigger {
         private final Trigger trigger;

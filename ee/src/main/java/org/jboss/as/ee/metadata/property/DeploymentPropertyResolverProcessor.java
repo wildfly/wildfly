@@ -42,7 +42,6 @@ import org.jboss.metadata.property.SystemPropertyResolver;
  */
 public class DeploymentPropertyResolverProcessor implements DeploymentUnitProcessor {
 
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();

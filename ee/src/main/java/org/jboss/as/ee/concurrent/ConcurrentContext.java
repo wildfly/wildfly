@@ -22,10 +22,13 @@
 
 package org.jboss.as.ee.concurrent;
 
+import jakarta.enterprise.concurrent.ContextService;
+import jakarta.enterprise.concurrent.ContextServiceDefinition;
+import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
+import org.jboss.as.ee.concurrent.handle.EE10ContextHandleFactory;
 import org.jboss.as.ee.concurrent.handle.ResetContextHandle;
 import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
 import org.jboss.as.ee.logging.EeLogger;
-import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -34,7 +37,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.common.function.ThreadLocalStack;
 
-import javax.enterprise.concurrent.ContextService;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -126,6 +128,7 @@ public class ConcurrentContext {
         };
         SortedSet<ContextHandleFactory> sortedSet = new TreeSet<>(comparator);
         sortedSet.addAll(factoryMap.values());
+        // TODO *FOLLOW UP* now that we have factories coming from deployments, rework the ordering approach to no use treeset, which does not supports factories with same priority (the order param)
         factoryOrderedList = new ArrayList<>(sortedSet);
     }
 
@@ -136,9 +139,31 @@ public class ConcurrentContext {
      * @return
      */
     public SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
+        final ContextServiceTypesConfiguration contextServiceTypesConfiguration = ((ContextServiceImpl)contextService).getContextServiceTypesConfiguration();
         final List<SetupContextHandle> handles = new ArrayList<>(factoryOrderedList.size());
         for (ContextHandleFactory factory : factoryOrderedList) {
-            handles.add(factory.saveContext(contextService, contextObjectProperties));
+            // TODO *FOLLOW UP* migrate all factories on other subsystems to use the new EE10ContextHandleFactory API, and once all done replace the legacy ContextHandleFactory API with the new one, no need to keep both
+            if (factory instanceof EE10ContextHandleFactory) {
+                final EE10ContextHandleFactory ee10ContextHandleFactory = (EE10ContextHandleFactory) factory;
+                final String contextType = ee10ContextHandleFactory.getContextType();
+                final SetupContextHandle setupContextHandle;
+                if (contextServiceTypesConfiguration.isCleared(contextType)) {
+                    setupContextHandle = ee10ContextHandleFactory.clearedContext(contextService, contextObjectProperties);
+                } else if (contextServiceTypesConfiguration.isPropagated(contextType)) {
+                    setupContextHandle = ee10ContextHandleFactory.propagatedContext(contextService, contextObjectProperties);
+                } else if (contextServiceTypesConfiguration.isUnchanged(contextType)) {
+                    setupContextHandle = ee10ContextHandleFactory.unchangedContext(contextService, contextObjectProperties);
+                } else {
+                    setupContextHandle = null;
+                }
+                if (setupContextHandle != null) {
+                    handles.add(setupContextHandle);
+                }
+            } else {
+                if (contextServiceTypesConfiguration.isPropagated(ContextServiceDefinition.APPLICATION)) {
+                    handles.add(factory.saveContext(contextService, contextObjectProperties));
+                }
+            }
         }
         return new ChainedSetupContextHandle(this, handles);
     }

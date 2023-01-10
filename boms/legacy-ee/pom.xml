@@ -64,31 +64,6 @@
             <!-- Dependencies specific to this bom. Keep sorted -->
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-legacy-namespace</artifactId>
-                <version>${ee.maven.version}</version>
-                <!-- TODO eliminate uses of transitive deps from this artifact -->
-                <!--
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-                -->
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jaxrs</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-mail</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>antlr</groupId>
                 <artifactId>antlr</artifactId>
                 <version>${legacy.version.antlr}</version>

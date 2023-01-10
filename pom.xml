@@ -71,6 +71,7 @@
         <module>connector</module>
         <module>datasources-agroal</module>
         <module>dist</module>
+        <module>ee</module>
         <module>ee-build</module>
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
@@ -2084,18 +2085,6 @@
             </build>
         </profile>
 
-        <profile>
-            <id>ee8.build.profile</id>
-            <activation>
-                <property>
-                    <name>!quickly</name>
-                </property>
-            </activation>
-            <modules>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>ee</module>
-            </modules>
-        </profile>
         <profile>
             <id>jdk18</id>
             <activation>

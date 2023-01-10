@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ee.component.deployers;
 
-import javax.interceptor.Interceptors;
+import jakarta.interceptor.Interceptors;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;

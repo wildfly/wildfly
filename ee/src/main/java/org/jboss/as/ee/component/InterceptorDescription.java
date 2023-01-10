@@ -23,7 +23,7 @@
 package org.jboss.as.ee.component;
 
 /**
- * A description of an {@link javax.interceptor.Interceptor @Interceptor} annotation value or its equivalent
+ * A description of an {@link jakarta.interceptor.Interceptor @Interceptor} annotation value or its equivalent
  * deployment descriptor construct.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

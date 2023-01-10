@@ -26,7 +26,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.ManagedBean;
+import jakarta.annotation.ManagedBean;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -59,7 +59,7 @@ import org.jboss.metadata.property.PropertyReplacer;
 import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
- * Deployment unit processor responsible for scanning a deployment to find classes with {@code javax.annotation.ManagedBean} annotations.
+ * Deployment unit processor responsible for scanning a deployment to find classes with {@code jakarta.annotation.ManagedBean} annotations.
  * Note:  This processor only supports JSR-316 compliant managed beans.  So it will not handle complimentary spec additions (ex. Jakarta Enterprise Beans).
  *
  * @author John E. Bailey
