@@ -45,9 +45,7 @@ class BeanValidationRootDefinition extends PersistentResourceDefinition {
     private static final RuntimeCapability<Void> BEAN_VALIDATION_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.bean-validation").build();
 
-    static final BeanValidationRootDefinition INSTANCE = new BeanValidationRootDefinition();
-
-    private BeanValidationRootDefinition() {
+    BeanValidationRootDefinition() {
         super (new SimpleResourceDefinition.Parameters(BeanValidationExtension.SUBSYSTEM_PATH, BeanValidationExtension.getResolver())
                 .setAddHandler(BeanValidationSubsystemAdd.INSTANCE)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)

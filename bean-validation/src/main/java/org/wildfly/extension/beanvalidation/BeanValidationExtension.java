@@ -60,7 +60,7 @@ public class BeanValidationExtension implements Extension {
         @Override
     public void initialize(final ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(BeanValidationRootDefinition.INSTANCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new BeanValidationRootDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE, false);
         subsystem.registerXMLElementWriter(BeanValidationSubsystemParser.INSTANCE);
     }

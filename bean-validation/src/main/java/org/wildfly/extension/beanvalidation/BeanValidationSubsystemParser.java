@@ -52,7 +52,7 @@ class BeanValidationSubsystemParser implements XMLStreamConstants, XMLElementRea
     private static final PersistentResourceXMLDescription XML_DESCRIPTION;
 
     static {
-        XML_DESCRIPTION = builder(BeanValidationRootDefinition.INSTANCE.getPathElement())
+        XML_DESCRIPTION = builder(BeanValidationExtension.SUBSYSTEM_PATH)
                 .build();
     }
 
@@ -71,7 +71,7 @@ class BeanValidationSubsystemParser implements XMLStreamConstants, XMLElementRea
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
         ModelNode model = new ModelNode();
-        model.get(BeanValidationRootDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());
+        model.get(BeanValidationExtension.SUBSYSTEM_PATH.getKeyValuePair()).set(context.getModelNode());
         XML_DESCRIPTION.persist(writer, model, Namespace.CURRENT.getUriString());
     }
 }
