@@ -69,7 +69,7 @@ public class JSFExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         JSFLogger.ROOT_LOGGER.debug("Activating JSF(Mojarra) Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystem.registerSubsystemModel(JSFResourceDefinition.INSTANCE);
+        subsystem.registerSubsystemModel(new JSFResourceDefinition());
         subsystem.registerXMLElementWriter(JSFSubsystemParser_1_1.INSTANCE);
     }
 
@@ -87,7 +87,7 @@ public class JSFExtension implements Extension {
         private static final PersistentResourceXMLDescription xmlDescription;
 
         static {
-            xmlDescription = builder(JSFResourceDefinition.INSTANCE.getPathElement(), NAMESPACE_1_0)
+            xmlDescription = builder(PATH_SUBSYSTEM, NAMESPACE_1_0)
                     .addAttributes(JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT)
                     .build();
         }
@@ -104,7 +104,7 @@ public class JSFExtension implements Extension {
         private static final PersistentResourceXMLDescription xmlDescription;
 
         static {
-            xmlDescription = builder(JSFResourceDefinition.INSTANCE.getPathElement(), NAMESPACE_1_1)
+            xmlDescription = builder(PATH_SUBSYSTEM, NAMESPACE_1_1)
                     .addAttributes(JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT)
                     .addAttributes(JSFResourceDefinition.DISALLOW_DOCTYPE_DECL)
                     .build();
