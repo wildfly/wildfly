@@ -51,7 +51,6 @@ import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymen
 import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymentParsingProcessor;
 import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymentProcessor;
 import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymentSchema;
-import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymentXMLReader;
 
 /**
  * Definition of the /subsystem=distributable-web resource.
@@ -130,7 +129,7 @@ public class DistributableWebResourceDefinition extends SubsystemResourceDefinit
     public void accept(DeploymentProcessorTarget target) {
         JBossAllXmlParserRegisteringProcessor.Builder builder = JBossAllXmlParserRegisteringProcessor.builder();
         for (DistributableWebDeploymentSchema schema : EnumSet.allOf(DistributableWebDeploymentSchema.class)) {
-            builder.addParser(schema.getName(), DistributableWebDeploymentDependencyProcessor.CONFIGURATION_KEY, new DistributableWebDeploymentXMLReader(schema));
+            builder.addParser(schema.getName(), DistributableWebDeploymentDependencyProcessor.CONFIGURATION_KEY, schema.get());
         }
         target.addDeploymentProcessor(DistributableWebExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_DISTRIBUTABLE_WEB, builder.build());
         target.addDeploymentProcessor(DistributableWebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_DISTRIBUTABLE_WEB, new DistributableWebDeploymentParsingProcessor());

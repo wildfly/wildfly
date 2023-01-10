@@ -33,6 +33,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.clustering.xml.XMLElementSchema;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -51,13 +52,7 @@ public class SingletonDeploymentParsingProcessor implements DeploymentUnitProces
     private static final String SINGLETON_DEPLOYMENT_DESCRIPTOR = "META-INF/singleton-deployment.xml";
     private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();
 
-    private final XMLMapper mapper = XMLMapper.Factory.create();
-
-    public SingletonDeploymentParsingProcessor() {
-        for (SingletonDeploymentSchema schema : SingletonDeploymentSchema.values()) {
-            this.mapper.registerRootElement(schema.getName(), new SingletonDeploymentXMLReader(schema));
-        }
-    }
+    private final XMLMapper mapper = XMLElementSchema.createMapper(SingletonDeploymentSchema.class);
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {

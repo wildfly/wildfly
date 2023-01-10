@@ -50,7 +50,6 @@ import org.wildfly.extension.clustering.singleton.deployment.SingletonDeployment
 import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentParsingProcessor;
 import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentProcessor;
 import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentSchema;
-import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentXMLReader;
 
 /**
  * Definition of the singleton deployer resource.
@@ -118,7 +117,7 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition imp
     public void accept(DeploymentProcessorTarget target) {
         JBossAllXmlParserRegisteringProcessor.Builder builder = JBossAllXmlParserRegisteringProcessor.builder();
         for (SingletonDeploymentSchema schema : SingletonDeploymentSchema.values()) {
-            builder.addParser(schema.getName(), SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY, new SingletonDeploymentXMLReader(schema));
+            builder.addParser(schema.getName(), SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY, schema.get());
         }
         target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_SINGLETON_DEPLOYMENT, builder.build());
         target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_SINGLETON_DEPLOYMENT, new SingletonDeploymentParsingProcessor());

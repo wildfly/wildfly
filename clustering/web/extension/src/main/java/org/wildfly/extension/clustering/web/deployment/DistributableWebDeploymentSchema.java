@@ -24,13 +24,13 @@ package org.wildfly.extension.clustering.web.deployment;
 
 import java.util.Locale;
 
-import org.jboss.as.clustering.xml.Schema;
+import org.jboss.as.clustering.xml.XMLElementSchema;
 
 /**
  * Enumerate the schema versions of the distibutable-web deployment descriptor.
  * @author Paul Ferraro
  */
-public enum DistributableWebDeploymentSchema implements Schema<DistributableWebDeploymentSchema> {
+public enum DistributableWebDeploymentSchema implements XMLElementSchema<MutableDistributableDeploymentConfiguration, DistributableWebDeploymentSchema> {
 
     VERSION_1_0(1, 0),
     VERSION_2_0(2, 0),
@@ -62,5 +62,10 @@ public enum DistributableWebDeploymentSchema implements Schema<DistributableWebD
     @Override
     public String getLocalName() {
         return "distributable-web";
+    }
+
+    @Override
+    public DistributableWebDeploymentXMLReader get() {
+        return new DistributableWebDeploymentXMLReader(this);
     }
 }

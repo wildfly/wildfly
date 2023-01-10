@@ -24,13 +24,13 @@ package org.wildfly.extension.clustering.singleton.deployment;
 
 import java.util.Locale;
 
-import org.jboss.as.clustering.xml.Schema;
+import org.jboss.as.clustering.xml.XMLElementSchema;
 
 /**
  * Enumerates the singleton deployment configuration schemas.
  * @author Paul Ferraro
  */
-public enum SingletonDeploymentSchema implements Schema<SingletonDeploymentSchema> {
+public enum SingletonDeploymentSchema implements XMLElementSchema<MutableSingletonDeploymentConfiguration, SingletonDeploymentSchema> {
 
     VERSION_1_0(1, 0),
     ;
@@ -62,5 +62,10 @@ public enum SingletonDeploymentSchema implements Schema<SingletonDeploymentSchem
     @Override
     public String getLocalName() {
         return "singleton-deployment";
+    }
+
+    @Override
+    public SingletonDeploymentXMLReader get() {
+        return new SingletonDeploymentXMLReader(this);
     }
 }
