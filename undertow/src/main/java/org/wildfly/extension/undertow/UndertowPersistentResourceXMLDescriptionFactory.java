@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Attribute;
@@ -92,6 +93,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
         });
 
         Stream<AttributeDefinition> attributes = UndertowRootDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_12_0)) {
+            attributes = attributes.filter(Predicate.isEqual(UndertowRootDefinition.OBFUSCATE_SESSION_ROUTE).negate());
+        }
         attributes.forEach(builder::addAttribute);
         return builder.build();
     }
