@@ -197,6 +197,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
         builder.addChild(builder(SingleSignOnDefinition.PATH_ELEMENT, ssoAttributes));
 
         Stream<AttributeDefinition> attributes = ApplicationSecurityDomainDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_7_0)) {
+            attributes = attributes.filter(Predicate.isEqual(ApplicationSecurityDomainDefinition.SECURITY_DOMAIN).negate());
+        }
         if (!schema.since(UndertowSchema.VERSION_8_0)) {
             attributes = attributes.filter(Predicate.not(Set.of(ApplicationSecurityDomainDefinition.ENABLE_JASPI, ApplicationSecurityDomainDefinition.INTEGRATED_JASPI)::contains));
         }
