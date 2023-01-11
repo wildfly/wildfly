@@ -84,7 +84,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
         return ATTRIBUTES;
     }
 
-    public static boolean isEnabled(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    public static boolean isEnabled(final ModelNode model) throws OperationFailedException {
         return model.isDefined();
     }
 
@@ -114,7 +114,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
         }
 
         private void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            if (isEnabled(context, model)) {
+            if (isEnabled(model)) {
                 final ModelNode pathValue = PATH.resolveModelAttribute(context, model);
                 final ServiceBuilder<?> sb = context.getServiceTarget().addService(AbstractPersistentSessionManager.SERVICE_NAME);
                 final Consumer<SessionPersistenceManager> sConsumer = sb.provides(AbstractPersistentSessionManager.SERVICE_NAME);
@@ -144,7 +144,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override
@@ -167,7 +167,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override

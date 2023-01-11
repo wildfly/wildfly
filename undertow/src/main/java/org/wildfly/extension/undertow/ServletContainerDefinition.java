@@ -222,7 +222,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
 
     ServletContainerDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
-                .setAddHandler(ServletContainerAdd.INSTANCE)
+                .setAddHandler(new ServletContainerAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addCapabilities(SERVLET_CONTAINER_CAPABILITY)
         );

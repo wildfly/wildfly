@@ -29,18 +29,10 @@ import io.undertow.servlet.api.ServletContainer;
 import io.undertow.servlet.api.ServletStackTraces;
 import io.undertow.servlet.api.SessionPersistenceManager;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
 import org.xnio.XnioWorker;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * Central Undertow 'Container' HTTP listeners will make this container accessible whilst deployers will add content.
@@ -48,234 +40,71 @@ import java.util.function.Supplier;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class ServletContainerService implements Service<ServletContainerService> {
+public interface ServletContainerService {
 
-    private final Consumer<ServletContainerService> serviceConsumer;
-    private final Supplier<SessionPersistenceManager> sessionPersistenceManager;
-    private final Supplier<DirectBufferCache> bufferCache;
-    private final Supplier<ByteBufferPool> websocketsBufferPool;
-    private final Supplier<XnioWorker> websocketsWorker;
-    private final boolean allowNonStandardWrappers;
-    private final ServletStackTraces stackTraces;
-    private final SessionCookieConfig sessionCookieConfig;
-    private final JSPConfig jspConfig;
-    private final String defaultEncoding;
-    private final boolean useListenerEncoding;
-    private final boolean ignoreFlush;
-    private final boolean eagerFilterInit;
-    private final int defaultSessionTimeout;
-    private final boolean disableCachingForSecuredPages;
-    private final Boolean directoryListingEnabled;
-    private final int sessionIdLength;
-    private final CrawlerSessionManagerConfig crawlerSessionManagerConfig;
-    private final boolean websocketsEnabled;
-    private final boolean dispatchWebsocketInvocationToWorker;
-    private final boolean perMessageDeflate;
-    private final int deflaterLevel;
-    private final Map<String, String> mimeMappings;
-    private final List<String> welcomeFiles;
-    private final boolean proactiveAuth;
-    private final Integer maxSessions;
-    private final boolean disableFileWatchService;
-    private final boolean disableSessionIdReuse;
-    private final int fileCacheMetadataSize;
-    private final int fileCacheMaxFileSize;
-    private final Integer fileCacheTimeToLive;
-    private final int defaultCookieVersion;
-    private boolean preservePathOnForward;
+    ServletContainer getServletContainer();
 
-    private volatile ServletContainer servletContainer;
+    boolean isAllowNonStandardWrappers();
 
-    public ServletContainerService(
-            final Consumer<ServletContainerService> serviceConsumer, final Supplier<SessionPersistenceManager> sessionPersistenceManager, final Supplier<DirectBufferCache> bufferCache,
-            final Supplier<ByteBufferPool> websocketsBufferPool, final Supplier<XnioWorker> websocketsWorker,
-            boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig,
-            String defaultEncoding, boolean useListenerEncoding, boolean ignoreFlush, boolean eagerFilterInit, int defaultSessionTimeout,
-            boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker, boolean perMessageDeflate,
-            int deflaterLevel, Map<String, String> mimeMappings, List<String> welcomeFiles, Boolean directoryListingEnabled, boolean proactiveAuth,
-            int sessionIdLength, Integer maxSessions,
-            CrawlerSessionManagerConfig crawlerSessionManagerConfig, boolean disableFileWatchService, boolean disableSessionIdReuse, int fileCacheMetadataSize, int fileCacheMaxFileSize, Integer fileCacheTimeToLive, int defaultCookieVersion, boolean preservePathOnForward) {
-        this.serviceConsumer = serviceConsumer;
-        this.sessionPersistenceManager = sessionPersistenceManager;
-        this.bufferCache = bufferCache;
-        this.websocketsBufferPool = websocketsBufferPool;
-        this.websocketsWorker = websocketsWorker;
-        this.allowNonStandardWrappers = allowNonStandardWrappers;
-        this.stackTraces = stackTraces;
-        this.sessionCookieConfig = sessionCookieConfig;
-        this.jspConfig = jspConfig;
-        this.defaultEncoding = defaultEncoding;
-        this.useListenerEncoding = useListenerEncoding;
-        this.ignoreFlush = ignoreFlush;
-        this.eagerFilterInit = eagerFilterInit;
-        this.defaultSessionTimeout = defaultSessionTimeout;
-        this.disableCachingForSecuredPages = disableCachingForSecuredPages;
-        this.websocketsEnabled = websocketsEnabled;
-        this.dispatchWebsocketInvocationToWorker = dispatchWebsocketInvocationToWorker;
-        this.perMessageDeflate = perMessageDeflate;
-        this.deflaterLevel = deflaterLevel;
-        this.directoryListingEnabled = directoryListingEnabled;
-        this.proactiveAuth = proactiveAuth;
-        this.maxSessions = maxSessions;
-        this.crawlerSessionManagerConfig = crawlerSessionManagerConfig;
-        this.disableFileWatchService = disableFileWatchService;
-        this.welcomeFiles = new ArrayList<>(welcomeFiles);
-        this.mimeMappings = new HashMap<>(mimeMappings);
-        this.sessionIdLength = sessionIdLength;
-        this.disableSessionIdReuse = disableSessionIdReuse;
-        this.fileCacheMetadataSize = fileCacheMetadataSize;
-        this.fileCacheMaxFileSize = fileCacheMaxFileSize;
-        this.fileCacheTimeToLive = fileCacheTimeToLive;
-        this.defaultCookieVersion = defaultCookieVersion;
-        this.preservePathOnForward = preservePathOnForward;
-    }
+    JSPConfig getJspConfig();
 
-    @Override
-    public void start(final StartContext context) {
-        servletContainer = ServletContainer.Factory.newInstance();
-        serviceConsumer.accept(this);
-    }
+    ServletStackTraces getStackTraces();
 
-    @Override
-    public void stop(final StopContext context) {
-        serviceConsumer.accept(null);
-    }
+    SessionCookieConfig getSessionCookieConfig();
 
-    @Override
-    public ServletContainerService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
+    DirectBufferCache getBufferCache();
 
-    public ServletContainer getServletContainer() {
-        return servletContainer;
-    }
+    boolean isDisableCachingForSecuredPages();
 
-    public boolean isAllowNonStandardWrappers() {
-        return allowNonStandardWrappers;
-    }
+    boolean isDispatchWebsocketInvocationToWorker();
 
-    public JSPConfig getJspConfig() {
-        return jspConfig;
-    }
+    boolean isPerMessageDeflate();
 
-    public ServletStackTraces getStackTraces() {
-        return stackTraces;
-    }
+    int getDeflaterLevel();
 
-    public SessionCookieConfig getSessionCookieConfig() {
-        return sessionCookieConfig;
-    }
+    boolean isWebsocketsEnabled();
 
-    public DirectBufferCache getBufferCache() {
-        return bufferCache != null ? bufferCache.get() : null;
-    }
+    boolean isDisableSessionIdReuse();
 
-    public boolean isDisableCachingForSecuredPages() {
-        return disableCachingForSecuredPages;
-    }
+    SessionPersistenceManager getSessionPersistenceManager();
 
-    public boolean isDispatchWebsocketInvocationToWorker() {
-        return dispatchWebsocketInvocationToWorker;
-    }
+    XnioWorker getWebsocketsWorker();
 
-    public boolean isPerMessageDeflate() {
-        return perMessageDeflate;
-    }
+    ByteBufferPool getWebsocketsBufferPool();
 
-    public int getDeflaterLevel() {
-        return deflaterLevel;
-    }
+    String getDefaultEncoding();
 
-    public boolean isWebsocketsEnabled() {
-        return websocketsEnabled;
-    }
+    boolean isUseListenerEncoding();
 
-    public boolean isDisableSessionIdReuse() {
-        return disableSessionIdReuse;
-    }
+    boolean isIgnoreFlush();
 
-    public SessionPersistenceManager getSessionPersistenceManager() {
-        return sessionPersistenceManager != null ? sessionPersistenceManager.get() : null;
-    }
+    boolean isEagerFilterInit();
 
-    public XnioWorker getWebsocketsWorker() {
-        return websocketsWorker != null ? websocketsWorker.get() : null;
-    }
+    int getDefaultSessionTimeout();
 
-    public ByteBufferPool getWebsocketsBufferPool() {
-        return websocketsBufferPool != null ? websocketsBufferPool.get() : null;
-    }
+    Map<String, String> getMimeMappings();
 
-    public String getDefaultEncoding() {
-        return defaultEncoding;
-    }
+    List<String> getWelcomeFiles();
 
-    public boolean isUseListenerEncoding() {
-        return useListenerEncoding;
-    }
+    Boolean getDirectoryListingEnabled();
 
-    public boolean isIgnoreFlush() {
-        return ignoreFlush;
-    }
+    boolean isProactiveAuth();
 
-    public boolean isEagerFilterInit() {
-        return eagerFilterInit;
-    }
+    int getSessionIdLength();
 
-    public int getDefaultSessionTimeout() {
-        return defaultSessionTimeout;
-    }
+    Integer getMaxSessions();
 
-    public Map<String, String> getMimeMappings() {
-        return Collections.unmodifiableMap(mimeMappings);
-    }
+    boolean isDisableFileWatchService();
 
-    public List<String> getWelcomeFiles() {
-        return welcomeFiles;
-    }
+    CrawlerSessionManagerConfig getCrawlerSessionManagerConfig();
 
-    public Boolean getDirectoryListingEnabled() {
-        return directoryListingEnabled;
-    }
+    int getFileCacheMetadataSize();
 
+    int getFileCacheMaxFileSize();
 
-    public boolean isProactiveAuth() {
-        return proactiveAuth;
-    }
+    Integer getFileCacheTimeToLive();
 
-    public int getSessionIdLength() {
-        return sessionIdLength;
-    }
+    int getDefaultCookieVersion();
 
-    public Integer getMaxSessions() {
-        return maxSessions;
-    }
-
-    public boolean isDisableFileWatchService() {
-        return disableFileWatchService;
-    }
-
-    public CrawlerSessionManagerConfig getCrawlerSessionManagerConfig() {
-        return crawlerSessionManagerConfig;
-    }
-
-    public int getFileCacheMetadataSize() {
-        return fileCacheMetadataSize;
-    }
-
-    public int getFileCacheMaxFileSize() {
-        return fileCacheMaxFileSize;
-    }
-
-    public Integer getFileCacheTimeToLive() {
-        return fileCacheTimeToLive;
-    }
-
-    public int getDefaultCookieVersion() {
-        return defaultCookieVersion;
-    }
-
-    public boolean isPreservePathOnForward() {
-        return preservePathOnForward;
-    }
+    boolean isPreservePathOnForward();
 }
