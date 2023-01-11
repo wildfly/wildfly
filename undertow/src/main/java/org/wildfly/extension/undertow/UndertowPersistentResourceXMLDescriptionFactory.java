@@ -61,7 +61,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
     public PersistentResourceXMLDescription apply(UndertowSchema schema) {
         PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(UndertowRootDefinition.PATH_ELEMENT, schema.getUri());
 
-        builder.addChild(builder(ByteBufferPoolDefinition.PATH_ELEMENT, ByteBufferPoolDefinition.ATTRIBUTES.stream()));
+        if (schema.since(UndertowSchema.VERSION_6_0)) {
+            builder.addChild(builder(ByteBufferPoolDefinition.PATH_ELEMENT, ByteBufferPoolDefinition.ATTRIBUTES.stream()));
+        }
         builder.addChild(builder(BufferCacheDefinition.PATH_ELEMENT, BufferCacheDefinition.ATTRIBUTES.stream()));
         builder.addChild(builder(ServerDefinition.PATH_ELEMENT, ServerDefinition.ATTRIBUTES.stream())
             .addChild(ajpListenerBuilder(schema))
@@ -126,11 +128,17 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
 
     private static Stream<AttributeDefinition> httpListenerAttributes(UndertowSchema schema) {
         Stream<AttributeDefinition> attributes = AbstractHttpListenerResourceDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_6_0)) {
+            attributes = attributes.filter(Predicate.isEqual(AbstractHttpListenerResourceDefinition.PROXY_PROTOCOL).negate());
+        }
         return attributes;
     }
 
     private static Stream<AttributeDefinition> listenerAttributes(UndertowSchema schema) {
         Stream<AttributeDefinition> attributes = ListenerResourceDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_6_0)) {
+            attributes = attributes.filter(Predicate.isEqual(ListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL).negate());
+        }
         return attributes;
     }
 
@@ -149,6 +157,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
         builder.addChild(builder(HttpInvokerDefinition.PATH_ELEMENT, HttpInvokerDefinition.ATTRIBUTES.stream()));
 
         Stream<AttributeDefinition> attributes = HostDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_6_0)) {
+            attributes = attributes.filter(Predicate.isEqual(HostDefinition.QUEUE_REQUESTS_ON_START).negate());
+        }
         attributes.forEach(builder::addAttribute);
         return builder;
     }
@@ -169,6 +180,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
         builder.addChild(builder(CrawlerSessionManagementDefinition.PATH_ELEMENT, CrawlerSessionManagementDefinition.ATTRIBUTES.stream()));
 
         Stream<AttributeDefinition> attributes = ServletContainerDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_6_0)) {
+            attributes = attributes.filter(Predicate.isEqual(ServletContainerDefinition.DEFAULT_COOKIE_VERSION).negate());
+        }
         if (!schema.since(UndertowSchema.VERSION_10_0)) {
             attributes = attributes.filter(Predicate.isEqual(ServletContainerDefinition.PRESERVE_PATH_ON_FORWARD).negate());
         }
