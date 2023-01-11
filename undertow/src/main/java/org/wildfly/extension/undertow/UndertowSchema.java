@@ -30,7 +30,13 @@ import org.jboss.as.controller.PersistentResourceXMLDescription;
  * @author Paul Ferraro
  */
 public enum UndertowSchema implements PersistentSubsystemSchema<UndertowSchema> {
-
+/*  Unsupported, for documentation purposes only
+    VERSION_1_0(1, 0),  // WildFly 8.0
+    VERSION_1_1(1, 1),  // WildFly 8.1
+    VERSION_1_2(1, 2),  // WildFly 8.2
+    VERSION_2_0(2),     // WildFly 9
+    VERSION_3_0(3, 0),  // WildFly 10.0
+ */
     VERSION_3_1(3, 1),  // WildFly 10.1
     VERSION_4_0(4),     // WildFly 11
     VERSION_5_0(5),     // WildFly 12
