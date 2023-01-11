@@ -72,12 +72,7 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
             .addChild(hostBuilder(schema))
         );
         builder.addChild(servletContainerBuilder(schema));
-        builder.addChild(builder(HandlerDefinitions.PATH_ELEMENT).setXmlElementName(Constants.HANDLERS).setNoAddOperation(true)
-            .addChild(builder(FileHandlerDefinition.PATH_ELEMENT, FileHandlerDefinition.ATTRIBUTES.stream()))
-            .addChild(builder(ReverseProxyHandlerDefinition.PATH_ELEMENT, ReverseProxyHandlerDefinition.ATTRIBUTES.stream())
-                .addChild(builder(ReverseProxyHandlerHostDefinition.PATH_ELEMENT, ReverseProxyHandlerHostDefinition.ATTRIBUTES.stream()).setXmlElementName(Constants.HOST))
-            )
-        );
+        builder.addChild(handlersBuilder(schema));
         builder.addChild(PersistentResourceXMLDescription.builder(FilterDefinitions.PATH_ELEMENT).setXmlElementName(Constants.FILTERS).setNoAddOperation(true)
             .addChild(builder(RequestLimitHandlerDefinition.PATH_ELEMENT, RequestLimitHandlerDefinition.ATTRIBUTES.stream()))
             .addChild(builder(ResponseHeaderFilterDefinition.PATH_ELEMENT, ResponseHeaderFilterDefinition.ATTRIBUTES.stream()))
@@ -88,7 +83,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
             .addChild(builder(ExpressionFilterDefinition.PATH_ELEMENT, ExpressionFilterDefinition.ATTRIBUTES.stream()))
             .addChild(builder(RewriteFilterDefinition.PATH_ELEMENT, RewriteFilterDefinition.ATTRIBUTES.stream()))
         );
-        builder.addChild(applicationSecurityDomainBuilder(schema));
+        if (schema.since(UndertowSchema.VERSION_4_0)) {
+            builder.addChild(applicationSecurityDomainBuilder(schema));
+        }
         //here to make sure we always add filters & handlers path to mgmt model
         builder.setAdditionalOperationsGenerator((address, addOperation, operations) -> {
             operations.add(Util.createAddOperation(address.append(FilterDefinitions.PATH_ELEMENT)));
@@ -121,13 +118,23 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
     private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder httpsListenerBuilder(UndertowSchema schema) {
         PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(HttpsListenerResourceDefinition.PATH_ELEMENT);
         Stream<AttributeDefinition> attributes = HttpsListenerResourceDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_4_0)) {
+            attributes = attributes.filter(Predicate.isEqual(HttpsListenerResourceDefinition.SSL_CONTEXT).negate());
+        }
+        Stream<AttributeDefinition> httpListenerAttributes = httpListenerAttributes(schema);
+        if (!schema.since(UndertowSchema.VERSION_4_0)) {
+            httpListenerAttributes = httpListenerAttributes.filter(Predicate.not(Set.of(AbstractHttpListenerResourceDefinition.CERTIFICATE_FORWARDING, AbstractHttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING)::contains));
+        }
         // Reproduce attribute order of the previous parser implementation
-        Stream.of(listenerAttributes(schema), attributes, httpListenerAttributes(schema)).flatMap(Function.identity()).forEach(builder::addAttribute);
+        Stream.of(listenerAttributes(schema), attributes, httpListenerAttributes).flatMap(Function.identity()).forEach(builder::addAttribute);
         return builder;
     }
 
     private static Stream<AttributeDefinition> httpListenerAttributes(UndertowSchema schema) {
         Stream<AttributeDefinition> attributes = AbstractHttpListenerResourceDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_4_0)) {
+            attributes = attributes.filter(Predicate.isEqual(AbstractHttpListenerResourceDefinition.REQUIRE_HOST_HTTP11).negate());
+        }
         if (!schema.since(UndertowSchema.VERSION_6_0)) {
             attributes = attributes.filter(Predicate.isEqual(AbstractHttpListenerResourceDefinition.PROXY_PROTOCOL).negate());
         }
@@ -136,6 +143,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
 
     private static Stream<AttributeDefinition> listenerAttributes(UndertowSchema schema) {
         Stream<AttributeDefinition> attributes = ListenerResourceDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_4_0)) {
+            attributes = attributes.filter(Predicate.isEqual(ListenerResourceDefinition.RFC6265_COOKIE_VALIDATION).negate());
+        }
         if (!schema.since(UndertowSchema.VERSION_6_0)) {
             attributes = attributes.filter(Predicate.isEqual(ListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL).negate());
         }
@@ -154,7 +164,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
         }
         builder.addChild(filterRefBuilder());
         builder.addChild(builder(SingleSignOnDefinition.PATH_ELEMENT, Attribute.stream(SingleSignOnDefinition.Attribute.class)));
-        builder.addChild(builder(HttpInvokerDefinition.PATH_ELEMENT, HttpInvokerDefinition.ATTRIBUTES.stream()));
+        if (schema.since(UndertowSchema.VERSION_4_0)) {
+            builder.addChild(builder(HttpInvokerDefinition.PATH_ELEMENT, HttpInvokerDefinition.ATTRIBUTES.stream()));
+        }
 
         Stream<AttributeDefinition> attributes = HostDefinition.ATTRIBUTES.stream();
         if (!schema.since(UndertowSchema.VERSION_6_0)) {
@@ -174,12 +186,15 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
         builder.addChild(builder(JspDefinition.PATH_ELEMENT, JspDefinition.ATTRIBUTES.stream()).setXmlElementName(Constants.JSP_CONFIG));
         builder.addChild(builder(SessionCookieDefinition.PATH_ELEMENT, SessionCookieDefinition.ATTRIBUTES.stream()));
         builder.addChild(builder(PersistentSessionsDefinition.PATH_ELEMENT, PersistentSessionsDefinition.ATTRIBUTES.stream()));
-        builder.addChild(builder(WebsocketsDefinition.PATH_ELEMENT, WebsocketsDefinition.ATTRIBUTES.stream()));
+        builder.addChild(websocketsBuilder(schema));
         builder.addChild(builder(MimeMappingDefinition.PATH_ELEMENT, MimeMappingDefinition.ATTRIBUTES.stream()).setXmlWrapperElement("mime-mappings"));
         builder.addChild(builder(WelcomeFileDefinition.PATH_ELEMENT).setXmlWrapperElement("welcome-files"));
         builder.addChild(builder(CrawlerSessionManagementDefinition.PATH_ELEMENT, CrawlerSessionManagementDefinition.ATTRIBUTES.stream()));
 
         Stream<AttributeDefinition> attributes = ServletContainerDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_4_0)) {
+            attributes = attributes.filter(Predicate.not(Set.of(ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE, ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)::contains));
+        }
         if (!schema.since(UndertowSchema.VERSION_5_0)) {
             attributes = attributes.filter(Predicate.not(Set.of(ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE, ServletContainerDefinition.FILE_CACHE_METADATA_SIZE, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)::contains));
         }
@@ -193,6 +208,35 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
         return builder;
     }
 
+    private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder websocketsBuilder(UndertowSchema schema) {
+        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(WebsocketsDefinition.PATH_ELEMENT);
+        Stream<AttributeDefinition> attributes = WebsocketsDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_4_0)) {
+            attributes = attributes.filter(Predicate.not(Set.of(WebsocketsDefinition.PER_MESSAGE_DEFLATE, WebsocketsDefinition.DEFLATER_LEVEL)::contains));
+        }
+        attributes.forEach(builder::addAttribute);
+        return builder;
+    }
+
+    private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder handlersBuilder(UndertowSchema schema) {
+        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(HandlerDefinitions.PATH_ELEMENT).setXmlElementName(Constants.HANDLERS).setNoAddOperation(true);
+
+        builder.addChild(builder(FileHandlerDefinition.PATH_ELEMENT, FileHandlerDefinition.ATTRIBUTES.stream()));
+
+        Stream<AttributeDefinition> reverseProxyHandlerAttributes = ReverseProxyHandlerDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_4_0)) {
+            reverseProxyHandlerAttributes = reverseProxyHandlerAttributes.filter(Predicate.isEqual(ReverseProxyHandlerDefinition.MAX_RETRIES).negate());
+        }
+        Stream<AttributeDefinition> reverseProxyHandlerHostAttributes = ReverseProxyHandlerHostDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_4_0)) {
+            reverseProxyHandlerHostAttributes = reverseProxyHandlerHostAttributes.filter(Predicate.not(Set.of(ReverseProxyHandlerHostDefinition.SSL_CONTEXT, ReverseProxyHandlerHostDefinition.ENABLE_HTTP2)::contains));
+        }
+        builder.addChild(builder(ReverseProxyHandlerDefinition.PATH_ELEMENT, reverseProxyHandlerAttributes)
+            .addChild(builder(ReverseProxyHandlerHostDefinition.PATH_ELEMENT, ReverseProxyHandlerHostDefinition.ATTRIBUTES.stream()).setXmlElementName(Constants.HOST))
+        );
+        return builder;
+    }
+
     private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder modClusterBuilder(UndertowSchema schema) {
         PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(ModClusterDefinition.PATH_ELEMENT);
 
@@ -203,6 +247,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
         }
 
         Stream<AttributeDefinition> attributes = ModClusterDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_4_0)) {
+            attributes = attributes.filter(Predicate.not(Set.of(ModClusterDefinition.FAILOVER_STRATEGY, ModClusterDefinition.SSL_CONTEXT, ModClusterDefinition.MAX_RETRIES)::contains));
+        }
         attributes.forEach(builder::addAttribute);
         return builder;
     }
