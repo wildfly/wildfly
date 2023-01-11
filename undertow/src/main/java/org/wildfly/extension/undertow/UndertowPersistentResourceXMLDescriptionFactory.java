@@ -166,6 +166,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
         builder.addChild(builder(CrawlerSessionManagementDefinition.PATH_ELEMENT, CrawlerSessionManagementDefinition.ATTRIBUTES.stream()));
 
         Stream<AttributeDefinition> attributes = ServletContainerDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_10_0)) {
+            attributes = attributes.filter(Predicate.isEqual(ServletContainerDefinition.PRESERVE_PATH_ON_FORWARD).negate());
+        }
         attributes.forEach(builder::addAttribute);
         return builder;
     }
@@ -173,9 +176,11 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
     private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder modClusterBuilder(UndertowSchema schema) {
         PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(ModClusterDefinition.PATH_ELEMENT);
 
-        builder.addChild(builder(NoAffinityResourceDefinition.PATH).setXmlElementName(Constants.NO_AFFINITY));
-        builder.addChild(builder(SingleAffinityResourceDefinition.PATH).setXmlElementName(Constants.SINGLE_AFFINITY));
-        builder.addChild(builder(RankedAffinityResourceDefinition.PATH, Attribute.stream(RankedAffinityResourceDefinition.Attribute.class)).setXmlElementName(Constants.RANKED_AFFINITY));
+        if (schema.since(UndertowSchema.VERSION_10_0)) {
+            builder.addChild(builder(NoAffinityResourceDefinition.PATH).setXmlElementName(Constants.NO_AFFINITY));
+            builder.addChild(builder(SingleAffinityResourceDefinition.PATH).setXmlElementName(Constants.SINGLE_AFFINITY));
+            builder.addChild(builder(RankedAffinityResourceDefinition.PATH, Attribute.stream(RankedAffinityResourceDefinition.Attribute.class)).setXmlElementName(Constants.RANKED_AFFINITY));
+        }
 
         Stream<AttributeDefinition> attributes = ModClusterDefinition.ATTRIBUTES.stream();
         attributes.forEach(builder::addAttribute);

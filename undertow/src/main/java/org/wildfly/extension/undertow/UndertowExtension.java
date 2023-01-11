@@ -60,7 +60,6 @@ public class UndertowExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_6_0.getUriString(), UndertowSubsystemParser_6_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_7_0.getUriString(), UndertowSubsystemParser_7_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_8_0.getUriString(), UndertowSubsystemParser_8_0::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_9_0.getUriString(), UndertowSubsystemParser_9_0::new);
 
         for (UndertowSchema schema : EnumSet.allOf(UndertowSchema.class)) {
             context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getUri(), (schema == UndertowSchema.CURRENT) ? this.currentMarshaller : schema);
