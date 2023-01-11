@@ -140,7 +140,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
             .addChild(filterRefBuilder())
         );
         builder.addChild(builder(AccessLogDefinition.PATH_ELEMENT, AccessLogDefinition.ATTRIBUTES.stream()));
-        builder.addChild(builder(ConsoleAccessLogDefinition.PATH_ELEMENT, ConsoleAccessLogDefinition.ATTRIBUTES.stream()));
+        if (schema.since(UndertowSchema.VERSION_9_0)) {
+            builder.addChild(builder(ConsoleAccessLogDefinition.PATH_ELEMENT, ConsoleAccessLogDefinition.ATTRIBUTES.stream()));
+        }
         builder.addChild(filterRefBuilder());
         builder.addChild(builder(SingleSignOnDefinition.PATH_ELEMENT, Attribute.stream(SingleSignOnDefinition.Attribute.class)));
         builder.addChild(builder(HttpInvokerDefinition.PATH_ELEMENT, HttpInvokerDefinition.ATTRIBUTES.stream()));

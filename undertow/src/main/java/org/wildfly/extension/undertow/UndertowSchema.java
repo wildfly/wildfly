@@ -31,6 +31,7 @@ import org.jboss.as.controller.PersistentResourceXMLDescription;
  */
 public enum UndertowSchema implements PersistentSubsystemSchema<UndertowSchema> {
 
+    VERSION_8_0(8),     // WildFly 15-16
     VERSION_9_0(9),     // WildFly 17
     VERSION_10_0(10),   // WildFly 18-19
     VERSION_11_0(11),   // WildFly 20-22    N.B. There were no parser changes between 10.0 and 11.0 !!
