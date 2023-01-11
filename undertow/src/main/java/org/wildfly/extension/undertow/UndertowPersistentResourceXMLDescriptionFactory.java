@@ -180,6 +180,9 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
         builder.addChild(builder(CrawlerSessionManagementDefinition.PATH_ELEMENT, CrawlerSessionManagementDefinition.ATTRIBUTES.stream()));
 
         Stream<AttributeDefinition> attributes = ServletContainerDefinition.ATTRIBUTES.stream();
+        if (!schema.since(UndertowSchema.VERSION_5_0)) {
+            attributes = attributes.filter(Predicate.not(Set.of(ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE, ServletContainerDefinition.FILE_CACHE_METADATA_SIZE, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)::contains));
+        }
         if (!schema.since(UndertowSchema.VERSION_6_0)) {
             attributes = attributes.filter(Predicate.isEqual(ServletContainerDefinition.DEFAULT_COOKIE_VERSION).negate());
         }

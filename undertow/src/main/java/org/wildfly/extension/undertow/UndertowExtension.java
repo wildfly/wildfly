@@ -55,7 +55,6 @@ public class UndertowExtension implements Extension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_3_1.getUriString(), UndertowSubsystemParser_3_1::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_4_0.getUriString(), UndertowSubsystemParser_4_0::new);
 
         for (UndertowSchema schema : EnumSet.allOf(UndertowSchema.class)) {
             context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getUri(), (schema == UndertowSchema.CURRENT) ? this.currentMarshaller : schema);
