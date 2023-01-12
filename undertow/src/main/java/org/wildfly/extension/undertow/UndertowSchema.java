@@ -47,9 +47,10 @@ public enum UndertowSchema implements PersistentSubsystemSchema<UndertowSchema> 
     VERSION_10_0(10),   // WildFly 18-19
     VERSION_11_0(11),   // WildFly 20-22    N.B. There were no parser changes between 10.0 and 11.0 !!
     VERSION_12_0(12),   // WildFly 23-26.1, EAP 7.4
-    VERSION_13_0(13),   // WildFly 27-present   N.B. There were no schema changes between 12.0 and 13.0!
+    VERSION_13_0(13),   // WildFly 27       N.B. There were no schema changes between 12.0 and 13.0!
+    VERSION_14_0(14),   // WildFly 28-present
     ;
-    static final UndertowSchema CURRENT = VERSION_13_0;
+    static final UndertowSchema CURRENT = VERSION_14_0;
 
     private final int major;
     private final int minor;
