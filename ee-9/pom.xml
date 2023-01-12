@@ -90,9 +90,6 @@
         <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
         <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
-        <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
-		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
-        <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>2.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate.validator>7.0.2.Final</version.org.hibernate.validator>
         <version.org.jberet>2.0.4.Final</version.org.jberet>
@@ -613,10 +610,13 @@
                 </exclusions>
             </dependency>
 
+            <!-- BES 2023/01/11 WFLY-17494 removes the need to control this here 
+			     as the same version is now used as in std WF, but to make the change 
+			     as simple as possible, I've left the WFP dependency management in place. --> 
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-xjc</artifactId>
-                <version>${version.org.glassfish.jaxb.jaxb-xjc}</version>
+                <version>${version.sun.jaxb}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
