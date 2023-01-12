@@ -124,7 +124,7 @@ public final class EjbValidationsUtil {
     public static boolean verifyEjbPublicMethodAreNotFinalNorStatic(Method[] methods, String classname) {
         boolean isEjbCompliant = true;
         for (Method method : methods) {
-            if (Modifier.isPublic(method.getModifiers()) && !EjbValidationsUtil.verifyMethodIsNotFinalNorStatic(method, classname))
+            if (Object.class != method.getDeclaringClass() && !EjbValidationsUtil.verifyMethodIsNotFinalNorStatic(method, classname))
                 isEjbCompliant = false;
         }
         return isEjbCompliant;
