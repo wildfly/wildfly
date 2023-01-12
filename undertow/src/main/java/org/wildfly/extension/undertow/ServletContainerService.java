@@ -107,4 +107,6 @@ public interface ServletContainerService {
     int getDefaultCookieVersion();
 
     boolean isPreservePathOnForward();
+
+    boolean isOrphanSessionAllowed();
 }

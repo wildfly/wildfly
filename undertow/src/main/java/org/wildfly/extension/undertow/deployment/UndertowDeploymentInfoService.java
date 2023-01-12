@@ -553,6 +553,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (servletContainer.getSessionPersistenceManager() != null) {
                 d.setSessionPersistenceManager(servletContainer.getSessionPersistenceManager());
             }
+            d.setOrphanSessionAllowed(servletContainer.isOrphanSessionAllowed());
 
             //for 2.2 apps we do not require a leading / in path mappings
             boolean is22OrOlder;

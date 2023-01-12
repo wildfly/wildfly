@@ -91,6 +91,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final Integer fileCacheTimeToLive = fileCacheTtlNode.isDefined()  ? fileCacheTtlNode.asInt() : null;
         final int defaultCookieVersion = ServletContainerDefinition.DEFAULT_COOKIE_VERSION.resolveModelAttribute(resolver, model).asInt();
         final boolean preservePathOnForward = ServletContainerDefinition.PRESERVE_PATH_ON_FORWARD.resolveModelAttribute(resolver, model).asBoolean();
+        boolean orphanSessionAllowed = ServletContainerDefinition.ORPHAN_SESSION_ALLOWED.resolveModelAttribute(resolver, model).asBoolean();
 
         Boolean directoryListingEnabled = ServletContainerDefinition.DIRECTORY_LISTING.resolveModelAttribute(resolver, model).asBooleanOrNull();
         Integer maxSessions = ServletContainerDefinition.MAX_SESSIONS.resolveModelAttribute(resolver, model).asIntOrNull();
@@ -275,6 +276,11 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
             @Override
             public boolean isPreservePathOnForward() {
                 return preservePathOnForward;
+            }
+
+            @Override
+            public boolean isOrphanSessionAllowed() {
+                return orphanSessionAllowed;
             }
         };
         builder.setInstance(Service.newInstance(builder.provides(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY, UndertowService.SERVLET_CONTAINER.append(address.getLastElement().getValue())), service));
