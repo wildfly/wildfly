@@ -23,9 +23,12 @@
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
+import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.BROWSE;
 import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.CONSUME;
+import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.CREATE_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.CREATE_DURABLE_QUEUE;
 import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE;
+import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.DELETE_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.DELETE_DURABLE_QUEUE;
 import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE;
 import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.MANAGE;
@@ -68,6 +71,9 @@ public class ManagementUtil {
                 roleNode.get(CREATE_NON_DURABLE_QUEUE.getName()).set((Boolean)role[5]);
                 roleNode.get(DELETE_NON_DURABLE_QUEUE.getName()).set((Boolean)role[6]);
                 roleNode.get(MANAGE.getName()).set((Boolean)role[7]);
+                roleNode.get(BROWSE.getName()).set((Boolean)role[8]);
+                roleNode.get(CREATE_ADDRESS.getName()).set((Boolean)role[9]);
+                roleNode.get(DELETE_ADDRESS.getName()).set((Boolean)role[10]);
             }
         }
         return result;
@@ -95,16 +101,28 @@ public class ManagementUtil {
                 final ModelNode roleNode = result.add();
                 for (Property prop : role.asPropertyList()) {
                     String key = prop.getName();
-                    if ("createDurableQueue".equals(key)) {
-                        key = SecurityRoleDefinition.CREATE_DURABLE_QUEUE.getName();
-                    } else if ("deleteDurableQueue".equals(key)) {
-                        key = SecurityRoleDefinition.DELETE_DURABLE_QUEUE.getName();
-                    } else if ("createNonDurableQueue".equals(key)) {
-                        key = SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE.getName();
-                    } else if ("deleteNonDurableQueue".equals(key)) {
-                        key = SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE.getName();
+                    if (null != key) switch (key) {
+                        case "createDurableQueue":
+                            key = SecurityRoleDefinition.CREATE_DURABLE_QUEUE.getName();
+                            break;
+                        case "deleteDurableQueue":
+                            key = SecurityRoleDefinition.DELETE_DURABLE_QUEUE.getName();
+                            break;
+                        case "createNonDurableQueue":
+                            key = SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE.getName();
+                            break;
+                        case "deleteNonDurableQueue":
+                            key = SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE.getName();
+                            break;
+                        case "createAddress":
+                            key = "create-address";
+                            break;
+                        case "deleteAddress":
+                            key = "delete-address";
+                            break;
+                        default:
+                            break;
                     }
-
                     roleNode.get(key).set(prop.getValue());
                 }
             }

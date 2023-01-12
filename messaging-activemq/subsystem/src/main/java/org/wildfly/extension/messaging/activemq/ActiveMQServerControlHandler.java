@@ -341,7 +341,10 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
                         SecurityRoleDefinition.DELETE_DURABLE_QUEUE,
                         SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE,
                         SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE,
-                        SecurityRoleDefinition.MANAGE)
+                        SecurityRoleDefinition.MANAGE,
+                        SecurityRoleDefinition.BROWSE,
+                        SecurityRoleDefinition.CREATE_ADDRESS,
+                        SecurityRoleDefinition.DELETE_ADDRESS)
                 .build(),
                 this);
     }
