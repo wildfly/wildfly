@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -57,15 +60,15 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
         final ModelNode relativeToNode = FileDataStoreResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, model);
         final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
 
-        final FileTimerPersistence fileTimerPersistence = new FileTimerPersistence(true, path, relativeTo);
-
         // add the TimerPersistence instance
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final CapabilityServiceBuilder<?> builder = serviceTarget.addCapability(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY);
-        builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, fileTimerPersistence.getModuleLoader());
-        builder.addCapabilityRequirement(PATH_MANAGER_CAPABILITY_NAME, PathManager.class, fileTimerPersistence.getPathManager());
-        builder.addCapabilityRequirement(TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME, Void.class);
-        builder.addCapabilityRequirement(TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY_NAME, TransactionSynchronizationRegistry.class, fileTimerPersistence.getTransactionSynchronizationRegistry());
+        final Consumer<FileTimerPersistence> consumer = builder.provides(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY);
+        builder.requiresCapability(TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME, Void.class);
+        final Supplier<TransactionSynchronizationRegistry> txnRegistrySupplier = builder.requiresCapability(TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY_NAME, TransactionSynchronizationRegistry.class);
+        final Supplier<ModuleLoader> moduleLoaderSupplier = builder.requires(Services.JBOSS_SERVICE_MODULE_LOADER);
+        final Supplier<PathManager> pathManagerSupplier = builder.requiresCapability(PATH_MANAGER_CAPABILITY_NAME, PathManager.class);
+        final FileTimerPersistence fileTimerPersistence = new FileTimerPersistence(consumer, txnRegistrySupplier, moduleLoaderSupplier, pathManagerSupplier, true, path, relativeTo);
         builder.setInstance(fileTimerPersistence);
         builder.install();
     }
