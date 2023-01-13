@@ -21,7 +21,6 @@
     <feature-group name="management-interfaces"/>
     <feature-group name="access-control"/>
     <feature-group name="health"/>
-    <feature-group name="micrometer" />
 
     <feature-group name="servlet-unsecured-standalone-profile"/>
     <feature-group name="basic-ha-profile"/>

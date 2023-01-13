@@ -38,6 +38,7 @@
     <packaging>pom</packaging>
 
     <name>WildFly: Feature Pack Galleon Content</name>
+    <description>Galleon feature pack content that is *local* to this feature pack and not to be used in other feature packs.</description>
 
     <build>
         <plugins>

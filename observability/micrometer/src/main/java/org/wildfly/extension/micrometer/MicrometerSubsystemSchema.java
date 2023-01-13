@@ -34,7 +34,7 @@ public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<Micro
     private final VersionedNamespace<IntVersion, MicrometerSubsystemSchema> namespace;
 
     MicrometerSubsystemSchema(int major, int minor) {
-        this.namespace = new SubsystemURN<>(MicrometerSubsystemExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = new SubsystemURN<>(MicrometerExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
@@ -44,7 +44,7 @@ public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<Micro
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return builder(org.wildfly.extension.micrometer.MicrometerSubsystemExtension.SUBSYSTEM_PATH, this.namespace)
+        return builder(org.wildfly.extension.micrometer.MicrometerExtension.SUBSYSTEM_PATH, this.namespace)
                 .addAttributes(MicrometerSubsystemDefinition.ATTRIBUTES)
                 .build();
     }

@@ -5,6 +5,5 @@
 
     <feature-group name="basic-profile"/>
     <feature-group name="health"/>
-    <feature-group name="micrometer" />
 
 </feature-group-spec>

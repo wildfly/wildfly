@@ -19,25 +19,27 @@
 package org.wildfly.extension.micrometer.metrics;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
+import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.FunctionCounter;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.registry.otlp.OtlpMeterRegistry;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
+import org.wildfly.extension.micrometer.WildFlyMicrometerConfig;
 
-public class WildFlyRegistry extends PrometheusMeterRegistry {
-    public WildFlyRegistry() {
-        super(PrometheusConfig.DEFAULT);
-        this.throwExceptionOnRegistrationFailure();
+public class WildFlyRegistry extends OtlpMeterRegistry {
+
+    public WildFlyRegistry(WildFlyMicrometerConfig config) {
+        super(config, Clock.SYSTEM);
     }
 
-    public Meter addMeter(WildFlyMetric metric, MetricMetadata metadata) {
+    public Meter.Id addMeter(WildFlyMetric metric, MetricMetadata metadata) {
         switch (metadata.getType()) {
             case GAUGE:
                 return addGauge(metric, metadata);
@@ -48,24 +50,34 @@ public class WildFlyRegistry extends PrometheusMeterRegistry {
         }
     }
 
-    private Meter addCounter(WildFlyMetric metric, MetricMetadata metadata) {
-        MeasurementUnit measurementUnit = metadata.getMeasurementUnit();
-        return newFunctionCounter(generateMetricId(metadata, Meter.Type.COUNTER), metric,
-                value -> getMetricValue(metric, measurementUnit));
+    private Meter.Id addCounter(WildFlyMetric metric, MetricMetadata metadata) {
+        return FunctionCounter.builder(metadata.getMetricName(),
+                        metric,
+                        value -> getMetricValue(metric, metadata.getMeasurementUnit()))
+                .tags(getTags(metadata))
+                .baseUnit(getBaseUnit(metadata))
+                .description(metadata.getDescription())
+                .register(this)
+                .getId();
     }
 
-    private Meter addGauge(WildFlyMetric metric, MetricMetadata metadata) {
-        MeasurementUnit measurementUnit = metadata.getMeasurementUnit();
-        return newGauge(generateMetricId(metadata, Meter.Type.GAUGE),
-                metric, value -> getMetricValue(metric, measurementUnit));
+    private Meter.Id addGauge(WildFlyMetric metric, MetricMetadata metadata) {
+        return Gauge.builder(metadata.getMetricName(),
+                        metric,
+                        value -> getMetricValue(metric, metadata.getMeasurementUnit()))
+                .tags(getTags(metadata))
+                .baseUnit(getBaseUnit(metadata))
+                .description(metadata.getDescription())
+                .register(this)
+                .getId();
     }
 
-    private Meter.Id generateMetricId(MetricMetadata metadata, Meter.Type gauge) {
+    private Meter.Id generateMetricId(MetricMetadata metadata, Meter.Type meterType) {
         return new Meter.Id(metadata.getMetricName(),
                 Tags.of(getTags(metadata)),
                 getBaseUnit(metadata),
                 metadata.getDescription(),
-                gauge);
+                meterType);
     }
 
     private double getMetricValue(WildFlyMetric metric, MeasurementUnit unit) {
@@ -75,10 +87,10 @@ public class WildFlyRegistry extends PrometheusMeterRegistry {
                 0.0;
     }
 
-    private List<Tag> getTags(MetricMetadata metadata) {
-        return Arrays.stream(metadata.getTags())
+    private Tags getTags(MetricMetadata metadata) {
+        return Tags.of(Arrays.stream(metadata.getTags())
                 .map(t -> Tag.of(t.getKey(), t.getValue()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 
     private String getBaseUnit(MetricMetadata metadata) {

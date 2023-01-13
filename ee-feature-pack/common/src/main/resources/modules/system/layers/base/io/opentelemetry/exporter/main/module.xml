@@ -36,6 +36,7 @@
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.sdk"/>
         <module name="io.opentelemetry.context"/>
+        <module name="io.opentelemetry.otlp"/>
         <module name="com.fasterxml.jackson.core.jackson-core"/>
         <module name="com.squareup.okhttp3"/>
         <module name="org.slf4j"/>

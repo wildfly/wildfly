@@ -34,32 +34,37 @@ import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
 
 class MicrometerRegistryService implements Service {
     private final Consumer<WildFlyRegistry> registriesConsumer;
+    private final WildFlyMicrometerConfig config;
+    private WildFlyRegistry registry;
 
     /**
      * Installs a service that provides {@link WildFlyRegistry}, and provides a {@link Supplier} the
      * subsystem can use to obtain that registry.
-     * @param context the management operation context to use to install the service. Cannot be {@code null}
+     *
+     * @param context  the management operation context to use to install the service. Cannot be {@code null}
+     * @param config the configuration object for the registry
      * @return the {@link Supplier}. Will not return {@code null}.
      */
-    static Supplier<WildFlyRegistry> install(OperationContext context) {
+    static Supplier<WildFlyRegistry> install(OperationContext context, WildFlyMicrometerConfig config) {
         CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget()
                 .addCapability(MICROMETER_REGISTRY_RUNTIME_CAPABILITY);
 
         RegistrySupplier registrySupplier =
                 new RegistrySupplier(serviceBuilder.provides(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName()));
-        serviceBuilder.setInstance(new MicrometerRegistryService(registrySupplier))
+        serviceBuilder.setInstance(new MicrometerRegistryService(registrySupplier, config))
                 .install();
 
         return registrySupplier;
     }
 
-    private MicrometerRegistryService(Consumer<WildFlyRegistry> registriesConsumer) {
+    private MicrometerRegistryService(Consumer<WildFlyRegistry> registriesConsumer, WildFlyMicrometerConfig config) {
         this.registriesConsumer = registriesConsumer;
+        this.config = config;
     }
 
     @Override
     public void start(StartContext context) {
-        WildFlyRegistry registry = new WildFlyRegistry();
+        registry = new WildFlyRegistry(config);
 
         try {
             // register metrics from JMX MBeans for base metrics
@@ -73,7 +78,10 @@ class MicrometerRegistryService implements Service {
 
     @Override
     public void stop(StopContext context) {
-        // Clear registries?
+        if (registry != null) {
+            registry.close();
+            registry = null;
+        }
 
         registriesConsumer.accept(null);
     }

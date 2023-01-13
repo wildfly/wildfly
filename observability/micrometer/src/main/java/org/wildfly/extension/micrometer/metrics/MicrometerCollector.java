@@ -60,7 +60,7 @@ public class MicrometerCollector {
     }
 
     // collect metrics from the resources
-    public synchronized void collectResourceMetrics(final Resource resource,
+    public synchronized MetricRegistration collectResourceMetrics(final Resource resource,
                                                     ImmutableManagementResourceRegistration managementResourceRegistration,
                                                     Function<PathAddress, PathAddress> resourceAddressResolver,
                                                     boolean exposeAnySubsystem,
@@ -70,7 +70,7 @@ public class MicrometerCollector {
         queueMetricRegistration(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver,
                 registration, exposeAnySubsystem, exposedSubsystems);
         // Defer the actual registration until the server is running and they can be collected w/o errors
-        PropertyChangeListener listener = new PropertyChangeListener() {
+        this.processStateNotifier.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ControlledProcessState.State.RUNNING == evt.getNewValue()) {
@@ -83,12 +83,14 @@ public class MicrometerCollector {
                 }
 
             }
-        };
-        this.processStateNotifier.addPropertyChangeListener(listener);
+        });
+
         // If server is already running, we won't get a change event so register now
         if (ControlledProcessState.State.RUNNING == this.processStateNotifier.getCurrentState()) {
             registration.register();
         }
+
+        return registration;
     }
 
     private void queueMetricRegistration(final Resource current,

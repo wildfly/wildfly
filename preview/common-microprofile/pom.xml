@@ -43,6 +43,11 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.hibernate.search</groupId>
+            <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

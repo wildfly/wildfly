@@ -106,6 +106,13 @@ public class LayersTestCase {
             "org.wildfly.extension.opentelemetry-api",
             "io.opentelemetry.exporter",
             "io.opentelemetry.sdk",
+            "io.opentelemetry.proto",
+            "io.opentelemetry.otlp",
+            "io.opentelemetry.trace",
+            // Micrometer is not included in standard configs
+            "io.micrometer",
+            "org.wildfly.extension.micrometer",
+            "org.wildfly.micrometer.deployment",
             // Unreferenced Infinispan modules
             "org.infinispan.cdi.common",
             "org.infinispan.cdi.embedded",

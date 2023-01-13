@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2022 Red Hat, Inc., and individual contributors
+ * Copyright 2022-2023 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,15 +16,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.wildfly.extension.micrometer;
 
 import static org.jboss.as.controller.OperationContext.Stage.RUNTIME;
 import static org.jboss.as.controller.OperationContext.Stage.VERIFY;
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.server.deployment.Phase.DEPENDENCIES;
+import static org.jboss.as.server.deployment.Phase.DEPENDENCIES_MICROMETER;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE;
-import static org.jboss.as.server.deployment.Phase.POST_MODULE_METRICS;
-import static org.wildfly.extension.micrometer.MicrometerSubsystemExtension.SUBSYSTEM_NAME;
+import static org.jboss.as.server.deployment.Phase.POST_MODULE_MICROMETER;
+import static org.wildfly.extension.micrometer.MicrometerExtension.SUBSYSTEM_NAME;
 
 import java.util.List;
 import java.util.function.Function;
@@ -57,20 +59,22 @@ class MicrometerSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         List<String> exposedSubsystems = MicrometerSubsystemDefinition.EXPOSED_SUBSYSTEMS.unwrap(context, model);
         boolean exposeAnySubsystem = exposedSubsystems.remove("*");
-        boolean securityEnabled = MicrometerSubsystemDefinition.SECURITY_ENABLED.resolveModelAttribute(context, model)
-                .asBoolean();
+        String endpoint = MicrometerSubsystemDefinition.ENDPOINT.resolveModelAttribute(context, model)
+                .asStringOrNull();
+        Long step = MicrometerSubsystemDefinition.STEP.resolveModelAttribute(context, model)
+                .asLong();
 
-        Supplier<WildFlyRegistry> registrySupplier = MicrometerRegistryService.install(context);
+        WildFlyMicrometerConfig config = new WildFlyMicrometerConfig(endpoint, step);
+        Supplier<WildFlyRegistry> registrySupplier = MicrometerRegistryService.install(context, config);
         Supplier<MicrometerCollector> collectorSupplier = MicrometerCollectorService.install(context);
-        MicrometerContextService.install(context, securityEnabled);
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             public void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, DEPENDENCIES, 0x1910,
+                processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, DEPENDENCIES, DEPENDENCIES_MICROMETER,
                         new MicrometerDependencyProcessor());
-                processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, POST_MODULE, POST_MODULE_METRICS - 1, // ???
-                        new MicrometerSubsystemDeploymentProcessor(exposeAnySubsystem, exposedSubsystems, registrySupplier));
+                processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, POST_MODULE, POST_MODULE_MICROMETER,
+                        new MicrometerDeploymentProcessor(exposeAnySubsystem, exposedSubsystems, registrySupplier));
             }
         }, RUNTIME);
 

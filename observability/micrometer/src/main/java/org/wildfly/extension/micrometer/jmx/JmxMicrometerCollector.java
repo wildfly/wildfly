@@ -51,7 +51,7 @@ import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
 
 public class JmxMicrometerCollector {
     private final MBeanServer mbs;
-    private WildFlyRegistry registry;
+    private final WildFlyRegistry registry;
 
     public JmxMicrometerCollector(WildFlyRegistry registry) {
         this.registry = registry;

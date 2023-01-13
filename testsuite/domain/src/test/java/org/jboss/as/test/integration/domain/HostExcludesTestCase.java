@@ -99,6 +99,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
      * This must be corrected on each new host-exclude id added on the current release.
      */
     private enum ExtensionConf {
+        // <editor-fold..>
         WILDFLY_10_0("WildFly10.0", Arrays.asList(
                 "org.jboss.as.appclient",
                 "org.jboss.as.clustering.infinispan",
@@ -200,6 +201,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.jboss.as.jaxr",
                 "org.jboss.as.configadmin"
         )),
+        // </editor-fold..>
         WILDFLY_27_0("WildFly27.0", WILDFLY_26_0, Arrays.asList(
                 "org.wildfly.extension.clustering.ejb",
                 "org.wildfly.extension.datasources-agroal"
@@ -208,24 +210,29 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // to the internal mpExtensions Set defined on this class.
         // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
         // of wildfly preview. In such a case, add them to previewExtensions set defined below.
-        CURRENT(MAJOR, WILDFLY_27_0, null, getCurrentRemovedExtensions());
+        CURRENT(MAJOR, WILDFLY_27_0, Arrays.asList(
+                "org.wildfly.extension.micrometer"
+        ),
+                getCurrentRemovedExtensions()
+        );
 
         private static List<String> getCurrentRemovedExtensions() {
-            // TODO If we decide to remove these modules from WFP, uncomment this.
-            // See https://issues.redhat.com/browse/WFLY-16686
-            /*
             if (AssumeTestGroupUtil.isWildFlyPreview()) {
                 return Arrays.asList(
-                        "org.jboss.as.messaging",
-                        "org.jboss.as.jacorb",
-                        "org.jboss.as.jsr77",
-                        "org.jboss.as.web",
-                        "org.wildfly.extension.picketlink",
-                        "org.jboss.as.security"
+                        // This is moving from Preview to Standard in WF 28, so it's both being removed and added.
+                    "org.wildfly.extension.micrometer"
+                        // TODO If we decide to remove these modules from WFP, uncomment this.
+                        // See https://issues.redhat.com/browse/WFLY-16686
+//                        "org.jboss.as.messaging",
+//                        "org.jboss.as.jacorb",
+//                        "org.jboss.as.jsr77",
+//                        "org.jboss.as.web",
+//                        "org.wildfly.extension.picketlink",
+//                        "org.jboss.as.security"
                         );
+            } else {
+                return Collections.emptyList();
             }
-            */
-            return Collections.emptyList();
         }
 
         private final String name;
@@ -244,7 +251,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.jwt-smallrye",
                 "org.wildfly.extension.microprofile.openapi-smallrye",
                 "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
-                "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"
+                "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
+                "org.wildfly.extension.micrometer"
         ));
 
         // List of extensions added only by the WildFly Preview
@@ -254,7 +262,6 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // to compute on which WildFly Preview was added such a new extension and track the Host Exclusions between
         // different WildFly Preview releases.
         private Set<String> previewExtensions = new HashSet<>(Arrays.asList(
-                "org.wildfly.extension.micrometer"
         ));
 
         ExtensionConf(String name, List<String> addedExtensions) {
@@ -321,6 +328,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             if (!isFullDistribution && !isPreview) {
                 return diff.apply(extensions, mpExtensions);
             }
+            System.err.println("***** Extensions: " + extensions);
             return extensions;
         }
 
@@ -355,6 +363,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         ModelNode op = Util.getEmptyOperation(READ_CHILDREN_RESOURCES_OPERATION, null);
         op.get(CHILD_TYPE).set(EXTENSION);
 
+        System.out.println(op);
         ModelNode result = DomainTestUtils.executeForResult(op, primaryClient);
 
         Set<String> currentExtensions = new HashSet<>();
@@ -407,6 +416,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                     .collect(Collectors.toList());
 
             //check duplicated extensions
+            System.err.println("Excluded extensions: " + excludedExtensions);
             Assert.assertTrue(String.format (
                             "There are duplicated extensions declared for %s host-exclude", name),
                     excludedExtensions.size() == new HashSet<>(excludedExtensions).size()
