@@ -44,6 +44,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -321,7 +322,7 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     // --- //
 
-    AbstractDataSourceDefinition(Parameters parameters) {
+    AbstractDataSourceDefinition(SimpleResourceDefinition.Parameters parameters) {
         super(parameters.setCapabilities(DATA_SOURCE_CAPABILITY));
     }
 

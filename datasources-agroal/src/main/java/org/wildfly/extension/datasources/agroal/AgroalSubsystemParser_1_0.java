@@ -40,21 +40,21 @@ class AgroalSubsystemParser_1_0 extends PersistentResourceXMLParser {
     private static final PersistentResourceXMLDescription XML_DESCRIPTION;
 
     static {
-        PersistentResourceXMLBuilder subsystemXMLBuilder = builder(AgroalSubsystemDefinition.INSTANCE.getPathElement(), AgroalNamespace.AGROAL_1_0.getUriString());
+        PersistentResourceXMLBuilder subsystemXMLBuilder = builder(AgroalSubsystemDefinition.PATH, AgroalNamespace.AGROAL_1_0.getUriString());
 
-        PersistentResourceXMLBuilder datasourceXMLBuilder = builder(DataSourceDefinition.INSTANCE.getPathElement());
+        PersistentResourceXMLBuilder datasourceXMLBuilder = builder(DataSourceDefinition.PATH);
         for (AttributeDefinition attributeDefinition : DataSourceDefinition.ATTRIBUTES) {
             datasourceXMLBuilder.addAttribute(attributeDefinition);
         }
         subsystemXMLBuilder.addChild(datasourceXMLBuilder);
 
-        PersistentResourceXMLBuilder xaDatasourceXMLBuilder = builder(XADataSourceDefinition.INSTANCE.getPathElement());
+        PersistentResourceXMLBuilder xaDatasourceXMLBuilder = builder(XADataSourceDefinition.PATH);
         for (AttributeDefinition attributeDefinition : XADataSourceDefinition.ATTRIBUTES) {
             xaDatasourceXMLBuilder.addAttribute(attributeDefinition);
         }
         subsystemXMLBuilder.addChild(xaDatasourceXMLBuilder);
 
-        PersistentResourceXMLBuilder driverXMLBuilder = PersistentResourceXMLDescription.builder(DriverDefinition.INSTANCE.getPathElement());
+        PersistentResourceXMLBuilder driverXMLBuilder = PersistentResourceXMLDescription.builder(DriverDefinition.PATH);
         driverXMLBuilder.setXmlWrapperElement(DriverDefinition.DRIVERS_ELEMENT_NAME);
         for (AttributeDefinition attributeDefinition : DriverDefinition.ATTRIBUTES) {
             driverXMLBuilder.addAttribute(attributeDefinition);
