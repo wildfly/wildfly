@@ -44,8 +44,6 @@ public final class RTSSubsystemDefinition extends SimpleResourceDefinition {
             .addRequirements(XA_RESOURCE_RECOVERY_CAPABILITY)
             .build();
 
-    public static final RTSSubsystemDefinition INSTANCE = new RTSSubsystemDefinition();
-
     protected static final SimpleAttributeDefinition SERVER =
             new SimpleAttributeDefinitionBuilder(Attribute.SERVER.getLocalName(), ModelType.STRING, true)
                     .setAllowExpression(false)
@@ -67,7 +65,7 @@ public final class RTSSubsystemDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_JVM)
                     .build();
 
-    private RTSSubsystemDefinition() {
+    RTSSubsystemDefinition() {
         super(new Parameters(RTSSubsystemExtension.SUBSYSTEM_PATH, RTSSubsystemExtension.getResourceDescriptionResolver(null))
                 .setAddHandler(RTSSubsystemAdd.INSTANCE)
                 .setRemoveHandler(RTSSubsystemRemove.INSTANCE)
