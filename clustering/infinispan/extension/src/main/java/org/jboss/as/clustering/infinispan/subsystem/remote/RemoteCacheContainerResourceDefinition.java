@@ -34,7 +34,6 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
@@ -48,7 +47,6 @@ import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
@@ -66,7 +64,7 @@ import org.wildfly.clustering.service.UnaryRequirement;
  *
  * @author Radoslav Husar
  */
-public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfiguratorFactory {
+public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -244,11 +242,12 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 .setResourceTransformation(RemoteCacheContainerResource::new)
                 ;
         ServiceValueExecutorRegistry<RemoteCacheContainer> executors = new ServiceValueExecutorRegistry<>();
-        ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(this, executors);
+        ResourceServiceConfiguratorFactory factory = RemoteCacheContainerConfigurationServiceConfigurator::new;
+        ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(factory, executors);
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new ConnectionPoolResourceDefinition().register(registration);
-        new RemoteClusterResourceDefinition(this, executors).register(registration);
+        new RemoteClusterResourceDefinition(factory, executors).register(registration);
         new SecurityResourceDefinition().register(registration);
 
         ThreadPoolResourceDefinition.CLIENT.register(registration);
@@ -260,10 +259,5 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         }
 
         return registration;
-    }
-
-    @Override
-    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-        return new RemoteCacheContainerConfigurationServiceConfigurator(address);
     }
 }

@@ -923,6 +923,12 @@
             </dependency>
 
             <dependency>
+                <groupId>com.squareup</groupId>
+                <artifactId>protoparser</artifactId>
+                <version>${version.com.squareup.protoparser}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp</artifactId>
                 <version>${version.com.squareup.okhttp}</version>

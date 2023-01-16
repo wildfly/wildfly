@@ -353,6 +353,7 @@
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
         <version.com.microsoft.azure>8.6.6</version.com.microsoft.azure>
         <version.com.nimbus.jose-jwt>9.23</version.com.nimbus.jose-jwt>
+        <version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
         <legacy.version.com.squareup.okhttp>3.14.9</legacy.version.com.squareup.okhttp>
         <version.com.squareup.okhttp>4.10.0</version.com.squareup.okhttp>
         <version.com.squareup.okio-jvm>3.2.0</version.com.squareup.okio-jvm>
@@ -375,7 +376,7 @@
         <version.io.grpc>1.38.1</version.io.grpc>
         <version.io.jaegertracing>1.6.0</version.io.jaegertracing>
         <version.io.micrometer>1.9.3</version.io.micrometer>
-        <version.io.netty>4.1.86.Final</version.io.netty>
+        <version.io.netty>4.1.87.Final</version.io.netty>
         <version.io.opentelemetry.opentelemetry>1.12.0</version.io.opentelemetry.opentelemetry>
         <version.io.opentracing>0.33.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.4.0</version.io.opentracing.concurrent>
@@ -514,8 +515,8 @@
         <version.org.hibernate.search>6.1.7.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>8.0.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
-        <version.org.infinispan>14.0.3.Final</version.org.infinispan>
-        <version.org.infinispan.protostream>4.5.0.Final</version.org.infinispan.protostream>
+        <version.org.infinispan>14.0.5.Final</version.org.infinispan>
+        <version.org.infinispan.protostream>4.6.0.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.27.0-GA</version.org.javassist>
         <version.org.jberet>2.1.1.Final</version.org.jberet>

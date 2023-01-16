@@ -48,7 +48,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public abstract class StoreResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfiguratorFactory {
+public abstract class StoreResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     protected static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -126,10 +126,12 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     private final UnaryOperator<ResourceDescriptor> configurator;
+    private final ResourceServiceConfiguratorFactory factory;
 
-    protected StoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
+    protected StoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory factory) {
         super(path, resolver);
         this.configurator = configurator;
+        this.factory = factory;
     }
 
     @Override
@@ -142,7 +144,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.factory);
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new StoreWriteBehindResourceDefinition().register(registration);

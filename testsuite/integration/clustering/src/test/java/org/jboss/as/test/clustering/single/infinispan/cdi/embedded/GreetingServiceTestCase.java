@@ -55,9 +55,7 @@ public class GreetingServiceTestCase {
         return ShrinkWrap
                 .create(WebArchive.class, GreetingServiceTestCase.class.getSimpleName() + ".war")
                 .addPackage(CdiConfig.class.getPackage())
-                .add(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute(
-                        "Dependencies", "org.infinispan, org.infinispan.commons, org.infinispan.cdi.common meta-inf, org.infinispan.cdi.embedded meta-inf"
-                ).exportAsString()), "META-INF/MANIFEST.MF")
+                .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan, org.infinispan.commons, org.infinispan.cdi.common meta-inf, org.infinispan.cdi.embedded meta-inf").exportAsString()))
                 .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 ;
     }
