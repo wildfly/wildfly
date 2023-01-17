@@ -44,11 +44,6 @@
     <dependencies>
 
         <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
         </dependency>
@@ -62,6 +57,11 @@
         <dependency><groupId>io.prometheus</groupId><artifactId>simpleclient_common</artifactId></dependency>
         <dependency><groupId>org.latencyutils</groupId><artifactId>LatencyUtils</artifactId></dependency>
         <!-- Micrometer -->
+
+        <dependency>
+            <groupId>org.wildfly.deployment</groupId>
+            <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
+        </dependency>
 
     </dependencies>
 

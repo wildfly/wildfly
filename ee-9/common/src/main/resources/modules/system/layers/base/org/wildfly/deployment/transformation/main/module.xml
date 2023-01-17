@@ -23,7 +23,7 @@
 <module xmlns="urn:jboss:module:1.9" name="org.wildfly.deployment.transformation">
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-ee-9-deployment-transformer}"/>
+        <artifact name="${org.wildfly.deployment:wildfly-ee-9-deployment-transformer}"/>
         <artifact name="${org.wildfly.galleon-plugins:transformer}"/>
     </resources>
 
