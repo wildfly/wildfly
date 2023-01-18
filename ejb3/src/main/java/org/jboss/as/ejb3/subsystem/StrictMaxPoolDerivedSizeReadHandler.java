@@ -45,7 +45,7 @@ public class StrictMaxPoolDerivedSizeReadHandler extends AbstractRuntimeOnlyHand
         final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
 
         ServiceName serviceName = context.getCapabilityServiceName(StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, poolName, StrictMaxPoolConfigService.class);
-        final ServiceRegistry registry = context.getServiceRegistry(true);
+        final ServiceRegistry registry = context.getServiceRegistry(false);
         ServiceController<?> sc = registry.getService(serviceName);
         if (sc != null) {
             StrictMaxPoolConfigService smpc = (StrictMaxPoolConfigService) sc.getService();
