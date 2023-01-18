@@ -122,7 +122,6 @@
 
             <modules>
                 <module>build</module>
-                <module>deployment-transformer</module>
                 <module>dist</module>
                 <module>feature-pack</module>
                 <module>common</module>
