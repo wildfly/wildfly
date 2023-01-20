@@ -32,7 +32,7 @@
         <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-ee-9-parent</artifactId>
+    <artifactId>wildfly-preview-parent</artifactId>
     <description>Parent for EE 9 related modules</description>
     <packaging>pom</packaging>
 

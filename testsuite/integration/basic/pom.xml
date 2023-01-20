@@ -3715,7 +3715,7 @@
             </build>
         </profile>
 
-        <!-- Test against ee-9 -->
+        <!-- Test against WildFly Preview -->
         <profile>
             <id>ee9.test.profile</id>
             <activation>
