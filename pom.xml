@@ -76,7 +76,6 @@
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
         <module>ee-security</module>
-        <module>ee-9</module>
         <module>ejb3</module>
         <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
@@ -100,6 +99,7 @@
         <module>observability</module>
         <module>picketlink</module>
         <module>pojo</module>
+        <module>preview</module>
         <module>release</module>
         <module>rts</module>
         <module>sar</module>
@@ -2134,7 +2134,7 @@
                 </property>
             </activation>
             <properties>
-                <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
+                <wildfly.build.output.dir>preview/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->

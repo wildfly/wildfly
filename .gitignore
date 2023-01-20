@@ -55,7 +55,6 @@ build.metadata
 #These keep hanging around
 arquillian/*/server.log*
 client/shade/dependency-reduced-pom.xml
-ee-9/source-transform/client/shade/dependency-reduced-pom.xml
 
 #OS X stuff
 .DS_Store
