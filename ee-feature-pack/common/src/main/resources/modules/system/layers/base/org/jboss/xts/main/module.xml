@@ -29,8 +29,8 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.jboss.narayana.xts:jbossxts@module.jakarta.suffix@}"/>
-        <artifact name="\${org.jboss.narayana:jbosstxbridge@module.jakarta.suffix@}"/>
+        <artifact name="${org.jboss.narayana.xts:jbossxts}"/>
+        <artifact name="${org.jboss.narayana:jbosstxbridge}"/>
     </resources>
 
     <dependencies>

@@ -2369,7 +2369,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana</groupId>
-                <artifactId>jbosstxbridge-jakarta</artifactId>
+                <artifactId>jbosstxbridge</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2381,7 +2381,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.compensations</groupId>
-                <artifactId>compensations-jakarta</artifactId>
+                <artifactId>compensations</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2393,7 +2393,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.jts</groupId>
-                <artifactId>narayana-jts-idlj-jakarta</artifactId>
+                <artifactId>narayana-jts-idlj</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2405,7 +2405,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.jts</groupId>
-                <artifactId>narayana-jts-integration-jakarta</artifactId>
+                <artifactId>narayana-jts-integration</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2417,7 +2417,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.rts</groupId>
-                <artifactId>restat-api-jakarta</artifactId>
+                <artifactId>restat-api</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2429,7 +2429,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.rts</groupId>
-                <artifactId>restat-bridge-jakarta</artifactId>
+                <artifactId>restat-bridge</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2441,7 +2441,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.rts</groupId>
-                <artifactId>restat-integration-jakarta</artifactId>
+                <artifactId>restat-integration</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2453,7 +2453,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.rts</groupId>
-                <artifactId>restat-util-jakarta</artifactId>
+                <artifactId>restat-util</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2465,7 +2465,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.xts</groupId>
-                <artifactId>jbossxts-jakarta</artifactId>
+                <artifactId>jbossxts</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2477,7 +2477,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.xts</groupId>
-                <artifactId>jbossxts-jakarta</artifactId>
+                <artifactId>jbossxts</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <classifier>api</classifier>
                 <exclusions>

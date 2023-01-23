@@ -114,7 +114,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-idlj-jakarta</artifactId>
+            <artifactId>narayana-jts-idlj</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -149,19 +149,19 @@
 
                 <dependency>
                     <groupId>org.jboss.narayana.rts</groupId>
-                    <artifactId>restat-integration-jakarta</artifactId>
+                    <artifactId>restat-integration</artifactId>
                     <scope>provided</scope>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jboss.narayana.rts</groupId>
-                    <artifactId>restat-api-jakarta</artifactId>
+                    <artifactId>restat-api</artifactId>
                     <scope>test</scope>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jboss.narayana.rts</groupId>
-                    <artifactId>restat-util-jakarta</artifactId>
+                    <artifactId>restat-util</artifactId>
                     <scope>test</scope>
                 </dependency>
 

@@ -188,12 +188,12 @@
         <!-- End JAXB Implementation -->
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-idlj-jakarta</artifactId>
+            <artifactId>narayana-jts-idlj</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.xts</groupId>
-            <artifactId>jbossxts-jakarta</artifactId>
+            <artifactId>jbossxts</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -256,13 +256,13 @@
                 </dependency>
                 <dependency>
                     <groupId>org.jboss.narayana.xts</groupId>
-                    <artifactId>jbossxts-jakarta</artifactId>
+                    <artifactId>jbossxts</artifactId>
                     <classifier>api</classifier>
                     <scope>test</scope>
                 </dependency>
                 <dependency>
                     <groupId>org.jboss.narayana.compensations</groupId>
-                    <artifactId>compensations-jakarta</artifactId>
+                    <artifactId>compensations</artifactId>
                     <scope>test</scope>
                 </dependency>
             </dependencies>

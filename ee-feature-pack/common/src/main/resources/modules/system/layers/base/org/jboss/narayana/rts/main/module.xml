@@ -24,10 +24,10 @@
 
 <module xmlns="urn:jboss:module:1.9" name="org.jboss.narayana.rts">
     <resources>
-        <artifact name="\${org.jboss.narayana.rts:restat-api@module.jakarta.suffix@}"/>
-        <artifact name="\${org.jboss.narayana.rts:restat-util@module.jakarta.suffix@}"/>
-        <artifact name="\${org.jboss.narayana.rts:restat-integration@module.jakarta.suffix@}"/>
-        <artifact name="\${org.jboss.narayana.rts:restat-bridge@module.jakarta.suffix@}"/>
+        <artifact name="${org.jboss.narayana.rts:restat-api}"/>
+        <artifact name="${org.jboss.narayana.rts:restat-util}"/>
+        <artifact name="${org.jboss.narayana.rts:restat-integration}"/>
+        <artifact name="${org.jboss.narayana.rts:restat-bridge}"/>
     </resources>
 
     <dependencies>
