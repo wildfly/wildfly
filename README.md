@@ -66,9 +66,7 @@ Documentation
 
 Contributing
 ------------------
-* Git Setup: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/github_setup.adoc
-* Contributing: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/contributing.adoc
-* Pull request standard: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/pullrequest_standards.adoc
+Please see the instructions available in the [contribution guide](CONTRIBUTING.md).
 
 Build vs. Dist directories
 --------------------------

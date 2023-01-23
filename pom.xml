@@ -77,7 +77,6 @@
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
         <module>ee-security</module>
-        <module>ee-9</module>
         <module>ejb3</module>
         <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
@@ -101,6 +100,7 @@
         <module>observability</module>
         <module>picketlink</module>
         <module>pojo</module>
+        <module>preview</module>
         <module>release</module>
         <module>rts</module>
         <module>sar</module>
@@ -442,7 +442,7 @@
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>2.0.0</version.jboss.jaxbintros>
-        <version.joda-time>2.11.2</version.joda-time>
+        <version.joda-time>2.12.1</version.joda-time>
         <version.jsoup>1.15.3</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>8.0.0</version.net.shibboleth.utilities.java-support>
@@ -539,7 +539,8 @@
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <version.org.jboss.metadata>15.3.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>2.0.1.Final</version.org.jboss.mod_cluster>
-        <version.org.jboss.narayana>5.13.0.Final</version.org.jboss.narayana>
+        <version.org.jboss.narayana>6.0.0.CR1</version.org.jboss.narayana>
+        <legacy.version.org.jboss.narayana>5.13.1.Final</legacy.version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.9.Final</version.org.jboss.openjdk-orb>
         <legacy.version.org.jboss.resteasy>4.7.4.Final</legacy.version.org.jboss.resteasy>
         <version.org.jboss.resteasy>6.2.1.Final</version.org.jboss.resteasy>
@@ -589,7 +590,7 @@
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.9.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>2.1.2</version.org.jctools.jctools-core>
         <version.org.jetbrains.kotlin>1.7.10</version.org.jetbrains.kotlin>
-        <version.org.jgroups>5.2.11.Final</version.org.jgroups>
+        <version.org.jgroups>5.2.12.Final</version.org.jgroups>
         <version.org.jgroups.aws>2.0.1.Final</version.org.jgroups.aws>
         <version.org.jgroups.azure>2.0.2.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>2.0.1.Final</version.org.jgroups.kubernetes>
@@ -1059,28 +1060,6 @@
                 <artifactId>arquillian-testng-container</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
                 <scope>test</scope>
-            </dependency>
-
-            <!--
-            TODO used both in testsuite/integration/legacy-ejb-client and in legacy code.
-            Once legacy code use is gone, convert to <scope>test</scope>
-            -->
-            <dependency>
-                <groupId>org.jboss.narayana.jts</groupId>
-                <artifactId>narayana-jts-idlj</artifactId>
-                <version>${version.org.jboss.narayana}</version>
-                <exclusions>
-                    <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
-                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!--
@@ -1860,7 +1839,7 @@
                 </property>
             </activation>
             <properties>
-                <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
+                <wildfly.build.output.dir>preview/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->

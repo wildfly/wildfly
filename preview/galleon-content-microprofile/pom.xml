@@ -28,7 +28,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-ee-9-parent</artifactId>
+        <artifactId>wildfly-preview-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -36,14 +36,10 @@
         <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-preview-feature-pack-common-microprofile</artifactId>
+    <artifactId>wildfly-preview-feature-pack-content-microprofile</artifactId>
 
-    <name>WildFly Preview: Galleon Feature Pack Common Microprofile Resources</name>
+    <name>WildFly: Preview Feature Pack Content MicroProfile Resources</name>
     <packaging>pom</packaging>
-
-    <dependencies>
-
-    </dependencies>
 
     <build>
         <plugins>
@@ -125,5 +121,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>
