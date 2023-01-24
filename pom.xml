@@ -64,6 +64,7 @@
         <module>boms/preview-expansion</module>
         <module>boms/standard-ee</module>
         <module>boms/standard-expansion</module>
+        <module>boms/standard-test</module>
         <module>build</module>
         <module>client/properties</module>
         <module>client/shade</module>
@@ -936,15 +937,9 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-testsuite-shared</artifactId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
                 <version>${ee.maven.version}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <type>pom</type>
             </dependency>
 
             <dependency>
@@ -1010,20 +1005,6 @@
                 <type>pom</type>
             </dependency>
 
-            <dependency>
-                <groupId>com.beust</groupId>
-                <artifactId>jcommander</artifactId>
-                <version>${version.com.beust}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>com.github.tomakehurst</groupId>
-                <artifactId>wiremock</artifactId>
-                <version>${version.com.github.tomakehurst.wiremock}</version>
-                <scope>test</scope>
-            </dependency>
-
             <!-- TODO both a testuite/shared dep and used in std and preview but not legacy -->
             <dependency>
                 <groupId>com.nimbusds</groupId>
@@ -1031,82 +1012,7 @@
                 <version>${version.com.nimbus.jose-jwt}</version>
             </dependency>
 
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-mock</artifactId>
-                <version>${version.io.opentracing}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>io.rest-assured</groupId>
-                <artifactId>rest-assured</artifactId>
-                <version>${version.io.rest-assured}</version>
-                <scope>test</scope>
-            </dependency>
-
             <!-- Required for some testsuites which will later be moved to a test bom (WFLY-17331) -->
-            <dependency>
-                <groupId>jaxen</groupId>
-                <artifactId>jaxen</artifactId>
-                <version>${version.jaxen}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!-- I kid you not -->
-                    <exclusion>
-                        <groupId>jaxen</groupId>
-                        <artifactId>jaxen</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jdom</groupId>
-                        <artifactId>jdom</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>maven-plugins</groupId>
-                        <artifactId>maven-cobertura-plugin</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>maven-plugins</groupId>
-                        <artifactId>maven-findbugs-plugin</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xom</groupId>
-                        <artifactId>xom</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-interceptor-kerberos</artifactId>
-                <version>${version.org.apache.ds}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-test-framework</artifactId>
-                <version>${version.org.apache.ds}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.openjpa</groupId>
-                <artifactId>openjpa-all</artifactId>
-                <version>${version.org.apache.openjpa}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.awaitility</groupId>
-                <artifactId>awaitility</artifactId>
-                <version>${version.org.awaitility.awaitility}</version>
-                <scope>test</scope>
-            </dependency>
 
             <dependency>
                 <groupId>org.apache.groovy</groupId>
@@ -1115,20 +1021,7 @@
                 <version>${version.groovy-all}</version>
                 <scope>test</scope>
             </dependency>
-            
-            <!-- Required for some testsuites which will later be moved to a test bom (WFLY-17331) -->
-            <dependency>
-                <groupId>org.dom4j</groupId>
-                <artifactId>dom4j</artifactId>
-                <version>${version.dom4j}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+
 
             <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
             <dependency>
@@ -1136,55 +1029,6 @@
                 <artifactId>jetty-http</artifactId>
                 <version>${version.org.eclipse.jetty}</version>
                 <scope>test</scope>
-            </dependency>
-
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-io</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-server</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-util</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-all</artifactId>
-                <version>${version.org.hamcrest}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>java-hamcrest</artifactId>
-                <version>${version.org.hamcrest.java-hamcrest}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.httpunit</groupId>
-                <artifactId>httpunit</artifactId>
-                <version>${version.httpunit}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -1215,43 +1059,6 @@
                 <groupId>org.jboss.arquillian.testng</groupId>
                 <artifactId>arquillian-testng-container</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.logmanager</groupId>
-                <artifactId>commons-logging-jboss-logmanager</artifactId>
-                <version>${version.org.jboss.logmanager.commons-logging-jboss-logmanager}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.narayana.xts</groupId>
-                <artifactId>byteman_support</artifactId>
-                <version>${version.org.jboss.narayana}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- only still used by tests -->
-            <dependency>
-                <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-api</artifactId>
-                <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- only still used by JPA tests -->
-            <dependency>
-                <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-impl-base</artifactId>
-                <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.descriptors</groupId>
-                <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
-                <version>${version.org.jboss.shrinkwrap.descriptors}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -1301,60 +1108,11 @@
                 <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.jboss.weld.se</groupId>
-                <artifactId>weld-se-core</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
-                <scope>test</scope>
-            </dependency>
-
             <!--
             TODO used both in testuite/integration/elytron-oidc-client dep and in legacy code.
             Once the legacy use is removed, etc structure, this can become a <scope>test</scope> dependency.
             -->
-            <dependency>
-                <groupId>org.jsoup</groupId>
-                <artifactId>jsoup</artifactId>
-                <version>${version.jsoup}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-admin-client</artifactId>
-                <version>${version.org.keycloak}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-core</artifactId>
-                <version>${version.org.keycloak}</version>
-                <scope>test</scope>
-            </dependency>
 
-            <!-- Required by the org.eclipse.microprofile.rest.client:microprofile-rest-client-tck -->
-            <dependency>
-                <groupId>org.reactivestreams</groupId>
-                <artifactId>reactive-streams-tck</artifactId>
-                <version>${version.org.reactivestreams}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.kafka</groupId>
-                <artifactId>spring-kafka-test</artifactId>
-                <version>${version.org.springframework.kafka}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!--
-                        This version pulls in a different version of Kafka from
-                        our version of Kafka Clients
-                    -->
-                    <exclusion>
-                        <groupId>org.apache.kafka</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>elasticsearch</artifactId>
@@ -1435,19 +1193,6 @@
                 <version>${version.org.wildfly.checkstyle-config}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.wildfly.extras.creaper</groupId>
-                <artifactId>creaper-commands</artifactId>
-                <version>${version.org.wildfly.extras.creaper}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.extras.creaper</groupId>
-                <artifactId>creaper-core</artifactId>
-                <version>${version.org.wildfly.extras.creaper}</version>
-                <scope>test</scope>
-            </dependency>
 
             <dependency>
                 <groupId>org.wildfly.galleon-plugins</groupId>
@@ -1486,13 +1231,6 @@
             </dependency>
 
             <!-- Required for testsuite/shared which will later be moved to a test bom (WFLY-17331) -->
-            <dependency>
-                <groupId>org.codehaus.plexus</groupId>
-                <artifactId>plexus-utils</artifactId>
-                <version>${version.org.codehaus.plexus.plexus-utils}</version>
-                <scope>test</scope>
-            </dependency>
-
             <dependency>
                 <groupId>xom</groupId>
                 <artifactId>xom</artifactId>
