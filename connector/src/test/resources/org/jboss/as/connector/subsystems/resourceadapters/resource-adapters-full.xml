@@ -8,7 +8,7 @@
             <bootstrap-context>bootstrapContext</bootstrap-context>
             <transaction-support>NoTransaction</transaction-support>
             <workmanager>
-                <security>
+                <security enabled="true">
                     <mapping-required>false</mapping-required>
                     <domain>domain</domain>
                     <default-groups>

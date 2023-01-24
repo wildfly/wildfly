@@ -16,7 +16,7 @@
       <config-property name="config1">value</config-property>
       <transaction-support>NoTransaction</transaction-support>
         <workmanager>
-            <security>
+            <security enabled="true">
                 <mapping-required>true</mapping-required>
                 <elytron-security-domain>ApplicationDomain</elytron-security-domain>
             </security>

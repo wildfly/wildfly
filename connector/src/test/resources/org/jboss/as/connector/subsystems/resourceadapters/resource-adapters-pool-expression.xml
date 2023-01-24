@@ -16,7 +16,7 @@
       <!--Optional:-->
       <transaction-support>${test.expr:NoTransaction}</transaction-support>
       <workmanager>
-        <security>
+        <security enabled="${test.expr:true}">
           <domain>${test.expr:domain}</domain>
           <default-groups>
             <group>${test.expr:group}</group>

@@ -194,9 +194,10 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         if (transactionSupport == TransactionSupportEnum.XATransaction) {
             isXa = true;
         }
-        if (ra.hasDefined(WM_SECURITY.getName()) && ra.get(WM_SECURITY.getName()).asBoolean()) {
+        if (ra.hasDefined(WM_SECURITY.getName()) && (ra.get(WM_SECURITY.getName()).getType().equals(ModelType.EXPRESSION) || ra.get(WM_SECURITY.getName()).asBoolean())) {
             streamWriter.writeStartElement(Activation.Tag.WORKMANAGER.getLocalName());
             streamWriter.writeStartElement(WorkManager.Tag.SECURITY.getLocalName());
+            WM_SECURITY.marshallAsAttribute(ra, streamWriter);
             WM_SECURITY_MAPPING_REQUIRED.marshallAsElement(ra, streamWriter);
             WM_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
             WM_ELYTRON_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
