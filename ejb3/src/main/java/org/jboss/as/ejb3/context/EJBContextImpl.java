@@ -22,21 +22,18 @@
 package org.jboss.as.ejb3.context;
 
 import java.io.Serializable;
-import java.security.Identity;
 import java.security.Principal;
 import java.util.Map;
-import java.util.Properties;
 
 import jakarta.ejb.EJBHome;
 import jakarta.ejb.EJBLocalHome;
 import jakarta.ejb.TimerService;
 import jakarta.transaction.UserTransaction;
-
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.InterceptorContext;
 
 /**
@@ -47,11 +44,6 @@ public abstract class EJBContextImpl implements jakarta.ejb.EJBContext, Serializ
 
     public EJBContextImpl(final EjbComponentInstance instance) {
         this.instance = instance;
-    }
-
-    @SuppressWarnings({"deprecation"})
-    public Identity getCallerIdentity() {
-        throw EjbLogger.ROOT_LOGGER.isDeprecated("getCallerIdentity");
     }
 
     public Principal getCallerPrincipal() {
@@ -71,10 +63,6 @@ public abstract class EJBContextImpl implements jakarta.ejb.EJBContext, Serializ
 
     public EJBLocalHome getEJBLocalHome() {
         return instance.getComponent().getEJBLocalHome();
-    }
-
-    public Properties getEnvironment() {
-        throw EjbLogger.ROOT_LOGGER.isDeprecated("getCallerIdentity");
     }
 
     public EJBComponent getComponent() {
@@ -103,11 +91,6 @@ public abstract class EJBContextImpl implements jakarta.ejb.EJBContext, Serializ
     public UserTransaction getUserTransaction() throws IllegalStateException {
         AllowedMethodsInformation.checkAllowed(MethodType.GET_USER_TRANSACTION);
         return getComponent().getUserTransaction();
-    }
-
-    @SuppressWarnings({"deprecation"})
-    public boolean isCallerInRole(Identity role) {
-        throw EjbLogger.ROOT_LOGGER.isDeprecatedIllegalState("isCallerInRole");
     }
 
     public boolean isCallerInRole(String roleName) {
