@@ -82,11 +82,6 @@ public class EjbValidationsUtilTest {
         assertTrue(assertEjbClassValidity(buildClassInfoForClass(EjbWithPrivateFinalMethod.class.getName())).isEmpty());
     }
 
-    @Test
-    public void returnsOnlyBusinessMethod() {
-        EjbValidationsUtil.getBusinessMethods(ClassWithBusinessMethod.class);
-    }
-
     private ClassInfo buildClassInfoForClass(String mdbClassName) {
         String mdbClassNameAsResource = mdbClassName.replaceAll("\\.", "/").concat(".class");
         Index index = indexStream(getClass().getClassLoader().getResourceAsStream(mdbClassNameAsResource)).complete();
