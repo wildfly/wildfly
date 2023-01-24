@@ -1563,7 +1563,7 @@ Export the client certificate:
 
 [source,options="nowrap"]
 ----
-$ keytool -exportcert  -keystore client.keystore.pkcs12 -alias client -keypass secret -storepass secret -file client.cer
+$ keytool -exportcert  -keystore client.keystore.pkcs12 -alias client -keypass secret -storepass secret -file /path/to/client.cer
 ----
 
 There are a couple ways to enable two-way SSL/TLS for deployed applications.

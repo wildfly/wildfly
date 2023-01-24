@@ -24,9 +24,7 @@ SSL], and your configuration looks like:
 
 To switch to Elytron you need to:
 
-1.  Create Elytron `key-store` - specifying where is the keystore file
-stored and password by which it is encrypted. Default type of keystore
-generated using keytool is JKS:
+1.  Create Elytron `key-store` - specifying where is the keystore file stored and password by which it is encrypted. Default type of keystore generated using keytool is PKCS12:
 +
 [source,options="nowrap"]
 ----
