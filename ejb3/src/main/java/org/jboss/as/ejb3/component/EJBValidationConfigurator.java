@@ -58,14 +58,13 @@ public class EJBValidationConfigurator implements ComponentConfigurator {
         for(ViewDescription view : description.getViews()) {
             if(view.getViewClassName().equals(description.getComponentClassName())) {
                 noInterface = true;
+                break;
             }
         }
 
-        EjbValidationsUtil.getBusinessMethods(configuration.getComponentClass());
-
         EjbValidationsUtil.verifyEjbClassAndDefaultConstructor(ctor, configuration.getComponentClass().getEnclosingClass(), noInterface, description.getComponentName(), description.getComponentClassName(), configuration.getComponentClass().getModifiers());
-        EjbValidationsUtil.verifyEjbPublicMethodAreNotFinalNorStatic(configuration.getComponentClass().getDeclaredMethods(),description.getComponentClassName());
+        EjbValidationsUtil.verifyEjbPublicMethodAreNotFinalNorStatic(configuration.getComponentClass().getMethods(),description.getComponentClassName());
         for ( Class<?> interfaceClass : configuration.getComponentClass().getInterfaces())
-            EjbValidationsUtil.verifyEjbPublicMethodAreNotFinalNorStatic(interfaceClass.getDeclaredMethods(), interfaceClass.getCanonicalName());
+            EjbValidationsUtil.verifyEjbPublicMethodAreNotFinalNorStatic(interfaceClass.getMethods(), interfaceClass.getCanonicalName());
     }
 }
