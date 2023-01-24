@@ -27,8 +27,8 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.infinispan:infinispan-cachestore-jdbc-common@module.jakarta.suffix@}"/>
-        <artifact name="\${org.infinispan:infinispan-cachestore-jdbc@module.jakarta.suffix@}"/>
+        <artifact name="${org.infinispan:infinispan-cachestore-jdbc-common-jakarta}"/>
+        <artifact name="${org.infinispan:infinispan-cachestore-jdbc-jakarta}"/>
     </resources>
 
     <dependencies>
