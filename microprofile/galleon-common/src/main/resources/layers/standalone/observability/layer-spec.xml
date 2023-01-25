@@ -3,7 +3,6 @@
     <dependencies>
         <layer name="microprofile-config" optional="true"/>
         <layer name="microprofile-metrics" optional="true"/>
-        <layer name="microprofile-opentracing" optional="true"/>
         <layer name="microprofile-health" optional="true"/>
     </dependencies>
 </layer-spec>

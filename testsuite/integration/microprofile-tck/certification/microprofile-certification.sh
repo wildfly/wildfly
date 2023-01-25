@@ -73,9 +73,6 @@ translate_to_spec_name() {
   "openapi")
     echo "OpenAPI"
     ;;
-  "opentracing")
-    echo "OpenTracing"
-    ;;
   "rest-client")
     echo "REST Client"
     ;;
@@ -152,5 +149,4 @@ parse_test_results "$FILE" "health"
 parse_test_results "$FILE" "jwt" "jwt-auth"
 parse_test_results "$FILE" "metrics"
 parse_test_results "$FILE" "openapi"
-parse_test_results "$FILE" "opentracing"
 parse_test_results "$FILE" "rest-client"

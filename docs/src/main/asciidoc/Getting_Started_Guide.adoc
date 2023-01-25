@@ -122,8 +122,6 @@ WildFly {wildflyVersion} also provides support for a number of MicroProfile tech
 
 |MicroProfile OpenAPI 3.0 |-- |X
 
-|MicroProfile OpenTracing 3.0 (deprecated; use link:Admin_Guide{outfilesuffix}#Observability_Tracing[OpenTelemetry]) |X |X
-
 |MicroProfile Reactive Messaging 3.0 |-- |--
 
 |MicroProfile Streams Operators 3.0 |-- |--

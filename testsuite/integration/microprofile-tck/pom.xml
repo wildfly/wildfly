@@ -71,7 +71,6 @@
         <version.jwt>${version.org.eclipse.microprofile.jwt.api}</version.jwt>
         <version.metrics>${version.org.eclipse.microprofile.metrics.api}</version.metrics>
         <version.openapi>${version.org.eclipse.microprofile.openapi}</version.openapi>
-        <version.opentracing>${version.org.eclipse.microprofile.opentracing}</version.opentracing>
         <version.rest-client>${version.org.eclipse.microprofile.rest.client.api}</version.rest-client>
     </properties>
 
@@ -91,7 +90,6 @@
         <module>jwt</module>
         <module>metrics</module>
         <module>openapi</module>
-        <module>opentracing</module>
         <module>rest-client</module>
         <module>reactive-messaging</module>
         <module>reactive-streams-operators</module>

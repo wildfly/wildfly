@@ -2317,34 +2317,6 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>open-tracing-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/open-tracing</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-opentracing</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
 
                             <!--
                                 All layers provisioned all together
@@ -2442,7 +2414,6 @@
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-metrics</layer>
                                                 <layer>microprofile-openapi</layer>
-                                                <layer>microprofile-opentracing</layer>
                                                 <layer>microprofile-reactive-streams-operators</layer>
                                                 <layer>microprofile-reactive-messaging</layer>
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
@@ -2546,7 +2517,6 @@
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-metrics</layer>
                                                 <layer>microprofile-openapi</layer>
-                                                <layer>microprofile-opentracing</layer>
                                                 <layer>microprofile-platform</layer>
                                             </layers>
                                             <excluded-layers>
@@ -2676,7 +2646,6 @@
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-openapi</layer>
-                                                <layer>microprofile-opentracing</layer>
                                                 <layer>microprofile-reactive-streams-operators</layer>
                                                 <layer>microprofile-reactive-messaging</layer>
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
@@ -2775,7 +2744,6 @@
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-openapi</layer>
-                                                <layer>microprofile-opentracing</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>

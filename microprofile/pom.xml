@@ -49,8 +49,6 @@
         <module>jwt-smallrye</module>
         <module>metrics-smallrye</module>
         <module>openapi-smallrye</module>
-        <module>opentracing-extension</module>
-        <module>opentracing-smallrye</module>
         <module>reactive-messaging-smallrye</module>
         <module>reactive-streams-operators-smallrye</module>
     </modules>
