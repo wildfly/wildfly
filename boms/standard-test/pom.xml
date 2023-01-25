@@ -302,6 +302,12 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.syslog4j</groupId>
+                <artifactId>syslog4j</artifactId>
+                <version>${version.org.syslog4j}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>
