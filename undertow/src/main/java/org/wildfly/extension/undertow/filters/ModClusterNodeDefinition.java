@@ -119,6 +119,11 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             public ModelNode execute(ModClusterStatus.Node node) {
                 return new ModelNode(node.getRead());
             }
+
+            @Override
+            <D extends AttributeDefinition, B extends AbstractAttributeDefinitionBuilder<B, D>> B configure(B builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.BYTES);
+            }
         },
         REQUEST_QUEUE_SIZE(Constants.REQUEST_QUEUE_SIZE, ModelType.INT) {
             @Override
@@ -141,6 +146,11 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             @Override
             public ModelNode execute(ModClusterStatus.Node node) {
                 return new ModelNode(node.getTransferred());
+            }
+
+            @Override
+            <D extends AttributeDefinition, B extends AbstractAttributeDefinitionBuilder<B, D>> B configure(B builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.BYTES);
             }
         },
         TTL(Constants.TTL, ModelType.LONG) {
