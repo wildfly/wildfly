@@ -113,7 +113,6 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             modClusterServiceServiceController.setMode(ServiceController.Mode.ACTIVE);
             ModClusterService modClusterService = (ModClusterService) awaitServiceValue(modClusterServiceServiceController);
             Assert.assertNotNull(modClusterService);
-            Assert.assertNotNull(modClusterService.getModCluster());
 
             HttpHandler modClusterHandler = modClusterService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
             Assert.assertNotNull("handler should have been created", modClusterHandler);

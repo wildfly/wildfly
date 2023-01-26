@@ -26,9 +26,9 @@ import static org.jboss.as.controller.PathElement.pathElement;
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_MOD_CLUSTER_FILTER;
 import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
 
 import io.undertow.UndertowOptions;
 import io.undertow.predicate.Predicate;
@@ -36,12 +36,15 @@ import io.undertow.protocols.ajp.AjpClientRequestClientStreamSinkChannel;
 import io.undertow.protocols.http2.Http2Channel;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.proxy.ProxyHandler;
-import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.AddStepHandlerDescriptor;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
+import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
+
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ServiceValueCaptor;
+import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
+import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
+import org.jboss.as.clustering.controller.ServiceValueRegistry;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -62,6 +65,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
 import org.wildfly.extension.undertow.Capabilities;
@@ -314,10 +318,12 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setDefaultValue(new ModelNode(1L))
             .build();
 
-    public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(MANAGEMENT_SOCKET_BINDING, ADVERTISE_SOCKET_BINDING, SECURITY_KEY, ADVERTISE_PROTOCOL,
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(MANAGEMENT_SOCKET_BINDING, ADVERTISE_SOCKET_BINDING, SECURITY_KEY, ADVERTISE_PROTOCOL,
             ADVERTISE_PATH, ADVERTISE_FREQUENCY, FAILOVER_STRATEGY, HEALTH_CHECK_INTERVAL, BROKEN_NODE_TIMEOUT, WORKER, MAX_REQUEST_TIME, MANAGEMENT_ACCESS_PREDICATE,
             CONNECTIONS_PER_THREAD, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, REQUEST_QUEUE_SIZE, SECURITY_REALM, SSL_CONTEXT, USE_ALIAS, ENABLE_HTTP2, MAX_AJP_PACKET_SIZE,
-            HTTP2_MAX_HEADER_LIST_SIZE, HTTP2_MAX_FRAME_SIZE, HTTP2_MAX_CONCURRENT_STREAMS, HTTP2_INITIAL_WINDOW_SIZE, HTTP2_HEADER_TABLE_SIZE, HTTP2_ENABLE_PUSH, MAX_RETRIES));
+            HTTP2_MAX_HEADER_LIST_SIZE, HTTP2_MAX_FRAME_SIZE, HTTP2_MAX_CONCURRENT_STREAMS, HTTP2_INITIAL_WINDOW_SIZE, HTTP2_HEADER_TABLE_SIZE, HTTP2_ENABLE_PUSH, MAX_RETRIES);
+
+    private final ServiceValueExecutorRegistry<ModCluster> registry = new ServiceValueExecutorRegistry<>();
 
     public ModClusterDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH, UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER)));
@@ -339,9 +345,10 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
                 .addAttributes(ATTRIBUTES)
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(SingleAffinityResourceDefinition.PATH)
+                .setResourceTransformation(ModClusterResource::new)
                 ;
-        ModClusterResourceServiceHandler handler = new ModClusterResourceServiceHandler();
-        new ModClusterResourceRegistrar(descriptor, handler).register(resourceRegistration);
+        ModClusterResourceServiceHandler handler = new ModClusterResourceServiceHandler(this.registry);
+        new SimpleResourceRegistrar(descriptor, handler).register(resourceRegistration);
     }
 
     @Override
@@ -350,52 +357,53 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
         new SingleAffinityResourceDefinition().register(resourceRegistration);
         new RankedAffinityResourceDefinition().register(resourceRegistration);
 
-        resourceRegistration.registerSubModel(ModClusterBalancerDefinition.INSTANCE);
-    }
-
-    static class ModClusterResourceRegistrar extends ResourceRegistrar {
-
-        ModClusterResourceRegistrar(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-            super(descriptor, handler, new ModClusterAddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler));
-        }
+        resourceRegistration.registerSubModel(new ModClusterBalancerDefinition(this.registry));
     }
 
     static class ModClusterResourceServiceHandler implements ResourceServiceHandler {
+
+        private final ServiceValueRegistry<ModCluster> registry;
+
+        ModClusterResourceServiceHandler(ServiceValueRegistry<ModCluster> registry) {
+            this.registry = registry;
+        }
 
         @Override
         public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
             String name = context.getCurrentAddressValue();
             ModelNode recursiveModel = Resource.Tools.readModel(context.readResourceFromRoot(context.getCurrentAddress(), true));
             ModClusterService.install(name, context.getCapabilityServiceTarget(), recursiveModel, context);
+
+            ServiceName serviceName = new ModClusterServiceNameProvider(name).getServiceName();
+            new ServiceValueCaptorServiceConfigurator<>(new ModClusterResourceServiceValueCaptor(context, this.registry.add(serviceName))).build(context.getServiceTarget()).install();
         }
 
         @Override
         public void removeServices(OperationContext context, ModelNode model) {
+            ServiceName serviceName = new ModClusterServiceNameProvider(context.getCurrentAddressValue()).getServiceName();
+            context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.registry.remove(serviceName)).getServiceName());
+
             context.removeService(UndertowService.FILTER.append(Constants.MOD_CLUSTER));
         }
     }
 
-    static class ModClusterAddStepHandler extends AddStepHandler {
+    static class ModClusterResourceServiceValueCaptor implements ServiceValueCaptor<ModCluster> {
+        private final ServiceValueCaptor<ModCluster> captor;
+        private final Consumer<ModCluster> consumer;
 
-        ModClusterAddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-            super(descriptor, handler);
+        ModClusterResourceServiceValueCaptor(OperationContext context, ServiceValueCaptor<ModCluster> captor) {
+            this.captor = captor;
+            this.consumer = (ModClusterResource) context.readResource(PathAddress.EMPTY_ADDRESS);
         }
-
-        /**
-         * Wraps a standard {@link Resource} implementation which can dynamically register runtime resources at
-         * {@code ../mod-cluster=X/balancer=Y} address.
-         */
         @Override
-        protected Resource createResource(OperationContext context, ModelNode operation) {
-            if (context.isDefaultRequiresRuntime()) {
-                Resource delegate = Resource.Factory.create();
-                Resource result = new ModClusterResource(delegate, context.getCurrentAddressValue());
-                context.addResource(PathAddress.EMPTY_ADDRESS, result);
-                return result;
-            } else {
-                return super.createResource(context, operation);
-            }
+        public ServiceName getServiceName() {
+            return this.captor.getServiceName();
         }
 
+        @Override
+        public void accept(ModCluster service) {
+            this.captor.accept(service);
+            this.consumer.accept(service);
+        }
     }
 }
