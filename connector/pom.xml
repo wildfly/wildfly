@@ -278,13 +278,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- FIXME remove when JBJCA-1441 is implemented -->
-        <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox</artifactId>
-            <version>5.0.3.Final</version>
-        </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

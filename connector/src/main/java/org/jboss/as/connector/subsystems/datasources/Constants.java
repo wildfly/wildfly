@@ -68,6 +68,8 @@ public class Constants {
 
     private static final Boolean ELYTRON_MANAGED_SECURITY = Boolean.FALSE;
 
+    private static final ModelVersion ELYTRON_BY_DEFAULT_VERSION = ModelVersion.create(6, 1, 0);
+
     public static final String DATASOURCES = "datasources";
 
     static final String DATA_SOURCE = "data-source";
@@ -399,6 +401,7 @@ public class Constants {
             .addAlternatives(USERNAME_NAME, AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(DS_SECURITY_DEF)
+            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .setRestartAllServices()
             .build();
 
@@ -408,12 +411,13 @@ public class Constants {
             .setAllowExpression(true)
             .addAccessConstraint(DS_SECURITY_DEF)
             .setNullSignificant(false)
+            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .setRestartAllServices()
             .build();
+
     public static final SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
             .setAllowExpression(false)
-            .setRequires(ELYTRON_ENABLED_NAME)
             .addAlternatives(SECURITY_DOMAIN_NAME, USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .addAccessConstraint(DS_SECURITY_DEF)
@@ -725,6 +729,7 @@ public class Constants {
             .setAllowExpression(true)
             .setRequired(false)
             .addAlternatives(RECOVERY_USERNAME_NAME, RECOVERY_AUTHENTICATION_CONTEXT_NAME)
+            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .setRestartAllServices()
             .build();
 
@@ -733,6 +738,7 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .setNullSignificant(false)
+            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .setRestartAllServices()
             .build();
 

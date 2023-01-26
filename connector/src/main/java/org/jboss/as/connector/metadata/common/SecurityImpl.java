@@ -29,22 +29,19 @@ public class SecurityImpl extends org.jboss.jca.common.metadata.common.SecurityI
     private static final long serialVersionUID = -4549127155646451392L;
 
     /**
-     * Indicates if the Security data belongs to Elytron or PicketBox.
+     * Deprecated. Elytron is enabled by default and this field is ignored.
      */
     private boolean elytronEnabled;
 
     /**
      * Constructor
      *
-     * @param securityDomain               security domain managed authentication. Security domain will refer to a PicketBox
-     *                                     security domain if Elytron is disabled, or to an Elytron authentication context
-     *                                     otherwise
-     * @param securityDomainAndApplication securityDomain and application managed authentication. This field will refer to a
-     *                                     PicketBox security domain if Elytron is disabled, or to an Elytron authentication
-     *                                     context otherwise
+     * @param securityDomain               security domain managed authentication. Security domain will refer to
+     *                                     an Elytron authentication context
+     * @param securityDomainAndApplication securityDomain and application managed authentication. This field will refer
+     *                                     to an Elytron authentication context
      * @param applicationManaged           application managed authentication
-     * @param elytronEnabled               in case one of {@param securityDomain} or {@param securityDomainAndApplication} is
-     *                                     not null, this field will indicate if Elytron will be responsible for authentication
+     * @param elytronEnabled               Deprecated. Elytron is enabled by default and this field is ignored.
      * @throws ValidateException ValidateException in case of a validation error
      */
     public SecurityImpl(String securityDomain, String securityDomainAndApplication, boolean applicationManaged, boolean elytronEnabled) throws ValidateException {
