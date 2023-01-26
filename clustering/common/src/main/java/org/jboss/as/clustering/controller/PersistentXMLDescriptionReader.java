@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,50 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.clustering.singleton;
+
+package org.jboss.as.clustering.controller;
 
 import java.util.List;
-import java.util.Locale;
 
-import org.jboss.as.clustering.controller.SubsystemSchema;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * Enumeration of supported subsystem schemas.
+ * An {@link XMLElementReader} based on a {@link PersistentResourceXMLDescription}.
  * @author Paul Ferraro
  */
-public enum SingletonSchema implements SubsystemSchema<SingletonSchema> {
+public class PersistentXMLDescriptionReader implements XMLElementReader<List<ModelNode>> {
+    private final PersistentResourceXMLDescription description;
 
-    VERSION_1_0(1, 0),
-    ;
-    static final SingletonSchema CURRENT = VERSION_1_0;
+    public <S extends PersistentSubsystemSchema<S>> PersistentXMLDescriptionReader(PersistentSubsystemSchema<S> schema) {
+        this(schema.getXMLDescription());
+    }
 
-    private final int major;
-    private final int minor;
-
-    SingletonSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+    public PersistentXMLDescriptionReader(PersistentResourceXMLDescription description) {
+        this.description = description;
     }
 
     @Override
-    public int major() {
-        return this.major;
-    }
-
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:jboss:domain:singleton:%d.%d", this.major, this.minor);
-    }
-
-    @Override
-    public XMLElementReader<List<ModelNode>> get() {
-        return new SingletonXMLReader(this);
+    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        this.description.parse(reader, PathAddress.EMPTY_ADDRESS, operations);
     }
 }

@@ -30,7 +30,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.clustering.controller.Schema;
+import org.jboss.as.clustering.controller.SubsystemSchema;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
@@ -38,12 +38,12 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
  * Base class for clustering subsystem tests.
  * @author Paul Ferraro
  */
-public abstract class ClusteringSubsystemTest<S extends Schema<S>> extends AbstractSubsystemBaseTest {
-    private final Schema<S> testSchema;
+public abstract class ClusteringSubsystemTest<S extends SubsystemSchema<S>> extends AbstractSubsystemBaseTest {
+    private final SubsystemSchema<S> testSchema;
     private final String xmlPattern;
     private final String xsdPattern;
 
-    protected ClusteringSubsystemTest(String name, Extension extension, Schema<S> testSchema, String xmlPattern, String xsdPattern) {
+    protected ClusteringSubsystemTest(String name, Extension extension, SubsystemSchema<S> testSchema, String xmlPattern, String xsdPattern) {
         super(name, extension);
         this.testSchema = testSchema;
         this.xmlPattern = xmlPattern;

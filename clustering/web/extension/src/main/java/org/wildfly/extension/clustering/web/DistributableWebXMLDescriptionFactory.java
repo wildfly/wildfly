@@ -34,11 +34,12 @@ import org.jboss.as.controller.PersistentResourceXMLDescription.PersistentResour
  * XML description factory for the distributable-web subsystem.
  * @author Paul Ferraro
  */
-public class DistributableWebXMLDescriptionFactory implements Function<DistributableWebSchema, PersistentResourceXMLDescription> {
+public enum DistributableWebXMLDescriptionFactory implements Function<DistributableWebSchema, PersistentResourceXMLDescription> {
+    INSTANCE;
 
     @Override
     public PersistentResourceXMLDescription apply(DistributableWebSchema schema) {
-        return builder(DistributableWebResourceDefinition.PATH, schema.getNamespaceUri())
+        return builder(DistributableWebResourceDefinition.PATH, schema.getUri())
                 .addAttribute(DistributableWebResourceDefinition.Attribute.DEFAULT_SESSION_MANAGEMENT.getDefinition())
                 .addAttribute(DistributableWebResourceDefinition.Attribute.DEFAULT_SSO_MANAGEMENT.getDefinition())
                 .addChild(this.getInfinispanSessionManagementResourceXMLBuilder(schema))

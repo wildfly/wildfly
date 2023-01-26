@@ -21,7 +21,7 @@
  */
 package org.wildfly.extension.microprofile.openapi;
 
-import org.jboss.as.clustering.controller.SubsystemExtension;
+import org.jboss.as.clustering.controller.PersistentSubsystemExtension;
 import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.Extension;
 import org.kohsuke.MetaInfServices;
@@ -32,12 +32,12 @@ import org.kohsuke.MetaInfServices;
  * @author Paul Ferraro
  */
 @MetaInfServices(Extension.class)
-public class MicroProfileOpenAPIExtension extends SubsystemExtension<MicroProfileOpenAPISchema> {
+public class MicroProfileOpenAPIExtension extends PersistentSubsystemExtension<MicroProfileOpenAPISchema> {
 
     static final String SUBSYSTEM_NAME = "microprofile-openapi-smallrye";
     static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, MicroProfileOpenAPIExtension.class);
 
     public MicroProfileOpenAPIExtension() {
-        super(SUBSYSTEM_NAME, MicroProfileOpenAPIModel.CURRENT, MicroProfileOpenAPISubsystemDefinition::new, MicroProfileOpenAPISchema.CURRENT, new MicroProfileOpenAPIXMLDescriptionFactory());
+        super(SUBSYSTEM_NAME, MicroProfileOpenAPIModel.CURRENT, MicroProfileOpenAPISubsystemDefinition::new, MicroProfileOpenAPISchema.CURRENT);
     }
 }

@@ -21,15 +21,18 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.List;
 import java.util.Locale;
 
-import org.jboss.as.clustering.controller.Schema;
+import org.jboss.as.clustering.controller.SubsystemSchema;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * Enumeration of the supported subsystem xml schemas.
  * @author Paul Ferraro
  */
-public enum JGroupsSchema implements Schema<JGroupsSchema> {
+public enum JGroupsSchema implements SubsystemSchema<JGroupsSchema> {
 
     VERSION_1_0(1, 0), // AS 7.0
     VERSION_1_1(1, 1), // AS 7.1
@@ -42,7 +45,7 @@ public enum JGroupsSchema implements Schema<JGroupsSchema> {
     VERSION_8_0(8, 0), // WildFly 20-26, EAP 7.4
     VERSION_9_0(9, 0), // WildFly 27-present
     ;
-    public static final JGroupsSchema CURRENT = VERSION_9_0;
+    static final JGroupsSchema CURRENT = VERSION_9_0;
 
     private final int major;
     private final int minor;
@@ -63,7 +66,12 @@ public enum JGroupsSchema implements Schema<JGroupsSchema> {
     }
 
     @Override
-    public String getNamespaceUri() {
+    public String getUri() {
         return String.format(Locale.ROOT, "urn:jboss:domain:jgroups:%d.%d", this.major, this.minor);
+    }
+
+    @Override
+    public XMLElementReader<List<ModelNode>> get() {
+        return new JGroupsSubsystemXMLReader(this);
     }
 }
