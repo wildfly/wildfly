@@ -432,7 +432,7 @@
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
-        <version.org.jboss.hal.console>3.5.12.Final</version.org.jboss.hal.console>
+        <version.org.jboss.hal.console>3.6.5.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.5.3.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
@@ -7634,6 +7634,18 @@
                 <version>${version.org.jboss.hal.console}</version>
                 <classifier>resources</classifier>
                 <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.elemento</groupId>
+                        <artifactId>elemento-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.gwtproject</groupId>
+                        <artifactId>gwt-user</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>validation-api</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.jboss.hal</groupId>
                         <artifactId>hal-ballroom</artifactId>
