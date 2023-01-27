@@ -504,7 +504,7 @@
         <version.org.wildfly.naming-client>1.0.15.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.transaction.client>2.0.1.Final</version.org.wildfly.transaction.client>
         <version.rhino.js>1.7R2</version.rhino.js>
-        <version.sun.jaxb>2.3.3-b02</version.sun.jaxb>
+        <version.sun.jaxb>2.3.3-b02-jbossorg-2</version.sun.jaxb>
         <version.sun.saaj-impl>1.5.3</version.sun.saaj-impl>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver>
