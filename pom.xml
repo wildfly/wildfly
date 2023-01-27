@@ -497,7 +497,7 @@
         <version.org.hamcrest.java-hamcrest>2.0.0.0</version.org.hamcrest.java-hamcrest>
         <version.org.hibernate>6.1.6.Final</version.org.hibernate>
         <legacy.version.org.hibernate.commons.annotations>5.0.5.Final</legacy.version.org.hibernate.commons.annotations>
-        <version.org.hibernate.commons.annotations>6.0.1.Final</version.org.hibernate.commons.annotations>
+        <version.org.hibernate.commons.annotations>6.0.6.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>6.1.7.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>8.0.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
