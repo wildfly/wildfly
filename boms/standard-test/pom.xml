@@ -115,15 +115,15 @@
 
             <dependency>
                 <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-all</artifactId>
+                <artifactId>hamcrest</artifactId>
                 <version>${version.org.hamcrest}</version>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.hamcrest</groupId>
-                <artifactId>java-hamcrest</artifactId>
-                <version>${version.org.hamcrest.java-hamcrest}</version>
+                <artifactId>hamcrest-all</artifactId>
+                <version>${version.org.hamcrest.legacy}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -301,6 +301,12 @@
                         <artifactId>xom</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.syslog4j</groupId>
+                <artifactId>syslog4j</artifactId>
+                <version>${version.org.syslog4j}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
