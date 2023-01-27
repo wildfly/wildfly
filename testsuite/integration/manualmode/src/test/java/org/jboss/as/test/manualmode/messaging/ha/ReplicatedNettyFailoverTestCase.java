@@ -139,7 +139,7 @@ public class ReplicatedNettyFailoverTestCase extends FailoverTestCase {
     }
 
     @Override
-    protected void testMasterInSyncWithReplica(ModelControllerClient client) throws Exception {
+    protected void testPrimaryInSyncWithReplica(ModelControllerClient client) throws Exception {
         ModelNode operation = Operations.createReadAttributeOperation(
                 PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-primary").toModelNode(),
                 "synchronized-with-backup");
@@ -152,7 +152,7 @@ public class ReplicatedNettyFailoverTestCase extends FailoverTestCase {
     }
 
     @Override
-    protected void testSlaveInSyncWithReplica(ModelControllerClient client) throws Exception {
+    protected void testSecondaryInSyncWithReplica(ModelControllerClient client) throws Exception {
         ModelNode operation = Operations.createReadAttributeOperation(
                 PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-secondary").toModelNode(),
                 "synchronized-with-live");
@@ -160,7 +160,7 @@ public class ReplicatedNettyFailoverTestCase extends FailoverTestCase {
     }
 
     @Override
-    protected void testMasterOutOfSyncWithReplica(ModelControllerClient client) throws Exception {
+    protected void testPrimaryOutOfSyncWithReplica(ModelControllerClient client) throws Exception {
         ModelNode operation = Operations.createReadAttributeOperation(
                 PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-primary").toModelNode(),
                 "synchronized-with-backup");
@@ -173,7 +173,7 @@ public class ReplicatedNettyFailoverTestCase extends FailoverTestCase {
     }
 
     @Override
-    protected void testSlaveOutOfSyncWithReplica(ModelControllerClient client) throws Exception {
+    protected void testSecondaryOutOfSyncWithReplica(ModelControllerClient client) throws Exception {
         ModelNode operation = Operations.createReadAttributeOperation(
                 PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-secondary").toModelNode(),
                 "synchronized-with-live");
