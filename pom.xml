@@ -528,7 +528,7 @@
         <legacy.version.org.jboss.narayana>5.13.1.Final</legacy.version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.9.Final</version.org.jboss.openjdk-orb>
         <legacy.version.org.jboss.resteasy>4.7.4.Final</legacy.version.org.jboss.resteasy>
-        <version.org.jboss.resteasy>6.2.1.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>6.2.2.Final</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.microprofile>2.0.0.Final</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.0.1.Final</version.org.jboss.resteasy.spring>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
