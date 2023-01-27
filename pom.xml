@@ -263,21 +263,6 @@
              still being easily disabled in profiles where it is not wanted. -->
         <surefire.default-test.phase>test</surefire.default-test.phase>
 
-        <!-- WildFly Preview vs standard WildFly GAV expression properties.
-             Used to drive maven-resource-plugin filtering for module.xml files
-             where WildFly Preview and standard WildFly use different artifacts but
-             otherwise identical module.xml files. The expression encapsulates the part
-             of a groupId/artifactId/classifier that differs in the two dists.
-             Values here are the ones used by standard WildFly; WildFly Preview child
-             modules will override. Often the standard value will be an empty string
-             and WildFly Preview will change it to additional text a project uses to
-             identify its jakarta.* namespace artifacts.
-             -->
-        <!-- TODO clean this out, as these strings no longer differ between WF and WFP -->
-        <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
-        <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
-        <module.jms.suffix>jakarta</module.jms.suffix>
-
         <!-- Base wildfly version used by testsuite/galleon/update test to install a server that gets updated to the SNAPSHOT version -->
         <wildfly.test.galleon.update.base.version>26.1.1.Final</wildfly.test.galleon.update.base.version>
 
@@ -301,7 +286,7 @@
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>6.2.2.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>6.2.3.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>8.1.0.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>3.0.2.Final</version.org.wildfly.plugin>
@@ -440,7 +425,7 @@
         <version.org.apache.cxf.xjcplugins>4.0.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0.AM26</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
-        <version.org.apache.james.apache-mime4j>0.8.7</version.org.apache.james.apache-mime4j>
+        <version.org.apache.james.apache-mime4j>0.8.9</version.org.apache.james.apache-mime4j>
         <version.org.apache.kafka>3.2.2</version.org.apache.kafka>
         <version.org.apache.lucene>8.11.1</version.org.apache.lucene>
         <version.org.apache.myfaces.core>3.0.2</version.org.apache.myfaces.core>
@@ -519,7 +504,7 @@
         <legacy.version.org.jboss.resteasy>4.7.4.Final</legacy.version.org.jboss.resteasy>
         <version.org.jboss.resteasy>6.2.1.Final</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.microprofile>2.0.0.Final</version.org.jboss.resteasy.microprofile>
-        <version.org.jboss.resteasy.spring>3.0.0.Final</version.org.jboss.resteasy.spring>
+        <version.org.jboss.resteasy.spring>3.0.1.Final</version.org.jboss.resteasy.spring>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>

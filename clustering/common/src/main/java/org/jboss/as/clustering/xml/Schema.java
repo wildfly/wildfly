@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.jboss.as.clustering.xml;
 
 /**
- * Defines an XML schema version.
+ * A versioned namespace of a specific qualified name.
  * @author Paul Ferraro
  */
-public interface Schema<S extends Schema<S>> {
-    int major();
-    int minor();
+public interface Schema<S extends Schema<S>> extends Namespace<S>, QNameProvider<S> {
 
-    /**
-     * Get the namespace URI of this schema.
-     * @return the namespace URI
-     */
-    String getNamespaceUri();
-
-    /**
-     * Indicates whether this version of the schema is greater than or equal to the version of the specified schema.
-     * @param schema a schema version with which to compare
-     * @return true, if this version of the schema is greater than or equal to the version of the specified schema, false otherwise.
-     */
-    default boolean since(S schema) {
-        return (this.major() > schema.major()) || ((this.major() == schema.major()) && (this.minor() >= schema.minor()));
+    @Override
+    default Namespace<S> getNamespace() {
+        return this;
     }
 }

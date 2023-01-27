@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.timerservice;
 
 import java.util.Locale;
 
-import org.jboss.as.clustering.controller.Schema;
+import org.jboss.as.clustering.xml.Schema;
 
 /**
  * @author Paul Ferraro
@@ -33,7 +33,7 @@ public enum TimerServiceMetaDataSchema implements Schema<TimerServiceMetaDataSch
     VERSION_1_0(1, 0),
     VERSION_2_0(2, 0),
     ;
-    static final Schema<TimerServiceMetaDataSchema> CURRENT = VERSION_2_0;
+    static final TimerServiceMetaDataSchema CURRENT = VERSION_2_0;
 
     private final int major;
     private final int minor;
@@ -54,7 +54,12 @@ public enum TimerServiceMetaDataSchema implements Schema<TimerServiceMetaDataSch
     }
 
     @Override
-    public String getNamespaceUri() {
-        return String.format(Locale.ROOT, "urn:timer-service:%d.%d", this.major, this.minor);
+    public String getUri() {
+        return String.format(Locale.ROOT, "urn:%s:%d.%d", this.getLocalName(), this.major, this.minor);
+    }
+
+    @Override
+    public String getLocalName() {
+        return "timer-service";
     }
 }

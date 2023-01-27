@@ -21,7 +21,7 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
-import org.jboss.as.clustering.controller.SubsystemExtension;
+import org.jboss.as.clustering.controller.PersistentSubsystemExtension;
 import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.Extension;
 import org.kohsuke.MetaInfServices;
@@ -33,12 +33,12 @@ import org.kohsuke.MetaInfServices;
  * @author Richard Achmatowicz
  */
 @MetaInfServices(Extension.class)
-public class DistributableEjbExtension extends SubsystemExtension<DistributableEjbSchema> {
+public class DistributableEjbExtension extends PersistentSubsystemExtension<DistributableEjbSchema> {
 
     static final String SUBSYSTEM_NAME = "distributable-ejb";
     static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, DistributableEjbExtension.class);
 
     public DistributableEjbExtension() {
-        super(SUBSYSTEM_NAME, DistributableEjbModel.CURRENT, DistributableEjbResourceDefinition::new, DistributableEjbSchema.CURRENT, new DistributableEjbXMLDescriptionFactory());
+        super(SUBSYSTEM_NAME, DistributableEjbModel.CURRENT, DistributableEjbResourceDefinition::new, DistributableEjbSchema.CURRENT);
     }
 }

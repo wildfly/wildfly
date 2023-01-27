@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.singleton;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.as.clustering.controller.SubsystemExtension;
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
-import org.jboss.as.controller.Extension;
-import org.kohsuke.MetaInfServices;
+import java.util.List;
+
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
- * Extension point for singleton subsystem.
  * @author Paul Ferraro
+ *
  */
-@MetaInfServices(Extension.class)
-public class SingletonExtension extends SubsystemExtension<SingletonSchema> {
+public interface PersistentSubsystemSchema<S extends PersistentSubsystemSchema<S>> extends SubsystemSchema<S> {
 
-    static final String SUBSYSTEM_NAME = "singleton";
-    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, SingletonExtension.class);
-
-    public SingletonExtension() {
-        super(SUBSYSTEM_NAME, SingletonModel.CURRENT, SingletonResourceDefinition::new, SingletonSchema.CURRENT, new SingletonXMLWriter());
+    @Override
+    default XMLElementReader<List<ModelNode>> get() {
+        return new PersistentXMLDescriptionReader(this);
     }
+
+    PersistentResourceXMLDescription getXMLDescription();
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.singleton;
+package org.jboss.as.clustering.xml;
 
-import org.jboss.as.clustering.controller.SubsystemExtension;
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
-import org.jboss.as.controller.Extension;
-import org.kohsuke.MetaInfServices;
+import java.util.EnumSet;
+
+import org.jboss.staxmapper.XMLMapper;
 
 /**
- * Extension point for singleton subsystem.
+ * A schema that exposes its own {@link XMLElementReader}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Extension.class)
-public class SingletonExtension extends SubsystemExtension<SingletonSchema> {
+public interface XMLElementSchema<T, N extends Schema<N>> extends Schema<N>, XMLElementReaderFactory<T, N> {
 
-    static final String SUBSYSTEM_NAME = "singleton";
-    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, SingletonExtension.class);
-
-    public SingletonExtension() {
-        super(SUBSYSTEM_NAME, SingletonModel.CURRENT, SingletonResourceDefinition::new, SingletonSchema.CURRENT, new SingletonXMLWriter());
+    /**
+     * Creates a StAX mapper from an enumeration of schemas.
+     * @param <C> the xml reader context type
+     * @param <S> the schema type
+     * @param schemaClass a schema enum class
+     * @return a StAX mapper
+     */
+    static <C, S extends Enum<S> & XMLElementSchema<C, S>> XMLMapper createMapper(Class<S> schemaClass) {
+        XMLMapper mapper = XMLMapper.Factory.create();
+        for (S schema : EnumSet.allOf(schemaClass)) {
+            // Register via supplier so that reader is created on-demand, and garbage collected when complete
+            mapper.registerRootElement(schema.getName(), schema);
+        }
+        return mapper;
     }
 }

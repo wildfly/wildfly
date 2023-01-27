@@ -26,12 +26,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.EnumSet;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.clustering.xml.XMLElementSchema;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -50,13 +50,7 @@ public class DistributableWebDeploymentParsingProcessor implements DeploymentUni
     private static final String DISTRIBUTABLE_WEB_DEPLOYMENT_DESCRIPTOR = "WEB-INF/distributable-web.xml";
     private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();
 
-    private final XMLMapper mapper = XMLMapper.Factory.create();
-
-    public DistributableWebDeploymentParsingProcessor() {
-        for (DistributableWebDeploymentSchema schema : EnumSet.allOf(DistributableWebDeploymentSchema.class)) {
-            this.mapper.registerRootElement(schema.getRoot(), new DistributableWebDeploymentXMLReader(schema));
-        }
-    }
+    private final XMLMapper mapper = XMLElementSchema.createMapper(DistributableWebDeploymentSchema.class);
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {

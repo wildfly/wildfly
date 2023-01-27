@@ -32,10 +32,11 @@ import org.jboss.as.controller.PersistentResourceXMLDescription;
  *
  * @author Radoslav Husar
  */
-public class MicroProfileFaultToleranceXMLDescriptionFactory implements Function<MicroProfileFaultToleranceSchema, PersistentResourceXMLDescription> {
+public enum MicroProfileFaultToleranceXMLDescriptionFactory implements Function<MicroProfileFaultToleranceSchema, PersistentResourceXMLDescription> {
+    INSTANCE;
 
     @Override
     public PersistentResourceXMLDescription apply(MicroProfileFaultToleranceSchema schema) {
-        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, schema.getNamespaceUri()).build();
+        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, schema.getUri()).build();
     }
 }

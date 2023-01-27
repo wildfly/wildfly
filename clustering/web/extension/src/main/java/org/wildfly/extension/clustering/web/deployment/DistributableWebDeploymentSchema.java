@@ -24,22 +24,18 @@ package org.wildfly.extension.clustering.web.deployment;
 
 import java.util.Locale;
 
-import javax.xml.namespace.QName;
-
-import org.jboss.as.clustering.controller.Schema;
+import org.jboss.as.clustering.xml.XMLElementSchema;
 
 /**
  * Enumerate the schema versions of the distibutable-web deployment descriptor.
  * @author Paul Ferraro
  */
-public enum DistributableWebDeploymentSchema implements Schema<DistributableWebDeploymentSchema> {
+public enum DistributableWebDeploymentSchema implements XMLElementSchema<MutableDistributableDeploymentConfiguration, DistributableWebDeploymentSchema> {
 
     VERSION_1_0(1, 0),
     VERSION_2_0(2, 0),
     VERSION_3_0(3, 0),
     ;
-    private static final String ROOT = "distributable-web";
-
     private final int major;
     private final int minor;
 
@@ -59,11 +55,17 @@ public enum DistributableWebDeploymentSchema implements Schema<DistributableWebD
     }
 
     @Override
-    public String getNamespaceUri() {
-        return String.format(Locale.ROOT, "urn:jboss:%s:%d.%d", ROOT, this.major, this.minor);
+    public String getUri() {
+        return String.format(Locale.ROOT, "urn:jboss:%s:%d.%d", this.getLocalName(), this.major, this.minor);
     }
 
-    public QName getRoot() {
-        return new QName(this.getNamespaceUri(), ROOT);
+    @Override
+    public String getLocalName() {
+        return "distributable-web";
+    }
+
+    @Override
+    public DistributableWebDeploymentXMLReader get() {
+        return new DistributableWebDeploymentXMLReader(this);
     }
 }

@@ -22,6 +22,7 @@
 package org.jboss.as.test.clustering;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,7 +34,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.LocalizedCacheTopology;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -57,7 +57,7 @@ public class TopologyChangeListenerBean implements TopologyChangeListener, Runna
 
     @Override
     public void establishTopology(String containerName, String cacheName, long timeout, String... nodes) throws InterruptedException {
-        Set<String> expectedMembers = Stream.of(nodes).sorted().collect(Collectors.toSet());
+        Set<String> expectedMembers = Stream.of(nodes).collect(Collectors.toSet());
         Cache<?, ?> cache = findCache(containerName, cacheName);
         if (cache == null) {
             throw new IllegalStateException(String.format("Cache %s.%s not found", containerName, cacheName));
@@ -111,7 +111,7 @@ public class TopologyChangeListenerBean implements TopologyChangeListener, Runna
         @SuppressWarnings("deprecation")
         BlockingManager blocking = event.getCache().getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
         blocking.asExecutor(this.getClass().getName()).execute(this);
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

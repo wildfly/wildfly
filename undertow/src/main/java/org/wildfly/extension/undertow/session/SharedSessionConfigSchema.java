@@ -24,9 +24,7 @@ package org.wildfly.extension.undertow.session;
 
 import java.util.Locale;
 
-import javax.xml.namespace.QName;
-
-import org.jboss.as.clustering.controller.Schema;
+import org.jboss.as.clustering.xml.Schema;
 
 /**
  * @author Paul Ferraro
@@ -35,9 +33,6 @@ public enum SharedSessionConfigSchema implements Schema<SharedSessionConfigSchem
     VERSION_1_0(1, 0),
     VERSION_2_0(2, 0),
     ;
-    private static final String ROOT = "shared-session-config";
-    private static final String NAMESPACE_URI_PATTERN = "urn:jboss:%s:%d.%d";
-
     private final int major;
     private final int minor;
 
@@ -57,11 +52,12 @@ public enum SharedSessionConfigSchema implements Schema<SharedSessionConfigSchem
     }
 
     @Override
-    public String getNamespaceUri() {
-        return String.format(Locale.ROOT, NAMESPACE_URI_PATTERN, ROOT, this.major, this.minor);
+    public String getUri() {
+        return String.format(Locale.ROOT, "urn:jboss:%s:%d.%d", this.getLocalName(), this.major, this.minor);
     }
 
-    public QName getRoot() {
-        return new QName(this.getNamespaceUri(), ROOT);
+    @Override
+    public String getLocalName() {
+        return "shared-session-config";
     }
 }
