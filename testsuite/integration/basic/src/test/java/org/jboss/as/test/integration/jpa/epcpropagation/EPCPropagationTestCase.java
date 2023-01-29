@@ -176,7 +176,7 @@ public class EPCPropagationTestCase {
     public void testNoTxEPCRemoveOperation() throws Exception {
 
         StatefulInterface stateful = lookup("NoTxEPCStatefulBean", StatefulInterface.class);
-        boolean equal = stateful.createEntity(8, "EntityName Master X");
+        boolean equal = stateful.createEntity(8, "EntityName X");
 
         assertTrue("XPC inheritance should copy entity to other SFSB created on SFSB invocation call", equal);
 

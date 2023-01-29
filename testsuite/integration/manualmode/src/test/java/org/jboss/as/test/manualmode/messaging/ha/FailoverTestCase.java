@@ -53,8 +53,8 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context1, jmsQueueLookup, text);
         context1.close();
 
-        testMasterInSyncWithReplica(createClient1());
-        testSlaveInSyncWithReplica(client2);
+        testPrimaryInSyncWithReplica(createClient1());
+        testSecondaryInSyncWithReplica(client2);
         log.trace("===================");
         log.trace("STOP SERVER1...");
         log.trace("===================");
@@ -63,7 +63,7 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(jmsOperations2, true);
         checkJMSQueue(jmsOperations2, jmsQueueName, true);
-        testSlaveOutOfSyncWithReplica(client2);
+        testSecondaryOutOfSyncWithReplica(client2);
 
         InitialContext context2 = createJNDIContextFromServer2();
         // receive the message that was sent to server1 before failover occurs
@@ -72,7 +72,7 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         String text2 = "sent to server2, received from server 1 (after failback)";
         sendMessage(context2, jmsQueueLookup, text2);
         context2.close();
-        testSlaveOutOfSyncWithReplica(client2);
+        testSecondaryOutOfSyncWithReplica(client2);
 
         log.trace("====================");
         log.trace("START SERVER1...");
@@ -100,8 +100,8 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendAndReceiveMessage(context1, jmsQueueLookup);
         context1.close();
 
-        testMasterInSyncWithReplica(client1);
-        testSlaveInSyncWithReplica(client2);
+        testPrimaryInSyncWithReplica(client1);
+        testSecondaryInSyncWithReplica(client2);
         log.trace("=============================");
         log.trace("RETURN TO NORMAL OPERATION...");
         log.trace("=============================");
@@ -110,7 +110,7 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         log.trace("STOP SERVER2...");
         log.trace("===================");
         container.stop(SERVER2);
-        testMasterOutOfSyncWithReplica(client1);
+        testPrimaryOutOfSyncWithReplica(client1);
     }
 
     @Test
@@ -124,8 +124,8 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context1, jmsQueueLookup, text);
         context1.close();
 
-        testMasterInSyncWithReplica(createClient1());
-        testSlaveInSyncWithReplica(client2);
+        testPrimaryInSyncWithReplica(createClient1());
+        testSecondaryInSyncWithReplica(client2);
         log.trace("############## 1 #############");
         //listSharedStoreDir();
 
@@ -140,7 +140,7 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(backupJMSOperations, true);
         checkJMSQueue(backupJMSOperations, jmsQueueName, true);
-        testSlaveOutOfSyncWithReplica(client2);
+        testSecondaryOutOfSyncWithReplica(client2);
 
         InitialContext context2 = createJNDIContextFromServer2();
         // receive the message that was sent to server1 before failover occurs
@@ -149,7 +149,7 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         String text2 = "sent to server2, received from server 1 (after failback)";
         sendMessage(context2, jmsQueueLookup, text2);
         context2.close();
-        testSlaveOutOfSyncWithReplica(client2);
+        testSecondaryOutOfSyncWithReplica(client2);
 
         log.trace("====================");
         log.trace("START SERVER1...");
@@ -177,8 +177,8 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context1, jmsQueueLookup, text3);
         context1.close();
 
-        testMasterInSyncWithReplica(client1);
-        testSlaveInSyncWithReplica(client2);
+        testPrimaryInSyncWithReplica(client1);
+        testSecondaryInSyncWithReplica(client2);
         log.trace("==============================");
         log.trace("STOP SERVER1 A 2ND TIME...");
         log.trace("==============================");
@@ -219,11 +219,11 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
 
     }
 
-    protected void testMasterInSyncWithReplica(ModelControllerClient client) throws Exception {}
+    protected void testPrimaryInSyncWithReplica(ModelControllerClient client) throws Exception {}
 
-    protected void testSlaveInSyncWithReplica(ModelControllerClient client) throws Exception  {}
+    protected void testSecondaryInSyncWithReplica(ModelControllerClient client) throws Exception  {}
 
-    protected void testMasterOutOfSyncWithReplica(ModelControllerClient client) throws Exception {}
+    protected void testPrimaryOutOfSyncWithReplica(ModelControllerClient client) throws Exception {}
 
-    protected void testSlaveOutOfSyncWithReplica(ModelControllerClient client) throws Exception  {}
+    protected void testSecondaryOutOfSyncWithReplica(ModelControllerClient client) throws Exception  {}
 }
