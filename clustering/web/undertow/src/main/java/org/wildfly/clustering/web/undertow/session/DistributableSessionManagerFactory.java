@@ -125,11 +125,6 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             public RecordableSessionManagerStatistics getStatistics() {
                 return statistics;
             }
-
-            @Override
-            public boolean isOrphanSessionAllowed() {
-                return info.isOrphanSessionAllowed();
-            }
         });
         result.setDefaultSessionTimeout((int) this.config.getDefaultSessionTimeout().getSeconds());
         return result;
