@@ -34,6 +34,8 @@ import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobTask;
 import org.jberet.spi.JobXmlResolver;
 import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.logging.MDC;
+import org.jboss.logging.NDC;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -227,7 +229,8 @@ public class BatchEnvironmentService implements Service {
             final ClassLoaderContextHandle classLoaderContextHandle = (tccl == null ? new ClassLoaderContextHandle(classLoader) : new ClassLoaderContextHandle(tccl));
             // Class loader handle must be first so the TCCL is set before the other handles execute
             return new ContextHandle.ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(namespaceContextSelector),
-                     artifactFactory.createContextHandle(), new ConcurrentContextHandle());
+                     artifactFactory.createContextHandle(), new ConcurrentContextHandle(),
+                    new DiagnosticContextHandle(MDC.getMap(), NDC.get()));
         }
     }
 }
