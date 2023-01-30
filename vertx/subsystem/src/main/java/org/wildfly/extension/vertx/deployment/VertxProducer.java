@@ -41,4 +41,8 @@ public class VertxProducer {
         throw new RuntimeException("Cannot inject Vertx " + name + " in " + ip.getMember().getDeclaringClass());
     }
 
+    @Produces
+    public io.vertx.reactivex.core.Vertx getVertxReactive(InjectionPoint ip) {
+        return io.vertx.reactivex.core.Vertx.newInstance(getVertx(ip));
+    }
 }
