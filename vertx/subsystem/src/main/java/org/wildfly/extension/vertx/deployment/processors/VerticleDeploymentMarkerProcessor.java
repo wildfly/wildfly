@@ -63,9 +63,7 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
 
     private static final List<DotName> dotNames = new ArrayList<>();
     static {
-        dotNames.add(DotName.createSimple("javax.inject.Inject"));
         dotNames.add(DotName.createSimple("jakarta.inject.Inject"));
-        dotNames.add(DotName.createSimple("javax.annotation.Resource"));
         dotNames.add(DotName.createSimple("jakarta.annotation.Resource"));
     }
 
