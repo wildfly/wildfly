@@ -20,7 +20,7 @@ ifdef::basebackend-html[toc::[]]
 
 
 This guide has moved to
-https://github.com/wildfly/quickstart/blob/{wildflyversion}.x/guide/
+https://github.com/wildfly/quickstart/blob/main/guide/
 
 
 
@@ -29,19 +29,19 @@ include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/guide.a
 ////
 
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/Introduction.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/main/guide/Introduction.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/GettingStarted.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/main/guide/GettingStarted.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/HelloworldQuickstart.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/main/guide/HelloworldQuickstart.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/NumberguessQuickstart.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/main/guide/NumberguessQuickstart.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/GreeterQuickstart.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/main/guide/GreeterQuickstart.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/KitchensinkQuickstart.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/main/guide/KitchensinkQuickstart.asciidoc[]
 
-include::https://raw.githubusercontent.com/wildfly/quickstart/{wildflyversion}.x/guide/Archetype.asciidoc[]
+include::https://raw.githubusercontent.com/wildfly/quickstart/main/guide/Archetype.asciidoc[]
 
 
 = More Resources
