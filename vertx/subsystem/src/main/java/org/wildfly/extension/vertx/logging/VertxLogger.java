@@ -71,11 +71,11 @@ public interface VertxLogger extends BasicLogger {
     StartException failedToLookupVertx(String jndiName, @Cause Throwable e);
 
     @Message(id = 12, value = "Failed to deploy verticle: %s to Vertx: %s")
-    StartException failedToDeployVerticle(String verticleClass, String jndiName, @Cause Throwable e);
+    StartException failedToDeployVerticle(String verticleClass, String vertxName, @Cause Throwable e);
 
     @LogMessage(level = WARN)
     @Message(id = 13, value = "Error to undeploy verticle: %s from Vertx: %s")
-    void errorWhenUndeployVerticle(String verticleClass, String jndiName, @Cause Exception e);
+    void errorWhenUndeployVerticle(String verticleClass, String vertxName, @Cause Exception e);
 
     @Message(id = 14, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
     DeploymentUnitProcessingException deploymentRequiresCapability(String deploymentName, String capabilityName);

@@ -24,20 +24,22 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.vertx.VertxConstants;
+import org.wildfly.extension.vertx.VertxProxy;
+import org.wildfly.extension.vertx.VertxResourceDefinition;
 import org.wildfly.extension.vertx.deployment.VerticleDeploymentService;
 import org.wildfly.extension.vertx.deployment.VertxDeploymentAttachment;
 import org.wildfly.extension.vertx.deployment.VerticleDeploymentsMetaData;
 import org.wildfly.extension.vertx.logging.VertxLogger;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.wildfly.extension.vertx.deployment.VerticleDeploymentsMetaData.DEFAULT_VERTX_NAME;
 import static org.wildfly.extension.vertx.deployment.VerticleDeploymentsMetaData.DEPLOY_OPTIONS;
 import static org.wildfly.extension.vertx.deployment.VerticleDeploymentsMetaData.VERTICLE_CLASS;
-import static org.wildfly.extension.vertx.deployment.VerticleDeploymentsMetaData.VERTX_JNDI_NAME;
 import static org.wildfly.extension.vertx.deployment.VerticleDeploymentsMetaData.VERTX_NAME;
 
 /**
@@ -72,18 +74,14 @@ public class VerticleDeploymentProcessor implements DeploymentUnitProcessor {
                     throw VertxLogger.VERTX_LOGGER.noVerticleClassDefined(deploymentName);
                 }
                 final String vertxName = vertxDeployment.getString(VERTX_NAME, DEFAULT_VERTX_NAME);
-                String jndiName = vertxDeployment.getString(VERTX_JNDI_NAME);
-                if (jndiName == null || jndiName.length() == 0) {
-                    jndiName = VertxConstants.DEFAULT_JNDI_PREFIX + vertxName;
-                }
-
                 final JsonObject deployOption = vertxDeployment.getJsonObject(DEPLOY_OPTIONS, new JsonObject());
-                VerticleDeploymentService service = new VerticleDeploymentService(verticleClass, jndiName,
+                ServiceBuilder<?> sb = context.getServiceTarget().addService(ServiceName.of(deploymentUnit.getServiceName(), verticleClass));
+                Supplier<VertxProxy> vertxProxySupplier = sb.requires(VertxResourceDefinition.VERTX_RUNTIME_CAPABILITY.getCapabilityServiceName(vertxName));
+                VerticleDeploymentService service = new VerticleDeploymentService(verticleClass, vertxProxySupplier,
                         new DeploymentOptions((deployOption)), moduleClassLoader);
-                context.getServiceTarget().addService(ServiceName.of(deploymentUnit.getServiceName(), verticleClass))
-                        .setInstance(service)
-                        .setInitialMode(ServiceController.Mode.ACTIVE)
-                        .install();
+                sb.setInstance(service)
+                  .setInitialMode(ServiceController.Mode.ACTIVE)
+                  .install();
             }
         }
     }

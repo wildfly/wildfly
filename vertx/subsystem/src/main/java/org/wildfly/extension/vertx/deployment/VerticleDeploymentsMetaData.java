@@ -36,7 +36,6 @@ public class VerticleDeploymentsMetaData {
     public static final String DEFAULT_VERTX_NAME = "default";
     public static final String VERTICLE_CLASS = "verticle-class";
     public static final String VERTX_NAME = "vertx";
-    public static final String VERTX_JNDI_NAME = "vertx-jndi-name";
     public static final String DEPLOY_OPTIONS = "deploy-options";
 
     private final List<JsonObject> deployments;

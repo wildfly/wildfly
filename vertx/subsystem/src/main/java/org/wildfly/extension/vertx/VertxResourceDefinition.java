@@ -44,7 +44,7 @@ public class VertxResourceDefinition extends SimpleResourceDefinition {
 
     static final String VERTX_CAPABILITY_NAME = "org.wildfly.extension.vertx";
 
-    static final RuntimeCapability<Void> VERTX_RUNTIME_CAPABILITY =
+    public static final RuntimeCapability<Void> VERTX_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(VERTX_CAPABILITY_NAME, true, VertxProxy.class)
                     .setDynamicNameMapper(DynamicNameMappers.PARENT)
                     .build();
