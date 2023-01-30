@@ -61,6 +61,7 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
 
     private static final String VERTX_ANNOTATION_NAME = "io.vertx.core.Vertx";
     private static final String VERTX_RX2_ANNOTATION_NAME = "io.vertx.reactivex.core.Vertx";
+    private static final String VERTX_RX3_ANNOTATION_NAME = "io.vertx.rxjava3.core.Vertx";
 
     private static final List<DotName> dotNames = new ArrayList<>();
     static {
@@ -99,7 +100,8 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
             final AnnotationTarget annotationTarget = annotation.target();
             if (annotationTarget instanceof FieldInfo) {
                 final String fieldType = annotationTarget.asField().type().name().toString();
-                if (fieldType.equals(VERTX_ANNOTATION_NAME) || fieldType.equals(VERTX_RX2_ANNOTATION_NAME)) {
+                if (fieldType.equals(VERTX_ANNOTATION_NAME) || fieldType.equals(VERTX_RX2_ANNOTATION_NAME)
+                  || fieldType.equals(VERTX_RX3_ANNOTATION_NAME)) {
                     return true;
                 }
             }

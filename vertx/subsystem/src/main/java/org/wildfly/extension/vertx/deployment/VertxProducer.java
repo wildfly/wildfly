@@ -42,7 +42,13 @@ public class VertxProducer {
     }
 
     @Produces
-    public io.vertx.reactivex.core.Vertx getVertxReactive(InjectionPoint ip) {
+    public io.vertx.reactivex.core.Vertx getVertxReactive2(InjectionPoint ip) {
         return io.vertx.reactivex.core.Vertx.newInstance(getVertx(ip));
     }
+
+    @Produces
+    public io.vertx.rxjava3.core.Vertx getVertxReactive3(InjectionPoint ip) {
+        return io.vertx.rxjava3.core.Vertx.newInstance(getVertx(ip));
+    }
+
 }
