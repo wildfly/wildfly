@@ -103,7 +103,7 @@ public class RemoteProtocolChangeClientInterceptorTestCase {
     @OperateOnDeployment("client")
     public void testDefaultProtocol() throws Exception {
         final Hashtable<String, String> props = new Hashtable<>();
-        props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        props.put(Context.URL_PKG_PREFIXES, "org.wildfly.naming.client");
 
         StatelessRemote bean = getRemote(new InitialContext(props));
         Assert.assertNotNull(bean);
@@ -117,8 +117,8 @@ public class RemoteProtocolChangeClientInterceptorTestCase {
     @OperateOnDeployment("client")
     public void testHttpRemotingProtocol() throws Exception {
         final Hashtable<String, String> props = new Hashtable<>();
-        props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        props.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+        props.put(Context.URL_PKG_PREFIXES, "org.wildfly.naming.client");
+        props.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
         props.put(Context.PROVIDER_URL, "http-remoting://" + TestSuiteEnvironment.getServerAddress() + ":"
                 + (TestSuiteEnvironment.getHttpPort() + Integer.parseInt(getSystemProperty("jboss.socket.binding.port-offset", "100"))));
 
