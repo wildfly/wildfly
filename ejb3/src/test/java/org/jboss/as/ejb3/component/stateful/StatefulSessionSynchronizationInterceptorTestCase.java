@@ -21,6 +21,11 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -31,9 +36,9 @@ import java.util.function.Supplier;
 import jakarta.transaction.Status;
 import jakarta.transaction.Synchronization;
 import jakarta.transaction.TransactionSynchronizationRegistry;
-
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBean;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCache;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.ejb.client.SessionID;
@@ -42,11 +47,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -95,6 +95,10 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
         }).when(transactionSynchronizationRegistry).registerInterposedSynchronization((Synchronization) any());
         final StatefulSessionComponentInstance instance = new StatefulSessionComponentInstance(component, org.jboss.invocation.Interceptors.getTerminalInterceptor(), Collections.EMPTY_MAP, Collections.emptyMap());
         context.putPrivateData(ComponentInstance.class, instance);
+
+        StatefulSessionBean<SessionID, StatefulSessionComponentInstance> bean = mock(StatefulSessionBean.class);
+        when(bean.getInstance()).thenReturn(instance);
+        context.putPrivateData(StatefulSessionBean.class, bean);
 
         interceptor.processInvocation(context);
 
