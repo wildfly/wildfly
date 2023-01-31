@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.microprofile.metrics;
 
-import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.METRICS_HTTP_CONTEXT_CAPABILITY;
-
 import java.io.IOException;
 import java.util.Properties;
 
@@ -50,14 +48,14 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
         return "schema/wildfly-microprofile-metrics-smallrye_2_0.xsd";
     }
 
+    @Override
     protected Properties getResolvedProperties() {
         return System.getProperties();
     }
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities(
-                METRICS_HTTP_CONTEXT_CAPABILITY);
+        return AdditionalInitialization.ADMIN_ONLY_HC;
     }
 
 }

@@ -2130,34 +2130,6 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>microprofile-metrics-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-metrics</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-metrics</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
                                 <id>microprofile-openapi-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -2440,7 +2412,6 @@
                                                 <layer>microprofile-fault-tolerance</layer>
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-metrics</layer>
                                                 <layer>microprofile-openapi</layer>
                                                 <layer>microprofile-opentracing</layer>
                                                 <layer>microprofile-reactive-streams-operators</layer>
@@ -2544,7 +2515,6 @@
                                                 <layer>microprofile-fault-tolerance</layer>
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-metrics</layer>
                                                 <layer>microprofile-openapi</layer>
                                                 <layer>microprofile-opentracing</layer>
                                                 <layer>microprofile-platform</layer>

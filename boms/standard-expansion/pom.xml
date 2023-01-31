@@ -494,31 +494,6 @@
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 
-            <dependency>
-                <groupId>org.eclipse.microprofile.metrics</groupId>
-                <artifactId>microprofile-metrics-api</artifactId>
-                <version>${version.org.eclipse.microprofile.metrics.api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.metrics</groupId>
-                <artifactId>microprofile-metrics-api-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.metrics.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.metrics</groupId>
-                <artifactId>microprofile-metrics-rest-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.metrics.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.openapi</groupId>

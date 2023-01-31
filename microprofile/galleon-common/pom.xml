@@ -686,17 +686,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse.microprofile.metrics</groupId>
-            <artifactId>microprofile-metrics-api</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.eclipse.microprofile.openapi</groupId>
             <artifactId>microprofile-openapi-api</artifactId>
             <exclusions>
