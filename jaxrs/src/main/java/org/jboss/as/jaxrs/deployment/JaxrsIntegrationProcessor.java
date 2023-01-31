@@ -38,6 +38,7 @@ import jakarta.ws.rs.core.Application;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -113,6 +114,14 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
         if (resteasy == null)
             return;
+
+        // Set up the configuration factory
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        if (module != null) {
+            final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            final WildFlyConfigurationFactory configurationFactory = WildFlyConfigurationFactory.getInstance();
+            configurationFactory.register(module.getClassLoader(), support.hasCapability("org.wildfly.microprofile.config"));
+        }
 
         deploymentUnit.getDeploymentSubsystemModel(JaxrsExtension.SUBSYSTEM_NAME);
         final List<ParamValueMetaData> params = webdata.getContextParams();
@@ -397,6 +406,8 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             Object typeFactory = defaultInstanceMethod.invoke(null);
             Method clearCache = typeFactoryClass.getDeclaredMethod("clearCache");
             clearCache.invoke(typeFactory);
+            // Remove the deployment from the registered configuration factory
+            WildFlyConfigurationFactory.getInstance().unregister(module.getClassLoader());
         } catch (Exception e) {
             JAXRS_LOGGER.debugf("Failed to clear class utils LRU map");
         }

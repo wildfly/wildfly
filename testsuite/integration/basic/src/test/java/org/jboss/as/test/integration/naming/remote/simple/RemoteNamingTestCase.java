@@ -69,7 +69,7 @@ public class RemoteNamingTestCase {
 
     public  Context getRemoteContext() throws Exception {
         final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
+        env.put(Context.INITIAL_CONTEXT_FACTORY, org.wildfly.naming.client.WildFlyInitialContextFactory.class.getName());
         URI webUri = managementClient.getWebUri();
         //TODO replace with remote+http once the New WildFly Naming Client is merged
         URI namingUri = new URI("http-remoting", webUri.getUserInfo(), webUri.getHost(), webUri.getPort(), "", "" ,"");

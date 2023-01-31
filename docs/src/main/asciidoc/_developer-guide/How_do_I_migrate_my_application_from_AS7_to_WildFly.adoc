@@ -952,7 +952,7 @@ then clients previously accessing {ProductName} {ProductVersion} would use
 
 [source,java,options="nowrap"]
 ----
-java.naming.factory.initial=org.jboss.naming.remote.client.InitialContextFactory
+java.naming.factory.initial=org.wildfly.naming.client.WildFlyInitialContextFactory
 java.naming.provider.url=remote://localhost:4447
 ----
 
@@ -960,7 +960,7 @@ while clients now accessing {ProductName} should use instead
 
 [source,java,options="nowrap"]
 ----
-java.naming.factory.initial=org.jboss.naming.remote.client.InitialContextFactory
+java.naming.factory.initial=org.wildfly.naming.client.WildFlyInitialContextFactory
 java.naming.provider.url=http-remoting://localhost:8080
 ----
 

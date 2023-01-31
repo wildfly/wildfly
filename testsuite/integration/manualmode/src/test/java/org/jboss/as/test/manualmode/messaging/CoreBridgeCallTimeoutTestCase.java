@@ -264,7 +264,7 @@ public class CoreBridgeCallTimeoutTestCase {
 
     private static InitialContext createJNDIContext() throws NamingException {
         final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
         env.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":8080");
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
