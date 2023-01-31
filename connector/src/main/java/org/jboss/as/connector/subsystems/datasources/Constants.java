@@ -66,8 +66,6 @@ import org.jboss.jca.common.api.metadata.ds.XaDataSource;
  */
 public class Constants {
 
-    private static final Boolean ELYTRON_MANAGED_SECURITY = Boolean.FALSE;
-
     public static final String DATASOURCES = "datasources";
 
     static final String DATA_SOURCE = "data-source";
@@ -404,7 +402,7 @@ public class Constants {
 
     public static final SimpleAttributeDefinition ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
-            .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(true)
             .addAccessConstraint(DS_SECURITY_DEF)
             .setNullSignificant(false)
@@ -731,7 +729,7 @@ public class Constants {
     static SimpleAttributeDefinition RECOVERY_ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(RECOVERY_ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+            .setDefaultValue(ModelNode.TRUE)
             .setNullSignificant(false)
             .setRestartAllServices()
             .build();

@@ -64,8 +64,6 @@ import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
  */
 public class Constants {
 
-    private static final Boolean ELYTRON_MANAGED_SECURITY = Boolean.FALSE;
-
     public static final String RESOURCEADAPTER_NAME = "resource-adapter";
 
     public static final String WORKMANAGER_NAME = "workmanager";
@@ -427,7 +425,7 @@ public class Constants {
     static SimpleAttributeDefinition ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+            .setDefaultValue(ModelNode.TRUE)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .setNullSignificant(false)
             .setRestartAllServices()
@@ -605,7 +603,7 @@ public class Constants {
             .setXmlName(Credential.Tag.ELYTRON_ENABLED.getLocalName())
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.NONE)
-            .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+            .setDefaultValue(ModelNode.TRUE)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .setNullSignificant(false)
             .setRestartAllServices()
