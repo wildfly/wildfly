@@ -31,7 +31,6 @@
     <dependencies>
         <module name="java.logging"/>
         <module name="java.xml"/>
-        <module name="org.jboss.modules"/>
         <!-- Export the services for RESTful Web Services implementation -->
         <module name="org.jboss.resteasy.resteasy-client" services="export"/>
         <module name="org.jboss.resteasy.resteasy-core" services="export"/>
