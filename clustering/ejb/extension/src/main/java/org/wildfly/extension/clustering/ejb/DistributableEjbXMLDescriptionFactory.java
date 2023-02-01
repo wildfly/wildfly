@@ -21,11 +21,12 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
-
 import java.util.function.Function;
+import java.util.stream.Stream;
 
-import org.jboss.as.clustering.controller.persistence.AttributeXMLBuilderOperator;
+import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 
 /**
@@ -38,11 +39,26 @@ public enum DistributableEjbXMLDescriptionFactory implements Function<Distributa
 
     @Override
     public PersistentResourceXMLDescription apply(DistributableEjbSchema schema) {
-        return new AttributeXMLBuilderOperator().addAttributes(DistributableEjbResourceDefinition.Attribute.class).apply(builder(DistributableEjbResourceDefinition.PATH, schema.getUri()))
-                .addChild(new AttributeXMLBuilderOperator().addAttributes(BeanManagementResourceDefinition.Attribute.class).addAttributes(InfinispanBeanManagementResourceDefinition.Attribute.class).apply(builder(InfinispanBeanManagementResourceDefinition.WILDCARD_PATH)))
+        return builder(DistributableEjbResourceDefinition.PATH, schema.getUri(), Attribute.stream(DistributableEjbResourceDefinition.Attribute.class))
+                .addChild(builder(InfinispanBeanManagementResourceDefinition.WILDCARD_PATH, Stream.concat(Attribute.stream(BeanManagementResourceDefinition.Attribute.class), Attribute.stream(InfinispanBeanManagementResourceDefinition.Attribute.class))))
                 .addChild(builder(LocalClientMappingsRegistryProviderResourceDefinition.PATH).setXmlElementName("local-client-mappings-registry"))
-                .addChild(new AttributeXMLBuilderOperator(InfinispanClientMappingsRegistryProviderResourceDefinition.Attribute.class).apply(builder(InfinispanClientMappingsRegistryProviderResourceDefinition.PATH)).setXmlElementName("infinispan-client-mappings-registry"))
-                .addChild(new AttributeXMLBuilderOperator(InfinispanTimerManagementResourceDefinition.Attribute.class).apply(builder(InfinispanTimerManagementResourceDefinition.WILDCARD_PATH)).setXmlElementName("infinispan-timer-management"))
+                .addChild(builder(InfinispanClientMappingsRegistryProviderResourceDefinition.PATH, Attribute.stream(InfinispanClientMappingsRegistryProviderResourceDefinition.Attribute.class)).setXmlElementName("infinispan-client-mappings-registry"))
+                .addChild(builder(InfinispanTimerManagementResourceDefinition.WILDCARD_PATH, Attribute.stream(InfinispanTimerManagementResourceDefinition.Attribute.class)).setXmlElementName("infinispan-timer-management"))
                 .build();
+    }
+
+    // TODO Drop methods below once WFCORE-6218 is available
+    static PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder(PathElement path) {
+        return builder(path, Stream.empty());
+    }
+
+    static PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder(PathElement path, Stream<? extends AttributeDefinition> attributes) {
+        return builder(path, null, attributes);
+    }
+
+    static PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder(PathElement path, String namespaceUri, Stream<? extends AttributeDefinition> attributes) {
+        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = PersistentResourceXMLDescription.builder(path, namespaceUri);
+        attributes.forEach(builder::addAttribute);
+        return builder;
     }
 }
