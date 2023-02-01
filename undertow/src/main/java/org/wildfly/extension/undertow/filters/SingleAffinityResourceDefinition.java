@@ -22,10 +22,9 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistrar;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.undertow.Constants;
 
 /**
@@ -38,16 +37,6 @@ public class SingleAffinityResourceDefinition extends AffinityResourceDefinition
     public static final PathElement PATH = pathElement(Constants.SINGLE);
 
     public SingleAffinityResourceDefinition() {
-        super(PATH);
-    }
-
-    @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = parent.registerSubModel(this);
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        new ReloadRequiredResourceRegistrar(descriptor).register(registration);
-
-        return registration;
+        super(PATH, UnaryOperator.identity());
     }
 }

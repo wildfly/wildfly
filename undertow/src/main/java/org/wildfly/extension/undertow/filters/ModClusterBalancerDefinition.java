@@ -41,6 +41,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -55,6 +56,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
  * @author Stuart Douglas
  */
 class ModClusterBalancerDefinition extends SimpleResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.BALANCER);
 
     enum LoadBalancerMetric implements Metric<ModClusterStatus.LoadBalancer> {
         STICKY_SESSION_COOKIE(Constants.STICKY_SESSION_COOKIE, ModelType.STRING) {
@@ -118,7 +120,7 @@ class ModClusterBalancerDefinition extends SimpleResourceDefinition {
     private final FunctionExecutorRegistry<ModCluster> registry;
 
     ModClusterBalancerDefinition(FunctionExecutorRegistry<ModCluster> registry) {
-        super(new Parameters(UndertowExtension.BALANCER, UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER, Constants.BALANCER)).setRuntime());
+        super(new Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), PATH_ELEMENT.getKey())).setRuntime());
         this.registry = registry;
     }
 
@@ -149,8 +151,7 @@ class ModClusterBalancerDefinition extends SimpleResourceDefinition {
             PathAddress balancerAddress = context.getCurrentAddress();
             String balancerName = balancerAddress.getLastElement().getValue();
             PathAddress serviceAddress = balancerAddress.getParent();
-            String serviceName = serviceAddress.getLastElement().getValue();
-            FunctionExecutor<ModCluster> executor = this.registry.get(new ModClusterServiceNameProvider(serviceName).getServiceName());
+            FunctionExecutor<ModCluster> executor = this.registry.get(new ModClusterServiceNameProvider(serviceAddress).getServiceName());
             return (executor != null) ? executor.execute(new MetricFunction<>(new LoadBalancerFunction(balancerName), metric)) : null;
         }
     }

@@ -25,59 +25,46 @@ package org.wildfly.extension.undertow.filters;
 import java.util.Arrays;
 import java.util.Collection;
 
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.RequestLimitingHandler;
+import io.undertow.server.HandlerWrapper;
+import io.undertow.server.handlers.SetHeaderHandler;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class RequestLimitHandler extends Filter {
+public class ResponseHeaderFilterDefinition extends SimpleFilterDefinition {
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement("response-header");
 
-    public static final RequestLimitHandler INSTANCE = new RequestLimitHandler();
-
-    public static final AttributeDefinition MAX_CONCURRENT_REQUESTS = new SimpleAttributeDefinitionBuilder("max-concurrent-requests", ModelType.INT)
-            .setValidator(new IntRangeValidator(1, false, true))
-            .setAllowExpression(true)
+    public static final AttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("header-name", ModelType.STRING)
             .setRequired(true)
-            .setRestartAllServices()
-            .build();
-
-
-    public static final AttributeDefinition QUEUE_SIZE = new SimpleAttributeDefinitionBuilder("queue-size", ModelType.INT)
-            .setValidator(new IntRangeValidator(0, true, true))
             .setAllowExpression(true)
-            .setRequired(false)
-            .setDefaultValue(ModelNode.ZERO)
+            .setRestartAllServices()
+            .build();
+    public static final AttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder("header-value", ModelType.STRING)
+            .setRequired(true)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-
-    /*
-    <connection-limit max-concurrent-requests="100" />
-     */
-
-    private RequestLimitHandler() {
-        super("request-limit");
+    ResponseHeaderFilterDefinition() {
+        super(PATH_ELEMENT, ResponseHeaderFilterDefinition::createHandlerWrapper);
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(MAX_CONCURRENT_REQUESTS, QUEUE_SIZE);
+        return Arrays.asList(NAME, VALUE);
     }
 
-
-    @Override
-    public Class<? extends HttpHandler> getHandlerClass() {
-        return RequestLimitingHandler.class;
-    }
-
-    @Override
-    protected Class[] getConstructorSignature() {
-        return new Class[] {int.class, int.class, HttpHandler.class};
+    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
+        String name = NAME.resolveModelAttribute(context, model).asString();
+        String value = VALUE.resolveModelAttribute(context, model).asString();
+        return next -> new SetHeaderHandler(next, name, value);
     }
 }

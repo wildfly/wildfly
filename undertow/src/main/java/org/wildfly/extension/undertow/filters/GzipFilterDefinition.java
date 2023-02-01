@@ -22,36 +22,27 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import io.undertow.predicate.Predicate;
-import io.undertow.predicate.Predicates;
-import io.undertow.server.HttpHandler;
+import io.undertow.server.HandlerWrapper;
 import io.undertow.server.handlers.encoding.ContentEncodingRepository;
 import io.undertow.server.handlers.encoding.EncodingHandler;
 import io.undertow.server.handlers.encoding.GzipEncodingProvider;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
-public class GzipFilter extends Filter {
+public class GzipFilterDefinition extends SimpleFilterDefinition {
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement("gzip");
 
-
-    public static final GzipFilter INSTANCE = new GzipFilter();
-
-    private GzipFilter() {
-        super("gzip");
+    GzipFilterDefinition() {
+        super(PATH_ELEMENT, GzipFilterDefinition::createHandlerWrapper);
     }
 
-    @Override
-    public HttpHandler createHttpHandler(final Predicate predicate, ModelNode model, HttpHandler next) {
-        EncodingHandler encodingHandler = new EncodingHandler(new ContentEncodingRepository()
-                .addEncodingHandler("gzip", new GzipEncodingProvider(), 50, predicate != null ? predicate : Predicates.truePredicate()));
-        encodingHandler.setNext(next);
-        return encodingHandler;
-    }
-
-    @Override
-    protected Class[] getConstructorSignature() {
-        throw new IllegalStateException(); //should not be used, as the handler is constructed above
+    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) {
+        ContentEncodingRepository repository = new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50);
+        return next -> new EncodingHandler(next, repository);
     }
 }

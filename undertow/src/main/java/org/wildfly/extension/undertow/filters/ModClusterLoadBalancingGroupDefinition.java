@@ -40,6 +40,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -54,8 +55,8 @@ import org.wildfly.extension.undertow.UndertowExtension;
  * @author Stuart Douglas
  */
 public class ModClusterLoadBalancingGroupDefinition extends SimpleResourceDefinition {
-
-    private static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER, Constants.BALANCER, Constants.LOAD_BALANCING_GROUP);
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.LOAD_BALANCING_GROUP);
+    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), ModClusterBalancerDefinition.PATH_ELEMENT.getKey(), PATH_ELEMENT.getKey());
 
     enum LoadBalancingGroupOperation implements Operation<Map.Entry<ModClusterStatus.LoadBalancer, String>> {
         ENABLE_NODES(Constants.ENABLE_NODES, ModClusterStatus.Context::enable),
@@ -93,7 +94,7 @@ public class ModClusterLoadBalancingGroupDefinition extends SimpleResourceDefini
     private final FunctionExecutorRegistry<ModCluster> registry;
 
     ModClusterLoadBalancingGroupDefinition(FunctionExecutorRegistry<ModCluster> registry) {
-        super(new Parameters(UndertowExtension.LOAD_BALANCING_GROUP, RESOLVER).setRuntime());
+        super(new Parameters(PATH_ELEMENT, RESOLVER).setRuntime());
         this.registry = registry;
     }
 
@@ -138,8 +139,8 @@ public class ModClusterLoadBalancingGroupDefinition extends SimpleResourceDefini
 
         @Override
         public ModelNode execute(OperationContext context, ModelNode op, Operation<Map.Entry<ModClusterStatus.LoadBalancer, String>> operation) throws OperationFailedException {
-            String serviceName = context.getCurrentAddress().getParent().getParent().getLastElement().getValue();
-            FunctionExecutor<ModCluster> executor = this.registry.get(new ModClusterServiceNameProvider(serviceName).getServiceName());
+            PathAddress serviceAddress = context.getCurrentAddress().getParent().getParent();
+            FunctionExecutor<ModCluster> executor = this.registry.get(new ModClusterServiceNameProvider(serviceAddress).getServiceName());
             Function<ModCluster, Map.Entry<ModClusterStatus.LoadBalancer, String>> mapper = LOAD_BALANCING_GROUP_FUNCTION_FACTORY.apply(context);
             return (executor != null) ? executor.execute(new OperationFunction<>(context, op, mapper, operation)) : null;
         }

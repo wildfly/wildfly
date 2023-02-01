@@ -51,7 +51,6 @@ import org.wildfly.extension.undertow.deployment.UndertowMetricsCollector;
  * @created 23.2.12 18:35
  */
 public class DeploymentServletDefinition extends SimpleResourceDefinition {
-    public static final DeploymentServletDefinition INSTANCE = new DeploymentServletDefinition();
 
     static final SimpleAttributeDefinition SERVLET_NAME = new SimpleAttributeDefinitionBuilder("servlet-name", ModelType.STRING, false).setStorageRuntime().build();
     static final SimpleAttributeDefinition SERVLET_CLASS = new SimpleAttributeDefinitionBuilder("servlet-class", ModelType.STRING, false).setStorageRuntime().build();
@@ -82,9 +81,8 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
             .build();
 
 
-    private DeploymentServletDefinition() {
-        super(PathElement.pathElement("servlet"),
-                UndertowExtension.getResolver("deployment.servlet"));
+    DeploymentServletDefinition() {
+        super(PathElement.pathElement("servlet"), UndertowExtension.getResolver("deployment.servlet"));
     }
 
     @Override

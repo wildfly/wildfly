@@ -51,6 +51,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -80,8 +81,8 @@ import org.xnio.ssl.XnioSsl;
  * @author Tomaz Cerar
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
-
+public class ReverseProxyHandlerHostDefinition extends PersistentResourceDefinition {
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HOST);
     private static final RuntimeCapability<Void> REVERSE_PROXY_HOST_RUNTIME_CAPABILITY =
                 RuntimeCapability.Builder.of(CAPABILITY_REVERSE_PROXY_HANDLER_HOST, true, ReverseProxyHostService.class)
                         .setDynamicNameMapper(DynamicNameMappers.PARENT)
@@ -140,10 +141,8 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             .build();
 
 
-    public static final ReverseProxyHandlerHost INSTANCE = new ReverseProxyHandlerHost();
-
-    private ReverseProxyHandlerHost() {
-        super(new Parameters(PathElement.pathElement(Constants.HOST), UndertowExtension.getResolver(Constants.HANDLER, Constants.REVERSE_PROXY, Constants.HOST))
+    ReverseProxyHandlerHostDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.HANDLER, Constants.REVERSE_PROXY, PATH_ELEMENT.getKey()))
                 .setCapabilities(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY)
         );
     }

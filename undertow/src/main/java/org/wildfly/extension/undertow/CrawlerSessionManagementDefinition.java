@@ -27,11 +27,13 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -46,8 +48,7 @@ import java.util.List;
  * @author Stuart Douglas
  */
 class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
-
-    static final CrawlerSessionManagementDefinition INSTANCE = new CrawlerSessionManagementDefinition();
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT);
 
     protected static final SimpleAttributeDefinition USER_AGENTS =
             new SimpleAttributeDefinitionBuilder(Constants.USER_AGENTS, ModelType.STRING, true)
@@ -66,11 +67,11 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
             SESSION_TIMEOUT
     };
 
-    private CrawlerSessionManagementDefinition() {
-        super(UndertowExtension.CRAWLER_SESSION_MANAGEMENT,
-                UndertowExtension.getResolver(UndertowExtension.CRAWLER_SESSION_MANAGEMENT.getKeyValuePair()),
-                new CrawlerSessionManagementAdd(),
-                new CrawlerSessionManagementRemove());
+    CrawlerSessionManagementDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
+                .setAddHandler(new CrawlerSessionManagementAdd())
+                .setRemoveHandler(new CrawlerSessionManagementRemove())
+        );
     }
 
     @Override
@@ -78,7 +79,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
         return List.of(ATTRIBUTES);
     }
 
-    public CrawlerSessionManagerConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    static CrawlerSessionManagerConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
         if(!model.isDefined()) {
             return null;
         }
@@ -97,7 +98,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
 
     private static class CrawlerSessionManagementAdd extends RestartParentResourceAddHandler {
         protected CrawlerSessionManagementAdd() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override
@@ -121,7 +122,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
     private static class CrawlerSessionManagementRemove extends RestartParentResourceRemoveHandler {
 
         protected CrawlerSessionManagementRemove() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override

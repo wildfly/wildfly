@@ -33,16 +33,13 @@ import org.jboss.dmr.ModelType;
  * @author Stuart Douglas
  */
 public class DeploymentWebSocketDefinition extends SimpleResourceDefinition {
-    public static final DeploymentWebSocketDefinition INSTANCE = new DeploymentWebSocketDefinition();
 
     static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder("path", ModelType.STRING, false).setStorageRuntime().build();
     static final SimpleAttributeDefinition ENDPOINT_CLASS = new SimpleAttributeDefinitionBuilder("endpoint-class", ModelType.STRING, false).setStorageRuntime().build();
 
 
-
-    private DeploymentWebSocketDefinition() {
-        super(PathElement.pathElement("websocket"),
-                UndertowExtension.getResolver("deployment.websocket"));
+    DeploymentWebSocketDefinition() {
+        super(PathElement.pathElement("websocket"), UndertowExtension.getResolver("deployment.websocket"));
     }
 
     @Override

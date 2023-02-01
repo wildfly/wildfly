@@ -51,6 +51,7 @@ import org.xnio.XnioWorker;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG);
     private static final RuntimeCapability<Void> CONSOLE_ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(
             Capabilities.CAPABILITY_CONSOLE_ACCESS_LOG, true, EventLoggerService.class)
             .setDynamicNameMapper(DynamicNameMappers.GRAND_PARENT)
@@ -74,12 +75,9 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
             AccessLogDefinition.PREDICATE,
             METADATA
     );
-    static final ConsoleAccessLogDefinition INSTANCE = new ConsoleAccessLogDefinition();
 
-
-    private ConsoleAccessLogDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG),
-                UndertowExtension.getResolver(Constants.CONSOLE_ACCESS_LOG))
+    ConsoleAccessLogDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
                 .setAddHandler(AddHandler.INSTANCE)
                 .setRemoveHandler(RemoveHandler.INSTANCE)
                 .addCapabilities(CONSOLE_ACCESS_LOG_CAPABILITY)

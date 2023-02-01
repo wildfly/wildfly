@@ -22,15 +22,16 @@
 
 package org.wildfly.extension.undertow.handlers;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
@@ -38,18 +39,12 @@ import org.wildfly.extension.undertow.UndertowExtension;
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
 public class HandlerDefinitions extends PersistentResourceDefinition {
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.CONFIGURATION, Constants.HANDLER);
 
-    public static final HandlerDefinitions INSTANCE = new HandlerDefinitions();
-    private static List<? extends PersistentResourceDefinition> HANDLERS = Collections.unmodifiableList(Arrays.asList(
-            FileHandler.INSTANCE,
-            ReverseProxyHandler.INSTANCE
-    ));
-
-    private HandlerDefinitions() {
-        super(UndertowExtension.PATH_HANDLERS,
-                UndertowExtension.getResolver(Constants.HANDLER),
-                new AbstractAddStepHandler(),
-                ReloadRequiredRemoveStepHandler.INSTANCE
+    public HandlerDefinitions() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
+                .setAddHandler(new AbstractAddStepHandler())
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
         );
     }
 
@@ -60,6 +55,8 @@ public class HandlerDefinitions extends PersistentResourceDefinition {
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return HANDLERS;
+        return List.of(
+                new FileHandlerDefinition(),
+                new ReverseProxyHandlerDefinition());
     }
 }

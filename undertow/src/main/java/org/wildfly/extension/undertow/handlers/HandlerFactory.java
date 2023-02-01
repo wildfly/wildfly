@@ -20,19 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.undertow.filters;
+package org.wildfly.extension.undertow.handlers;
 
-import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.service.SimpleServiceNameProvider;
-import org.wildfly.extension.undertow.UndertowService;
+import io.undertow.server.HttpHandler;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Provides the service name for {@link io.undertow.server.handlers.proxy.mod_cluster.ModCluster}.
+ * Factory for creating {@link HttpHandler} implementations from a resource model
  * @author Paul Ferraro
  */
-public class ModClusterServiceNameProvider extends SimpleServiceNameProvider {
-
-    public ModClusterServiceNameProvider(PathAddress address) {
-        super(UndertowService.FILTER.append(address.getLastElement().getValue(), "service"));
-    }
+public interface HandlerFactory {
+    HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException;
 }

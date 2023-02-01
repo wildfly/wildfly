@@ -49,6 +49,7 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
@@ -68,7 +69,8 @@ import org.wildfly.extension.undertow.UndertowExtension;
  */
 public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
-    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER, Constants.BALANCER, Constants.NODE);
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.NODE);
+    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), ModClusterBalancerDefinition.PATH_ELEMENT.getKey(), PATH_ELEMENT.getKey());
     static final BiFunction<String, ModelType, PrimitiveListAttributeDefinition.Builder> PRIMITIVE_LIST_BUILDER_FACTORY = PrimitiveListAttributeDefinition.Builder::new;
 
     enum NodeMetric implements Metric<ModClusterStatus.Node> {
@@ -246,7 +248,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
     private final FunctionExecutorRegistry<ModCluster> registry;
 
     ModClusterNodeDefinition(FunctionExecutorRegistry<ModCluster> registry) {
-        super(new Parameters(UndertowExtension.NODE, RESOLVER).setRuntime());
+        super(new Parameters(PATH_ELEMENT, RESOLVER).setRuntime());
         this.registry = registry;
     }
 
@@ -278,8 +280,8 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
         @Override
         public FunctionExecutor<ModCluster> apply(OperationContext context) {
-            String serviceName = context.getCurrentAddress().getParent().getParent().getLastElement().getValue();
-            return this.registry.get(new ModClusterServiceNameProvider(serviceName).getServiceName());
+            PathAddress serviceAddress = context.getCurrentAddress().getParent().getParent();
+            return this.registry.get(new ModClusterServiceNameProvider(serviceAddress).getServiceName());
         }
     }
 

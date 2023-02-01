@@ -35,6 +35,7 @@ import io.undertow.server.handlers.resource.ResourceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -46,9 +47,8 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class FileHandler extends Handler {
-
-    public static final FileHandler INSTANCE = new FileHandler();
+public class FileHandlerDefinition extends HandlerDefinition {
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.FILE);
 
     /*<file path="/opt/data" cache-buffer-size="1024" cache-buffers="1024"/>*/
     public static final AttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING)
@@ -95,8 +95,8 @@ public class FileHandler extends Handler {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    private FileHandler() {
-        super(Constants.FILE);
+    FileHandlerDefinition() {
+        super(PATH_ELEMENT, FileHandlerDefinition::createHandler);
     }
 
     @Override
@@ -104,8 +104,7 @@ public class FileHandler extends Handler {
         return Arrays.asList(PATH, CACHE_BUFFER_SIZE, CACHE_BUFFERS, DIRECTORY_LISTING, FOLLOW_SYMLINK, CASE_SENSITIVE, SAFE_SYMLINK_PATHS);
     }
 
-    @Override
-    public HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException {
+    static HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException {
         final String path = PATH.resolveModelAttribute(context, model).asString();
         final boolean directoryListing = DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
         final boolean followSymlink = FOLLOW_SYMLINK.resolveModelAttribute(context, model).asBoolean();

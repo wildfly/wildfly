@@ -31,8 +31,10 @@ import java.util.LinkedList;
 import io.undertow.UndertowOptions;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -52,8 +54,7 @@ import org.xnio.SslClientAuthMode;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class HttpsListenerResourceDefinition extends ListenerResourceDefinition {
-
-    protected static final HttpsListenerResourceDefinition INSTANCE = new HttpsListenerResourceDefinition();
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HTTPS_LISTENER);
 
     protected static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, false)
             .setAlternatives(Constants.SECURITY_REALM, Constants.VERIFY_CLIENT, Constants.ENABLED_CIPHER_SUITES, Constants.ENABLED_PROTOCOLS, Constants.SSL_SESSION_CACHE_SIZE, Constants.SSL_SESSION_TIMEOUT)
@@ -118,9 +119,10 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
     public static final OptionAttributeDefinition SSL_SESSION_TIMEOUT = OptionAttributeDefinition.builder(Constants.SSL_SESSION_TIMEOUT, Options.SSL_SERVER_SESSION_TIMEOUT)
             .setDeprecated(ModelVersion.create(4, 0, 0)).setMeasurementUnit(MeasurementUnit.SECONDS).setRequired(false).setAllowExpression(true).setAlternatives(Constants.SSL_CONTEXT).build();
 
-    private HttpsListenerResourceDefinition() {
-        super(new Parameters(UndertowExtension.HTTPS_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER))
-                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY));
+    HttpsListenerResourceDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
+                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY)
+        );
     }
 
     @Override

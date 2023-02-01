@@ -26,8 +26,10 @@ import io.undertow.UndertowOptions;
 import io.undertow.protocols.http2.Http2Channel;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -45,8 +47,7 @@ import java.util.List;
  * @author Richard Achmatowicz (c) 2020 Red Hat Inc.
  */
 public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
-
-    protected static final HttpListenerResourceDefinition INSTANCE = new HttpListenerResourceDefinition();
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HTTP_LISTENER);
 
     protected static final SimpleAttributeDefinition CERTIFICATE_FORWARDING = new SimpleAttributeDefinitionBuilder(Constants.CERTIFICATE_FORWARDING, ModelType.BOOLEAN)
             .setRequired(false)
@@ -132,9 +133,10 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    private HttpListenerResourceDefinition() {
-        super(new Parameters(UndertowExtension.HTTP_LISTENER_PATH, UndertowExtension.getResolver(Constants.LISTENER))
-                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY));
+    HttpListenerResourceDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
+                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY)
+        );
     }
 
     @Override
@@ -142,6 +144,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
         return new HttpListenerAdd(this);
     }
 
+    @Override
     public Collection<AttributeDefinition> getAttributes() {
         List<AttributeDefinition> attrs = new ArrayList<>(super.getAttributes());
         attrs.add(CERTIFICATE_FORWARDING);

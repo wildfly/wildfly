@@ -51,6 +51,7 @@ import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
 import org.wildfly.extension.undertow.filters.ExpressionFilterDefinition;
+import org.wildfly.extension.undertow.filters.FilterDefinitions;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -91,7 +92,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRU
 import static org.jboss.as.controller.operations.common.Util.createAddOperation;
 import static org.jboss.as.controller.operations.common.Util.createOperation;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
-import static org.wildfly.extension.undertow.UndertowExtension.PATH_FILTERS;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -131,9 +131,10 @@ public class WebMigrateOperation implements OperationStepHandler {
 
     private static final OperationStepHandler DESCRIBE_MIGRATION_INSTANCE = new WebMigrateOperation(true);
     private static final OperationStepHandler MIGRATE_INSTANCE = new WebMigrateOperation(false);
+    private static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME);
     public static final PathElement DEFAULT_SERVER_PATH = pathElement(Constants.SERVER, "default-server");
     public static final PathAddress EXTENSION_ADDRESS = pathAddress(pathElement(EXTENSION, "org.jboss.as.web"));
-    private static final PathAddress VALVE_ACCESS_LOG_ADDRESS = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST), UndertowExtension.PATH_ACCESS_LOG);
+    private static final PathAddress VALVE_ACCESS_LOG_ADDRESS = pathAddress(SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST), PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG));
     public static final String MIGRATE = "migrate";
     public static final String MIGRATION_WARNINGS = "migration-warnings";
     public static final String MIGRATION_ERROR = "migration-error";
@@ -656,7 +657,7 @@ public class WebMigrateOperation implements OperationStepHandler {
     }
 
     private void migrateSso(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, List<String> warnings) {
-        PathAddress newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, address.getElement(address.size() - 2).getValue()), UndertowExtension.PATH_SSO);
+        PathAddress newAddress = pathAddress(SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, address.getElement(address.size() - 2).getValue()), PathElement.pathElement(Constants.SETTING, Constants.SINGLE_SIGN_ON));
         ModelNode add = createAddOperation(newAddress);
 
         add.get(Constants.DOMAIN).set(newAddOp.get(WebSSODefinition.DOMAIN.getName()).clone());
@@ -676,7 +677,7 @@ public class WebMigrateOperation implements OperationStepHandler {
     }
 
     private void migrateAccessLog(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, ModelNode legacyAddOps, List<String> warnings) {
-        PathAddress newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, address.getElement(address.size() - 2).getValue()), UndertowExtension.PATH_ACCESS_LOG);
+        PathAddress newAddress = pathAddress(SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, address.getElement(address.size() - 2).getValue()), PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG));
         ModelNode add = createAddOperation(newAddress);
 
         //TODO: parse the pattern and modify to Undertow version
@@ -770,7 +771,7 @@ public class WebMigrateOperation implements OperationStepHandler {
     }
 
     private void migrateVirtualHost(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, String host) {
-        PathAddress newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, host));
+        PathAddress newAddress = pathAddress(SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, host));
         ModelNode add = createAddOperation(newAddress);
 
         if (newAddOp.hasDefined(WebVirtualHostDefinition.ENABLE_WELCOME_ROOT.getName()) && newAddOp.get(WebVirtualHostDefinition.ENABLE_WELCOME_ROOT.getName()).asBoolean()) {
@@ -787,8 +788,8 @@ public class WebMigrateOperation implements OperationStepHandler {
 
     private void migrateVirtualHostChildren(Map<PathAddress, ModelNode> newAddOperations, Set<String> hosts) {
 
-        final PathAddress customFilterAddresses = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(CustomFilterDefinition.INSTANCE.getPathElement().getKey()));
-        final PathAddress expressionFilterAddresses = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey()));
+        final PathAddress customFilterAddresses = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(CustomFilterDefinition.PATH_ELEMENT.getKey()));
+        final PathAddress expressionFilterAddresses = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.PATH_ELEMENT.getKey()));
         List<PathAddress> filterAddresses = new ArrayList<>();
         for(PathAddress a : newAddOperations.keySet()) {
             if(wildcardEquals(customFilterAddresses, a) || wildcardEquals(expressionFilterAddresses, a)) {
@@ -800,14 +801,14 @@ public class WebMigrateOperation implements OperationStepHandler {
 
         if (hasAccessLogValve || !filterAddresses.isEmpty()) {
             for (String host : hosts) {
-                PathAddress hostAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, host));
+                PathAddress hostAddress = pathAddress(SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, host));
                 for (PathAddress filterAddress : filterAddresses) {
                     PathAddress filterRefAddress = pathAddress(hostAddress, pathElement(Constants.FILTER_REF, filterAddress.getLastElement().getValue()));
                     ModelNode filterRefAdd = createAddOperation(filterRefAddress);
                     newAddOperations.put(filterRefAddress, filterRefAdd);
                 }
                 if (hasAccessLogValve) {
-                    PathAddress accessLogAddress = pathAddress(hostAddress, UndertowExtension.PATH_ACCESS_LOG);
+                    PathAddress accessLogAddress = pathAddress(hostAddress, PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG));
                     if(!newAddOperations.containsKey(accessLogAddress)) {
                         ModelNode operation = newAddOperations.get(VALVE_ACCESS_LOG_ADDRESS).clone();
                         operation.get(OP_ADDR).set(accessLogAddress.toModelNode());
@@ -838,15 +839,15 @@ public class WebMigrateOperation implements OperationStepHandler {
                     newAddOperations.put(crawlerAddress, crawlerAdd);
                     break;
                 case "org.apache.catalina.valves.RequestDumperValve":
-                    newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
-                    PathAddress filterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey(), valveName));
+                    newAddOperations.putIfAbsent(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT), createAddOperation(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT)));
+                    PathAddress filterAddress = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.PATH_ELEMENT.getKey(), valveName));
                     ModelNode filterAdd = createAddOperation(filterAddress);
                     filterAdd.get(ExpressionFilterDefinition.EXPRESSION.getName()).set("dump-request");
                     newAddOperations.put(filterAddress, filterAdd);
                     break;
                 case "org.apache.catalina.valves.StuckThreadDetectionValve":
-                    newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
-                    PathAddress filterAddressStuckThread = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey(), valveName));
+                    newAddOperations.putIfAbsent(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT), createAddOperation(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT)));
+                    PathAddress filterAddressStuckThread = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.PATH_ELEMENT.getKey(), valveName));
                     ModelNode filterAddStuckThread = createAddOperation(filterAddressStuckThread);
                     StringBuilder expressionStruckThread = new StringBuilder("stuck-thread-detector");
                     if (newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
@@ -956,8 +957,8 @@ public class WebMigrateOperation implements OperationStepHandler {
     }
 
     private void createExpressionFilter(Map<PathAddress, ModelNode> newAddOperations, String name, String expression) {
-        newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
-        PathAddress filterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey(), name));
+        newAddOperations.putIfAbsent(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT), createAddOperation(pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT)));
+        PathAddress filterAddress = pathAddress(SUBSYSTEM_PATH, FilterDefinitions.PATH_ELEMENT, pathElement(ExpressionFilterDefinition.PATH_ELEMENT.getKey(), name));
         ModelNode filterAdd = createAddOperation(filterAddress);
         filterAdd.get(ExpressionFilterDefinition.EXPRESSION.getName()).set(expression);
         newAddOperations.put(filterAddress, filterAdd);
@@ -977,17 +978,17 @@ public class WebMigrateOperation implements OperationStepHandler {
             case "org.apache.coyote.http11.Http11AprProtocol":
             case "HTTP/1.1":
                 if (scheme == null || scheme.equals("http")) {
-                    newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTP_LISTENER, address.getLastElement().getValue()));
+                    newAddress = pathAddress(SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTP_LISTENER, address.getLastElement().getValue()));
                     addConnector = createAddOperation(newAddress);
                 } else if (scheme.equals("https")) {
                     final ModelNode legacyAddOp = findSSLLegacyConfiguration(legacyModelAddOps, address.getLastElement().getValue());
                     if(legacyAddOp == null) {
                         //migrate https scheme to be passed to proxy
-                        newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTP_LISTENER, address.getLastElement().getValue()));
+                        newAddress = pathAddress(SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTP_LISTENER, address.getLastElement().getValue()));
                         addConnector = createAddOperation(newAddress);
                         warnings.add(WebLogger.ROOT_LOGGER.noSslConfig(address.getLastElement().getValue()));
                     } else {
-                        newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTPS_LISTENER, address.getLastElement().getValue()));
+                        newAddress = pathAddress(SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTPS_LISTENER, address.getLastElement().getValue()));
                         addConnector = createAddOperation(newAddress);
 
                         SSLInformation sslInfo = createSecurityRealm(context, newAddOperations, legacyModelAddOps, newAddress.getLastElement().getValue(), legacyAddOp, warnings, domainMode);
@@ -1019,7 +1020,7 @@ public class WebMigrateOperation implements OperationStepHandler {
             case "org.apache.coyote.ajp.AjpAprProtocol":
             case "org.apache.coyote.ajp.AjpProtocol":
             case "AJP/1.3":
-                newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.AJP_LISTENER, address.getLastElement().getValue()));
+                newAddress = pathAddress(SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.AJP_LISTENER, address.getLastElement().getValue()));
                 addConnector = createAddOperation(newAddress);
                 addConnector.get(Constants.SCHEME).set(newAddOp.get(Constants.SCHEME));
                 break;
@@ -1085,7 +1086,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         ModelNode mime = newAddOp.get("mime-mapping");
         if (mime.isDefined()) {
             for (ModelNode w : mime.asList()) {
-                PathAddress wa = pathAddress(pathAddress(UndertowExtension.SUBSYSTEM_PATH, pathElement(Constants.SERVLET_CONTAINER, "default"), pathElement(Constants.MIME_MAPPING, w.asProperty().getName())));
+                PathAddress wa = pathAddress(pathAddress(SUBSYSTEM_PATH, pathElement(Constants.SERVLET_CONTAINER, "default"), pathElement(Constants.MIME_MAPPING, w.asProperty().getName())));
                 ModelNode add = createAddOperation(wa);
                 add.get(Constants.VALUE).set(w.asProperty().getValue());
                 newAddOperations.put(wa, add);
@@ -1098,7 +1099,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         ModelNode welcome = newAddOp.get("welcome-file");
         if (welcome.isDefined()) {
             for (ModelNode w : welcome.asList()) {
-                PathAddress wa = pathAddress(pathAddress(UndertowExtension.SUBSYSTEM_PATH, pathElement(Constants.SERVLET_CONTAINER, "default"), pathElement(Constants.WELCOME_FILE, w.asString())));
+                PathAddress wa = pathAddress(pathAddress(SUBSYSTEM_PATH, pathElement(Constants.SERVLET_CONTAINER, "default"), pathElement(Constants.WELCOME_FILE, w.asString())));
                 ModelNode add = createAddOperation(wa);
                 newAddOperations.put(wa, add);
             }
@@ -1106,7 +1107,7 @@ public class WebMigrateOperation implements OperationStepHandler {
     }
 
     private void migrateJSPConfig(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp) {
-        newAddOp.get(ADDRESS).set(pathAddress(UndertowExtension.SUBSYSTEM_PATH, pathElement(Constants.SERVLET_CONTAINER, "default"), UndertowExtension.PATH_JSP).toModelNode());
+        newAddOp.get(ADDRESS).set(pathAddress(SUBSYSTEM_PATH, pathElement(Constants.SERVLET_CONTAINER, "default"), PathElement.pathElement(Constants.SETTING, Constants.JSP)).toModelNode());
         newAddOperations.put(pathAddress(newAddOp.get(OP_ADDR)), newAddOp);
     }
 

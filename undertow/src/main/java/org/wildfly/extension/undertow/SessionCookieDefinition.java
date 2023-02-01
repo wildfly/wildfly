@@ -26,11 +26,13 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -44,8 +46,7 @@ import java.util.List;
  * @author Stuart Douglas
  */
 class SessionCookieDefinition extends PersistentResourceDefinition {
-
-    static final SessionCookieDefinition INSTANCE = new SessionCookieDefinition();
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
 
     protected static final SimpleAttributeDefinition NAME =
             new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)
@@ -90,11 +91,11 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
             MAX_AGE
     };
 
-    private SessionCookieDefinition() {
-        super(UndertowExtension.PATH_SESSION_COOKIE,
-                UndertowExtension.getResolver(UndertowExtension.PATH_SESSION_COOKIE.getKeyValuePair()),
-                new SessionCookieAdd(),
-                new SessionCookieRemove());
+    SessionCookieDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
+                .setAddHandler(new SessionCookieAdd())
+                .setRemoveHandler(new SessionCookieRemove())
+        );
     }
 
     @Override
@@ -102,7 +103,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
         return List.of(ATTRIBUTES);
     }
 
-    public SessionCookieConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    static SessionCookieConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
         if(!model.isDefined()) {
             return null;
         }
@@ -122,7 +123,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
 
     private static class SessionCookieAdd extends RestartParentResourceAddHandler {
         protected SessionCookieAdd() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override
@@ -146,7 +147,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
     private static class SessionCookieRemove extends RestartParentResourceRemoveHandler {
 
         protected SessionCookieRemove() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override

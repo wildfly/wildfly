@@ -22,50 +22,35 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.SetHeaderHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.dmr.ModelType;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.wildfly.extension.undertow.Constants;
+import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class ResponseHeaderFilter extends Filter {
+public abstract class AbstractFilterDefinition extends PersistentResourceDefinition {
 
-    public static final AttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("header-name", ModelType.STRING)
-            .setRequired(true)
-            .setAllowExpression(true)
-            .setRestartAllServices()
-            .build();
-    public static final AttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder("header-value", ModelType.STRING)
-            .setRequired(true)
-            .setAllowExpression(true)
-            .setRestartAllServices()
-            .build();
+    protected AbstractFilterDefinition(PathElement path) {
+        super(path, UndertowExtension.getResolver(Constants.FILTER, path.getKey()));
+    }
 
-    public static final ResponseHeaderFilter INSTANCE = new ResponseHeaderFilter();
-
-    private ResponseHeaderFilter() {
-        super("response-header");
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return List.of(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-filter", false, false, false)));
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(NAME, VALUE);
-    }
-
-    @Override
-    public Class<? extends HttpHandler> getHandlerClass() {
-        return SetHeaderHandler.class;
-    }
-
-
-    @Override
-    protected Class[] getConstructorSignature() {
-        return new Class[] {HttpHandler.class, String.class, String.class};
+        return Collections.emptyList();
     }
 }

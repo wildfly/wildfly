@@ -22,17 +22,16 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.service.SimpleServiceNameProvider;
-import org.wildfly.extension.undertow.UndertowService;
+import io.undertow.server.HandlerWrapper;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Provides the service name for {@link io.undertow.server.handlers.proxy.mod_cluster.ModCluster}.
+ * Factory for creating a {@link HandlerWrapper}.
  * @author Paul Ferraro
  */
-public class ModClusterServiceNameProvider extends SimpleServiceNameProvider {
-
-    public ModClusterServiceNameProvider(PathAddress address) {
-        super(UndertowService.FILTER.append(address.getLastElement().getValue(), "service"));
-    }
+public interface HandlerWrapperFactory {
+    HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException;
 }

@@ -34,6 +34,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
@@ -53,7 +54,7 @@ import org.jboss.msc.service.ServiceName;
  * @author Stuart Douglas
  */
 class WebsocketsDefinition extends PersistentResourceDefinition {
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.WEBSOCKETS);
     private static final RuntimeCapability<Void> WEBSOCKET_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_WEBSOCKET, true, UndertowListener.class)
             .setDynamicNameMapper(pathElements -> new String[]{
                     pathElements.getParent().getLastElement().getValue()
@@ -104,14 +105,13 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
             DEFLATER_LEVEL
     );
 
-    static final WebsocketsDefinition INSTANCE = new WebsocketsDefinition();
 
-
-    private WebsocketsDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_WEBSOCKETS, UndertowExtension.getResolver(UndertowExtension.PATH_WEBSOCKETS.getKeyValuePair()))
+    WebsocketsDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
                 .setAddHandler(new WebsocketsAdd())
                 .setRemoveHandler(new WebsocketsRemove())
-                .addCapabilities(WEBSOCKET_CAPABILITY));
+                .addCapabilities(WEBSOCKET_CAPABILITY)
+        );
     }
 
     @Override
@@ -119,7 +119,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
         return ATTRIBUTES;
     }
 
-    public WebSocketInfo getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    static WebSocketInfo getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
         if (!model.isDefined()) {
             return null;
         }
@@ -134,7 +134,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
     private static class WebsocketsAdd extends RestartParentResourceAddHandler {
         protected WebsocketsAdd() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey(), Collections.singleton(WEBSOCKET_CAPABILITY), ATTRIBUTES);
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey(), Collections.singleton(WEBSOCKET_CAPABILITY), ATTRIBUTES);
         }
 
         @Override
@@ -158,7 +158,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
     private static class WebsocketsRemove extends RestartParentResourceRemoveHandler {
 
         protected WebsocketsRemove() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override

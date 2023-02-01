@@ -22,12 +22,10 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistrar;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
@@ -62,19 +60,6 @@ public class RankedAffinityResourceDefinition extends AffinityResourceDefinition
     }
 
     public RankedAffinityResourceDefinition() {
-        super(PATH);
+        super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class));
     }
-
-    @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = parent.registerSubModel(this);
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
-                ;
-        new ReloadRequiredResourceRegistrar(descriptor).register(registration);
-
-        return registration;
-    }
-
 }

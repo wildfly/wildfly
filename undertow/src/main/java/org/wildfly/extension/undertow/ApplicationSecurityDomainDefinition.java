@@ -56,11 +56,13 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.AttachmentKey;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -120,7 +122,7 @@ import io.undertow.servlet.api.LoginConfig;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class ApplicationSecurityDomainDefinition extends PersistentResourceDefinition {
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN);
     private static Predicate<String> SERVLET_MECHANISM;
 
     static {
@@ -187,28 +189,27 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SECURITY_DOMAIN, HTTP_AUTHENTICATION_FACTORY, OVERRIDE_DEPLOYMENT_CONFIG, ENABLE_JACC, ENABLE_JASPI, INTEGRATED_JASPI };
 
-    static final ApplicationSecurityDomainDefinition INSTANCE = new ApplicationSecurityDomainDefinition();
-
-    private static final Set<String> knownApplicationSecurityDomains = Collections.synchronizedSet(new HashSet<>());
-
     private static final AttachmentKey<KnownDeploymentsApi> KNOWN_DEPLOYMENTS_KEY = AttachmentKey.create(KnownDeploymentsApi.class);
 
-    private ApplicationSecurityDomainDefinition() {
-        this((Parameters) new Parameters(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN,
-                UndertowExtension.getResolver(Constants.APPLICATION_SECURITY_DOMAIN))
-                        .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
-                        .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN, false, false, false)),
-                                new ApplicationTypeAccessConstraintDefinition(new ApplicationTypeConfig(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN)))
-                        , new AddHandler());
+    private final Set<String> knownApplicationSecurityDomains;
+
+    ApplicationSecurityDomainDefinition(Set<String> knownApplicationSecurityDomains) {
+        this(knownApplicationSecurityDomains, new AddHandler(knownApplicationSecurityDomains));
     }
 
-    private ApplicationSecurityDomainDefinition(Parameters parameters, AbstractAddStepHandler add) {
-        super(parameters.setAddHandler(add).setRemoveHandler(new RemoveHandler(add)));
+    private ApplicationSecurityDomainDefinition(Set<String> knownApplicationSecurityDomains, AbstractAddStepHandler addHandler) {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+                .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
+                .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN, false, false, false)),
+                        new ApplicationTypeAccessConstraintDefinition(new ApplicationTypeConfig(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN)))
+                .setAddHandler(addHandler)
+                .setRemoveHandler(new RemoveHandler(knownApplicationSecurityDomains, addHandler))
+        );
+        this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        knownApplicationSecurityDomains.clear(); // If we are registering, time for a clean start.
         super.registerAttributes(resourceRegistration);
         if (resourceRegistration.getProcessType().isServer()) {
             resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
@@ -243,10 +244,12 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
     }
 
     private static class AddHandler extends AbstractAddStepHandler {
+        private final Set<String> knownApplicationSecurityDomains;
         private final SecurityDomainSingleSignOnManagementProvider provider;
 
-        private AddHandler() {
+        private AddHandler(Set<String> knownApplicationSecurityDomains) {
             super(ATTRIBUTES);
+            this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
             Iterator<SecurityDomainSingleSignOnManagementProvider> providers = ServiceLoader.load(SecurityDomainSingleSignOnManagementProvider.class, SecurityDomainSingleSignOnManagementProvider.class.getClassLoader()).iterator();
             this.provider = providers.hasNext() ? providers.next() : NonDistributableSingleSignOnManagementProvider.INSTANCE;
         }
@@ -257,7 +260,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         @Override
         protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
             super.populateModel(context, operation, resource);
-            knownApplicationSecurityDomains.add(context.getCurrentAddressValue());
+            this.knownApplicationSecurityDomains.add(context.getCurrentAddressValue());
         }
 
         @Override
@@ -303,8 +306,8 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
             final Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> transformerSupplier;
             final BiFunction<HttpExchangeSpi, String, IdentityCache> identityCacheSupplier;
-            if (resource.hasChild(UndertowExtension.PATH_SSO)) {
-                ModelNode ssoModel = resource.getChild(UndertowExtension.PATH_SSO).getModel();
+            if (resource.hasChild(SingleSignOnDefinition.PATH_ELEMENT)) {
+                ModelNode ssoModel = resource.getChild(SingleSignOnDefinition.PATH_ELEMENT).getModel();
 
                 String cookieName = SingleSignOnDefinition.Attribute.COOKIE_NAME.resolveModelAttribute(context, ssoModel).asString();
                 String domain = null;
@@ -377,18 +380,20 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
     }
 
     private static class RemoveHandler extends ServiceRemoveStepHandler {
+        private final Set<String> knownApplicationSecurityDomains;
 
         /**
          * @param addOperation
          */
-        protected RemoveHandler(AbstractAddStepHandler addOperation) {
+        protected RemoveHandler(Set<String> knownApplicationSecurityDomains, AbstractAddStepHandler addOperation) {
             super(addOperation, APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY, APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS_CAPABILITY);
+            this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         }
 
         @Override
         protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRemove(context, operation, model);
-            knownApplicationSecurityDomains.remove(context.getCurrentAddressValue());
+            this.knownApplicationSecurityDomains.remove(context.getCurrentAddressValue());
         }
 
         @Override
