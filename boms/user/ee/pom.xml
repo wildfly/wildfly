@@ -346,7 +346,7 @@
                                 <!-- include ispn -->                        
                                 <dependency>
                                     <groupId>org.infinispan</groupId>
-                                    <artifactId>infinispan-core</artifactId>
+                                    <artifactId>infinispan-core-jakarta</artifactId>
                                 </dependency>
                                 <!-- include jboss logging -->
                                 <dependency>
