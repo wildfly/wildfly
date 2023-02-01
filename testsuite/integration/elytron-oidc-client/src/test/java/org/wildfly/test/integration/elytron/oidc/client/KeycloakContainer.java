@@ -20,6 +20,8 @@ package org.wildfly.test.integration.elytron.oidc.client;
 
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 
 import java.time.Duration;
 
@@ -64,7 +66,10 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
         if (isUsedRHSSOImage()) {
             waitingFor(Wait.forHttp("/auth").forPort(PORT_HTTP));
         }else{
-            waitingFor(Wait.forHttp("/").forPort(PORT_HTTP));
+            final WaitStrategy strategy = new WaitAllStrategy()
+                    .withStrategy(Wait.forHttp("/").forPort(PORT_HTTP))
+                    .withStrategy(Wait.forLogMessage(".*Keycloak.*started.*", 1));
+            waitingFor(strategy);
             withCommand("start-dev");
         }
     }
