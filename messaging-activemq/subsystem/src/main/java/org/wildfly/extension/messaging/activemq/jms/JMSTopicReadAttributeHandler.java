@@ -144,7 +144,7 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
     private long getMessagesAdded(AddressControl addressControl, ManagementService managementService) {
         List<QueueControl> queues = getQueues(DurabilityType.ALL, addressControl, managementService);
-        int count = 0;
+        long count = 0;
         for (QueueControl queue : queues) {
             count += queue.getMessagesAdded();
         }
