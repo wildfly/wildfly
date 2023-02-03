@@ -516,7 +516,7 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-common-api-jakarta</artifactId>
+            <artifactId>ironjacamar-common-api</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -527,7 +527,7 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-common-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-common-impl</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -538,7 +538,7 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-common-spi-jakarta</artifactId>
+            <artifactId>ironjacamar-common-spi</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -549,7 +549,7 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-api-jakarta</artifactId>
+            <artifactId>ironjacamar-core-api</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -560,7 +560,7 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-core-impl</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -571,7 +571,7 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-deployers-common-jakarta</artifactId>
+            <artifactId>ironjacamar-deployers-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -582,7 +582,7 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-jdbc-jakarta</artifactId>
+            <artifactId>ironjacamar-jdbc</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -593,7 +593,7 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-validator-jakarta</artifactId>
+            <artifactId>ironjacamar-validator</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

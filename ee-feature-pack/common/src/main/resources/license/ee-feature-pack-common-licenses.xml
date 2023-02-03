@@ -3535,7 +3535,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-common-api-jakarta</artifactId>
+      <artifactId>ironjacamar-common-api</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3546,7 +3546,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-common-impl-jakarta</artifactId>
+      <artifactId>ironjacamar-common-impl</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3557,7 +3557,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-common-spi-jakarta</artifactId>
+      <artifactId>ironjacamar-common-spi</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3568,7 +3568,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-core-api-jakarta</artifactId>
+      <artifactId>ironjacamar-core-api</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3579,7 +3579,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+      <artifactId>ironjacamar-core-impl</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3590,7 +3590,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-deployers-common-jakarta</artifactId>
+      <artifactId>ironjacamar-deployers-common</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3601,7 +3601,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-jdbc-jakarta</artifactId>
+      <artifactId>ironjacamar-jdbc</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3612,7 +3612,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-validator-jakarta</artifactId>
+      <artifactId>ironjacamar-validator</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>

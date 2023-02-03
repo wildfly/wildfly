@@ -128,7 +128,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-api-jakarta</artifactId>
+            <artifactId>ironjacamar-core-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -160,12 +160,12 @@
              the tests fail for some reason. Changing the return type to DistributedWorkManager seems to cause issues -->
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-core-impl</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-jdbc-jakarta</artifactId>
+            <artifactId>ironjacamar-jdbc</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

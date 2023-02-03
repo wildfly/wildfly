@@ -256,22 +256,22 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-common-api-jakarta</artifactId>
+            <artifactId>ironjacamar-common-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-api-jakarta</artifactId>
+            <artifactId>ironjacamar-core-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-core-impl</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-deployers-common-jakarta</artifactId>
+    <artifactId>ironjacamar-deployers-common</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

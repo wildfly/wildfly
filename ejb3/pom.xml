@@ -74,7 +74,7 @@ vi:ts=4:sw=4:expandtab
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-api-jakarta</artifactId>
+            <artifactId>ironjacamar-core-api</artifactId>
         </dependency>
 
         <dependency>
