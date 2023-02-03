@@ -16,15 +16,20 @@
 package org.wildfly.extension.microprofile.opentracing;
 
 
+import io.jaegertracing.Configuration;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants;
+
+import java.util.EnumSet;
 
 /**
  * Tracer attribute definitions.
@@ -35,17 +40,19 @@ public class TracerAttributes {
 
     static final String OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.outbound-socket-binding";
 
+    private static final String[] ALLOWED_SAMPLER_TYPE = {"const", "probabilistic", "ratelimiting", "remote"};
+
     public static final StringListAttributeDefinition PROPAGATION = StringListAttributeDefinition.Builder.of(TracerConfigurationConstants.PROPAGATION)
             .setAllowNullElement(false)
             .setRequired(false)
-            .setAllowedValues("JAEGER", "B3")
+            .setValidator(EnumValidator.create(Configuration.Propagation.class, EnumSet.allOf(Configuration.Propagation.class)))
             .setAttributeGroup("codec-configuration")
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition SAMPLER_TYPE = SimpleAttributeDefinitionBuilder.create(TracerConfigurationConstants.SAMPLER_TYPE, ModelType.STRING, true)
-            .setAllowedValues("const", "probabilistic", "ratelimiting", "remote")
+            .setValidator(new StringAllowedValuesValidator(ALLOWED_SAMPLER_TYPE))
             .setDefaultValue(new ModelNode("remote"))
             .setAttributeGroup("sampler-configuration")
             .setAllowExpression(true)

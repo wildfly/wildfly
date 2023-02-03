@@ -39,11 +39,13 @@ import static org.wildfly.extension.messaging.activemq.MessagingExtension.VERSIO
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.function.BiConsumer;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.server.NetworkHealthCheck;
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerPolicy;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -914,7 +916,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup(CRITICAL_ANALYZER_ATTRIBUTE_GROUP)
             .setXmlName("policy")
             .setDefaultValue(new ModelNode("LOG"))
-            .setAllowedValues("HALT", "SHUTDOWN", "LOG")
+            .setValidator(EnumValidator.create(CriticalAnalyzerPolicy.class, EnumSet.allOf(CriticalAnalyzerPolicy.class)))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

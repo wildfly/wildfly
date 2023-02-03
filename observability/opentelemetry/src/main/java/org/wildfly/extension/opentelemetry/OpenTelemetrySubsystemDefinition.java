@@ -74,7 +74,6 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAttributeGroup(GROUP_EXPORTER)
             .setXmlName(OpenTelemetryConfigurationConstants.TYPE)
             .setDefaultValue(new ModelNode("jaeger"))
-            .setAllowedValues(ALLOWED_EXPORTERS)
             .setValidator(new StringAllowedValuesValidator(ALLOWED_EXPORTERS))
             .setRestartAllServices()
             .build();
@@ -95,7 +94,6 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAttributeGroup(GROUP_SPAN_PROCESSOR)
             .setRestartAllServices()
             .setDefaultValue(new ModelNode("batch"))
-            .setAllowedValues(ALLOWED_SPAN_PROCESSORS)
             .setValidator(new StringAllowedValuesValidator(ALLOWED_SPAN_PROCESSORS))
             .build();
 
@@ -136,7 +134,6 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAllowExpression(true)
             .setXmlName(OpenTelemetryConfigurationConstants.TYPE)
             .setAttributeGroup(GROUP_SAMPLER)
-            .setAllowedValues(ALLOWED_SAMPLERS)
             .setValidator(new StringAllowedValuesValidator(ALLOWED_SAMPLERS))
             .setRestartAllServices()
             .build();

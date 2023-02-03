@@ -20,11 +20,15 @@ package org.wildfly.extension.elytron.oidc;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.security.http.oidc.Oidc;
+
+import java.util.EnumSet;
 
 /**
  * The common attribute definitions for OpenID Connect provider attributes.
@@ -57,7 +61,7 @@ class ProviderAttributeDefinitions {
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.SSL_REQUIRED, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode("external"))
-                    .setAllowedValues("external", "all", "none")
+                    .setValidator(EnumValidator.create(Oidc.SSLRequired.class, EnumSet.allOf(Oidc.SSLRequired.class)))
                     .build();
 
     protected static final SimpleAttributeDefinition ALLOW_ANY_HOSTNAME =
