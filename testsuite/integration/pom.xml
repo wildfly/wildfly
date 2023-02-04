@@ -73,7 +73,6 @@
                 <module>manualmode</module>
                 <module>secman</module>
                 <module>legacy</module>
-                <module>legacy-ejb-client</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
             </modules>
