@@ -58,23 +58,23 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
     }
 
     private static void registerTransformersWildFly23(ResourceTransformationDescriptionBuilder subsystemBuilder) {
-        final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(UndertowExtension.SERVER_PATH);
+        final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(ServerDefinition.PATH_ELEMENT);
 
-        final AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH).getAttributeBuilder()
+        final AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(HttpListenerResourceDefinition.PATH_ELEMENT).getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, WRITE_TIMEOUT)
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, READ_TIMEOUT)
                 .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), WRITE_TIMEOUT.getName())
                 .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), READ_TIMEOUT.getName());
         http.end();
 
-        final AttributeTransformationDescriptionBuilder https = serverBuilder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH).getAttributeBuilder()
+        final AttributeTransformationDescriptionBuilder https = serverBuilder.addChildResource(HttpsListenerResourceDefinition.PATH_ELEMENT).getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, WRITE_TIMEOUT)
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, READ_TIMEOUT)
                 .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), WRITE_TIMEOUT.getName())
                 .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), READ_TIMEOUT.getName());
         https.end();
 
-        final AttributeTransformationDescriptionBuilder ajp = serverBuilder.addChildResource(UndertowExtension.AJP_LISTENER_PATH).getAttributeBuilder()
+        final AttributeTransformationDescriptionBuilder ajp = serverBuilder.addChildResource(AjpListenerResourceDefinition.PATH_ELEMENT).getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, WRITE_TIMEOUT)
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, READ_TIMEOUT)
                 .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), WRITE_TIMEOUT.getName())
