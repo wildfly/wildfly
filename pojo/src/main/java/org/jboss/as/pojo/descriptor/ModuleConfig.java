@@ -26,7 +26,6 @@ import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 import java.io.Serializable;
@@ -51,10 +50,10 @@ public class ModuleConfig extends AbstractConfigVisitorNode implements Serializa
                 visitor.addDependency(serviceName, getInjectedModule());
             } else {
                 Module dm = visitor.loadModule(identifier);
-                getInjectedModule().setValue(new ImmediateValue<Module>(dm));
+                getInjectedModule().setValue(() -> dm);
             }
         } else {
-            getInjectedModule().setValue(new ImmediateValue<Module>(visitor.getModule()));
+            getInjectedModule().setValue(() -> visitor.getModule());
         }
         // no children, no need to visit
     }

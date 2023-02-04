@@ -26,7 +26,6 @@ import org.jboss.as.pojo.BeanState;
 import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.descriptor.CallbackConfig;
 import org.jboss.as.pojo.descriptor.ValueConfig;
-import org.jboss.msc.value.ImmediateValue;
 
 import java.lang.reflect.Method;
 
@@ -72,7 +71,7 @@ public class Callback {
 
     public void dispatch(final Object dependency) throws Throwable {
         MethodJoinpoint joinpoint = new MethodJoinpoint(getMethod());
-        joinpoint.setTarget(new ImmediateValue<Object>(bean));
+        joinpoint.setTarget(() -> bean);
         ValueConfig param = new ValueConfig() {
             protected Object getClassValue(Class<?> type) {
                 return dependency;
