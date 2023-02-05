@@ -71,5 +71,20 @@ public class ModifiableResourceAdapter extends ActivationImpl {
         this.raXmlDeploymentServiceName = raXmlDeploymentServiceName;
     }
 
+    @Override
+    public synchronized int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public synchronized boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public synchronized String toString() {
+        return super.toString();
+    }
+
 }
 
