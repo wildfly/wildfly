@@ -23,10 +23,13 @@
 package org.wildfly.extension.undertow;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -51,6 +54,15 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
         for (UndertowModel model : EnumSet.complementOf(EnumSet.of(UndertowModel.CURRENT))) {
             ModelVersion version = model.getVersion();
             ResourceTransformationDescriptionBuilder subsystem = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+            ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(ServerDefinition.PATH_ELEMENT);
+            for (PathElement listenerPath : Set.of(HttpListenerResourceDefinition.PATH_ELEMENT, HttpsListenerResourceDefinition.PATH_ELEMENT, AjpListenerResourceDefinition.PATH_ELEMENT)) {
+                if (UndertowModel.VERSION_13_0_0.requiresTransformation(version)) {
+                    server.addChildResource(listenerPath).getAttributeBuilder()
+                        .setValueConverter(AttributeConverter.DEFAULT_VALUE, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.READ_TIMEOUT)
+                        .end();
+                }
+            }
 
             ResourceTransformationDescriptionBuilder servletContainer = subsystem.addChildResource(ServletContainerDefinition.PATH_ELEMENT);
             if (UndertowModel.VERSION_13_0_0.requiresTransformation(version)) {
