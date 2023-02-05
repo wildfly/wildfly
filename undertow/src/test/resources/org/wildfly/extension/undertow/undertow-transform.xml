@@ -22,6 +22,9 @@
 
 <subsystem xmlns="urn:jboss:domain:undertow:14.0" default-server="default-server" default-servlet-container="default-container" default-virtual-host="default-host" instance-id="foo">
     <server name="default-server" default-host="default-host">
+        <ajp-listener name="ajp" socket-binding="ajp"/>
+        <http-listener name="http" socket-binding="http"/>
+        <https-listener name="https" socket-binding="https" ssl-context="ssl"/>
         <host name="default-host"/>
     </server>
     <servlet-container name="default-container"/>

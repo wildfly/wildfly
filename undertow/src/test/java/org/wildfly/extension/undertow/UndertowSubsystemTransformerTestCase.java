@@ -29,6 +29,7 @@ import java.util.List;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -88,8 +89,17 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
         this.modelVersion = subsystemModel.getVersion();
     }
 
+    private AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.withCapabilities(
+                RuntimeCapability.buildDynamicCapabilityName(Capabilities.REF_SOCKET_BINDING, "ajp"),
+                RuntimeCapability.buildDynamicCapabilityName(Capabilities.REF_SOCKET_BINDING, "http"),
+                RuntimeCapability.buildDynamicCapabilityName(Capabilities.REF_SOCKET_BINDING, "https"),
+                RuntimeCapability.buildDynamicCapabilityName(Capabilities.REF_SSL_CONTEXT, "ssl")
+                );
+    }
+
     private KernelServices build(KernelServicesBuilder builder) throws Exception {
-        LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, this.controllerVersion, this.modelVersion)
+        LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), this.controllerVersion, this.modelVersion)
                 .skipReverseControllerCheck()
                 .dontPersistXml();
         this.addDependencies(initializer);
@@ -114,7 +124,7 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
 
     @Test
     public void testTransformations() throws Exception {
-        KernelServicesBuilder builder = this.createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).setSubsystemXml(this.readResource("undertow-transform.xml"));
+        KernelServicesBuilder builder = this.createKernelServicesBuilder(this.createAdditionalInitialization()).setSubsystemXml(this.readResource("undertow-transform.xml"));
         KernelServices services = this.build(builder);
 
         ModelFixer fixer = model -> {
@@ -128,7 +138,7 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
 
     @Test
     public void testRejections() throws Exception {
-        KernelServicesBuilder builder = this.createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = this.createKernelServicesBuilder(this.createAdditionalInitialization());
         KernelServices services = this.build(builder);
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
