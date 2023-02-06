@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,15 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.ejb3.util;
 
-/**
- *
- * @author <a href="mailto:romain@redhat.com">Romain Pelisse</a>
- */
-public class InvalidMdbWithFinalizeMethod {
+public class CleanBean implements BusinessInterface {
+    @SuppressWarnings("unused")
+    @Override
+    public void businessMethod(String argumentOne, int argumentTwo) {
+    }
 
-    @SuppressWarnings("deprecation")
-    protected void finalize() {
+    @SuppressWarnings("unused")
+    @Override
+    public void businessMethod(String argumentOne, int argumentTwo, boolean argumentThree) {
+    }
+
+    @SuppressWarnings("unused")
+    public void notABusinessMethod(String argumentOne) {
+    }
+
+    @SuppressWarnings("unused")
+    protected static void protectedStatic() {
+    }
+
+    @SuppressWarnings("unused")
+    protected final void protectedFinal() {
+    }
+
+    @SuppressWarnings("unused")
+    static void packageStatic() {
+    }
+
+    @SuppressWarnings("unused")
+    final void packageFinal() {
     }
 }
