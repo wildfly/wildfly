@@ -79,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>
-            <artifactId>openjdk-orb-jakarta</artifactId>
+            <artifactId>openjdk-orb</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -140,7 +140,7 @@
                                     <artifactItems>
                                         <artifactItem>
                                             <groupId>org.jboss.openjdk-orb</groupId>
-                                            <artifactId>openjdk-orb-jakarta</artifactId>
+                                            <artifactId>openjdk-orb</artifactId>
                                             <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
                                         </artifactItem>
                                     </artifactItems>

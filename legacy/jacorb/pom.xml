@@ -57,7 +57,7 @@
                       <artifactItems>
                          <artifactItem>
                             <groupId>org.jboss.openjdk-orb</groupId>
-                            <artifactId>openjdk-orb-jakarta</artifactId>
+                            <artifactId>openjdk-orb</artifactId>
                             <type>jar</type>
                             <overWrite>true</overWrite>
                             <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
@@ -96,7 +96,7 @@
 
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>
-            <artifactId>openjdk-orb-jakarta</artifactId>
+            <artifactId>openjdk-orb</artifactId>
         </dependency>
 
         <dependency>
