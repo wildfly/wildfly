@@ -266,7 +266,7 @@
         </xs:attribute>
         <xs:attribute name="concurrency-level" type="xs:int" default="1000">
             <xs:annotation>
-                <xs:documentation>Concurrency level for lock containers. Adjust this value according to the number of concurrent threads interacting with Infinispan.</xs:documentation>
+                <xs:documentation>Deprecated. This attribute has no effect.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
