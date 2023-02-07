@@ -22,8 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.EnumSet;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -36,24 +35,12 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase {
 
-    // TODO Create formal enumeration of schema versions
     @Parameters
-    public static Collection<Object[]> parameters() {
-        return List.of(
-                new Object[] { 3, 1 },
-                new Object[] { 4, 0 },
-                new Object[] { 5, 0 },
-                new Object[] { 6, 0 },
-                new Object[] { 7, 0 },
-                new Object[] { 8, 0 },
-                new Object[] { 9, 0 },
-                new Object[] { 10, 0 },
-                new Object[] { 11, 0 },
-                new Object[] { 12, 0 },
-                new Object[] { 13, 0 });
+    public static Iterable<UndertowSchema> parameters() {
+        return EnumSet.allOf(UndertowSchema.class);
     }
 
-    public UndertowSubsystemTestCase(int major, int minor) {
-        super(major, minor);
+    public UndertowSubsystemTestCase(UndertowSchema schema) {
+        super(schema);
     }
 }

@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -61,13 +60,15 @@ public class ExpressionFilterDefinition extends SimpleFilterDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(EXPRESSION, MODULE);
+
     ExpressionFilterDefinition() {
         super(PATH_ELEMENT, ExpressionFilterDefinition::createHandlerWrapper);
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(EXPRESSION, MODULE);
+        return ATTRIBUTES;
     }
 
     static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {

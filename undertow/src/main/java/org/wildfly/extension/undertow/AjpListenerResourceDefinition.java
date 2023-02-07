@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import io.undertow.UndertowOptions;
 import io.undertow.protocols.ajp.AjpClientRequestClientStreamSinkChannel;
@@ -61,23 +62,17 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
             .setValidator(new IntRangeValidator(1))
             .build();
 
+    static final List<AttributeDefinition> ATTRIBUTES = List.of(SCHEME, REDIRECT_SOCKET, MAX_AJP_PACKET_SIZE);
+
     AjpListenerResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER)));
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER)), AjpListenerAdd::new, Map.of());
     }
 
     @Override
-    protected ListenerAdd getAddHandler() {
-        return new AjpListenerAdd(this);
-    }
-
-
     public Collection<AttributeDefinition> getAttributes() {
-        List<AttributeDefinition> attrs = new ArrayList<>(super.getAttributes());
-        attrs.add(SCHEME);
-        attrs.add(REDIRECT_SOCKET);
-        attrs.add(MAX_AJP_PACKET_SIZE);
-        return attrs;
+        List<AttributeDefinition> attributes = new ArrayList<>(ListenerResourceDefinition.ATTRIBUTES.size() + ATTRIBUTES.size());
+        attributes.addAll(ListenerResourceDefinition.ATTRIBUTES);
+        attributes.addAll(ATTRIBUTES);
+        return attributes;
     }
-
-
 }

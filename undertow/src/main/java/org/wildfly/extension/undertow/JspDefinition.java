@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -176,7 +177,8 @@ class JspDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
+
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
             DISABLED,
             DEVELOPMENT,
@@ -197,8 +199,7 @@ class JspDefinition extends PersistentResourceDefinition {
             JAVA_ENCODING,
             X_POWERED_BY,
             DISPLAY_SOURCE_FRAGMENT,
-            OPTIMIZE_SCRIPTLETS
-    };
+            OPTIMIZE_SCRIPTLETS);
 
     JspDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
@@ -209,10 +210,10 @@ class JspDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return List.of(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
-    static JSPConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    static JSPConfig getConfig(final ExpressionResolver context, final ModelNode model) throws OperationFailedException {
         if (!model.isDefined()) {
             return null;
         }
@@ -256,7 +257,7 @@ class JspDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override
@@ -273,7 +274,7 @@ class JspDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override

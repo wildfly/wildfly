@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -197,7 +196,15 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(ModelNode.FALSE)
                     .build();
 
-    static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
+    static final AttributeDefinition ORPHAN_SESSION_ALLOWED =
+            new SimpleAttributeDefinitionBuilder("allow-orphan-session", ModelType.BOOLEAN)
+                    .setRequired(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .setDefaultValue(ModelNode.FALSE)
+                    .build();
+
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
             ALLOW_NON_STANDARD_WRAPPERS,
             DEFAULT_BUFFER_CACHE,
             STACK_TRACE_ON_ERROR,
@@ -217,12 +224,12 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             FILE_CACHE_MAX_FILE_SIZE,
             FILE_CACHE_TIME_TO_LIVE,
             DEFAULT_COOKIE_VERSION,
-            PRESERVE_PATH_ON_FORWARD
-            );
+            PRESERVE_PATH_ON_FORWARD,
+            ORPHAN_SESSION_ALLOWED);
 
     ServletContainerDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
-                .setAddHandler(ServletContainerAdd.INSTANCE)
+                .setAddHandler(new ServletContainerAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addCapabilities(SERVLET_CONTAINER_CAPABILITY)
         );

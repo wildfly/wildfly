@@ -55,6 +55,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.common</groupId>
             <artifactId>jboss-common-beans</artifactId>
         </dependency>
@@ -129,7 +135,7 @@
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-servlet</artifactId>
-            <exclusions>
+            <!--exclusions>
                 <exclusion>
                     <groupId>org.jboss.spec.javax.annotation</groupId>
                     <artifactId>jboss-annotations-api_1.3_spec</artifactId>
@@ -138,7 +144,7 @@
                     <groupId>org.jboss.spec.javax.servlet</groupId>
                     <artifactId>jboss-servlet-api_4.0_spec</artifactId>
                 </exclusion>
-            </exclusions>
+            </exclusions-->
         </dependency>
         <dependency>
             <groupId>io.undertow</groupId>

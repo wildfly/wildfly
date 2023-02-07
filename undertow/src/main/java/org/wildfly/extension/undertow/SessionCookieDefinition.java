@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -82,14 +83,13 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
                     .build();
 
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
             NAME,
             DOMAIN,
             COMMENT,
             HTTP_ONLY,
             SECURE,
-            MAX_AGE
-    };
+            MAX_AGE);
 
     SessionCookieDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
@@ -100,10 +100,10 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return List.of(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
-    static SessionCookieConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    static SessionCookieConfig getConfig(final ExpressionResolver context, final ModelNode model) throws OperationFailedException {
         if(!model.isDefined()) {
             return null;
         }
@@ -135,7 +135,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override
@@ -152,7 +152,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override

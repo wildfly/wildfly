@@ -22,8 +22,8 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -75,6 +75,8 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(PREDICATE, PRIORITY);
+
     public FilterRefDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new FilterRefAdd())
@@ -89,7 +91,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(PREDICATE, PRIORITY);
+        return ATTRIBUTES;
     }
 
     static class FilterRefAdd extends AbstractAddStepHandler {

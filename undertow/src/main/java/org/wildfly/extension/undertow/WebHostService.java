@@ -108,7 +108,7 @@ final class WebHostService implements Service<WebHost>, WebHost {
 
         @Override
         public void create() throws Exception {
-            ServletContainer container = server.get().getServletContainer().getValue().getServletContainer();
+            ServletContainer container = server.get().getServletContainer().getServletContainer();
             manager = container.addDeployment(deploymentInfo);
             manager.deploy();
         }
@@ -128,7 +128,7 @@ final class WebHostService implements Service<WebHost>, WebHost {
         @Override
         public void destroy() throws Exception {
             manager.undeploy();
-            ServletContainer container = server.get().getServletContainer().getValue().getServletContainer();
+            ServletContainer container = server.get().getServletContainer().getServletContainer();
             container.removeDeployment(deploymentInfo);
         }
     }

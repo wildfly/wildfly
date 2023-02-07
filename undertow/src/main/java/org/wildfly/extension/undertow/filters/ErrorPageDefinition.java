@@ -23,9 +23,8 @@
 package org.wildfly.extension.undertow.filters;
 
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.handlers.error.FileErrorPageHandler;
@@ -55,7 +54,7 @@ public class ErrorPageDefinition extends SimpleFilterDefinition {
             .setRequired(false)
             .setRestartAllServices()
             .build();
-    public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(CODE, PATH));
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CODE, PATH);
 
     ErrorPageDefinition() {
         super(PATH_ELEMENT, ErrorPageDefinition::createHandlerWrapper);

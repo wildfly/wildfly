@@ -39,7 +39,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -108,16 +107,15 @@ public class ReverseProxyHandlerDefinition extends HandlerDefinition {
             .setDefaultValue(new ModelNode(1L))
             .build();
 
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES, PROBLEM_SERVER_RETRY, REQUEST_QUEUE_SIZE, MAX_REQUEST_TIME, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, MAX_RETRIES);
+
     ReverseProxyHandlerDefinition() {
         super(PATH_ELEMENT, ReverseProxyHandlerDefinition::createHandler);
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES,
-                PROBLEM_SERVER_RETRY, REQUEST_QUEUE_SIZE, MAX_REQUEST_TIME,
-                CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT,
-                MAX_RETRIES);
+        return ATTRIBUTES;
     }
 
     @Override

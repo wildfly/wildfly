@@ -25,7 +25,6 @@ package org.wildfly.extension.undertow.handlers;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -95,13 +94,15 @@ public class FileHandlerDefinition extends HandlerDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(PATH, CACHE_BUFFER_SIZE, CACHE_BUFFERS, DIRECTORY_LISTING, FOLLOW_SYMLINK, CASE_SENSITIVE, SAFE_SYMLINK_PATHS);
+
     FileHandlerDefinition() {
         super(PATH_ELEMENT, FileHandlerDefinition::createHandler);
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(PATH, CACHE_BUFFER_SIZE, CACHE_BUFFERS, DIRECTORY_LISTING, FOLLOW_SYMLINK, CASE_SENSITIVE, SAFE_SYMLINK_PATHS);
+        return ATTRIBUTES;
     }
 
     static HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException {

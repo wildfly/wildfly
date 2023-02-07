@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright 2021 Red Hat, Inc.
+  ~ Copyright 2023 Red Hat, Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:domain:undertow:13.0"
-           targetNamespace="urn:jboss:domain:undertow:13.0"
+           xmlns="urn:jboss:domain:undertow:14.0"
+           targetNamespace="urn:jboss:domain:undertow:14.0"
            xmlns:credential-reference="urn:wildfly:credential-reference:1.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
@@ -74,8 +74,8 @@
         <xs:attribute name="send-buffer" type="xs:int"/>
         <xs:attribute name="tcp-backlog" type="xs:int" default="10000"/>
         <xs:attribute name="tcp-keep-alive" type="xs:boolean"/>
-        <xs:attribute name="read-timeout" type="xs:long"/>
-        <xs:attribute name="write-timeout" type="xs:long"/>
+        <xs:attribute name="read-timeout" type="xs:long" default="60000"/>
+        <xs:attribute name="write-timeout" type="xs:long" default="60000"/>
         <xs:attribute name="max-connections" type="xs:int"/>
     </xs:complexType>
 
@@ -274,6 +274,7 @@
         <xs:attribute name="file-cache-time-to-live" type="xs:integer" use="optional"/>
         <xs:attribute name="default-cookie-version" type="xs:integer"  use="optional"/>
         <xs:attribute name="preserve-path-on-forward" type="xs:boolean" default="false"/>
+        <xs:attribute name="allow-orphan-session" type="xs:boolean" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="mime-mappingsType">

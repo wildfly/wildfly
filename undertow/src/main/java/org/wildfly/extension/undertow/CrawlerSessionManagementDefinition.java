@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import io.undertow.servlet.api.CrawlerSessionManagerConfig;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -62,10 +63,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
-            USER_AGENTS,
-            SESSION_TIMEOUT
-    };
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(USER_AGENTS, SESSION_TIMEOUT);
 
     CrawlerSessionManagementDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
@@ -76,10 +74,10 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return List.of(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
-    static CrawlerSessionManagerConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    static CrawlerSessionManagerConfig getConfig(final ExpressionResolver context, final ModelNode model) throws OperationFailedException {
         if(!model.isDefined()) {
             return null;
         }
@@ -110,7 +108,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override
@@ -127,7 +125,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override

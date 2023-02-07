@@ -22,8 +22,8 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.handlers.SetHeaderHandler;
@@ -53,13 +53,15 @@ public class ResponseHeaderFilterDefinition extends SimpleFilterDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(NAME, VALUE);
+
     ResponseHeaderFilterDefinition() {
         super(PATH_ELEMENT, ResponseHeaderFilterDefinition::createHandlerWrapper);
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(NAME, VALUE);
+        return ATTRIBUTES;
     }
 
     static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {

@@ -22,11 +22,12 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.handlers.RequestLimitingHandler;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -58,13 +59,15 @@ public class RequestLimitHandlerDefinition extends SimpleFilterDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(MAX_CONCURRENT_REQUESTS, QUEUE_SIZE);
+
     RequestLimitHandlerDefinition() {
         super(PATH_ELEMENT, RequestLimitHandlerDefinition::createHandlerWrapper);
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(MAX_CONCURRENT_REQUESTS, QUEUE_SIZE);
+        return ATTRIBUTES;
     }
 
     static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
