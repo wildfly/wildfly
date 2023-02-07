@@ -44,11 +44,15 @@ more  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class ResourceAdaptersExtension implements Extension {
 
+    static final ModelVersion VERSION_6_0_0 = ModelVersion.create(6,0,0); // EAP 7.4.0
+    static final ModelVersion VERSION_6_1_0 = ModelVersion.create(6,1,0); // WFLY 27.0
+    static final ModelVersion VERSION_7_0_0 = ModelVersion.create(7,0,0); // WFLY 28.0
+
     public static final String SUBSYSTEM_NAME = RESOURCEADAPTERS_NAME;
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(7, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_7_0_0;
 
     private static final String RESOURCE_NAME = ResourceAdaptersExtension.class.getPackage().getName() + ".LocalDescriptions";
 
