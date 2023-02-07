@@ -54,6 +54,8 @@ into a bootable JAR.
 * The link:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] shows you how to 
 provision a customized WildFly server using Galleon.
 
+* The link:Getting_Started_on_OpenShift{outfilesuffix}[Getting Started with WildFly on OpenShift Guide] shows you how to use WildFly on OpenShift.
+
 [[administrator-guides]]
 == Administrator Guides
 

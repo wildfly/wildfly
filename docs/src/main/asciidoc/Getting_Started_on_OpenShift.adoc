@@ -1,0 +1,157 @@
+= Getting Started with WildFly on OpenShift
+
+This guide is designed to assist you through obtaining an OpenShift instance and installing WildFly, complete with a deployed application. It is not intended to cover all possible configurations, as links to more detailed documentation will be provided.
+
+=== Obtaining an OpenShift Instance
+There are many https://www.redhat.com/en/technologies/cloud-computing/openshift/try-it[options] available for running OpenShift. This guide will mention two.
+
+===== Code-ready-containers
+If you wish to run a local development environment, then https://developers.redhat.com/products/openshift-local/overview[CRC] is likely to be a good starting point.
+
+===== Developer sandbox
+The Red Hat OpenShift https://developers.redhat.com/developer-sandbox[Developer Sandbox] is a hosted environment, and is free to use for development purposes.
+
+This guide will focus on usage of the hosted developer sandbox environment. The sandbox should be provisioned from the page above before proceeding further.
+
+=== OpenShift
+In order to use OpenShift effectively, in addition to a running instance, you will need the OpenShift `web console`. To access this tool, from your OpenShift sandbox click the terminal icon (i.e. `>_`) at the top right of your sandbox portal. A terminal tab will pop up at the bottom of the page.
+
+It is also possible to use the OpenShift command line terminal locally (`oc` command). This may be obtained from your package manager or downloaded from your OpenShift sandbox (in your control panel, clicking on the question mark icon at the top right of the console presents a drop-down menu where `Command line tools` takes you to the latest version of `oc`).
+
+WARNING: If you have already installed `oc` on your machine, make sure that its version matches the version of the sandbox. You can use `oc version` to check both the version of `oc` and the version of the sandbox. Another way to check the version of the sandbox is by clicking on the question mark icon at the top right of the web console and then clicking on About in the drop-down menu: the OpenShift version will be listed there.
+
+Once you have downloaded and installed/unpacked the client, you can authenticate to your running sandbox OpenShift instance by using the `Copy Login Command` from the upper right menu in the sandbox user-interface (your username is displayed there.)
+
+Example:
+```
+oc login --token=sha256~b-3av_0Lp8wmJu0G3WXzdfds34454mkvWjRRESd_jHTA --server=https://api.sandbox.x8i5.p1.openshiftapps.com:6443
+```
+We'll be using the `someuser-dev` project for this example (`someuser` should be replaced with the username of the user):
+```
+oc project someuser-dev
+Already on project "someuser-dev" on server "https://api.sandbox.x8i5.p1.openshiftapps.com:6443"
+```
+In the OpenShift sandbox, it is not possible to create a new project but, in case you are running your own OpenShift, the command to create a new project is:
+```
+oc new-project <project name>
+```
+=== Helm Charts
+https://helm.sh/[Helm] provides an easy way to manage and share applications on Kubernetes and OpenShift. We will use it to deploy our example applications to OpenShift.
+
+===== Install Helm and Helm Charts
+See the instructions for installing Helm https://helm.sh/docs/intro/install/[here]. Helm is installed on your local system as a command, which we will use to install the WildFly Charts. Once Helm is installed, we can proceed to use it to install the Helm Charts in our OpenShift instance:
+```
+helm repo add wildfly https://docs.wildfly.org/wildfly-charts/
+```
+For more information on the WildFly Helm Charts, see this https://www.wildfly.org/news/2021/05/05/helm-charts-for-wildfly/[blog post] and https://docs.wildfly.org/wildfly-charts/[the WildFly Helm Charts documentation]
+
+== Example: To-do Quickstart
+The first example we will build and deploy to OpenShift is the https://github.com/wildfly/quickstart/tree/main/todo-backend[`todo-backend` quickstart]. This quickstart provides https://github.com/wildfly/quickstart/tree/main/todo-backend#run-the-backend-on-openshift[documentation] for installing via Helm, so only a brief version is detailed below.
+
+First, we need to provision a database instance, in this case PostgresSQL:
+```
+oc new-app postgresql-ephemeral \
+   -p DATABASE_SERVICE_NAME=todos-db \
+   -p POSTGRESQL_DATABASE=todos
+
+```
+Next we use the WildFly Helm Charts to build and deploy our quickstart:
+```
+helm install todo-backend -f https://raw.githubusercontent.com/wildfly/wildfly-charts/main/examples/todo-backend/todo-backend-bootable-jar.yaml wildfly/wildfly
+```
+WARNING: Note that your Deployment will report "ErrImagePull" and "ImagePullBackOff" until the build is complete. Once the build is complete, your image will be automatically rolled out.
+
+It is possible to use a specific https://github.com/wildfly/quickstart/tags[quickstart tag] in case the user does not want to use the `main` branch. To do so, add the following option to the above command:
+```
+--set build.ref={WildFlyQuickStartRepoTag}
+```
+Take a look at the `bootable-jar-openshift` profile configuration in the `todo-backend` quickstart's https://github.com/wildfly/quickstart/blob/main/todo-backend/pom.xml#L254-L304[pom.xml]. The Maven profile named `bootable-jar-openshift` is used by the Helm chart to provision the server with the quickstart deployed. Notice the `wildfly-jar-maven-plugin` configuration defined in this profile. It specifies the link:Galleon_Guide{outfilesuffix}[layer] that should be used when provisioning WildFly. For more details about this, take a look at the https://github.com/wildfly/quickstart/tree/main/todo-backend#architecture[Architecture] section in the quickstart's README.
+
+We have named this application `todo-backend`. This may be changed to a different name, if desired.
+
+The application will now begin to build. The build can be observed via:
+```
+oc get build -w
+```
+It may take few minutes to build the application. Once the build is complete, deployment will begin and can be observed via:
+```
+oc get deployment todo-backend -w
+```
+Once deployment is complete, we need to query the route for this application to access it on the Internet. To do so, run:
+```
+oc get route todo-backend -o jsonpath="{.spec.host}"
+```
+Expected output:
+```
+todo-backend-someuser-dev.apps.sandbox.x8i5.p1.openshiftapps.com
+```
+The above command returns back a public address that points to the application deployed to the OpenShift cluster of the user (for example):
+```
+https://todo-backend-someuser-dev.apps.sandbox.x8i5.p1.openshiftapps.com
+```
+If you want to add entries in your application, use the following command:
+```
+curl -X POST -H "Content-Type: application/json" -d '{"title":"Deploy_ToDo-BackEnd","completed":false}' https://todo-backend-someuser-dev.apps.sandbox.x8i5.p1.openshiftapps.com
+```
+You can use the todo-frontend to test out the deployed app using:
+```
+https://todobackend.com/client/index.html
+```
+and entering your application URL from above.
+
+If you wish to remove the application when you are done with it, simply run:
+```
+helm delete todo-backend
+```
+== Example: jaxrs-client
+The second example to build and deploy to OpenShift is the
+https://github.com/wildfly/quickstart/tree/main/jaxrs-client[jaxrs-client] quickstart.
+
+First of all, clone the quickstart repo:
+```
+git clone https://github.com/wildfly/quickstart.git
+cd quickstart/jaxrs-client
+```
+The WildFly Helm Charts are used to build and deploy `jaxrs-client`. The following command installs a Helm Release from the WildFly Helm Charts into an OpenShift cluster:
+```
+helm install jaxrs-client-from-chart -f charts/helm.yaml wildfly/wildfly
+```
+WARNING: Note that your Deployment will report "ErrImagePull" and "ImagePullBackOff" until the build is complete. Once the build is complete, your image will be automatically rolled out.
+
+This time, the name of the Helm Chart app is `jaxrs-client-from-chart`. (Of course, this may be changed to a different name, if desired.)
+
+The application will now begin to build. The build can be observed via:
+```
+oc get build -w
+```
+It may take few minutes to build the application. Once the build is complete, to follow the deployment of the application, run:
+```
+oc get deployment jaxrs-client-from-chart -w
+```
+Once deployment is complete, we need to query the route for this application to access it on the Internet. To do so, run:
+```
+oc get route jaxrs-client-from-chart -o jsonpath="{.spec.host}"
+```
+The above command returns back a public address that points to the application deployed to the OpenShift cluster of the user (for example):
+```
+jaxrs-client-from-chart-someuser-dev.apps.sandbox.x8i5.p1.openshiftapps.com
+```
+At this point, defining a env variable for simplicity, it is possible to test the REST endpoint that has been deployed into the OpenShift cluster:
+```
+export ROUTE=$(oc get route jaxrs-client-from-chart -o jsonpath="{.spec.host}")
+```
+and use curl to send HTTP method requests to the REST endpoint, for example (GET):
+```
+curl -L $ROUTE/rest/contacts
+```
+To run the quickstart's Arquillian integration tests to validate that the quickstart has been set up correctly:
+```
+mvn clean verify -Parq-remote -Dserver.host=https://$(oc get route jaxrs-client-from-chart --template='{{ .spec.host }}')
+```
+Take a look at the `openshift` profile configuration in the `jaxrs-client` quickstart's https://github.com/wildfly/quickstart/blob/main/jaxrs-client/pom.xml#L270-L302[pom.xml]. The Maven profile named `openshift` is used by the Helm chart to provision the server with the quickstart deployed. Notice the `wildfly-maven-plugin` configuration defined in this profile. It specifies the link:Galleon_Guide{outfilesuffix}[layer] that should be used when provisioning WildFly. For more details about this, take a look at the `wildfly-maven-plugin` https://docs.wildfly.org/wildfly-maven-plugin/[documentation].
+
+If you wish to remove the application when you are done with it, simply run:
+```
+helm uninstall jaxrs-client-from-chart
+```
+== link:Cloud_References{outfilesuffix}[References]
