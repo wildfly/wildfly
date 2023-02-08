@@ -472,7 +472,7 @@
 
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-iiop-client-jakarta</artifactId>
+            <artifactId>jboss-iiop-client</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

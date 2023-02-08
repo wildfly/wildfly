@@ -2166,7 +2166,7 @@
 
             <dependency>
                 <groupId>org.jboss</groupId>
-                <artifactId>jboss-iiop-client-jakarta</artifactId>
+                <artifactId>jboss-iiop-client</artifactId>
                 <version>${version.org.jboss.iiop-client}</version>
                 <exclusions>
                     <exclusion>
