@@ -2495,7 +2495,7 @@ key-manager:: _(Optional)_ A reference to the `KeyManager` to be used by this `S
 trust-manager:: _(Optional)_ A reference to the `TrustManager` to be used by this `SSLContext`.
 cipher-suite-filter:: _(Optional)_ The filter to be applied to the cipher suites for TLSv1.2 and below made available
 by this SSLContext. The format of this attribute is described in detail in
-http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
+https://wildfly-security.github.io/wildfly-elytron/documentation/api/next/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString(java.lang.String)[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
 The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
 excludes any cipher suites that have no authentication.
 cipher-suite-names:: _(Optional)_ The enabled cipher suites for TLSv1.3. The format of this attribute is a simple colon
@@ -2547,7 +2547,7 @@ key-manager:: _(Optional)_ A reference to the `KeyManager` to be used by this `S
 trust-manager:: _(Optional)_ A reference to the `TrustManager` to be used by this `SSLContext`.
 cipher-suite-filter:: _(Optional)_ The filter to be applied to the cipher suites for TLSv1.2 and below made available
 by this SSLContext. The format of this attribute is described in detail in
-http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
+https://wildfly-security.github.io/wildfly-elytron/documentation/api/next/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString(java.lang.String)[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
 The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
 excludes any cipher suites that have no authentication.
 cipher-suite-names:: _(Optional)_ The enabled cipher suites for TLSv1.3. The format of this attribute is a simple colon

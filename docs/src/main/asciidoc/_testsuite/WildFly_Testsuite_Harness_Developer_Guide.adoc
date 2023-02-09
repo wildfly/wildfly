@@ -14,8 +14,7 @@ merged here later.
 [[adding-a-new-maven-plugin]]
 == Adding a new maven plugin
 
-The plugin version needs to be specified in jboss-parent. See
-https://github.com/jboss/jboss-parent-pom/blob/master/pom.xml#L65 .
+The plugin version needs to be specified in jboss-parent at the `<properties>` section of the jboss-parent https://github.com/jboss/jboss-parent-pom/blob/main/pom.xml[pom.xml] file.
 
 [[shortened-maven-run-overview]]
 == Shortened Maven run overview

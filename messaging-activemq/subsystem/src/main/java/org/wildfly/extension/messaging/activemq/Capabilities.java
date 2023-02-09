@@ -36,21 +36,21 @@ public class Capabilities {
     /**
      * Represents the data source capability
      *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/data-source/capability.adoc">Capability documentation</a>
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/data-source/capability.adoc">Capability documentation</a>
      */
     static final String DATA_SOURCE_CAPABILITY = "org.wildfly.data-source";
 
     /**
      * The capability name for the JMX management.
      *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/management/jmx/capability.adoc">Capability documentation</a>
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/management/jmx/capability.adoc">Capability documentation</a>
      */
     static final String JMX_CAPABILITY = "org.wildfly.management.jmx";
 
     /**
      * A capability for the current messaging-activemq server configuration.
      *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/messaging/activemq/server/capability.adoc">Capability documentation</a>
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/messaging/activemq/server/capability.adoc">Capability documentation</a>
      */
     static final RuntimeCapability<Void> ACTIVEMQ_SERVER_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.server", true)
             //.addRuntimeOnlyRequirements(JMX_CAPABILITY) -- has no function so don't use it
@@ -58,7 +58,7 @@ public class Capabilities {
 
     /**
      * A capability name for the legacy security domain.
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/security/security-domain/capability.adoc">Capability documentation</a>
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/security/security-domain/capability.adoc">Capability documentation</a>
      */
     static final RuntimeCapability<Void> LEGACY_SECURITY_DOMAIN_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.security.legacy-security-domain", true)
             .build();
@@ -71,28 +71,28 @@ public class Capabilities {
     /**
      * The capability for the PathManager
      *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/management/path-manager/capability.adoc">documentation</a>
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/management/path-manager/capability.adoc">documentation</a>
      */
     static final String PATH_MANAGER_CAPABILITY = "org.wildfly.management.path-manager";
 
     /**
      * The capability for the Http Listener Registry
      *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/remoting/http-listener-registry/capability.adoc">documentation</a>
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/remoting/http-listener-registry/capability.adoc">documentation</a>
      */
     static final String HTTP_LISTENER_REGISTRY_CAPABILITY_NAME = "org.wildfly.remoting.http-listener-registry";
 
     /**
      * The capability for the Http Upgrade Registry
      *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/undertow/http-upgrade-registry/capability.adoc">documentation</a>
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/undertow/listener/http-upgrade-registry/capability.adoc">documentation</a>
      */
     static final String HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME = "org.wildfly.undertow.listener.http-upgrade-registry";
 
     /**
      * The capability for the SocketBinding capability
      *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/network/socket-binding/capability.adoc">documentation</a>
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/network/socket-binding/capability.adoc">documentation</a>
      */
     public static final RuntimeCapability<Void> SOCKET_BINDING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.network.socket-binding", true, SocketBinding.class)
             .build();
@@ -100,7 +100,7 @@ public class Capabilities {
     /**
      * A capability for the current messaging-activemq server configuration.
      *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/network/outbound-socket-binding/capability.adoc">Capability documentation</a>
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/network/outbound-socket-binding/capability.adoc">Capability documentation</a>
      */
     public static final RuntimeCapability<Void> OUTBOUND_SOCKET_BINDING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.network.outbound-socket-binding", true, OutboundSocketBinding.class)
             .build();
