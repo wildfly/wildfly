@@ -31,9 +31,9 @@ package org.jboss.as.ejb3.component.stateful.cache;
 public interface StatefulSessionBeanCacheFactory<K, V extends StatefulSessionBeanInstance<K>> {
 
     /**
-     * Creates a stateful session bean cache for a given {@link javax.ejb.Stateful} EJB.
+     * Creates a stateful session bean cache for a given {@link jakarta.ejb.Stateful} EJB.
      * @param configuration configuration of a stateful bean cache
-     * @return a cache for a given {@link javax.ejb.Stateful} EJB.
+     * @return a cache for a given {@link jakarta.ejb.Stateful} EJB.
      */
     StatefulSessionBeanCache<K, V> createStatefulBeanCache(StatefulSessionBeanCacheConfiguration<K, V> configuration);
 }

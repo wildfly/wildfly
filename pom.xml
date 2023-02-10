@@ -513,7 +513,6 @@
         <version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>
         <version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>2.0.1.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>
-        <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>2.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
         <legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>2.0.0.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>
@@ -1029,11 +1028,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.jboss.spec.javax.ejb</groupId>
-                <artifactId>jboss-ejb-api_3.2_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.jboss.spec.javax.transaction</groupId>
                 <artifactId>jboss-transaction-api_1.3_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec}</version>
@@ -1382,7 +1376,6 @@
                                             <exclude>org.jboss.integration:jboss-jca-spi</exclude>
                                             <exclude>org.jboss.interceptor:jboss-interceptor-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-javaee</exclude>
-                                            <exclude>org.jboss.javaee:jboss-ejb-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-jacc-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-jad-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-jaspi-api</exclude>
