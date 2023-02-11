@@ -22,11 +22,15 @@
 package org.wildfly.extension.microprofile.opentracing;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
-import static org.wildfly.extension.microprofile.opentracing.Constants.*;
+import static org.wildfly.extension.microprofile.opentracing.Constants.CONTRIB_PACKAGE;
+import static org.wildfly.extension.microprofile.opentracing.Constants.INTERCEPTOR_PACKAGE;
+import static org.wildfly.extension.microprofile.opentracing.Constants.TRACERRESOLVER_PACKAGE;
 import static org.wildfly.microprofile.opentracing.smallrye.WildFlyTracerFactory.TRACER_CAPABILITY_NAME;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Stream;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -113,12 +117,11 @@ public class SubsystemDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAdditionalRuntimePackages(final ManagementResourceRegistration resourceRegistration) {
-        for (String m : MODULES) {
-            resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required(m));
-        }
-        for (String m : EXPORTED_MODULES) {
-            resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required(m));
-        }
+        resourceRegistration.registerAdditionalRuntimePackages(
+                Stream.concat(Arrays.stream(MODULES), Arrays.stream(EXPORTED_MODULES))
+                .distinct()
+                .map(RuntimePackageDependency::required)
+                .toArray(RuntimePackageDependency[]::new));
     }
 
     private static final class DefaultTracerWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
