@@ -27,11 +27,14 @@ import java.util.function.Function;
 import org.jboss.as.clustering.msc.InjectedValueDependency;
 import org.jboss.as.clustering.msc.ValueDependency;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 
@@ -88,7 +91,34 @@ public class IdentityLegacyCapabilityServiceConfigurator<T> extends SimpleServic
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceBuilder<?> builder = target.addService(this.getServiceName(), new ValueService<>(this.requirement));
+        final ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        builder.setInstance(new ValueService<>(this.requirement));
         return this.requirement.register(builder).setInitialMode(ServiceController.Mode.PASSIVE);
     }
+
+    private static final class ValueService<T> implements Service<T> {
+        private final Value<T> value;
+        private volatile T valueInstance;
+
+        public ValueService(final Value<T> value) {
+            this.value = value;
+        }
+
+        public void start(final StartContext context) {
+            valueInstance = value.getValue();
+        }
+
+        public void stop(final StopContext context) {
+            valueInstance = null;
+        }
+
+        public T getValue() throws IllegalStateException {
+            final T value = valueInstance;
+            if (value == null) {
+                throw new IllegalStateException();
+            }
+            return value;
+        }
+    }
+
 }
