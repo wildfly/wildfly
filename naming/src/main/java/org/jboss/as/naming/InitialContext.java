@@ -39,7 +39,6 @@ import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.naming.logging.NamingLogger;
-import org.wildfly.naming.client.WildFlyInitialContextFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -53,7 +52,11 @@ public class InitialContext extends InitialLdapContext {
      */
     private static volatile Map<String, ObjectFactory> urlContextFactories = Collections.emptyMap();
 
-    private final WildFlyInitialContextFactory delegate = new WildFlyInitialContextFactory();
+    private static InServerInitialContextFactory delegate = new InServerInitialContextFactory();
+
+    public static InServerInitialContextFactory getInitialContextFactory() {
+        return delegate;
+    }
 
     /**
      * Add an ObjectFactory to handle requests for a specific URL scheme.

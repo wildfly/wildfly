@@ -514,6 +514,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(UserTransactionAccessControlService.SERVICE_NAME, UserTransactionAccessControlService.class, userTxAccessControlService.getUserTransactionAccessControlServiceInjector())
                 .install();
 
+        final TransactionNamespaceAccessControlService transactionNamespaceAccessControlService = new TransactionNamespaceAccessControlService();
+        context.getServiceTarget().addService(TransactionNamespaceAccessControlService.SERVICE_NAME).setInstance(transactionNamespaceAccessControlService).install();
+
         // add ejb suspend handler service
         boolean enableGracefulShutdown = EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN.resolveModelAttribute(context, model).asBoolean();
         final EJBSuspendHandlerService ejbSuspendHandlerService = new EJBSuspendHandlerService(enableGracefulShutdown);
