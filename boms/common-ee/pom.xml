@@ -2170,8 +2170,8 @@
                 <version>${version.org.jboss.ejb3.ext-api}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.javaee</groupId>
-                        <artifactId>jboss-ejb-api</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
