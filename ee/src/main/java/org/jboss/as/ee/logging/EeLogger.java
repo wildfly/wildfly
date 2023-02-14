@@ -23,7 +23,6 @@
 package org.jboss.as.ee.logging;
 
 
-import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -1087,9 +1086,9 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 109, value = "A class must not declare more than one AroundInvoke method. %s has %s methods annotated.")
     DeploymentUnitProcessingException aroundInvokeAnnotationUsedTooManyTimes(DotName className, int numberOfAnnotatedMethods);
 
-    @LogMessage(level = DEBUG) // this is only used in a log-and-throw so make it DEBUG
-    @Message(id = 110, value = "Failed to run scheduled task")
-    void failedToRunTask(@Cause Exception e);
+    @LogMessage(level = ERROR)
+    @Message(id = 110, value = "Failed to run scheduled task: %s")
+    void failedToRunTask(Object delegate, @Cause Exception e);
 
     @Message(id = 111, value = "Cannot run scheduled task %s as container is suspended")
     IllegalStateException cannotRunScheduledTask(Object delegate);
@@ -1227,4 +1226,8 @@ public interface EeLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 135, value = "Failed to resume transaction.")
     void failedToResumeTransaction(@Cause Throwable cause);
+
+    @Message(id = 136, value = "Failed to run scheduled task: %s")
+    RuntimeException failureWhileRunningTask(Object delegate,@Cause Exception e);
+
 }
