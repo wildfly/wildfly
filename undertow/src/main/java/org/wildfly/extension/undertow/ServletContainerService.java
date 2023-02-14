@@ -52,6 +52,8 @@ public interface ServletContainerService {
 
     CookieConfig getSessionCookieConfig();
 
+    CookieConfig getAffinityCookieConfig();
+
     DirectBufferCache getBufferCache();
 
     boolean isDisableCachingForSecuredPages();

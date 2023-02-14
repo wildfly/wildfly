@@ -46,4 +46,14 @@ public interface SessionManagementProvider {
      * @return a service configurator
      */
     CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration);
+
+    /**
+     * Returns a configurator for a service providing an affinity locator service.
+     *
+     * @param name the service name of the affinity locator service
+     * @param configuration the configuration of the affinity locator factory
+     * @return a service configurator
+     */
+    CapabilityServiceConfigurator getAffinityLocatorServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration);
+
 }

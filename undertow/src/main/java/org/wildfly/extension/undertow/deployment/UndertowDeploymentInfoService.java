@@ -55,6 +55,7 @@ import io.undertow.servlet.api.ServletContainerInitializerInfo;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.ServletSecurityInfo;
 import io.undertow.servlet.api.ServletSessionConfig;
+import io.undertow.servlet.api.SessionConfigWrapper;
 import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.api.ThreadSetupHandler;
 import io.undertow.servlet.api.WebResourceCollection;
@@ -79,7 +80,6 @@ import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.web.common.CachingWebInjectionContainer;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
-import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
@@ -122,7 +122,6 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.Registration;
 import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
-import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.MechanismConfiguration;
 import org.wildfly.security.auth.server.MechanismConfigurationSelector;
@@ -209,7 +208,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final Consumer<DeploymentInfo> deploymentInfoConsumer;
     private final Supplier<UndertowService> undertowService;
     private final Supplier<SessionManagerFactory> sessionManagerFactory;
-    private final Supplier<SessionIdentifierCodec> sessionIdentifierCodec;
+    private final Supplier<SessionConfigWrapper> sessionConfigWrapper;
     private final Supplier<ServletContainerService> container;
     private final Supplier<ComponentRegistry> componentRegistry;
     private final Supplier<Host> host;
@@ -229,7 +228,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final Consumer<DeploymentInfo> deploymentInfoConsumer,
             final Supplier<UndertowService> undertowService,
             final Supplier<SessionManagerFactory> sessionManagerFactory,
-            final Supplier<SessionIdentifierCodec> sessionIdentifierCodec,
+            final Supplier<SessionConfigWrapper> sessionConfigWrapper,
             final Supplier<ServletContainerService> container,
             final Supplier<ComponentRegistry> componentRegistry,
             final Supplier<Host> host,
@@ -243,7 +242,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.deploymentInfoConsumer = deploymentInfoConsumer;
         this.undertowService = undertowService;
         this.sessionManagerFactory = sessionManagerFactory;
-        this.sessionIdentifierCodec = sessionIdentifierCodec;
+        this.sessionConfigWrapper = sessionConfigWrapper;
         this.container = container;
         this.componentRegistry = componentRegistry;
         this.host = host;
@@ -478,9 +477,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         if (managerFactory != null) {
             deploymentInfo.setSessionManagerFactory(managerFactory);
         }
-        SessionIdentifierCodec codec = this.sessionIdentifierCodec != null ? this.sessionIdentifierCodec.get() : null;
-        if (codec != null) {
-            deploymentInfo.setSessionConfigWrapper(new CodecSessionConfigWrapper(codec));
+
+        SessionConfigWrapper sessionConfigWrapper = this.sessionConfigWrapper != null ? this.sessionConfigWrapper.get() : null;
+        if (sessionConfigWrapper != null) {
+            deploymentInfo.setSessionConfigWrapper(sessionConfigWrapper);
         }
     }
 
@@ -1394,7 +1394,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 final Consumer<DeploymentInfo> deploymentInfoConsumer,
                 final Supplier<UndertowService> undertowService,
                 final Supplier<SessionManagerFactory> sessionManagerFactory,
-                final Supplier<SessionIdentifierCodec> sessionIdentifierCodec,
+                final Supplier<SessionConfigWrapper> sessionConfigWrapper,
                 final Supplier<ServletContainerService> container,
                 final Supplier<ComponentRegistry> componentRegistry,
                 final Supplier<Host> host,
@@ -1406,7 +1406,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 final Supplier<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> applySecurityFunction
         ) {
             return new UndertowDeploymentInfoService(deploymentInfoConsumer, undertowService, sessionManagerFactory,
-                    sessionIdentifierCodec, container, componentRegistry, host, controlPoint,
+                    sessionConfigWrapper, container, componentRegistry, host, controlPoint,
                     suspendController, serverEnvironment, rawSecurityDomain, rawMechanismFactory, applySecurityFunction, mergedMetaData, deploymentName, tldInfo, module,
                     scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays,
                     expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers,

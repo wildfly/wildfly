@@ -52,4 +52,10 @@ public class NonDistributableSessionManagementProvider implements SessionManagem
     public CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration) {
         return new SessionManagerFactoryServiceConfigurator(name, () -> this.factory.apply(configuration));
     }
+
+    @Override
+    public CapabilityServiceConfigurator getAffinityLocatorServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration) {
+        return new SimpleAffinityLocatorServiceConfigurator(name, configuration.getServerName());
+    }
+
 }

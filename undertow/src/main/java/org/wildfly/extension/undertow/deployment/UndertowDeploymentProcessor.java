@@ -50,6 +50,7 @@ import java.util.function.Supplier;
 
 import jakarta.security.jacc.PolicyConfiguration;
 
+import io.undertow.servlet.api.SessionConfigWrapper;
 import org.apache.jasper.Constants;
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -89,6 +90,7 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.session.SessionIdentifierCodec;
+import org.jboss.as.web.session.AffinityLocator;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
@@ -119,6 +121,7 @@ import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
 import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker;
 import org.wildfly.extension.undertow.Capabilities;
+import org.wildfly.extension.undertow.CookieConfig;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.HostSingleSignOnDefinition;
@@ -128,6 +131,8 @@ import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.Registration;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
+import org.wildfly.extension.undertow.session.AffinitySessionConfigWrapper;
+import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
 import org.wildfly.extension.undertow.session.NonDistributableSessionManagementProvider;
 import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
 import org.wildfly.security.auth.server.SecurityDomain;
@@ -324,6 +329,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final Supplier<UndertowService> undertowService = builder.requires(UndertowService.UNDERTOW);
         Supplier<SessionManagerFactory> sessionManagerFactory = null;
         Supplier<SessionIdentifierCodec> sessionIdentifierCodec = null;
+        final Supplier<AffinityLocator> affinityLocatorSupplier;
+        Supplier<SessionConfigWrapper> sessionConfigWrapperSupplier = null;
         final Supplier<ServletContainerService> servletContainerService = builder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
         final Supplier<ComponentRegistry> componentRegistryDependency = componentRegistryExists ? builder.requires(ComponentRegistry.serviceName(deploymentUnit)) : Functions.constantSupplier(componentRegistry);
         final Supplier<Host> host = builder.requires(hostServiceName);
@@ -369,12 +376,14 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 final ServiceName parentServiceName = deploymentUnit.getParent().getServiceName();
                 sessionManagerFactory = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME));
                 sessionIdentifierCodec = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME));
+                affinityLocatorSupplier = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_AFFINITY_LOCATOR_SERVICE_NAME));
             } else {
                 Integer maxActiveSessions = (metaData.getMaxActiveSessions() != null) ? metaData.getMaxActiveSessions() : servletContainer.getMaxSessions();
                 SessionConfigMetaData sessionConfig = metaData.getSessionConfig();
                 int defaultSessionTimeout = ((sessionConfig != null) && sessionConfig.getSessionTimeoutSet()) ? sessionConfig.getSessionTimeout() : servletContainer.getDefaultSessionTimeout();
                 ServiceName factoryServiceName = deploymentServiceName.append("session");
                 ServiceName codecServiceName = deploymentServiceName.append("codec");
+                ServiceName affinityServiceName = deploymentServiceName.append("affinity");
 
                 SessionManagementProvider provider = this.getDistributableWebDeploymentProvider(deploymentUnit, metaData);
                 SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
@@ -405,12 +414,34 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 };
                 CapabilityServiceConfigurator factoryConfigurator = provider.getSessionManagerFactoryServiceConfigurator(factoryServiceName, configuration);
                 CapabilityServiceConfigurator codecConfigurator = provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration);
+                CapabilityServiceConfigurator affinityConfigurator = provider.getAffinityLocatorServiceConfigurator(affinityServiceName, configuration);
 
                 sessionManagerFactory = builder.requires(factoryConfigurator.getServiceName());
                 sessionIdentifierCodec = builder.requires(codecConfigurator.getServiceName());
+                affinityLocatorSupplier = builder.requires(affinityConfigurator.getServiceName());
+
+                CookieConfig affinityCookieConfig = servletContainer.getAffinityCookieConfig();
+
+                if (affinityCookieConfig != null) {
+                    sessionConfigWrapperSupplier = new Supplier<>() {
+                        @Override
+                        public SessionConfigWrapper get() {
+                            return new AffinitySessionConfigWrapper(affinityCookieConfig, affinityLocatorSupplier.get());
+                        }
+                    };
+                } else {
+                    Supplier<SessionIdentifierCodec> finalSessionIdentifierCodec = sessionIdentifierCodec;
+                    sessionConfigWrapperSupplier = new Supplier<>() {
+                        @Override
+                        public SessionConfigWrapper get() {
+                            return new CodecSessionConfigWrapper(finalSessionIdentifierCodec.get());
+                        }
+                    };
+                }
 
                 factoryConfigurator.configure(capabilitySupport).build(serviceTarget).install();
                 codecConfigurator.configure(capabilitySupport).build(serviceTarget).install();
+                affinityConfigurator.configure(capabilitySupport).build(serviceTarget).install();
             }
         }
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
@@ -439,7 +470,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 .setTempDir(warMetaData.getTempDir())
                 .setExternalResources(deploymentUnit.getAttachmentList(UndertowAttachments.EXTERNAL_RESOURCES))
                 .setAllowSuspendedRequests(deploymentUnit.getAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED))
-                .createUndertowDeploymentInfoService(deploymentInfo, undertowService, sessionManagerFactory, sessionIdentifierCodec,
+                .createUndertowDeploymentInfoService(deploymentInfo, undertowService, sessionManagerFactory, sessionConfigWrapperSupplier,
                         servletContainerService, componentRegistryDependency, host, controlPoint, suspendController, serverEnvironment, securityDomain, mechanismFactorySupplier, applySecurityFunction);
         builder.setInstance(undertowDeploymentInfoService);
 

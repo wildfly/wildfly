@@ -47,8 +47,9 @@ import org.jboss.msc.service.ServiceName;
  * @author Stuart Douglas
  * @author Radoslav Husar
  */
-class SessionCookieDefinition extends PersistentResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
+class CookieDefinition extends PersistentResourceDefinition {
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
+    public static final PathElement AFFINITY_PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.AFFINITY_COOKIE);
 
     protected static final SimpleAttributeDefinition NAME =
             new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)
@@ -92,8 +93,8 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
             SECURE,
             MAX_AGE);
 
-    SessionCookieDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
+    CookieDefinition(PathElement path) {
+        super(new SimpleResourceDefinition.Parameters(path, UndertowExtension.getResolver(path.getKeyValuePair()))
                 .setAddHandler(new SessionCookieAdd())
                 .setRemoveHandler(new SessionCookieRemove())
         );
@@ -105,7 +106,7 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
     }
 
     static CookieConfig getConfig(final ExpressionResolver context, final ModelNode model) throws OperationFailedException {
-        if(!model.isDefined()) {
+        if (!model.isDefined()) {
             return null;
         }
         ModelNode nameValue = NAME.resolveModelAttribute(context, model);
