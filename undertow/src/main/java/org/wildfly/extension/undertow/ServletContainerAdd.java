@@ -309,7 +309,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
 
     private static List<String> resolveWelcomeFiles(ModelNode model) {
         if (!model.hasDefined(Constants.WELCOME_FILE)) return List.of();
-        List<Property> properties = model.get(Constants.MIME_MAPPING).asPropertyList();
+        List<Property> properties = model.get(Constants.WELCOME_FILE).asPropertyList();
         if (properties.size() == 1) {
             return List.of(properties.get(0).getName());
         }
