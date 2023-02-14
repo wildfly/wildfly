@@ -246,8 +246,8 @@
     <xs:complexType name="servletContainerType">
         <xs:sequence>
             <xs:element name="jsp-config" type="jsp-configurationType" maxOccurs="1" minOccurs="0"/>
-            <xs:element name="affinity-cookie" type="cookieType" maxOccurs="1" minOccurs="0"/>
-            <xs:element name="session-cookie" type="cookieType" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="affinity-cookie" type="affinityCookieType" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="session-cookie" type="sessionCookieType" maxOccurs="1" minOccurs="0"/>
             <xs:element name="persistent-sessions" type="persistent-sessionsType" maxOccurs="1" minOccurs="0"/>
             <xs:element name="websockets" type="websocketsType" maxOccurs="1" minOccurs="0" />
             <xs:element name="mime-mappings" type="mime-mappingsType" maxOccurs="1" minOccurs="0" />
@@ -370,10 +370,25 @@
         <xs:attribute name="optimize-scriptlets" default="false" type="xs:string" />
     </xs:complexType>
 
-    <xs:complexType name="cookieType">
-        <xs:attribute name="name" type="xs:string"/>
+    <xs:complexType name="sessionCookieType">
+        <xs:complexContent>
+            <xs:extension base="commonCookieType">
+                <xs:attribute name="name" type="xs:string" use="optional"/>
+                <xs:attribute name="comment" type="xs:string"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="affinityCookieType">
+        <xs:complexContent>
+            <xs:extension base="commonCookieType">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="commonCookieType" abstract="true">
         <xs:attribute name="domain" type="xs:string"/>
-        <xs:attribute name="comment" type="xs:string"/>
         <xs:attribute name="http-only" type="xs:boolean"/>
         <xs:attribute name="secure" type="xs:boolean"/>
         <xs:attribute name="max-age" type="xs:int"/>

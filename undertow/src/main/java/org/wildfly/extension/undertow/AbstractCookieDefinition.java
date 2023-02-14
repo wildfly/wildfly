@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,7 +23,6 @@
 package org.wildfly.extension.undertow;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExpressionResolver;
@@ -34,9 +33,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -44,76 +41,64 @@ import org.jboss.msc.service.ServiceName;
 /**
  * Resource definition for a Cookie configuration.
  *
- * @author Stuart Douglas
  * @author Radoslav Husar
  */
-class CookieDefinition extends PersistentResourceDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
-    public static final PathElement AFFINITY_PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.AFFINITY_COOKIE);
+abstract class AbstractCookieDefinition extends PersistentResourceDefinition {
 
-    protected static final SimpleAttributeDefinition NAME =
-            new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)
-                    .setRestartAllServices()
-                    .setAllowExpression(true)
-                    .build();
-    protected static final SimpleAttributeDefinition DOMAIN =
-            new SimpleAttributeDefinitionBuilder(Constants.DOMAIN, ModelType.STRING, true)
-                    .setRestartAllServices()
-                    .setAllowExpression(true)
-                    .build();
-    protected static final SimpleAttributeDefinition COMMENT =
-            new SimpleAttributeDefinitionBuilder(Constants.COMMENT, ModelType.STRING, true)
-                    .setRestartAllServices()
-                    .setAllowExpression(true)
-                    .setDeprecated(UndertowModel.VERSION_13_0_0.getVersion())
-                    .build();
-    protected static final SimpleAttributeDefinition HTTP_ONLY =
-            new SimpleAttributeDefinitionBuilder(Constants.HTTP_ONLY, ModelType.BOOLEAN, true)
-                    .setRestartAllServices()
-                    .setAllowExpression(true)
-                    .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        OPTIONAL_NAME(Constants.NAME, ModelType.STRING),
+        REQUIRED_NAME(Constants.NAME, ModelType.STRING, true),
+        DOMAIN(Constants.DOMAIN, ModelType.STRING),
+        COMMENT(Constants.COMMENT, ModelType.STRING), // TODO This is deprecated
+        HTTP_ONLY(Constants.HTTP_ONLY, ModelType.BOOLEAN),
+        SECURE(Constants.SECURE, ModelType.BOOLEAN),
+        MAX_AGE(Constants.MAX_AGE, ModelType.INT),
+        ;
+        private final AttributeDefinition definition;
 
-    protected static final SimpleAttributeDefinition SECURE =
-            new SimpleAttributeDefinitionBuilder(Constants.SECURE, ModelType.BOOLEAN, true)
+        Attribute(String name, ModelType type) {
+            this(name, type, false);
+        }
+
+        Attribute(String name, ModelType type, boolean required) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setRestartAllServices()
+                    .setRequired(required)
                     .setAllowExpression(true)
                     .build();
-    protected static final SimpleAttributeDefinition MAX_AGE =
-            new SimpleAttributeDefinitionBuilder(Constants.MAX_AGE, ModelType.INT, true)
-                    .setRestartAllServices()
-                    .setAllowExpression(true)
-                    .build();
+        }
 
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
-    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
-            NAME,
-            DOMAIN,
-            COMMENT,
-            HTTP_ONLY,
-            SECURE,
-            MAX_AGE);
+    Collection<AttributeDefinition> attributes;
 
-    CookieDefinition(PathElement path) {
-        super(new SimpleResourceDefinition.Parameters(path, UndertowExtension.getResolver(path.getKeyValuePair()))
-                .setAddHandler(new SessionCookieAdd())
-                .setRemoveHandler(new SessionCookieRemove())
+    public AbstractCookieDefinition(PathElement path, Collection<AttributeDefinition> attributes) {
+        super(path,
+                UndertowExtension.getResolver(path.getKeyValuePair()),
+                new SessionCookieAdd(attributes),
+                new SessionCookieRemove()
         );
+        this.attributes = attributes;
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES;
+        return attributes;
     }
 
-    static CookieConfig getConfig(final ExpressionResolver context, final ModelNode model) throws OperationFailedException {
+    static CookieConfig getConfig(final Attribute nameAttribute, final ExpressionResolver context, final ModelNode model) throws OperationFailedException {
         if (!model.isDefined()) {
             return null;
         }
-        ModelNode nameValue = NAME.resolveModelAttribute(context, model);
-        ModelNode domainValue = DOMAIN.resolveModelAttribute(context, model);
-        ModelNode secureValue = SECURE.resolveModelAttribute(context, model);
-        ModelNode httpOnlyValue = HTTP_ONLY.resolveModelAttribute(context, model);
-        ModelNode maxAgeValue = MAX_AGE.resolveModelAttribute(context, model);
+        ModelNode nameValue = nameAttribute.getDefinition().resolveModelAttribute(context, model);
+        ModelNode domainValue = Attribute.DOMAIN.resolveModelAttribute(context, model);
+        ModelNode secureValue = Attribute.SECURE.resolveModelAttribute(context, model);
+        ModelNode httpOnlyValue = Attribute.HTTP_ONLY.resolveModelAttribute(context, model);
+        ModelNode maxAgeValue = Attribute.MAX_AGE.resolveModelAttribute(context, model);
 
         final String name = nameValue.isDefined() ? nameValue.asString() : null;
         final String domain = domainValue.isDefined() ? domainValue.asString() : null;
@@ -124,15 +109,19 @@ class CookieDefinition extends PersistentResourceDefinition {
         return new CookieConfig(name, domain, httpOnly, secure, maxAge);
     }
 
-
     private static class SessionCookieAdd extends RestartParentResourceAddHandler {
-        protected SessionCookieAdd() {
+
+        Collection<AttributeDefinition> attributes;
+
+        protected SessionCookieAdd(Collection<AttributeDefinition> attributes) {
             super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+
+            this.attributes = attributes;
         }
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            for (AttributeDefinition def : ATTRIBUTES) {
+            for (AttributeDefinition def : this.attributes) {
                 def.validateAndSet(operation, model);
             }
         }

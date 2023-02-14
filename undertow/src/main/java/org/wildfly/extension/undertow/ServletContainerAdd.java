@@ -65,8 +65,8 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
     }
 
     static void installRuntimeServices(CapabilityServiceTarget target, ExpressionResolver resolver, PathAddress address, ModelNode model) throws OperationFailedException {
-        final CookieConfig sessionCookieConfig = CookieDefinition.getConfig(resolver, model.get(CookieDefinition.PATH_ELEMENT.getKeyValuePair()));
-        final CookieConfig affinityCookieConfig = CookieDefinition.getConfig(resolver, model.get(CookieDefinition.PATH_ELEMENT.getKeyValuePair()));
+        final CookieConfig sessionCookieConfig = SessionCookieDefinition.getConfig(resolver, model.get(SessionCookieDefinition.PATH_ELEMENT.getKeyValuePair()));
+        final CookieConfig affinityCookieConfig = AffinityCookieDefinition.getConfig(resolver, model.get(AffinityCookieDefinition.PATH_ELEMENT.getKeyValuePair()));
         final CrawlerSessionManagerConfig crawlerSessionManagerConfig = CrawlerSessionManagementDefinition.getConfig(resolver, model.get(CrawlerSessionManagementDefinition.PATH_ELEMENT.getKeyValuePair()));
         final boolean persistentSessions = PersistentSessionsDefinition.isEnabled(model.get(PersistentSessionsDefinition.PATH_ELEMENT.getKeyValuePair()));
         final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(resolver, model).asBoolean();
