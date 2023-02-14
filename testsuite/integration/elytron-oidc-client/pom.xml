@@ -52,6 +52,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
             <scope>test</scope>
@@ -59,6 +69,11 @@
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-ext-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -103,6 +118,11 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-cli</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
@@ -116,6 +136,11 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-naming-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -179,6 +204,7 @@
                             <layers>
                                 <layer>cloud-server</layer>
                                 <layer>elytron-oidc-client</layer>
+                                <layer>ejb</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -304,6 +330,7 @@
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>elytron-oidc-client</layer>
+                                                <layer>ejb</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -421,6 +448,7 @@
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>elytron-oidc-client</layer>
+                                                <layer>ejb</layer>
                                             </layers>
                                         </config>
                                     </configurations>
