@@ -91,6 +91,7 @@ import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.dmr.ModelNode;
+import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
@@ -123,6 +124,7 @@ import org.wildfly.extension.undertow.HostSingleSignOnDefinition;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.Registration;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
 import org.wildfly.extension.undertow.session.NonDistributableSessionManagementProvider;
@@ -312,49 +314,47 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                     handler->new ComponentStartupCountdownHandler(handler, countDown));
         }
 
-        String securityDomain = deploymentUnit.getAttachment(UndertowAttachments.RESOLVED_SECURITY_DOMAIN);
+        String securityDomainName = deploymentUnit.getAttachment(UndertowAttachments.RESOLVED_SECURITY_DOMAIN);
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         final ServiceName deploymentInfoServiceName = deploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
         final ServiceName legacyDeploymentInfoServiceName = legacyDeploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
-        final ServiceBuilder<?> udisBuilder = serviceTarget.addService(deploymentInfoServiceName);
-        final Consumer<DeploymentInfo> diConsumer = udisBuilder.provides(deploymentInfoServiceName, legacyDeploymentInfoServiceName);
-        final Supplier<UndertowService> usSupplier = udisBuilder.requires(UndertowService.UNDERTOW);
-        final Supplier<SessionManagerFactory> smfSupplier;
-        final Supplier<SessionIdentifierCodec> sicSupplier;
-        final Supplier<ServletContainerService> scsSupplier = udisBuilder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
-        final Supplier<ComponentRegistry> crSupplier = componentRegistryExists ? udisBuilder.requires(ComponentRegistry.serviceName(deploymentUnit)) : new Supplier<ComponentRegistry>() {
+        final ServiceBuilder<?> builder = serviceTarget.addService(deploymentInfoServiceName);
+        final Consumer<DeploymentInfo> deploymentInfo = builder.provides(deploymentInfoServiceName, legacyDeploymentInfoServiceName);
+        final Supplier<UndertowService> undertowService = builder.requires(UndertowService.UNDERTOW);
+        final Supplier<SessionManagerFactory> sessionManagerFactory;
+        final Supplier<SessionIdentifierCodec> sessionIdentifierCodec;
+        final Supplier<ServletContainerService> servletContainerService = builder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
+        final Supplier<ComponentRegistry> componentRegistryDependency = componentRegistryExists ? builder.requires(ComponentRegistry.serviceName(deploymentUnit)) : new Supplier<ComponentRegistry>() {
             @Override
             public ComponentRegistry get() {
                 return componentRegistry;
             }
         };
-        final Supplier<Host> hostSupplier = udisBuilder.requires(hostServiceName);
-        Supplier<ControlPoint> cpSupplier = null;
-        final Supplier<SuspendController> scSupplier = udisBuilder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER));
-        final Supplier<ServerEnvironment> serverEnvSupplier = udisBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
-        Supplier<SecurityDomain> sdSupplier = null;
+        final Supplier<Host> host = builder.requires(hostServiceName);
+        Supplier<ControlPoint> controlPoint = null;
+        final Supplier<SuspendController> suspendController = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER));
+        final Supplier<ServerEnvironment> serverEnvironment = builder.requires(ServerEnvironmentService.SERVICE_NAME);
+        Supplier<SecurityDomain> securityDomain = null;
         Supplier<HttpServerAuthenticationMechanismFactory> mechanismFactorySupplier = null;
-        Supplier<BiFunction> bfSupplier = null;
+        Supplier<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> applySecurityFunction = null;
 
         for (final ServiceName additionalDependency : additionalDependencies) {
-            udisBuilder.requires(additionalDependency);
+            builder.requires(additionalDependency);
         }
 
         final SecurityMetaData securityMetaData = deploymentUnit.getAttachment(ATTACHMENT_KEY);
         if (isVirtualDomainRequired(deploymentUnit) || isVirtualMechanismFactoryRequired(deploymentUnit)) {
-            sdSupplier = udisBuilder.requires(securityMetaData.getSecurityDomain());
-        } else if(securityDomain != null) {
-            if (mappedSecurityDomain.test(securityDomain)) {
-                bfSupplier = udisBuilder.requires(
-                        deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
-                                .getCapabilityServiceName(Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN, securityDomain));
+            securityDomain = builder.requires(securityMetaData.getSecurityDomain());
+        } else if(securityDomainName != null) {
+            if (mappedSecurityDomain.test(securityDomainName)) {
+                applySecurityFunction = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN, securityDomainName));
             } else {
                 throw ROOT_LOGGER.deploymentConfiguredForLegacySecurity();
             }
         }
         if (isVirtualMechanismFactoryRequired(deploymentUnit)) {
             if (securityMetaData instanceof AdvancedSecurityMetaData) {
-                mechanismFactorySupplier = udisBuilder.requires(((AdvancedSecurityMetaData) securityMetaData).getHttpServerAuthenticationMechanismFactory());
+                mechanismFactorySupplier = builder.requires(((AdvancedSecurityMetaData) securityMetaData).getHttpServerAuthenticationMechanismFactory());
             }
         }
 
@@ -365,12 +365,12 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             } else {
                 topLevelName = deploymentUnit.getParent().getName();
             }
-            cpSupplier = udisBuilder.requires(ControlPointService.serviceName(topLevelName, UndertowExtension.SUBSYSTEM_NAME));
+            controlPoint = builder.requires(ControlPointService.serviceName(topLevelName, UndertowExtension.SUBSYSTEM_NAME));
         }
         if (sharedSessionManagerConfig != null) {
-            final ServiceName parentSN = deploymentUnit.getParent().getServiceName();
-            smfSupplier = udisBuilder.requires(parentSN.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME));
-            sicSupplier = udisBuilder.requires(parentSN.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME));
+            final ServiceName parentServiceName = deploymentUnit.getParent().getServiceName();
+            sessionManagerFactory = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME));
+            sessionIdentifierCodec = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME));
         } else {
             ServletContainerService servletContainer = deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE);
             Integer maxActiveSessions = (metaData.getMaxActiveSessions() != null) ? metaData.getMaxActiveSessions() : (servletContainer != null) ? servletContainer.getMaxSessions() : null;
@@ -409,8 +409,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             CapabilityServiceConfigurator factoryConfigurator = provider.getSessionManagerFactoryServiceConfigurator(factoryServiceName, configuration);
             CapabilityServiceConfigurator codecConfigurator = provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration);
 
-            smfSupplier = udisBuilder.requires(factoryConfigurator.getServiceName());
-            sicSupplier = udisBuilder.requires(codecConfigurator.getServiceName());
+            sessionManagerFactory = builder.requires(factoryConfigurator.getServiceName());
+            sessionIdentifierCodec = builder.requires(codecConfigurator.getServiceName());
 
             CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             factoryConfigurator.configure(support).build(serviceTarget).install();
@@ -425,7 +425,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 .setModule(module)
                 .setScisMetaData(scisMetaData)
                 .setJaccContextId(jaccContextId)
-                .setSecurityDomain(securityDomain)
+                .setSecurityDomain(securityDomainName)
                 .setTldInfo(createTldsInfo(tldsMetaData, tldsMetaData == null ? null : tldsMetaData.getSharedTlds(deploymentUnit)))
                 .setSetupActions(setupActions)
                 .setSharedSessionManagerConfig(sharedSessionManagerConfig)
@@ -442,20 +442,20 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 .setTempDir(warMetaData.getTempDir())
                 .setExternalResources(deploymentUnit.getAttachmentList(UndertowAttachments.EXTERNAL_RESOURCES))
                 .setAllowSuspendedRequests(deploymentUnit.getAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED))
-                .createUndertowDeploymentInfoService(diConsumer, usSupplier, smfSupplier, sicSupplier,
-                        scsSupplier, crSupplier, hostSupplier, cpSupplier, scSupplier, serverEnvSupplier, sdSupplier, mechanismFactorySupplier, bfSupplier);
-        udisBuilder.setInstance(undertowDeploymentInfoService);
+                .createUndertowDeploymentInfoService(deploymentInfo, undertowService, sessionManagerFactory, sessionIdentifierCodec,
+                        servletContainerService, componentRegistryDependency, host, controlPoint, suspendController, serverEnvironment, securityDomain, mechanismFactorySupplier, applySecurityFunction);
+        builder.setInstance(undertowDeploymentInfoService);
 
         final Set<String> seenExecutors = new HashSet<String>();
         if (metaData.getExecutorName() != null) {
-            final Supplier<Executor> executor = udisBuilder.requires(IOServices.WORKER.append(metaData.getExecutorName()));
+            final Supplier<Executor> executor = builder.requires(IOServices.WORKER.append(metaData.getExecutorName()));
             undertowDeploymentInfoService.addInjectedExecutor(metaData.getExecutorName(), executor);
             seenExecutors.add(metaData.getExecutorName());
         }
         if (metaData.getServlets() != null) {
             for (JBossServletMetaData servlet : metaData.getServlets()) {
                 if (servlet.getExecutorName() != null && !seenExecutors.contains(servlet.getExecutorName())) {
-                    final Supplier<Executor> executor = udisBuilder.requires(IOServices.WORKER.append(servlet.getExecutorName()));
+                    final Supplier<Executor> executor = builder.requires(IOServices.WORKER.append(servlet.getExecutorName()));
                     undertowDeploymentInfoService.addInjectedExecutor(servlet.getExecutorName(), executor);
                     seenExecutors.add(servlet.getExecutorName());
                 }
@@ -463,7 +463,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         }
 
         try {
-            udisBuilder.install();
+            builder.install();
         } catch (DuplicateServiceException e) {
             throw UndertowLogger.ROOT_LOGGER.duplicateHostContextDeployments(deploymentInfoServiceName, e.getMessage());
         }
