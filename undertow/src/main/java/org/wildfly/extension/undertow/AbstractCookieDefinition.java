@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import java.util.Collection;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExpressionResolver;
@@ -47,9 +48,9 @@ abstract class AbstractCookieDefinition extends PersistentResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         OPTIONAL_NAME(Constants.NAME, ModelType.STRING),
-        REQUIRED_NAME(Constants.NAME, ModelType.STRING, true),
+        REQUIRED_NAME(Constants.NAME, ModelType.STRING, ad -> ad.setRequired(true)),
         DOMAIN(Constants.DOMAIN, ModelType.STRING),
-        COMMENT(Constants.COMMENT, ModelType.STRING), // TODO This is deprecated
+        COMMENT(Constants.COMMENT, ModelType.STRING, ad -> ad.setDeprecated(UndertowModel.VERSION_13_0_0.getVersion())),
         HTTP_ONLY(Constants.HTTP_ONLY, ModelType.BOOLEAN),
         SECURE(Constants.SECURE, ModelType.BOOLEAN),
         MAX_AGE(Constants.MAX_AGE, ModelType.INT),
@@ -57,15 +58,15 @@ abstract class AbstractCookieDefinition extends PersistentResourceDefinition {
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this(name, type, false);
+            this(name, type, UnaryOperator.identity());
         }
 
-        Attribute(String name, ModelType type, boolean required) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> builder) {
+            this.definition = builder.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setRequired(false)
                     .setRestartAllServices()
-                    .setRequired(required)
                     .setAllowExpression(true)
-                    .build();
+            ).build();
         }
 
         @Override
@@ -111,7 +112,7 @@ abstract class AbstractCookieDefinition extends PersistentResourceDefinition {
 
     private static class SessionCookieAdd extends RestartParentResourceAddHandler {
 
-        Collection<AttributeDefinition> attributes;
+        private final Collection<AttributeDefinition> attributes;
 
         protected SessionCookieAdd(Collection<AttributeDefinition> attributes) {
             super(ServletContainerDefinition.PATH_ELEMENT.getKey());

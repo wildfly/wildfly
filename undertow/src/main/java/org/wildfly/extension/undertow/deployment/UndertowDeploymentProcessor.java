@@ -328,7 +328,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final Consumer<DeploymentInfo> deploymentInfo = builder.provides(deploymentInfoServiceName, legacyDeploymentInfoServiceName);
         final Supplier<UndertowService> undertowService = builder.requires(UndertowService.UNDERTOW);
         Supplier<SessionManagerFactory> sessionManagerFactory = null;
-        Supplier<SessionIdentifierCodec> sessionIdentifierCodec = null;
+        final Supplier<SessionIdentifierCodec> sessionIdentifierCodec;
         final Supplier<AffinityLocator> affinityLocatorSupplier;
         Supplier<SessionConfigWrapper> sessionConfigWrapperSupplier = null;
         final Supplier<ServletContainerService> servletContainerService = builder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
@@ -422,22 +422,16 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
                 CookieConfig affinityCookieConfig = servletContainer.getAffinityCookieConfig();
 
-                if (affinityCookieConfig != null) {
-                    sessionConfigWrapperSupplier = new Supplier<>() {
-                        @Override
-                        public SessionConfigWrapper get() {
+                sessionConfigWrapperSupplier = new Supplier<>() {
+                    @Override
+                    public SessionConfigWrapper get() {
+                        if (affinityCookieConfig != null) {
                             return new AffinitySessionConfigWrapper(affinityCookieConfig, affinityLocatorSupplier.get());
+                        } else {
+                            return new CodecSessionConfigWrapper(sessionIdentifierCodec.get());
                         }
-                    };
-                } else {
-                    Supplier<SessionIdentifierCodec> finalSessionIdentifierCodec = sessionIdentifierCodec;
-                    sessionConfigWrapperSupplier = new Supplier<>() {
-                        @Override
-                        public SessionConfigWrapper get() {
-                            return new CodecSessionConfigWrapper(finalSessionIdentifierCodec.get());
-                        }
-                    };
-                }
+                    }
+                };
 
                 factoryConfigurator.configure(capabilitySupport).build(serviceTarget).install();
                 codecConfigurator.configure(capabilitySupport).build(serviceTarget).install();

@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow.session;
 
+import java.util.Map;
+
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import org.jboss.as.web.session.AffinityLocator;
@@ -34,35 +36,37 @@ import org.jboss.as.web.session.AffinityLocator;
 public class AffinitySessionConfig implements SessionConfig {
 
     private final SessionConfig sessionConfig;
-    private final SessionConfig affinityConfig;
+    private final Map<SessionCookieSource, SessionConfig> affinityConfigMap;
     private final AffinityLocator locator;
 
-    public AffinitySessionConfig(SessionConfig sessionConfig, SessionConfig affinityConfig, AffinityLocator locator) {
+    public AffinitySessionConfig(SessionConfig sessionConfig, Map<SessionCookieSource, SessionConfig> affinityConfigMap, AffinityLocator locator) {
         this.sessionConfig = sessionConfig;
-        this.affinityConfig = affinityConfig;
+        this.affinityConfigMap = affinityConfigMap;
         this.locator = locator;
     }
 
     @Override
     public void setSessionId(HttpServerExchange exchange, String sessionId) {
-        String existingSessionId = this.sessionConfig.findSessionId(exchange);
-        if (!sessionId.equals(existingSessionId)) {
+        String requestedSessionId = this.sessionConfig.findSessionId(exchange);
+        if (!sessionId.equals(requestedSessionId)) {
             this.sessionConfig.setSessionId(exchange, sessionId);
         }
 
-        String route = this.locator.locate(sessionId);
-        if (route != null) {
-            // Always write affinity cookie!
-            this.affinityConfig.setSessionId(exchange, route);
+        String affinity = this.locator.locate(sessionId);
+        if (affinity != null) {
+            // Always write affinity for every request if using cookies!!
+            this.sessionConfigInUse(exchange).setSessionId(exchange, affinity);
         }
     }
 
     @Override
     public void clearSession(HttpServerExchange exchange, String sessionId) {
         this.sessionConfig.clearSession(exchange, sessionId);
-        String existingRoute = this.affinityConfig.findSessionId(exchange);
-        if (existingRoute != null) {
-            this.affinityConfig.clearSession(exchange, existingRoute);
+
+        SessionConfig sessionConfigInUse = sessionConfigInUse(exchange);
+        String existingAffinity = sessionConfigInUse.findSessionId(exchange);
+        if (existingAffinity != null) {
+            sessionConfigInUse.clearSession(exchange, existingAffinity);
         }
     }
 
@@ -79,8 +83,30 @@ public class AffinitySessionConfig implements SessionConfig {
     @Override
     public String rewriteUrl(String originalUrl, String sessionId) {
         String url = this.sessionConfig.rewriteUrl(originalUrl, sessionId);
-
         String route = this.locator.locate(sessionId);
-        return (route != null) ? this.affinityConfig.rewriteUrl(url, route) : url;
+
+        if (route != null) {
+            if (url.equals(originalUrl)) {
+                // Rewritten URLs is unchanged -> use SessionCookieSource.COOKIE
+                return this.affinityConfigMap.get(SessionCookieSource.COOKIE).rewriteUrl(url, route);
+            } else {
+                // Rewritten URL is different from the original URL -> use SessionCookieSource.URL
+                return this.affinityConfigMap.get(SessionCookieSource.URL).rewriteUrl(url, route);
+            }
+        }
+
+        return url;
     }
+
+    private SessionConfig sessionConfigInUse(HttpServerExchange exchange) {
+        switch (sessionConfig.sessionCookieSource(exchange)) {
+            case URL: {
+                return this.affinityConfigMap.get(SessionCookieSource.URL);
+            }
+            default: {
+                return this.affinityConfigMap.get(SessionCookieSource.COOKIE);
+            }
+        }
+    }
+
 }
