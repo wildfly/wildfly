@@ -123,7 +123,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             configurationFactory.register(module.getClassLoader(), support.hasCapability("org.wildfly.microprofile.config"));
         }
 
-        deploymentUnit.getDeploymentSubsystemModel(JaxrsExtension.SUBSYSTEM_NAME);
         final List<ParamValueMetaData> params = webdata.getContextParams();
         boolean entityExpandEnabled = false;
         if (params != null) {
