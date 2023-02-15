@@ -322,8 +322,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final ServiceBuilder<?> builder = serviceTarget.addService(deploymentInfoServiceName);
         final Consumer<DeploymentInfo> deploymentInfo = builder.provides(deploymentInfoServiceName, legacyDeploymentInfoServiceName);
         final Supplier<UndertowService> undertowService = builder.requires(UndertowService.UNDERTOW);
-        final Supplier<SessionManagerFactory> sessionManagerFactory;
-        final Supplier<SessionIdentifierCodec> sessionIdentifierCodec;
+        Supplier<SessionManagerFactory> sessionManagerFactory = null;
+        Supplier<SessionIdentifierCodec> sessionIdentifierCodec = null;
         final Supplier<ServletContainerService> servletContainerService = builder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
         final Supplier<ComponentRegistry> componentRegistryDependency = componentRegistryExists ? builder.requires(ComponentRegistry.serviceName(deploymentUnit)) : Functions.constantSupplier(componentRegistry);
         final Supplier<Host> host = builder.requires(hostServiceName);
@@ -369,47 +369,49 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             sessionIdentifierCodec = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME));
         } else {
             ServletContainerService servletContainer = deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE);
-            Integer maxActiveSessions = (metaData.getMaxActiveSessions() != null) ? metaData.getMaxActiveSessions() : (servletContainer != null) ? servletContainer.getMaxSessions() : null;
-            SessionConfigMetaData sessionConfig = metaData.getSessionConfig();
-            int defaultSessionTimeout = ((sessionConfig != null) && sessionConfig.getSessionTimeoutSet()) ? sessionConfig.getSessionTimeout() : (servletContainer != null) ? servletContainer.getDefaultSessionTimeout() : Integer.valueOf(30);
-            ServiceName factoryServiceName = deploymentServiceName.append("session");
-            ServiceName codecServiceName = deploymentServiceName.append("codec");
+            if (servletContainer != null) {
+                Integer maxActiveSessions = (metaData.getMaxActiveSessions() != null) ? metaData.getMaxActiveSessions() : servletContainer.getMaxSessions();
+                SessionConfigMetaData sessionConfig = metaData.getSessionConfig();
+                int defaultSessionTimeout = ((sessionConfig != null) && sessionConfig.getSessionTimeoutSet()) ? sessionConfig.getSessionTimeout() : servletContainer.getDefaultSessionTimeout();
+                ServiceName factoryServiceName = deploymentServiceName.append("session");
+                ServiceName codecServiceName = deploymentServiceName.append("codec");
 
-            SessionManagementProvider provider = this.getDistributableWebDeploymentProvider(deploymentUnit, metaData);
-            SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
-                @Override
-                public String getServerName() {
-                    return serverInstanceName;
-                }
+                SessionManagementProvider provider = this.getDistributableWebDeploymentProvider(deploymentUnit, metaData);
+                SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
+                    @Override
+                    public String getServerName() {
+                        return serverInstanceName;
+                    }
 
-                @Override
-                public String getDeploymentName() {
-                    return deploymentName;
-                }
+                    @Override
+                    public String getDeploymentName() {
+                        return deploymentName;
+                    }
 
-                @Override
-                public DeploymentUnit getDeploymentUnit() {
-                    return deploymentUnit;
-                }
+                    @Override
+                    public DeploymentUnit getDeploymentUnit() {
+                        return deploymentUnit;
+                    }
 
-                @Override
-                public Integer getMaxActiveSessions() {
-                    return maxActiveSessions;
-                }
+                    @Override
+                    public Integer getMaxActiveSessions() {
+                        return maxActiveSessions;
+                    }
 
-                @Override
-                public Duration getDefaultSessionTimeout() {
-                    return Duration.ofMinutes(defaultSessionTimeout);
-                }
-            };
-            CapabilityServiceConfigurator factoryConfigurator = provider.getSessionManagerFactoryServiceConfigurator(factoryServiceName, configuration);
-            CapabilityServiceConfigurator codecConfigurator = provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration);
+                    @Override
+                    public Duration getDefaultSessionTimeout() {
+                        return Duration.ofMinutes(defaultSessionTimeout);
+                    }
+                };
+                CapabilityServiceConfigurator factoryConfigurator = provider.getSessionManagerFactoryServiceConfigurator(factoryServiceName, configuration);
+                CapabilityServiceConfigurator codecConfigurator = provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration);
 
-            sessionManagerFactory = builder.requires(factoryConfigurator.getServiceName());
-            sessionIdentifierCodec = builder.requires(codecConfigurator.getServiceName());
+                sessionManagerFactory = builder.requires(factoryConfigurator.getServiceName());
+                sessionIdentifierCodec = builder.requires(codecConfigurator.getServiceName());
 
-            factoryConfigurator.configure(capabilitySupport).build(serviceTarget).install();
-            codecConfigurator.configure(capabilitySupport).build(serviceTarget).install();
+                factoryConfigurator.configure(capabilitySupport).build(serviceTarget).install();
+                codecConfigurator.configure(capabilitySupport).build(serviceTarget).install();
+            }
         }
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                 .setAttributes(deploymentUnit.getAttachmentList(ServletContextAttribute.ATTACHMENT_KEY))
