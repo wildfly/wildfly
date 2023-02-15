@@ -113,6 +113,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
+import org.wildfly.common.function.Functions;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
@@ -324,12 +325,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final Supplier<SessionManagerFactory> sessionManagerFactory;
         final Supplier<SessionIdentifierCodec> sessionIdentifierCodec;
         final Supplier<ServletContainerService> servletContainerService = builder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
-        final Supplier<ComponentRegistry> componentRegistryDependency = componentRegistryExists ? builder.requires(ComponentRegistry.serviceName(deploymentUnit)) : new Supplier<ComponentRegistry>() {
-            @Override
-            public ComponentRegistry get() {
-                return componentRegistry;
-            }
-        };
+        final Supplier<ComponentRegistry> componentRegistryDependency = componentRegistryExists ? builder.requires(ComponentRegistry.serviceName(deploymentUnit)) : Functions.constantSupplier(componentRegistry);
         final Supplier<Host> host = builder.requires(hostServiceName);
         Supplier<ControlPoint> controlPoint = null;
         final Supplier<SuspendController> suspendController = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER));
