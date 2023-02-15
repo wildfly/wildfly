@@ -408,9 +408,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             sessionManagerFactory = builder.requires(factoryConfigurator.getServiceName());
             sessionIdentifierCodec = builder.requires(codecConfigurator.getServiceName());
 
-            CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-            factoryConfigurator.configure(support).build(serviceTarget).install();
-            codecConfigurator.configure(support).build(serviceTarget).install();
+            factoryConfigurator.configure(capabilitySupport).build(serviceTarget).install();
+            codecConfigurator.configure(capabilitySupport).build(serviceTarget).install();
         }
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                 .setAttributes(deploymentUnit.getAttachmentList(ServletContextAttribute.ATTACHMENT_KEY))
@@ -483,7 +482,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
         // adding Jakarta Authorization service
         final boolean elytronJacc = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY_NAME);
-        final boolean legacyJacc = !elytronJacc && legacySecurityInstalled(deploymentUnit);
+        final boolean legacyJacc = !elytronJacc && capabilitySupport.hasCapability(REF_LEGACY_SECURITY);
         if(legacyJacc || elytronJacc) {
             WarJACCDeployer deployer = new WarJACCDeployer();
             JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit, jaccContextId);
@@ -510,12 +509,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         node.get(DeploymentDefinition.VIRTUAL_HOST.getName()).set(hostName);
         node.get(DeploymentDefinition.SERVER.getName()).set(serverInstanceName);
         processManagement(deploymentUnit, metaData);
-    }
-
-    private static boolean legacySecurityInstalled(final DeploymentUnit deploymentUnit) {
-        final CapabilityServiceSupport capabilities = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-
-        return capabilities.hasCapability(REF_LEGACY_SECURITY);
     }
 
     @Override
