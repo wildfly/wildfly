@@ -1911,7 +1911,6 @@
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
             <artifactId>jbossws-cxf-resources</artifactId>
-            <classifier>wildfly2700</classifier>
         </dependency>
 
         <dependency>
