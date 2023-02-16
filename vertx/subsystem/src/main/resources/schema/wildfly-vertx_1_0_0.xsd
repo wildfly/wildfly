@@ -22,27 +22,12 @@
 
     <xs:complexType name="subsystemType">
         <xs:sequence>
-            <xs:element name="vertxes" type="vertxesType" minOccurs="0" />
-            <xs:element name="vertx-options" type="vertxOptionsType" minOccurs="0" />
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="vertxesType">
-        <xs:sequence>
-            <xs:element name="vertx" type="vertxType" maxOccurs="unbounded" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>Define a Vertx.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
+            <xs:element name="vertx" type="vertxType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="vertx-options" type="vertxOptionsType" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="vertxType">
-        <xs:attribute name="name" use="required" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Name of the Vertx.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="clustered" type="xs:boolean">
             <xs:annotation>
                 <xs:documentation>If it is a clustered Vertx or not.</xs:documentation>
@@ -66,16 +51,6 @@
         <xs:attribute name="option-name" type="xs:string" default="default" >
             <xs:annotation>
                 <xs:documentation>The vertx-option name which is used to refer to a VertxOptions.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="alias" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Alias of the vertx to inject in the app. This is a comma delimited string.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="jndi-name" type="xs:string" >
-            <xs:annotation>
-                <xs:documentation>Jndi name which will be used to register in naming subsystem, defaults to java:/vertx/&lt;name&gt;</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

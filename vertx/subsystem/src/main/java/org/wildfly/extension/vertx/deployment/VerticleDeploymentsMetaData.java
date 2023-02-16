@@ -15,11 +15,11 @@
  */
 package org.wildfly.extension.vertx.deployment;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  *
@@ -33,9 +33,7 @@ public class VerticleDeploymentsMetaData {
     public static final String DEPLOYMENTS = "deployments";
     private static final int DEFAULT_VERSION = 1;
 
-    public static final String DEFAULT_VERTX_NAME = "default";
     public static final String VERTICLE_CLASS = "verticle-class";
-    public static final String VERTX_NAME = "vertx";
     public static final String DEPLOY_OPTIONS = "deploy-options";
 
     private final List<JsonObject> deployments;
