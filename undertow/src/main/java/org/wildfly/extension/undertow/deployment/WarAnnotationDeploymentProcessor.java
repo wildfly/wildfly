@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow.deployment;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.annotation.WebListener;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 
 import org.jboss.annotation.javaee.Descriptions;
 import org.jboss.annotation.javaee.DisplayNames;
@@ -101,6 +103,14 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
     private static final DotName declareRoles = DotName.createSimple(DeclareRoles.class.getName());
     private static final DotName multipartConfig = DotName.createSimple(MultipartConfig.class.getName());
     private static final DotName servletSecurity = DotName.createSimple(ServletSecurity.class.getName());
+    private static final DotName servletDotName = DotName.createSimple(HttpServlet.class.getName());
+    // This list defines some annotations that won't get processed if they are added to a servlet according to Servlet Specification
+    // but sometimes users may misuse them, users will get a warning log in such scenarios.
+    // https://issues.redhat.com/browse/WFLY-14307
+    private static final List<DotName> badAnnotationsInServlet = new ArrayList<>();
+    static {
+        badAnnotationsInServlet.add(DotName.createSimple("org.jboss.ejb3.annotation.RunAsPrincipal"));
+    }
 
     /**
      * Process web annotations.
@@ -528,6 +538,22 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                     }
                 }
                 annotationMD.setServletSecurity(servletSecurity);
+            }
+        }
+        // bad annotations
+        for (DotName badAnnotation: badAnnotationsInServlet) {
+            final List<AnnotationInstance> badAnnotationInstance = index.getAnnotations(badAnnotation);
+            if (badAnnotationInstance != null && !badAnnotationInstance.isEmpty()) {
+                Collection<ClassInfo> servlets = index.getAllKnownSubclasses(servletDotName);
+                for (AnnotationInstance annotation: badAnnotationInstance) {
+                    AnnotationTarget target = annotation.target();
+                    if (target instanceof ClassInfo) {
+                        ClassInfo classInfo = (ClassInfo) target;
+                        if (servlets.contains(classInfo)) {
+                            UndertowLogger.ROOT_LOGGER.badAnnotationOnServlet(badAnnotation.toString(), classInfo.toString());
+                        }
+                    }
+                }
             }
         }
         return metaData;

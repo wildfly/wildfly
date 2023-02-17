@@ -442,4 +442,8 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 110, value = "The use of security realms at runtime is unsupported.")
     OperationFailedException runtimeSecurityRealmUnsupported();
 
+    @LogMessage(level = WARN)
+    @Message(id = 111, value = "The annotation: '%s' will have no effect on Servlet: '%s'")
+    void badAnnotationOnServlet(String annotation, String servlet);
+
 }
