@@ -954,4 +954,12 @@
 	<!-- Based on https://nvd.nist.gov/vuln/detail/CVE-2022-3064 - CVE affects yaml support in GO language which is not part of WildFly -->
 	<cve>CVE-2022-3064</cve>
     </suppress>
+    <!-- [PJFCB-3564] False positive as we don't use Apacke Kafka and kafka-clients appears not to be affected-->
+    <suppress>
+        <notes><![CDATA[
+   file name: kafka-clients-3.1.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.kafka/kafka\-clients@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-25194</vulnerabilityName>
+    </suppress>
 </suppressions>
