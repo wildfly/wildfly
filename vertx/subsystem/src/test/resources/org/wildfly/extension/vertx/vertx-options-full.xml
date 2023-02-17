@@ -13,9 +13,7 @@
   -->
 
 <subsystem xmlns="urn:wildfly:vertx:1.0">
-  <vertxes>
-    <vertx name="default" alias="vertx"/>
-  </vertxes>
+  <vertx clustered="false" />
   <vertx-options>
     <vertx-option name="vo" eventbus-option="eo" address-resolver-option="aro" />
     <address-resolver-option name="aro" max-queries="20"/>

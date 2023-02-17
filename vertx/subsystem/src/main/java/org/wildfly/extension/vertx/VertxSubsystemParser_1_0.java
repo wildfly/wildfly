@@ -18,7 +18,7 @@ package org.wildfly.extension.vertx;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 import static org.jboss.as.controller.PersistentResourceXMLDescription.decorator;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTXES;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX;
 import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTIONS;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -41,7 +41,6 @@ public class VertxSubsystemParser_1_0 extends PersistentResourceXMLParser {
         xmlDescription = builder(VertxSubsystemExtension.SUBSYSTEM_PATH, NAMESPACE)
           .addChild(
             builder(VertxResourceDefinition.INSTANCE.getPathElement())
-              .setXmlWrapperElement(ELEMENT_VERTXES)
               .addAttributes(VertxAttributes.getSimpleAttributes().toArray(new AttributeDefinition[0]))
           )
           .addChild(

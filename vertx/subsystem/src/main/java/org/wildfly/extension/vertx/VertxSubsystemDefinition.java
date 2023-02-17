@@ -19,16 +19,12 @@ package org.wildfly.extension.vertx;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleOperationDefinition;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.wildfly.extension.vertx.deployment.processors.DeploymentInjectionProcessor;
 import org.wildfly.extension.vertx.deployment.processors.VerticleDeploymentMarkerProcessor;
 import org.wildfly.extension.vertx.deployment.processors.VerticleDeploymentProcessor;
@@ -37,18 +33,9 @@ import org.wildfly.extension.vertx.deployment.processors.VertxDependenciesProces
 /**
  * The root Vertx subsystem resource definition.
  *
- * It has multiple VertxDefinitions to represent a Vert.x instance for each.
- *
  * @author <a href="aoingl@gmail.com">Lin Gao</a>
  */
 public class VertxSubsystemDefinition extends SimpleResourceDefinition {
-
-    private static final SimpleOperationDefinition LIST_VERTX_OPERATION = new SimpleOperationDefinitionBuilder("list-vertx",
-            VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME))
-            .setRuntimeOnly()
-            .setReplyType(ModelType.LIST)
-            .setReplyValueType(ModelType.OBJECT)
-            .build();
 
     VertxSubsystemDefinition() {
         super(new SimpleResourceDefinition.Parameters(VertxSubsystemExtension.SUBSYSTEM_PATH,
@@ -70,12 +57,6 @@ public class VertxSubsystemDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(KeyStoreOptionsResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(PemKeyCertOptionsResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(PemTrustOptionsResourceDefinition.INSTANCE);
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerOperationHandler(LIST_VERTX_OPERATION, new ListAllVertxOperation());
-        super.registerOperations(resourceRegistration);
     }
 
     static class VertxSubsystemAdd extends AbstractBoottimeAddStepHandler {
@@ -101,17 +82,4 @@ public class VertxSubsystemDefinition extends SimpleResourceDefinition {
         }
     }
 
-    static class ListAllVertxOperation implements OperationStepHandler {
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            ModelNode vertx = new ModelNode();
-            for (VertxProxy v: VertxRegistry.INSTANCE.listVertx()) {
-                ModelNode vp = new ModelNode();
-                vp.get(VertxConstants.ATTR_NAME).set(v.getName());
-                vp.get(VertxConstants.ATTR_JNDI_NAME).set(v.getJndiName());
-                vertx.add(vp);
-            }
-            context.getResult().set(vertx);
-        }
-    }
 }

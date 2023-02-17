@@ -15,13 +15,15 @@
  */
 package org.wildfly.extension.vertx;
 
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import io.vertx.core.impl.VertxBuilder;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
+import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
+
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
@@ -46,14 +48,13 @@ import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
-import java.io.File;
-import java.nio.file.Paths;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.impl.VertxBuilder;
+import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
 
 /**
  * The msc service to initialize a Vertx instance.
@@ -68,12 +69,12 @@ public class VertxProxyService implements Service, VertxConstants {
     private final Supplier<ServerEnvironment> serverEnvSupplier;
     private final String jgroupsStackFile;
     final Consumer<VertxProxy> vertxProxytConsumer;
-    private volatile Vertx vertx;
     private volatile DefaultCacheManager defaultCacheManager;
 
-    static void installService(OperationContext context, VertxProxy vertxProxy, String optionName) {
+    static void installService(OperationContext context, VertxProxy vertxProxy) {
+        final String optionName = vertxProxy.getOptionName();
         VertxProxyService vertxProxyService;
-        ServiceName vertxServiceName = VertxResourceDefinition.VERTX_RUNTIME_CAPABILITY.getCapabilityServiceName(vertxProxy.getName());
+        ServiceName vertxServiceName = VertxResourceDefinition.VERTX_RUNTIME_CAPABILITY.getCapabilityServiceName();
         ServiceBuilder<?> vertxServiceBuilder = context.getServiceTarget().addService(vertxServiceName);
         Supplier<ServerEnvironment> serverEnvSupplier = vertxServiceBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
         final Consumer<VertxProxy> vertxProxytConsumer = vertxServiceBuilder.provides(vertxServiceName);
@@ -110,7 +111,7 @@ public class VertxProxyService implements Service, VertxConstants {
         vertxServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
         vertxServiceBuilder.install();
 
-        final String jndiName = vertxProxy.getJndiName();
+        final String jndiName = VertxConstants.VERTX_JNDI_NAME;
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
         VertxManagementReferenceFactory valueManagedReferenceFactory = new VertxManagementReferenceFactory(vertxProxyService);
@@ -126,19 +127,15 @@ public class VertxProxyService implements Service, VertxConstants {
                     public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
                         switch (event) {
                             case UP: {
-                                VERTX_LOGGER.vertxStarted(vertxProxy.getName(), jndiName);
+                                VERTX_LOGGER.vertxStarted(jndiName);
                                 bound = true;
                                 break;
                             }
                             case DOWN: {
                                 if (bound) {
-                                    VERTX_LOGGER.vertxStopped(vertxProxy.getName(), jndiName);
+                                    VERTX_LOGGER.vertxStopped(jndiName);
                                     bound = false;
                                 }
-                                break;
-                            }
-                            case REMOVED: {
-                                VERTX_LOGGER.vertxRemoved(vertxProxy.getName(), jndiName);
                                 break;
                             }
                         }
@@ -148,7 +145,7 @@ public class VertxProxyService implements Service, VertxConstants {
     }
 
     Vertx getValue() {
-        return this.vertx;
+        return this.vertxProxy.getVertx();
     }
 
     private VertxProxyService(Supplier<ChannelFactory> channelFactorySupplier, Supplier<String> clusterSupplier,
@@ -168,12 +165,10 @@ public class VertxProxyService implements Service, VertxConstants {
     @Override
     public void start(StartContext context) throws StartException {
         try {
-            this.vertx = createVertx();
-            vertxProxy.setVertx(this.vertx);
+            vertxProxy.instrument(createVertx());
         } catch (Exception e) {
-            throw VERTX_LOGGER.failedToStartVertxService(vertxProxy.getName(), e);
+            throw VERTX_LOGGER.failedToStartVertxService(e);
         }
-        VertxRegistry.INSTANCE.registerVertx(vertxProxy);
         vertxProxytConsumer.accept(vertxProxy);
     }
 
@@ -183,7 +178,7 @@ public class VertxProxyService implements Service, VertxConstants {
             vertxOptions = new VertxOptions();
         }
         vertxOptions.getFileSystemOptions()
-          .setFileCacheDir(serverEnvSupplier.get().getServerTempDir() + File.separator + "vertx-cache-" + vertxProxy.getName());
+          .setFileCacheDir(serverEnvSupplier.get().getServerTempDir() + File.separator + "vertx-cache-default");
         VertxFileResolver fileResolver = new VertxFileResolver(vertxOptions.getFileSystemOptions());
         VertxBuilder vb = new VertxBuilder(vertxOptions).fileResolver(fileResolver);
         if (vertxProxy.isClustered()) {
@@ -218,7 +213,7 @@ public class VertxProxyService implements Service, VertxConstants {
 
     @Override
     public void stop(StopContext context) {
-        CompletableFuture<Void> closeFuture = (CompletableFuture<Void>)this.vertx.close()
+        CompletableFuture<Void> closeFuture = (CompletableFuture<Void>)this.vertxProxy.getVertx().close()
                 .flatMap(v -> {
                     try {
                         if (defaultCacheManager != null) {
@@ -231,13 +226,11 @@ public class VertxProxyService implements Service, VertxConstants {
                 })
                 .toCompletionStage();
         try {
-            closeFuture.get();
+            closeFuture.join();
         } catch (Exception e) {
-            VERTX_LOGGER.errorWhenClosingVertx(vertxProxy.getName(), e);
+            VERTX_LOGGER.errorWhenClosingVertx(e);
         } finally {
-            VertxRegistry.INSTANCE.unRegister(vertxProxy.getName());
-            this.vertx = null;
-            vertxProxy.setVertx(null);
+            vertxProxy.release();
         }
     }
 

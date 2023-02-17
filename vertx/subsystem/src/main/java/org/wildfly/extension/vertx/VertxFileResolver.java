@@ -16,15 +16,16 @@
  */
 package org.wildfly.extension.vertx;
 
-import io.vertx.core.file.FileSystemOptions;
-import io.vertx.core.file.impl.FileResolverImpl;
-import io.vertx.core.spi.file.FileResolver;
-import org.jboss.vfs.VFS;
-import org.wildfly.extension.vertx.logging.VertxLogger;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+
+import org.jboss.vfs.VFS;
+import org.wildfly.extension.vertx.logging.VertxLogger;
+
+import io.vertx.core.file.FileSystemOptions;
+import io.vertx.core.file.impl.FileResolverImpl;
+import io.vertx.core.spi.file.FileResolver;
 
 /**
  * This is the FileResolver implementation that supports jboss-vfs by returning the physical file.

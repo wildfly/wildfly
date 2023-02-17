@@ -15,9 +15,9 @@
  */
 package org.wildfly.extension.vertx.deployment;
 
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Verticle;
-import io.vertx.core.Vertx;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -25,10 +25,8 @@ import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.vertx.VertxProxy;
 import org.wildfly.extension.vertx.logging.VertxLogger;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Verticle;
 
 /**
  * The Verticle deployment service that corresponds to a verticle deployment within the deployment unit.
@@ -62,7 +60,7 @@ public class VerticleDeploymentService implements Service {
             this.deploymentID = this.vertxProxySupplier.get().getVertx().deployVerticle(vcls, this.deploymentOptions)
                     .toCompletionStage().toCompletableFuture().get(DEFAULT_DEPLOY_TIME_OUT, TimeUnit.SECONDS);
         } catch (Exception e) {
-            throw VertxLogger.VERTX_LOGGER.failedToDeployVerticle(this.verticleClass, this.vertxProxySupplier.get().getName(), e);
+            throw VertxLogger.VERTX_LOGGER.failedToDeployVerticle(this.verticleClass, e);
         }
     }
 
@@ -74,7 +72,7 @@ public class VerticleDeploymentService implements Service {
                         .toCompletableFuture().get(DEFAULT_DEPLOY_TIME_OUT, TimeUnit.SECONDS);
                 this.deploymentID = null;
             } catch (Exception e) {
-                VertxLogger.VERTX_LOGGER.errorWhenUndeployVerticle(this.verticleClass, this.vertxProxySupplier.get().getName(), e);
+                VertxLogger.VERTX_LOGGER.errorWhenUndeployVerticle(this.verticleClass, e);
             }
         }
     }

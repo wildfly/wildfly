@@ -16,28 +16,19 @@
 
 package org.wildfly.extension.vertx;
 
-import io.vertx.core.Vertx;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
-import java.util.Collections;
-import java.util.List;
+import io.vertx.core.Vertx;
 
 /**
  * This is a resource used to manage the Vertx instances in the subsystem.
- *
- * Each {@link VertxProxy} instance will be registered to {@link VertxRegistry} on creation and be removed on stop.
  *
  * @author <a href="aoingl@gmail.com">Lin Gao</a>
  */
 public class VertxProxy {
 
-    /** The name of the Vertx instance, it is the last element value of the PathAddress **/
-    private final String name;
-
-    /** The JNDI name of the Vertx instance so that it can be retrieved using naming subsystem **/
-    private final String jndiName;
-
-    /** The Alias of the Vertx instance, which will be used in injection point via the member name **/
-    private List<String> aliases;
+    private static VertxProxy INSTANCE;
 
     /** Flag that indicates if it is a clustered Vertx instance, it will be used to determine how Vertx instance is constructed. **/
     private final boolean clustered;
@@ -51,49 +42,36 @@ public class VertxProxy {
     /** Flag that if the forked channel should be used when creating a clustered Vertx instance **/
     private final boolean forkedChannel;
 
-    /** The Vertx reference, this will be set to null when VertxProxyService is stopped. **/
-    private Vertx vertx;
+    /** The option name from which the Vert.x instance will be created upon **/
+    private final String optionName;
 
-    public VertxProxy(String name, String jndiName, boolean clustered, String jgroupChannelName, boolean forkedChannel, String jgroupsStackFile) {
-        this.name = name;
-        this.jndiName = jndiName;
+    /** The Vertx reference, this will be set to null when VertxProxyService is stopped. **/
+    private final AtomicReference<Vertx> vertx = new AtomicReference<>();
+
+    public VertxProxy(boolean clustered, String jgroupChannelName, boolean forkedChannel, String jgroupsStackFile, String optionName) {
         this.clustered = clustered;
         this.jgroupChannelName = jgroupChannelName;
         this.forkedChannel = forkedChannel;
         this.jgroupsStackFile = jgroupsStackFile;
+        this.optionName = optionName;
     }
 
-    public String getName() {
-        return name;
+    void instrument(Vertx vertx) {
+        this.vertx.set(Objects.requireNonNull(vertx));
+        VertxProxyHolder.instance().instrument(this);
     }
 
-    public String getJndiName() {
-        return jndiName;
-    }
-
-    void setVertx(Vertx vertx) {
-        this.vertx = vertx;
+    void release() {
+        this.vertx.set(null);
+        VertxProxyHolder.instance().release();
     }
 
     public Vertx getVertx() {
-        return this.vertx;
+        return this.vertx.get();
     }
 
     public String getJgroupsStackFile() {
         return jgroupsStackFile;
-    }
-
-    /**
-     * Returns aliases of this VertxProxy
-     *
-     * @return the aliases of this VertxProxy, not null.
-     */
-    public List<String> getAliases() {
-        return aliases == null ? Collections.emptyList() : Collections.unmodifiableList(aliases);
-    }
-
-    void setAliases(List<String> aliases) {
-        this.aliases = aliases;
     }
 
     public boolean isClustered() {
@@ -108,4 +86,7 @@ public class VertxProxy {
         return forkedChannel;
     }
 
+    public String getOptionName() {
+        return optionName;
+    }
 }

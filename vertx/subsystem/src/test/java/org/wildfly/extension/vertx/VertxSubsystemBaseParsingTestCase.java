@@ -35,7 +35,7 @@ public class VertxSubsystemBaseParsingTestCase extends AbstractSubsystemBaseTest
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-vertx_1_0.xsd";
+        return "schema/wildfly-vertx_1_0_0.xsd";
     }
 
     @Override
