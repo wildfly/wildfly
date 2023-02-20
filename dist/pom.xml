@@ -314,6 +314,7 @@
                             <offline>true</offline>
                         </configuration>
                         <executions>
+                            <!-- hardening.cli -->
                             <execution>
                                 <id>hardening-standalone</id>
                                 <phase>prepare-package</phase>
@@ -419,6 +420,8 @@
                                     </systemProperties>
                                 </configuration>
                             </execution>
+
+                            <!-- hardening-domain-host.cli -->
                             <execution>
                                 <id>hardening-domain-host</id>
                                 <phase>prepare-package</phase>
@@ -467,6 +470,8 @@
                                     </systemProperties>
                                 </configuration>
                             </execution>
+
+                            <!-- hardening-domain.cli -->
                             <execution>
                                 <id>hardening-domain-default</id>
                                 <phase>prepare-package</phase>
@@ -524,6 +529,83 @@
                                     </scripts>
                                     <systemProperties>
                                         <profile>full-ha</profile>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+
+                            <!-- microprofile.cli -->
+                            <execution>
+                                <id>microprofile-standalone</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>microprofile.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>microprofile-standalone-full</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>microprofile.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone-full.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>microprofile-standalone-full-ha</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>microprofile.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone-full-ha.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>microprofile-standalone-ha</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>microprofile.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone-ha.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>microprofile-standalone-bdew</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>microprofile.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone-bdew.xml</config>
                                     </systemProperties>
                                 </configuration>
                             </execution>
