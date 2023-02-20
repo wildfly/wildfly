@@ -1,0 +1,23 @@
+embed-server --server-config=${config}
+
+# MicroProfile Fault Tolerance
+/extension=org.wildfly.extension.microprofile.fault-tolerance-smallrye:add()
+/subsystem=microprofile-fault-tolerance-smallrye:add()
+
+# MicroProfile Health
+/extension=org.wildfly.extension.microprofile.health-smallrye:add()
+/subsystem=microprofile-health-smallrye:add(security-enabled="false",\
+    empty-liveness-checks-status="${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}",\
+    empty-readiness-checks-status="${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}")
+
+# MicroProfile Metrics
+/extension=org.wildfly.extension.microprofile.metrics-smallrye:add()
+/subsystem=microprofile-metrics-smallrye:add(security-enabled="false",\
+    exposed-subsystems=["*"],\
+    prefix="${wildfly.metrics.prefix:wildfly}")
+
+# MicroProfile OpenAPI
+/extension=org.wildfly.extension.microprofile.openapi-smallrye:add()
+/subsystem=microprofile-openapi-smallrye:add()
+
+stop-embedded-server
