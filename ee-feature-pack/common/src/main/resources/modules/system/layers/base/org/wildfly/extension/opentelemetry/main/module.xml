@@ -35,8 +35,9 @@
     <dependencies>
         <module name="org.wildfly.extension.opentelemetry-api"/>
         <module name="io.opentelemetry.api" />
+        <module name="io.opentelemetry.sdk" />
         <module name="io.opentelemetry.context" />
-        <module name="io.opentelemetry.trace" />
+        <module name="io.opentelemetry.exporter" />
 
         <module name="java.logging"/>
         <module name="javax.enterprise.api" />

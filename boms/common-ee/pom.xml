@@ -1264,7 +1264,29 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-api-logs</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-context</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-common</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
                     <exclusion>
@@ -1297,7 +1319,7 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-exporter-otlp-trace</artifactId>
+                <artifactId>opentelemetry-exporter-otlp</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
                     <exclusion>
@@ -1342,7 +1364,7 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-sdk-metrics</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
