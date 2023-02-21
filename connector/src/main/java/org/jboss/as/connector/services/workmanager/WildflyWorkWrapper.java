@@ -22,7 +22,6 @@ import jakarta.resource.spi.work.Work;
 import jakarta.resource.spi.work.WorkCompletedException;
 import jakarta.resource.spi.work.WorkListener;
 
-import org.jboss.as.connector.security.CallbackImpl;
 import org.jboss.as.connector.security.ElytronSecurityContext;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.jca.core.spi.security.SecurityIntegration;
@@ -54,10 +53,7 @@ public class WildflyWorkWrapper extends org.jboss.jca.core.workmanager.WorkWrapp
 
     @Override
     protected void runWork() throws WorkCompletedException {
-        // if there is security and elytron is enabled, we need to let the context run the remainder of the work
-        // so the context can run the work as the specified Elytron identity
-        if (securityIntegration.getSecurityContext() != null &&
-                ((CallbackImpl) workManager.getCallbackSecurity()).isElytronEnabled())
+        if (securityIntegration.getSecurityContext() != null)
             ((ElytronSecurityContext) securityIntegration.getSecurityContext()).runWork(() -> {
                 try {
                     WildflyWorkWrapper.super.runWork();
@@ -65,7 +61,6 @@ public class WildflyWorkWrapper extends org.jboss.jca.core.workmanager.WorkWrapp
                     ConnectorLogger.ROOT_LOGGER.unexceptedWorkerCompletionError(e.getLocalizedMessage(),e);
                 }
             });
-        // delegate to super class if there is no elytron enabled
         else super.runWork();
     }
 }
