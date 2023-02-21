@@ -329,7 +329,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final Supplier<UndertowService> undertowService = builder.requires(UndertowService.UNDERTOW);
         Supplier<SessionManagerFactory> sessionManagerFactory = null;
         final Supplier<SessionIdentifierCodec> sessionIdentifierCodec;
-        final Supplier<AffinityLocator> affinityLocatorSupplier;
+        final Supplier<AffinityLocator> affinityLocator;
         Supplier<SessionConfigWrapper> sessionConfigWrapperSupplier = null;
         final Supplier<ServletContainerService> servletContainerService = builder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
         final Supplier<ComponentRegistry> componentRegistryDependency = componentRegistryExists ? builder.requires(ComponentRegistry.serviceName(deploymentUnit)) : Functions.constantSupplier(componentRegistry);
@@ -375,8 +375,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             if (sharedSessionManagerConfig != null) {
                 final ServiceName parentServiceName = deploymentUnit.getParent().getServiceName();
                 sessionManagerFactory = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME));
-                sessionIdentifierCodec = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME));
-                affinityLocatorSupplier = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_AFFINITY_LOCATOR_SERVICE_NAME));
+                if (servletContainer.getAffinityCookieConfig() == null) {
+                    sessionIdentifierCodec = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME));
+                } else {
+                    affinityLocator = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_AFFINITY_LOCATOR_SERVICE_NAME));
+                }
             } else {
                 Integer maxActiveSessions = (metaData.getMaxActiveSessions() != null) ? metaData.getMaxActiveSessions() : servletContainer.getMaxSessions();
                 SessionConfigMetaData sessionConfig = metaData.getSessionConfig();
@@ -413,31 +416,35 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                     }
                 };
                 CapabilityServiceConfigurator factoryConfigurator = provider.getSessionManagerFactoryServiceConfigurator(factoryServiceName, configuration);
-                CapabilityServiceConfigurator codecConfigurator = provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration);
-                CapabilityServiceConfigurator affinityConfigurator = provider.getAffinityLocatorServiceConfigurator(affinityServiceName, configuration);
-
                 sessionManagerFactory = builder.requires(factoryConfigurator.getServiceName());
-                sessionIdentifierCodec = builder.requires(codecConfigurator.getServiceName());
-                affinityLocatorSupplier = builder.requires(affinityConfigurator.getServiceName());
+                factoryConfigurator.configure(capabilitySupport).build(serviceTarget).install();
 
                 CookieConfig affinityCookieConfig = servletContainer.getAffinityCookieConfig();
 
-                sessionConfigWrapperSupplier = new Supplier<>() {
-                    @Override
-                    public SessionConfigWrapper get() {
-                        if (affinityCookieConfig != null) {
-                            return new AffinitySessionConfigWrapper(affinityCookieConfig, affinityLocatorSupplier.get());
-                        } else {
+                if (affinityCookieConfig == null) {
+                    CapabilityServiceConfigurator codecConfigurator = provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration);
+                    sessionIdentifierCodec = builder.requires(codecConfigurator.getServiceName());
+                    sessionConfigWrapperSupplier = new Supplier<>() {
+                        @Override
+                        public SessionConfigWrapper get() {
                             return new CodecSessionConfigWrapper(sessionIdentifierCodec.get());
                         }
-                    }
-                };
-
-                factoryConfigurator.configure(capabilitySupport).build(serviceTarget).install();
-                codecConfigurator.configure(capabilitySupport).build(serviceTarget).install();
-                affinityConfigurator.configure(capabilitySupport).build(serviceTarget).install();
+                    };
+                    codecConfigurator.configure(capabilitySupport).build(serviceTarget).install();
+                } else {
+                    CapabilityServiceConfigurator affinityConfigurator = provider.getAffinityLocatorServiceConfigurator(affinityServiceName, configuration);
+                    affinityLocator = builder.requires(affinityConfigurator.getServiceName());
+                    sessionConfigWrapperSupplier = new Supplier<>() {
+                        @Override
+                        public SessionConfigWrapper get() {
+                            return new AffinitySessionConfigWrapper(affinityCookieConfig, affinityLocator.get());
+                        }
+                    };
+                    affinityConfigurator.configure(capabilitySupport).build(serviceTarget).install();
+                }
             }
         }
+
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                 .setAttributes(deploymentUnit.getAttachmentList(ServletContextAttribute.ATTACHMENT_KEY))
                 .setContextPath(pathName)

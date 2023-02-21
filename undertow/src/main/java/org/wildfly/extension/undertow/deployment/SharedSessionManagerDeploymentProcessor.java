@@ -115,8 +115,11 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
             }
         };
         provider.getSessionManagerFactoryServiceConfigurator(managerServiceName, configuration).configure(support).build(target).install();
-        provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration).configure(support).build(target).install();
-        provider.getAffinityLocatorServiceConfigurator(affinityServiceName, configuration).configure(support).build(target).install();
+        if (servletContainer == null || servletContainer.getAffinityCookieConfig() == null) {
+            provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration).configure(support).build(target).install();
+        } else {
+            provider.getAffinityLocatorServiceConfigurator(affinityServiceName, configuration).configure(support).build(target).install();
+        }
     }
 
     @SuppressWarnings("deprecation")
