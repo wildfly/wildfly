@@ -2178,7 +2178,7 @@
 
             <dependency>
                 <groupId>org.jboss</groupId>
-                <artifactId>jboss-transaction-spi-jakarta</artifactId>
+                <artifactId>jboss-transaction-spi</artifactId>
                 <version>${version.org.jboss.jboss-transaction-spi}</version>
                 <exclusions>
                     <exclusion>
