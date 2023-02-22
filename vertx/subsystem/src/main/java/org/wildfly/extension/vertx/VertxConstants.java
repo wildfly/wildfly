@@ -75,7 +75,6 @@ public interface VertxConstants {
     String ATTR_HA_GROUP = "ha-group";
     String ATTR_QUORUM_SIZE = "quorum-size";
     String ATTR_PREFER_NATIVE_TRANSPORT = "prefer-native-transport";
-    String ATTR_DISABLE_TCCL = "disable-tccl";
     String ATTR_BLOCKED_THREAD_CHECK_INTERVAL = "blocked-thread-check-interval";
     String ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT = "blocked-thread-check-interval-unit";
     String ATTR_MAX_EVENTLOOP_EXECUTE_TIME = "max-eventloop-execute-time";

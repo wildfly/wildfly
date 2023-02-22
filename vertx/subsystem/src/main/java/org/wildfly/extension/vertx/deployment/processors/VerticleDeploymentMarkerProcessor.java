@@ -15,7 +15,16 @@
  */
 package org.wildfly.extension.vertx.deployment.processors;
 
-import io.vertx.core.json.JsonObject;
+import static org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -31,19 +40,11 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.vfs.VirtualFile;
-import org.wildfly.extension.vertx.deployment.VertxDeploymentAttachment;
 import org.wildfly.extension.vertx.deployment.VerticleDeploymentsMetaData;
+import org.wildfly.extension.vertx.deployment.VertxDeploymentAttachment;
 import org.wildfly.extension.vertx.logging.VertxLogger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.jboss.as.server.deployment.Attachments.*;
+import io.vertx.core.json.JsonObject;
 
 /**
  *
@@ -79,6 +80,9 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
         VirtualFile vertxDeploymentFile;
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             vertxDeploymentFile = deploymentRoot.getRoot().getChild(WEB_INF_VERTX_DEPLOYMENT);
+            if (vertxDeploymentFile == null || !vertxDeploymentFile.exists()) {
+                vertxDeploymentFile = deploymentRoot.getRoot().getChild(META_INF_VERTX_DEPLOYMENT);
+            }
         } else {
             vertxDeploymentFile = deploymentRoot.getRoot().getChild(META_INF_VERTX_DEPLOYMENT);
         }
@@ -115,7 +119,8 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
             if (jsonContent.trim().isEmpty()) {
                 jsonContent = "{}";
             }
-            VertxDeploymentAttachment.attachVertxDeployments(deploymentUnit, new VerticleDeploymentsMetaData(new JsonObject(jsonContent)));
+            VerticleDeploymentsMetaData metaData = new VerticleDeploymentsMetaData(new JsonObject(jsonContent));
+            VertxDeploymentAttachment.attachVertxDeployments(deploymentUnit, metaData);
         } catch (IOException ioe) {
             throw VertxLogger.VERTX_LOGGER.failedToReadConfig(vertxDeploymentFile.getName(), ioe);
         }

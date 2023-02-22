@@ -18,7 +18,6 @@ package org.wildfly.extension.vertx;
 
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_DISABLE_TCCL;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_EVENTLOOP_POOL_SIZE;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_CLASS_PATH_RESOLVING_ENABLED;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_FILE_CACHE_ENABLED;
@@ -143,9 +142,6 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
       }
       if (operation.hasDefined(ATTR_PREFER_NATIVE_TRANSPORT)) {
         vertxOptions.setPreferNativeTransport(VertxOptionsAttributes.ATTR_PREFER_NATIVE_TRANSPORT.validateOperation(operation).asBoolean());
-      }
-      if (operation.hasDefined(ATTR_DISABLE_TCCL)) {
-        vertxOptions.setDisableTCCL(VertxOptionsAttributes.ATTR_DISABLE_TCCL.validateOperation(operation).asBoolean());
       }
       if (operation.hasDefined(ATTR_BLOCKED_THREAD_CHECK_INTERVAL)) {
         vertxOptions.setBlockedThreadCheckInterval(VertxOptionsAttributes.ATTR_BLOCKED_THREAD_CHECK_INTERVAL.validateOperation(operation).asLong());

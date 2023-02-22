@@ -177,9 +177,11 @@ public class VertxProxyService implements Service, VertxConstants {
         if (vertxOptions == null) {
             vertxOptions = new VertxOptions();
         }
+        // keep TCCL so that verticle has correct classloader
+        vertxOptions.setDisableTCCL(false);
         vertxOptions.getFileSystemOptions()
           .setFileCacheDir(serverEnvSupplier.get().getServerTempDir() + File.separator + "vertx-cache-default");
-        VertxFileResolver fileResolver = new VertxFileResolver(vertxOptions.getFileSystemOptions());
+        VertxFileResolver fileResolver = new VertxFileResolver(vertxOptions.getFileSystemOptions(), serverEnvSupplier.get());
         VertxBuilder vb = new VertxBuilder(vertxOptions).fileResolver(fileResolver);
         if (vertxProxy.isClustered()) {
             ClassLoader classLoader = getClass().getClassLoader();

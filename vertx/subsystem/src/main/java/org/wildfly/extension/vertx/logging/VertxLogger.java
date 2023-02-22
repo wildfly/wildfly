@@ -41,61 +41,55 @@ public interface VertxLogger extends BasicLogger {
     @Message(id = 2, value = "Vertx [%s] is closed")
     void vertxStopped(String jndiName);
 
-//    @LogMessage(level = INFO)
-//    @Message(id = 3, value = "Vertx %s [%s] is removed")
-//    void vertxRemoved(String jndiName);
-
-    @Message(id = 4, value = "Could not read VertxOptions from file: %s")
+    @Message(id = 3, value = "Could not read VertxOptions from file: %s")
     OperationFailedException cannotReadVertxOptionsFile(String vertxOptionsFile);
 
-    @Message(id = 5, value = "Could not find VertxOptions from: %s")
+    @Message(id = 4, value = "Could not find VertxOptions from: %s")
     OperationFailedException failedToReadVertxOptions(String vertxOptionsFile, @Cause Exception e);
 
-    @Message(id = 6, value = "Failed to start VertxProxyService")
+    @Message(id = 5, value = "Failed to start VertxProxyService")
     StartException failedToStartVertxService(@Cause Throwable e);
 
     @LogMessage(level = WARN)
-    @Message(id = 7, value = "Error when closing the Vert.x instance")
+    @Message(id = 6, value = "Error when closing the Vert.x instance")
     void errorWhenClosingVertx(@Cause Exception e);
 
-//    @Message(id = 8, value = "Vertx: %s was not found.")
-//    OperationFailedException vertxNotFound(String name);
-
-    @Message(id = 9, value = "Failed to read content from VirtualFile: %s .")
+    @Message(id = 7, value = "Failed to read content from VirtualFile: %s .")
     DeploymentUnitProcessingException failedToReadConfig(String name, @Cause Throwable e);
 
-    @Message(id = 10, value = "No verticle-class defined in deployment: %s")
+    @Message(id = 8, value = "No verticle-class defined in deployment: %s")
     DeploymentUnitProcessingException noVerticleClassDefined(String deploymentName);
 
-    @Message(id = 11, value = "Failed to lookup Vertx instance with JNDI name: %s")
+    @Message(id = 9, value = "Failed to lookup Vertx instance with JNDI name: %s")
     StartException failedToLookupVertx(String jndiName, @Cause Throwable e);
 
-    @Message(id = 12, value = "Failed to deploy verticle: %s to Vert.x")
+    @Message(id = 10, value = "Failed to deploy verticle: %s to Vert.x")
     StartException failedToDeployVerticle(String verticleClass, @Cause Throwable e);
 
     @LogMessage(level = WARN)
-    @Message(id = 13, value = "Error to undeploy verticle: %s from Vert.x")
+    @Message(id = 11, value = "Error to undeploy verticle: %s from Vert.x")
     void errorWhenUndeployVerticle(String verticleClass, @Cause Exception e);
 
-    @Message(id = 14, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
+    @Message(id = 12, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
     DeploymentUnitProcessingException deploymentRequiresCapability(String deploymentName, String capabilityName);
 
-//    @Message(id = 15, value = "Alias %s has been used already in Vertx: %s")
-//    OperationFailedException aliasUsedAlready(String alias, String vertxName);
-
-    @Message(id = 16, value = "Path of the vertx-options-file %s must be specified")
+    @Message(id = 13, value = "Path of the vertx-options-file %s must be specified")
     OperationFailedException noOptionsFileSpecified(String optionName);
 
-    @Message(id = 17, value = "Option Name: %s is reserved by system.")
+    @Message(id = 14, value = "Option Name: %s is reserved by system.")
     OperationFailedException optionNameIsReserved(String optionName);
 
-    @Message(id = 18, value = "Either path or value should be specified for the option: %s")
+    @Message(id = 15, value = "Either path or value should be specified for the option: %s")
     OperationFailedException atLeastPathOrValueDefined(String optionName);
 
-    @Message(id = 19, value = "Cannot specify both jgroups-stack-file and jgroups-channel for clustered Vert.x")
+    @Message(id = 16, value = "Cannot specify both jgroups-stack-file and jgroups-channel for clustered Vert.x")
     OperationFailedException onlyOneJgroupsConfigNeeded();
 
     @LogMessage(level = WARN)
-    @Message(id = 20, value = "Failed to resolve file: %s")
+    @Message(id = 17, value = "Failed to resolve file: %s")
     void failedToResolveVFSFile(String fileName, @Cause Exception e);
+
+    @Message(id = 18, value = "Resolving file: %s is not allowed")
+    IllegalArgumentException fileResolveNotAllowed(String fileName);
+
 }

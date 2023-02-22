@@ -28,6 +28,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -35,7 +36,9 @@ import org.wildfly.extension.vertx.VertxProxy;
 import org.wildfly.extension.vertx.VertxResourceDefinition;
 import org.wildfly.extension.vertx.deployment.VerticleDeploymentService;
 import org.wildfly.extension.vertx.deployment.VerticleDeploymentsMetaData;
+import org.wildfly.extension.vertx.deployment.VertxDeployment;
 import org.wildfly.extension.vertx.deployment.VertxDeploymentAttachment;
+import org.wildfly.extension.vertx.deployment.VertxDeploymentsRegistry;
 import org.wildfly.extension.vertx.logging.VertxLogger;
 
 import io.vertx.core.DeploymentOptions;
@@ -62,7 +65,7 @@ public class VerticleDeploymentProcessor implements DeploymentUnitProcessor {
         // if vertx-deployment.json exists in both sub deployment and parent deployment, it goes through all files
         // to deploy. It may be possible to take one precedence or merge, but it can be done in the future if necessary.
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        final ClassLoader moduleClassLoader = module.getClassLoader();
+        final ModuleClassLoader moduleClassLoader = module.getClassLoader();
         List<JsonObject> vertxDeployments = verticleDeploymentsMetaData.getVerticleDeployments();
         if (vertxDeployments.size() > 0) {
             final String deploymentName = deploymentUnit.getName();
@@ -82,10 +85,13 @@ public class VerticleDeploymentProcessor implements DeploymentUnitProcessor {
                   .install();
             }
         }
+        VertxDeployment vertxDeployment = new VertxDeployment(moduleClassLoader, verticleDeploymentsMetaData.isExpose(), verticleDeploymentsMetaData.getExposedResources());
+        VertxDeploymentsRegistry.instance().register(vertxDeployment);
     }
 
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
-
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        VertxDeploymentsRegistry.instance().unregister(module.getName());
     }
 }
