@@ -1,8 +1,8 @@
 [[load-balancer-affinity-cookie]]
 = Support for load-balancers relying on affinity cookie
 
-While the Apache family of load-balancers relies on attaching session affinity (routing) information to a `JSESSIONID` cookie or a `jsessionid` path parameter,
-there are other load-balancers that rely on a cookie to guide the session.
+While the Apache family of load-balancers relies on attaching session affinity (routing) information by default to a `JSESSIONID` cookie or a `jsessionid` path parameter,
+there are other load-balancers that rely on a cookie to drive session affinity.
 
 In order to configure the cookie name and other properties use the following CLI script:
 
@@ -18,9 +18,11 @@ The affinity can be specified either in the `instance-id` or by providing `jboss
 ./bin/standalone.sh -c standalone-ha.xml -Djboss.node.name=ribera1
 ----
 
+For complete documentation on configuring the servlet container refer to link:Admin_Guide{outfilesuffix}#servlet-container-configuration[Undertow documentation section].
+
 == HAProxy
 
-The following is a minimum HAProxy configuration to enable affinity being respected by the load-balancer.
+The following is a minimum HAProxy configuration to enable affinity provided by application server to be respected by the given load-balancer.
 
 [source,options="nowrap"]
 ----
@@ -41,4 +43,4 @@ server server1 127.0.0.1:8080 cookie ribera1
 server server2 127.0.0.1:8180 cookie ribera2
 ----
 
-Notice that the server defined cookie name needs to correspond with the application server `instance-id`.
+Notice that the proxy server defined cookie names need to correspond with the application server's `instance-id`.
