@@ -251,6 +251,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
                 WildFlySecurityManager.getClassLoaderPrivileged(WeldDeploymentProcessor.class));
         for (BootstrapDependencyInstaller installer : installers) {
             ServiceName serviceName = installer.install(serviceTarget, deploymentUnit, jtsEnabled);
+            if (serviceName == null) {
+                continue;
+            }
             // Add dependency for recognized services
             if (ServiceNames.WELD_SECURITY_SERVICES_SERVICE_NAME.getSimpleName().equals(serviceName.getSimpleName())) {
                 securityServicesSupplier = weldBootstrapServiceBuilder.requires(serviceName);
