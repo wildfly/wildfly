@@ -319,8 +319,8 @@ public class Constants {
             .setDefaultValue(new ModelNode("other"))
             .setXmlName(WorkManagerSecurity.Tag.DOMAIN.getLocalName())
             .setAlternatives(WM_ELYTRON_SECURITY_DOMAIN_NAME)
-            .setRestartAllServices()
             .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition WM_ELYTRON_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(WM_ELYTRON_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
@@ -415,8 +415,8 @@ public class Constants {
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
-            .setRestartAllServices()
             .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
+            .setRestartAllServices()
             .build();
     static final SimpleAttributeDefinition SECURITY_DOMAIN_AND_APPLICATION = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_AND_APPLICATION_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.SECURITY_DOMAIN_AND_APPLICATION.getLocalName())
@@ -425,6 +425,7 @@ public class Constants {
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .setRestartAllServices()
             .build();
 
@@ -434,8 +435,8 @@ public class Constants {
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .setNullSignificant(false)
-            .setRestartAllServices()
             .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
+            .setRestartAllServices()
             .build();
     static SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
@@ -466,6 +467,7 @@ public class Constants {
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .setRestartAllServices()
             .build();
 

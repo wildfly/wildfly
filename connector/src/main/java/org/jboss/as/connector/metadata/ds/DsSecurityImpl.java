@@ -46,15 +46,13 @@ public class DsSecurityImpl extends CredentialImpl implements DsSecurity, Creden
      * @param password        user password
      * @param securityContext specific information used by implementation to define in which context this user/password info
      *                        belongs
-     * @param elytronEnabled  indicates if elytron is enabled. In this case, {@param securityContext}, defined as
-     *                        securityDomain in super class, refers to an Elytron authentication context
      * @param reauthPlugin    reauthentication plugin
      * @param credentialSourceSupplier an Elytron credentia supplier
      * @throws ValidateException in case of validation error
      */
-    public DsSecurityImpl(final String userName, final String password, final String securityContext, final boolean elytronEnabled,
+    public DsSecurityImpl(final String userName, final String password, final String securityContext,
                           final ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier, Extension reauthPlugin) throws ValidateException {
-        super(userName, password, securityContext, elytronEnabled, credentialSourceSupplier);
+        super(userName, password, securityContext, credentialSourceSupplier);
         this.reauthPlugin = reauthPlugin;
         this.validate();
     }
@@ -83,7 +81,6 @@ public class DsSecurityImpl extends CredentialImpl implements DsSecurity, Creden
                 "userName='" + getUserName() + '\'' +
                 ", password='" + getPassword() + '\'' +
                 ", securityDomain='" + getSecurityDomain() + '\'' +
-                ", elytronEnabled=" + isElytronEnabled() +
                 "reauthPlugin=" + reauthPlugin +
                 '}';
     }

@@ -60,11 +60,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_USERNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
@@ -215,15 +212,9 @@ public class IronJacamarResourceCreator {
         if (security != null) {
             setAttribute(model, APPLICATION, security.isApplication());
 
-            if (security instanceof org.jboss.as.connector.metadata.api.common.Security &&
-                    ((org.jboss.as.connector.metadata.api.common.Security) security).isElytronEnabled()) {
-                setAttribute(model, ELYTRON_ENABLED, true);
-                setAttribute(model, AUTHENTICATION_CONTEXT, security.getSecurityDomain());
-                setAttribute(model, AUTHENTICATION_CONTEXT_AND_APPLICATION, security.getSecurityDomainAndApplication());
-            } else {
-                setAttribute(model, SECURITY_DOMAIN, security.getSecurityDomain());
-                setAttribute(model, SECURITY_DOMAIN_AND_APPLICATION, security.getSecurityDomainAndApplication());
-            }
+            setAttribute(model, ELYTRON_ENABLED, true);
+            setAttribute(model, AUTHENTICATION_CONTEXT, security.getSecurityDomain());
+            setAttribute(model, AUTHENTICATION_CONTEXT_AND_APPLICATION, security.getSecurityDomainAndApplication());
         }
         final TimeOut timeOut = connDef.getTimeOut();
         if (timeOut != null) {
@@ -262,13 +253,8 @@ public class IronJacamarResourceCreator {
             final Credential recoveryCredential =  recovery.getCredential();
             if (recoveryCredential != null) {
                 setAttribute(model, RECOVERY_PASSWORD, recoveryCredential.getPassword());
-                if (recoveryCredential instanceof org.jboss.as.connector.metadata.api.common.Credential &&
-                        ((org.jboss.as.connector.metadata.api.common.Credential) recoveryCredential).isElytronEnabled()) {
-                    setAttribute(model, RECOVERY_ELYTRON_ENABLED, true);
-                    setAttribute(model, RECOVERY_AUTHENTICATION_CONTEXT, recoveryCredential.getSecurityDomain());
-                } else {
-                    setAttribute(model, RECOVERY_SECURITY_DOMAIN, recoveryCredential.getSecurityDomain());
-                }
+                setAttribute(model, RECOVERY_ELYTRON_ENABLED, true);
+                setAttribute(model, RECOVERY_AUTHENTICATION_CONTEXT, recoveryCredential.getSecurityDomain());
                 setAttribute(model, RECOVERY_USERNAME, recoveryCredential.getUserName());
             }
         }
@@ -316,11 +302,8 @@ public class IronJacamarResourceCreator {
             if (security.getDefaultPrincipal() != null)
                 model.get(Constants.WM_SECURITY_DEFAULT_PRINCIPAL.getName()).set(security.getDefaultPrincipal());
             model.get(Constants.WM_SECURITY_MAPPING_REQUIRED.getName()).set(security.isMappingRequired());
-            if (security instanceof  WorkManagerSecurity && ((WorkManagerSecurity) security).isElytronEnabled()) {
+            if (security instanceof  WorkManagerSecurity) {
                 model.get(Constants.WM_ELYTRON_SECURITY_DOMAIN.getName()).set(security.getDomain());
-            }
-            else {
-                model.get(Constants.WM_SECURITY_DOMAIN.getName()).set(security.getDomain());
             }
             if (security.getGroupMappings() != null) {
                 for (Map.Entry<String, String> entry : security.getGroupMappings().entrySet()) {

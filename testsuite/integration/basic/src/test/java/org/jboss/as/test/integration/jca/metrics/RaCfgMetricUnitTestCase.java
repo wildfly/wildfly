@@ -187,7 +187,6 @@ public class RaCfgMetricUnitTestCase extends JCAMetrictsTestBase {
         address1.protect();
         assertTrue(readAttribute(address1, "interleaving").asBoolean());
         assertTrue(readAttribute(address1, "no-tx-separate-pool").asBoolean());
-        assertTrue(readAttribute(address1, "security-application").asBoolean());
         assertTrue(readAttribute(address1, "wrap-xa-resource").asBoolean());
         assertFalse(readAttribute(address1, "pad-xid").asBoolean());
         assertFalse(readAttribute(address1, "same-rm-override").isDefined());
@@ -209,7 +208,6 @@ public class RaCfgMetricUnitTestCase extends JCAMetrictsTestBase {
         address1.protect();
         assertTrue(readAttribute(address1, "interleaving").asBoolean());
         assertTrue(readAttribute(address1, "no-tx-separate-pool").asBoolean());
-        assertTrue(readAttribute(address1, "security-application").asBoolean());
         assertTrue(readAttribute(address1, "no-recovery").asBoolean());
 
         removeRa();

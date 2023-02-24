@@ -105,22 +105,22 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
 
     @Test
     public void addComplexResourceAdapterWithAppSecurity() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, null);
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT_AND_APPLICATION, null);
     }
 
     @Test
     public void addComplexResourceAdapterWithAppSecurity_UserPassRecovery() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, ConnectionSecurityType.USER_PASSWORD);
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT_AND_APPLICATION, ConnectionSecurityType.USER_PASSWORD);
     }
 
     @Test
     public void addComplexResourceAdapterWithAppSecurity_ElytronRecovery() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, ConnectionSecurityType.ELYTRON);
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT_AND_APPLICATION, ConnectionSecurityType.ELYTRON);
     }
 
     @Test
     public void addComplexResourceAdapterWithAppSecurity_ElytronAuthCtxtRecovery() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT_AND_APPLICATION, ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
     }
 
     @Test
