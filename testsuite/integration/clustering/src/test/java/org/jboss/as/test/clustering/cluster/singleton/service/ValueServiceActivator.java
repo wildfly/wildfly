@@ -49,26 +49,30 @@ public class ValueServiceActivator implements ServiceActivator {
     public void activate(ServiceActivatorContext context) {
         ServiceBuilder<?> builder = context.getServiceTarget().addService(ServiceName.JBOSS.append("test", "service", "installer"));
         Supplier<SingletonPolicy> policy = builder.requires(ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName()));
-        Consumer<ServiceTarget> installer = target -> policy.get().createSingletonServiceBuilder(SERVICE_NAME, new ValueService(Boolean.TRUE), new ValueService(Boolean.FALSE)).build(context.getServiceTarget()).install();
+        Consumer<ServiceTarget> installer = target -> policy.get().createSingletonServiceBuilder(SERVICE_NAME, new ValueService<>(Boolean.TRUE), new ValueService<>(Boolean.FALSE)).build(context.getServiceTarget()).install();
         builder.setInstance(new ChildTargetService(installer)).install();
     }
 
-    private static final class ValueService implements Service<Boolean> {
-        private final Boolean value;
-        public ValueService(final Boolean value) {
+    private static final class ValueService<T> implements Service<T> {
+        private final T value;
+
+        ValueService(T value) {
             this.value = value;
         }
 
+        @Override
         public void start(final StartContext context) {
             // noop
         }
 
+        @Override
         public void stop(final StopContext context) {
             // noop
         }
 
-        public Boolean getValue() throws IllegalStateException {
-            return value;
+        @Override
+        public T getValue() {
+            return this.value;
         }
     }
 }
