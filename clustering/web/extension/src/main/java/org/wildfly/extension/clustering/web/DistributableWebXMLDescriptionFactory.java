@@ -22,12 +22,12 @@
 
 package org.wildfly.extension.clustering.web;
 
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLDescription.PersistentResourceXMLBuilder;
 
@@ -40,27 +40,27 @@ public enum DistributableWebXMLDescriptionFactory implements Function<Distributa
 
     @Override
     public PersistentResourceXMLDescription apply(DistributableWebSchema schema) {
-        return builder(DistributableWebResourceDefinition.PATH, schema.getUri(), Attribute.stream(DistributableWebResourceDefinition.Attribute.class))
+        return builder(DistributableWebResourceDefinition.PATH, schema.getUri()).addAttributes(Attribute.stream(DistributableWebResourceDefinition.Attribute.class))
                 .addChild(getInfinispanSessionManagementResourceXMLBuilder(schema))
                 .addChild(getHotRodSessionManagementResourceXMLBuilder(schema))
-                .addChild(builder(InfinispanSSOManagementResourceDefinition.WILDCARD_PATH, Attribute.stream(InfinispanSSOManagementResourceDefinition.Attribute.class)))
-                .addChild(builder(HotRodSSOManagementResourceDefinition.WILDCARD_PATH, Attribute.stream(HotRodSSOManagementResourceDefinition.Attribute.class)))
+                .addChild(builder(InfinispanSSOManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(InfinispanSSOManagementResourceDefinition.Attribute.class)))
+                .addChild(builder(HotRodSSOManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(HotRodSSOManagementResourceDefinition.Attribute.class)))
                 .addChild(builder(LocalRoutingProviderResourceDefinition.PATH).setXmlElementName("local-routing"))
-                .addChild(builder(InfinispanRoutingProviderResourceDefinition.PATH, Attribute.stream(InfinispanRoutingProviderResourceDefinition.Attribute.class)).setXmlElementName("infinispan-routing"))
+                .addChild(builder(InfinispanRoutingProviderResourceDefinition.PATH).addAttributes(Attribute.stream(InfinispanRoutingProviderResourceDefinition.Attribute.class)).setXmlElementName("infinispan-routing"))
                 .build();
     }
 
     private static PersistentResourceXMLBuilder getInfinispanSessionManagementResourceXMLBuilder(DistributableWebSchema schema) {
-        PersistentResourceXMLBuilder builder = builder(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH, Stream.concat(Attribute.stream(InfinispanSessionManagementResourceDefinition.Attribute.class), Attribute.stream(SessionManagementResourceDefinition.Attribute.class)));
+        PersistentResourceXMLBuilder builder = builder(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH).addAttributes(Stream.concat(Attribute.stream(InfinispanSessionManagementResourceDefinition.Attribute.class), Attribute.stream(SessionManagementResourceDefinition.Attribute.class)));
         addAffinityChildren(builder).addChild(builder(PrimaryOwnerAffinityResourceDefinition.PATH).setXmlElementName("primary-owner-affinity"));
         if (schema.since(DistributableWebSchema.VERSION_2_0)) {
-            builder.addChild(builder(RankedAffinityResourceDefinition.PATH, Attribute.stream(RankedAffinityResourceDefinition.Attribute.class)).setXmlElementName("ranked-affinity"));
+            builder.addChild(builder(RankedAffinityResourceDefinition.PATH).addAttributes(Attribute.stream(RankedAffinityResourceDefinition.Attribute.class)).setXmlElementName("ranked-affinity"));
         }
         return builder;
     }
 
     private static PersistentResourceXMLBuilder getHotRodSessionManagementResourceXMLBuilder(DistributableWebSchema schema) {
-        return addAffinityChildren(builder(HotRodSessionManagementResourceDefinition.WILDCARD_PATH, Stream.concat(Attribute.stream(HotRodSessionManagementResourceDefinition.Attribute.class), Attribute.stream(SessionManagementResourceDefinition.Attribute.class))));
+        return addAffinityChildren(builder(HotRodSessionManagementResourceDefinition.WILDCARD_PATH).addAttributes(Stream.concat(Attribute.stream(HotRodSessionManagementResourceDefinition.Attribute.class), Attribute.stream(SessionManagementResourceDefinition.Attribute.class))));
     }
 
     private static PersistentResourceXMLBuilder addAffinityChildren(PersistentResourceXMLBuilder builder) {
@@ -68,20 +68,5 @@ public enum DistributableWebXMLDescriptionFactory implements Function<Distributa
                 .addChild(builder(NoAffinityResourceDefinition.PATH).setXmlElementName("no-affinity"))
                 .addChild(builder(LocalAffinityResourceDefinition.PATH).setXmlElementName("local-affinity"))
                 ;
-    }
-
-    // TODO Drop methods below once WFCORE-6218 is available
-    static PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder(PathElement path) {
-        return builder(path, Stream.empty());
-    }
-
-    static PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder(PathElement path, Stream<? extends AttributeDefinition> attributes) {
-        return builder(path, null, attributes);
-    }
-
-    static PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder(PathElement path, String namespaceUri, Stream<? extends AttributeDefinition> attributes) {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = PersistentResourceXMLDescription.builder(path, namespaceUri);
-        attributes.forEach(builder::addAttribute);
-        return builder;
     }
 }
