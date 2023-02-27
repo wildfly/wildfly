@@ -15,9 +15,7 @@ contain multiple credential stores.
 To easily migrate vault content into credential store we have added
 "vault" command into WildFly Elytron Tool. The tool could be found at
 $JBOSS_HOME/bin directory. It has several scripts named "elytron-tool.*"
-dependent on your platform of choice. One can use also simple form "java
--jar $JBOSS_HOME/bin/wildfly-elytron-tool.jar <command> <arguments>" if
-it better suites ones needs.
+dependent on your platform of choice.
 
 [[single-security-vault-conversion]]
 == Single Security Vault Conversion
