@@ -494,7 +494,7 @@
 
         <dependency>
             <groupId>org.jboss.genericjms</groupId>
-            <artifactId>generic-jakarta-messaging-ra-jar</artifactId>
+            <artifactId>generic-jms-ra-jar</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
