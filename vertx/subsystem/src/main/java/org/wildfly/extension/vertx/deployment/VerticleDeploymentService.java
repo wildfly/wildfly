@@ -18,6 +18,7 @@ package org.wildfly.extension.vertx.deployment;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -40,12 +41,12 @@ public class VerticleDeploymentService implements Service {
     private final String verticleClass;
     private final Supplier<VertxProxy> vertxProxySupplier;
     private final DeploymentOptions deploymentOptions;
-    private final ClassLoader classLoader;
+    private final ModuleClassLoader classLoader;
 
     private volatile String deploymentID;
 
     public VerticleDeploymentService(String verticleClass, Supplier<VertxProxy> vertxProxySupplier, DeploymentOptions deploymentOptions,
-                                     ClassLoader classLoader) {
+                                     ModuleClassLoader classLoader) {
         this.verticleClass = verticleClass;
         this.vertxProxySupplier = vertxProxySupplier;
         this.deploymentOptions = deploymentOptions;
@@ -59,6 +60,7 @@ public class VerticleDeploymentService implements Service {
             Class<? extends Verticle> vcls = (Class<? extends Verticle>)classLoader.loadClass(verticleClass);
             this.deploymentID = this.vertxProxySupplier.get().getVertx().deployVerticle(vcls, this.deploymentOptions)
                     .toCompletionStage().toCompletableFuture().get(DEFAULT_DEPLOY_TIME_OUT, TimeUnit.SECONDS);
+            verticleDeployed(this.deploymentID);
         } catch (Exception e) {
             throw VertxLogger.VERTX_LOGGER.failedToDeployVerticle(this.verticleClass, e);
         }
@@ -67,6 +69,7 @@ public class VerticleDeploymentService implements Service {
     @Override
     public void stop(StopContext stopContext) {
         if (this.deploymentID != null) {
+            verticleUndeployed(this.deploymentID);
             try {
                 this.vertxProxySupplier.get().getVertx().undeploy(this.deploymentID).toCompletionStage()
                         .toCompletableFuture().get(DEFAULT_DEPLOY_TIME_OUT, TimeUnit.SECONDS);
@@ -74,6 +77,20 @@ public class VerticleDeploymentService implements Service {
             } catch (Exception e) {
                 VertxLogger.VERTX_LOGGER.errorWhenUndeployVerticle(this.verticleClass, e);
             }
+        }
+    }
+
+    private void verticleDeployed(String id) {
+        VertxDeployment vertxDeployment = VertxDeploymentsRegistry.instance().vertxDeployment(classLoader.getModule().getName());
+        if (vertxDeployment != null) {
+            vertxDeployment.verticleDeployed(id);
+        }
+    }
+
+    private void verticleUndeployed(String id) {
+        VertxDeployment vertxDeployment = VertxDeploymentsRegistry.instance().vertxDeployment(classLoader.getModule().getName());
+        if (vertxDeployment != null) {
+            vertxDeployment.verticleUnDeployed(id);
         }
     }
 }

@@ -20,7 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.vfs.VFS;
+import org.wildfly.extension.vertx.deployment.VertxDeploymentsRegistry;
 import org.wildfly.extension.vertx.logging.VertxLogger;
 
 import io.vertx.core.file.FileSystemOptions;
@@ -33,34 +35,56 @@ import io.vertx.core.spi.file.FileResolver;
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
 public class VertxFileResolver implements FileResolver {
-  private final FileResolverImpl delegate;
 
-  public VertxFileResolver() {
-    this(new FileSystemOptions());
+  private static final String VERTX_CLASSLOADING_MULTIPLE = "vertx.classloading.multiple";
+  private static final boolean MULTIPLE_CLASSLOADING_ENABLED = Boolean.getBoolean(VERTX_CLASSLOADING_MULTIPLE);
+  public static boolean isMultipleClassLoadingEnabled() {
+    return MULTIPLE_CLASSLOADING_ENABLED;
   }
 
-  public VertxFileResolver(FileSystemOptions fileSystemOptions) {
+  private final FileResolverImpl delegate;
+  private final ServerEnvironment serverEnvironment;
+
+  public VertxFileResolver(FileSystemOptions fileSystemOptions, ServerEnvironment serverEnvironment) {
     delegate = new FileResolverImpl(fileSystemOptions);
+    this.serverEnvironment = serverEnvironment;
   }
 
   @Override
   public File resolveFile(String fileName) {
+    if (fileName.contains("..")) {
+      throw new IllegalArgumentException("Cannot resolve files with .. in the file name.");
+    }
     File file = new File(fileName);
     boolean absolute = file.isAbsolute();
+    if (absolute && !file.getAbsolutePath().startsWith(serverEnvironment.getServerConfigurationDir().getAbsolutePath())) {
+      throw VertxLogger.VERTX_LOGGER.fileResolveNotAllowed(fileName);
+    }
     if (file.exists()) {
       return file;
     }
     if (!absolute) {
-      URL url = getClassLoader().getResource(fileName);
-      if (url != null && url.getProtocol().equals("vfs")) {
-        try {
+      URL url;
+      try {
+        if (isMultipleClassLoadingEnabled()) {
+          url = VertxDeploymentsRegistry.instance().loadResource(fileName);
+          // in this mode, it won't delegate.
+          if (url == null) return file;
+        } else {
+          ClassLoader cl = Thread.currentThread().getContextClassLoader();
+          if (cl == null) {
+            cl = getClass().getClassLoader();
+          }
+          url = cl.getResource(fileName);
+        }
+        if (url != null && url.getProtocol().equals("vfs")) {
           file = VFS.getChild(url.getPath()).getPhysicalFile();
           if (file != null && file.exists()) {
             return file;
           }
-        } catch (IOException e) {
-          VertxLogger.VERTX_LOGGER.failedToResolveVFSFile(fileName, e);
         }
+      } catch (IOException e) {
+        VertxLogger.VERTX_LOGGER.failedToResolveVFSFile(fileName, e);
       }
     }
     return delegate.resolveFile(fileName);
@@ -69,21 +93,6 @@ public class VertxFileResolver implements FileResolver {
   @Override
   public void close() throws IOException {
     delegate.close();
-  }
-
-  private ClassLoader getClassLoader() {
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    if (cl == null) {
-      cl = getClass().getClassLoader();
-    }
-    // when running on substratevm (graal) the access to class loaders
-    // is very limited and might be only available from compile time
-    // known classes. (Object is always known, so we do a final attempt
-    // to get it here).
-    if (cl == null) {
-      cl = Object.class.getClassLoader();
-    }
-    return cl;
   }
 
 }

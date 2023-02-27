@@ -89,11 +89,6 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
     .setAllowExpression(true)
     .build();
 
-  public static final SimpleAttributeDefinition ATTR_DISABLE_TCCL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_DISABLE_TCCL, ModelType.BOOLEAN)
-    .setRequired(false)
-    .setAllowExpression(true)
-    .build();
-
   public static final SimpleAttributeDefinition ATTR_BLOCKED_THREAD_CHECK_INTERVAL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL, ModelType.LONG)
     .setRequired(false)
     .setAllowExpression(true)
@@ -175,7 +170,6 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
     VERTX_OPTIONS_ATTRS.add(ATTR_HA_GROUP);
     VERTX_OPTIONS_ATTRS.add(ATTR_QUORUM_SIZE);
     VERTX_OPTIONS_ATTRS.add(ATTR_PREFER_NATIVE_TRANSPORT);
-    VERTX_OPTIONS_ATTRS.add(ATTR_DISABLE_TCCL);
     VERTX_OPTIONS_ATTRS.add(ATTR_BLOCKED_THREAD_CHECK_INTERVAL);
     VERTX_OPTIONS_ATTRS.add(ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT);
     VERTX_OPTIONS_ATTRS.add(ATTR_MAX_EVENTLOOP_EXECUTE_TIME);
