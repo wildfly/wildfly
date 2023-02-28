@@ -44,13 +44,18 @@ public class NonDistributableSessionManagementProvider implements SessionManagem
     }
 
     @Override
-    public CapabilityServiceConfigurator getSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration) {
-        return new SimpleSessionIdentifierCodecServiceConfigurator(name, configuration.getServerName());
+    public CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration) {
+        return new SessionManagerFactoryServiceConfigurator(name, () -> this.factory.apply(configuration));
     }
 
     @Override
-    public CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration) {
-        return new SessionManagerFactoryServiceConfigurator(name, () -> this.factory.apply(configuration));
+    public CapabilityServiceConfigurator getRouteLocatorServiceConfigurator(WebDeploymentConfiguration configuration) {
+        return null;
+    }
+
+    @Override
+    public CapabilityServiceConfigurator getSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration) {
+        return new SimpleSessionIdentifierCodecServiceConfigurator(name, configuration.getServerName());
     }
 
     @Override

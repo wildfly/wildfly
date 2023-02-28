@@ -419,6 +419,12 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 sessionManagerFactory = builder.requires(factoryConfigurator.getServiceName());
                 factoryConfigurator.configure(capabilitySupport).build(serviceTarget).install();
 
+                CapabilityServiceConfigurator routeLocatorServiceConfigurator = provider.getRouteLocatorServiceConfigurator(configuration);
+                // Skip route locator service installation in a non-distributable case
+                if (routeLocatorServiceConfigurator != null) {
+                    routeLocatorServiceConfigurator.configure(capabilitySupport).build(serviceTarget).install();
+                }
+
                 if (affinityCookieConfig == null) {
                     ServiceName codecServiceName = deploymentServiceName.append("codec");
 

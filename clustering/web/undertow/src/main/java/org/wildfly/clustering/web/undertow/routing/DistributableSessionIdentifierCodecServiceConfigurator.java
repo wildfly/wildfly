@@ -26,7 +26,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.web.session.RoutingSupport;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.as.web.session.SimpleRoutingSupport;
@@ -36,7 +35,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.FunctionalService;
-import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.routing.RouteLocator;
@@ -62,15 +60,7 @@ public class DistributableSessionIdentifierCodecServiceConfigurator extends Simp
     }
 
     @Override
-    public ServiceConfigurator configure(CapabilityServiceSupport support) {
-        this.configurator.configure(support);
-        return this;
-    }
-
-    @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
-        this.configurator.build(target).install();
-
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
         Consumer<SessionIdentifierCodec> codec = builder.provides(this.getServiceName());
         Supplier<RouteLocator> locator = builder.requires(this.configurator.getServiceName());

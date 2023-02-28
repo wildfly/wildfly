@@ -31,8 +31,8 @@ import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.container.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
-import org.wildfly.clustering.web.undertow.routing.DistributableSessionIdentifierCodecServiceConfigurator;
 import org.wildfly.clustering.web.undertow.routing.DistributableAffinityLocatorServiceConfigurator;
+import org.wildfly.clustering.web.undertow.routing.DistributableSessionIdentifierCodecServiceConfigurator;
 
 /**
  * {@link SessionManagementProvider} for Undertow.
@@ -49,13 +49,18 @@ public class UndertowDistributableSessionManagementProvider<C extends Distributa
     }
 
     @Override
-    public CapabilityServiceConfigurator getSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration) {
-        return new DistributableSessionIdentifierCodecServiceConfigurator(name, new WebDeploymentConfigurationAdapter(configuration), this.provider);
+    public CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration) {
+        return new DistributableSessionManagerFactoryServiceConfigurator<>(name, configuration, this.provider, this.immutability);
     }
 
     @Override
-    public CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration) {
-        return new DistributableSessionManagerFactoryServiceConfigurator<>(name, configuration, this.provider, this.immutability);
+    public CapabilityServiceConfigurator getRouteLocatorServiceConfigurator(WebDeploymentConfiguration configuration) {
+        return this.provider.getRouteLocatorServiceConfigurator(new WebDeploymentConfigurationAdapter(configuration));
+    }
+
+    @Override
+    public CapabilityServiceConfigurator getSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration) {
+        return new DistributableSessionIdentifierCodecServiceConfigurator(name, new WebDeploymentConfigurationAdapter(configuration), this.provider);
     }
 
     @Override

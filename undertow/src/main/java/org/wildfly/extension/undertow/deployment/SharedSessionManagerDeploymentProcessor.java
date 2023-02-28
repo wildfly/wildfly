@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -115,6 +116,11 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
             }
         };
         provider.getSessionManagerFactoryServiceConfigurator(managerServiceName, configuration).configure(support).build(target).install();
+        CapabilityServiceConfigurator routeLocatorServiceConfigurator = provider.getRouteLocatorServiceConfigurator(configuration);
+        // Skip route locator service installation in a non-distributable case
+        if (routeLocatorServiceConfigurator != null) {
+            routeLocatorServiceConfigurator.configure(support).build(target).install();
+        }
         provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration).configure(support).build(target).install();
         provider.getAffinityLocatorServiceConfigurator(affinityServiceName, configuration).configure(support).build(target).install();
     }
