@@ -328,8 +328,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final Consumer<DeploymentInfo> deploymentInfo = builder.provides(deploymentInfoServiceName, legacyDeploymentInfoServiceName);
         final Supplier<UndertowService> undertowService = builder.requires(UndertowService.UNDERTOW);
         Supplier<SessionManagerFactory> sessionManagerFactory = null;
-        final Supplier<SessionIdentifierCodec> sessionIdentifierCodec;
-        final Supplier<AffinityLocator> affinityLocator;
         Supplier<SessionConfigWrapper> sessionConfigWrapperSupplier = null;
         final Supplier<ServletContainerService> servletContainerService = builder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
         final Supplier<ComponentRegistry> componentRegistryDependency = componentRegistryExists ? builder.requires(ComponentRegistry.serviceName(deploymentUnit)) : Functions.constantSupplier(componentRegistry);
@@ -372,10 +370,14 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         }
         ServletContainerService servletContainer = deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE);
         if (servletContainer != null) {
+            final CookieConfig affinityCookieConfig = servletContainer.getAffinityCookieConfig();
+            Supplier<SessionIdentifierCodec> sessionIdentifierCodec = null;
+            Supplier<AffinityLocator> affinityLocator = null;
+
             if (sharedSessionManagerConfig != null) {
                 final ServiceName parentServiceName = deploymentUnit.getParent().getServiceName();
                 sessionManagerFactory = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME));
-                if (servletContainer.getAffinityCookieConfig() == null) {
+                if (affinityCookieConfig == null) {
                     sessionIdentifierCodec = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME));
                 } else {
                     affinityLocator = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_AFFINITY_LOCATOR_SERVICE_NAME));
@@ -385,8 +387,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 SessionConfigMetaData sessionConfig = metaData.getSessionConfig();
                 int defaultSessionTimeout = ((sessionConfig != null) && sessionConfig.getSessionTimeoutSet()) ? sessionConfig.getSessionTimeout() : servletContainer.getDefaultSessionTimeout();
                 ServiceName factoryServiceName = deploymentServiceName.append("session");
-                ServiceName codecServiceName = deploymentServiceName.append("codec");
-                ServiceName affinityServiceName = deploymentServiceName.append("affinity");
 
                 SessionManagementProvider provider = this.getDistributableWebDeploymentProvider(deploymentUnit, metaData);
                 SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
@@ -419,29 +419,39 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 sessionManagerFactory = builder.requires(factoryConfigurator.getServiceName());
                 factoryConfigurator.configure(capabilitySupport).build(serviceTarget).install();
 
-                CookieConfig affinityCookieConfig = servletContainer.getAffinityCookieConfig();
-
                 if (affinityCookieConfig == null) {
+                    ServiceName codecServiceName = deploymentServiceName.append("codec");
+
                     CapabilityServiceConfigurator codecConfigurator = provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration);
                     sessionIdentifierCodec = builder.requires(codecConfigurator.getServiceName());
-                    sessionConfigWrapperSupplier = new Supplier<>() {
-                        @Override
-                        public SessionConfigWrapper get() {
-                            return new CodecSessionConfigWrapper(sessionIdentifierCodec.get());
-                        }
-                    };
+
                     codecConfigurator.configure(capabilitySupport).build(serviceTarget).install();
                 } else {
+                    ServiceName affinityServiceName = deploymentServiceName.append("affinity");
+
                     CapabilityServiceConfigurator affinityConfigurator = provider.getAffinityLocatorServiceConfigurator(affinityServiceName, configuration);
                     affinityLocator = builder.requires(affinityConfigurator.getServiceName());
-                    sessionConfigWrapperSupplier = new Supplier<>() {
-                        @Override
-                        public SessionConfigWrapper get() {
-                            return new AffinitySessionConfigWrapper(affinityCookieConfig, affinityLocator.get());
-                        }
-                    };
+
                     affinityConfigurator.configure(capabilitySupport).build(serviceTarget).install();
                 }
+            }
+
+            if (affinityCookieConfig == null) {
+                final Supplier<SessionIdentifierCodec> finalSessionIdentifierCodec = sessionIdentifierCodec;
+                sessionConfigWrapperSupplier = new Supplier<>() {
+                    @Override
+                    public SessionConfigWrapper get() {
+                        return new CodecSessionConfigWrapper(finalSessionIdentifierCodec.get());
+                    }
+                };
+            } else {
+                final Supplier<AffinityLocator> finalAffinityLocator = affinityLocator;
+                sessionConfigWrapperSupplier = new Supplier<>() {
+                    @Override
+                    public SessionConfigWrapper get() {
+                        return new AffinitySessionConfigWrapper(affinityCookieConfig, finalAffinityLocator.get());
+                    }
+                };
             }
         }
 
