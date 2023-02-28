@@ -32,7 +32,7 @@ import org.wildfly.clustering.web.container.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.undertow.routing.DistributableSessionIdentifierCodecServiceConfigurator;
-import org.wildfly.clustering.web.undertow.routing.DistributableAffinityLocatorConfigurator;
+import org.wildfly.clustering.web.undertow.routing.DistributableAffinityLocatorServiceConfigurator;
 
 /**
  * {@link SessionManagementProvider} for Undertow.
@@ -60,6 +60,6 @@ public class UndertowDistributableSessionManagementProvider<C extends Distributa
 
     @Override
     public CapabilityServiceConfigurator getAffinityLocatorServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration) {
-        return new DistributableAffinityLocatorConfigurator(name, new WebDeploymentConfigurationAdapter(configuration), this.provider);
+        return new DistributableAffinityLocatorServiceConfigurator(name, new WebDeploymentConfigurationAdapter(configuration), this.provider);
     }
 }

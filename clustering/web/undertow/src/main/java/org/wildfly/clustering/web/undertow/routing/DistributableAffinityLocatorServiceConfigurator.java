@@ -44,11 +44,11 @@ import org.wildfly.clustering.web.service.session.DistributableSessionManagement
  *
  * @author Radoslav Husar
  */
-public class DistributableAffinityLocatorConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<RouteLocator, DistributableAffinityLocator> {
+public class DistributableAffinityLocatorServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<RouteLocator, DistributableAffinityLocator> {
 
     private final CapabilityServiceConfigurator configurator;
 
-    public DistributableAffinityLocatorConfigurator(ServiceName name, WebDeploymentConfiguration configuration, DistributableSessionManagementProvider<?> provider) {
+    public DistributableAffinityLocatorServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration, DistributableSessionManagementProvider<?> provider) {
         super(name);
         this.configurator = provider.getRouteLocatorServiceConfigurator(configuration);
     }
