@@ -70,6 +70,8 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, ServletContainerDefinition.ORPHAN_SESSION_ALLOWED)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.ORPHAN_SESSION_ALLOWED)
                     .end();
+
+                servletContainer.rejectChildResource(AffinityCookieDefinition.PATH_ELEMENT);
             }
 
             TransformationDescription.Tools.register(subsystem.build(), registration, version);
