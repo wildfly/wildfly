@@ -91,11 +91,10 @@ For example Undertow exposes a metric attribute `request-count` for every Servle
 This attribute will be exposed to Prometheus with the name `wildfly_undertow_request_count`.
 Other information such as the name of the Servlet are added to the labels of the metrics.
 
-The [helloworld-rs quickstart](https://github.com/wildfly/quickstart/tree/master/helloworld-rs) creates a Jakarta RESTful Web Services application
-that can be deployed in WildFly.
+The https://github.com/wildfly/quickstart/tree/main/helloworld[helloworld quickstart] demonstrates the use of CDI and Servlet in Wildfly.
 A corresponding metric will be exposed for it with the name and labels:
 
-* `wildfly_undertow_request_count_total{deployment="helloworld-rs.war",servlet="org.jboss.as.quickstarts.rshelloworld.JAXActivator",subdeployment="helloworld-rs.war"}`
+* `wildfly_undertow_request_count_total{deployment="helloworld.war",servlet="org.jboss.as.quickstarts.helloworld.HelloWorldServlet",subdeployment="helloworld.war"}`
 
 [NOTE]
 Some subsystems (such as `undertow` or `messaging-activemq`) do not enable their statistics by default

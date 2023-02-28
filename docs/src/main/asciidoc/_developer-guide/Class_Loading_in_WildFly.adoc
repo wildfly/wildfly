@@ -353,7 +353,7 @@ ear deployment is as follows:
 [IMPORTANT]
 
 The xsd for jboss-deployment-structure.xml is available at
-https://github.com/wildfly/wildfly-core/blob/master/server/src/main/resources/schema/jboss-deployment-structure-1_2.xsd[https://github.com/wildfly/wildfly-core/blob/main/server/src/main/resources/schema/jboss-deployment-structure-1_2.xsd]
+https://github.com/wildfly/wildfly-core/blob/main/server/src/main/resources/schema/jboss-deployment-structure-1_3.xsd[jboss-deployment-structure-1_3.xsd]
 
 [[accessing-jdk-classes]]
 == Accessing JDK classes

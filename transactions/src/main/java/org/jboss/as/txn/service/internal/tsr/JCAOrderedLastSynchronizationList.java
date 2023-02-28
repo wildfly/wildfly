@@ -131,8 +131,8 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
 
     @Override
     public void afterCompletion(int status) {
-        // The list should be iterated in reverse order - has issues with Enterprise Beans 3 if not
-        // https://github.com/jbosstm/narayana/blob/master/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/coordinator/TwoPhaseCoordinator.java#L509
+        // The list should be iterated in reverse order - has issues with Enterprise Beans 3 if not. See the afterCompletion method in:
+        // https://github.com/jbosstm/narayana/blob/main/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/coordinator/TwoPhaseCoordinator.java
         for (int i = preJcaSyncs.size() - 1; i>= 0; --i) {
             Synchronization preJcaSync = preJcaSyncs.get(i);
             if (TransactionLogger.ROOT_LOGGER.isTraceEnabled()) {
