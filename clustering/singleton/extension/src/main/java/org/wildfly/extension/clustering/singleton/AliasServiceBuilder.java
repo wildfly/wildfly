@@ -30,7 +30,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
 
@@ -41,7 +40,7 @@ import org.wildfly.clustering.service.IdentityServiceConfigurator;
  * @deprecated Replaced by {@link IdentityServiceConfigurator}.
  */
 @Deprecated
-public class AliasServiceBuilder<T> implements Builder<T> {
+public class AliasServiceBuilder<T> implements Builder<T>, Service<T> {
 
     private final InjectedValue<T> value = new InjectedValue<>();
     private final ServiceName name;
@@ -67,35 +66,23 @@ public class AliasServiceBuilder<T> implements Builder<T> {
 
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
-        return (ServiceBuilder<T>)target.addService(this.name)
-                .setInstance(new ValueService<T>(this.value))
+        return target.addService(this.name, this)
                 .addDependency(this.targetName, this.targetClass, this.value)
                 .setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
-    private static final class ValueService<T> implements Service<T> {
-        private final Value<T> value;
-        private volatile T valueInstance;
-
-        public ValueService(final Value<T> value) {
-            this.value = value;
-        }
-
-        public void start(final StartContext context) {
-            valueInstance = value.getValue();
-        }
-
-        public void stop(final StopContext context) {
-            valueInstance = null;
-        }
-
-        public T getValue() throws IllegalStateException {
-            final T value = valueInstance;
-            if (value == null) {
-                throw new IllegalStateException();
-            }
-            return value;
-        }
+    @Override
+    public T getValue() {
+        return this.value.getValue();
     }
 
+    @Override
+    public void start(StartContext context) {
+        // Do nothing
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        // Do nothing
+    }
 }

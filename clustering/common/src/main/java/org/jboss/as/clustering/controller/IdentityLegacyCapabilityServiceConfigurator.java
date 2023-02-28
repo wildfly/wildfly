@@ -34,7 +34,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 
@@ -43,7 +42,7 @@ import org.wildfly.clustering.service.SimpleServiceNameProvider;
  * @author Paul Ferraro
  */
 @Deprecated
-public class IdentityLegacyCapabilityServiceConfigurator<T> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator {
+public class IdentityLegacyCapabilityServiceConfigurator<T> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Service<T> {
 
     private final Function<CapabilityServiceSupport, ServiceName> requirementNameFactory;
     private final Class<T> targetClass;
@@ -91,34 +90,22 @@ public class IdentityLegacyCapabilityServiceConfigurator<T> extends SimpleServic
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
-        final ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        builder.setInstance(new ValueService<>(this.requirement));
-        return this.requirement.register(builder).setInitialMode(ServiceController.Mode.PASSIVE);
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        return this.requirement.register(builder).setInstance(this).setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
-    private static final class ValueService<T> implements Service<T> {
-        private final Value<T> value;
-        private volatile T valueInstance;
-
-        public ValueService(final Value<T> value) {
-            this.value = value;
-        }
-
-        public void start(final StartContext context) {
-            valueInstance = value.getValue();
-        }
-
-        public void stop(final StopContext context) {
-            valueInstance = null;
-        }
-
-        public T getValue() throws IllegalStateException {
-            final T value = valueInstance;
-            if (value == null) {
-                throw new IllegalStateException();
-            }
-            return value;
-        }
+    @Override
+    public T getValue() {
+        return this.requirement.get();
     }
 
+    @Override
+    public void start(StartContext context) {
+        // Do nothing
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        // Do nothing
+    }
 }
