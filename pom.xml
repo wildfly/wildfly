@@ -321,8 +321,8 @@
         <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
         <version.org.elasticsearch.client.rest-client>7.16.3</version.org.elasticsearch.client.rest-client>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.13.4</version.com.fasterxml.jackson>
-        <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}.2</version.com.fasterxml.jackson.databind>
+        <version.com.fasterxml.jackson>2.14.2</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
         <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
         <version.com.github.ben-manes.caffeine>3.1.2</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
@@ -374,7 +374,7 @@
         <version.io.reactivex.rxjava2>2.2.21</version.io.reactivex.rxjava2>
         <version.io.reactivex.rxjava3>3.1.6</version.io.reactivex.rxjava3>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
-        <version.io.smallrye.open-api>3.1.2</version.io.smallrye.open-api>
+        <version.io.smallrye.open-api>3.2.0</version.io.smallrye.open-api>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
         <version.io.smallrye.smallrye-common>2.0.0</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>3.1.0</version.io.smallrye.smallrye-config>
