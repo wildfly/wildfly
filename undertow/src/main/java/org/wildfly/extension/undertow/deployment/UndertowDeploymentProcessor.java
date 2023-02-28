@@ -363,13 +363,13 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             }
             controlPoint = builder.requires(ControlPointService.serviceName(topLevelName, UndertowExtension.SUBSYSTEM_NAME));
         }
-        if (sharedSessionManagerConfig != null) {
-            final ServiceName parentServiceName = deploymentUnit.getParent().getServiceName();
-            sessionManagerFactory = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME));
-            sessionIdentifierCodec = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME));
-        } else {
-            ServletContainerService servletContainer = deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE);
-            if (servletContainer != null) {
+        ServletContainerService servletContainer = deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE);
+        if (servletContainer != null) {
+            if (sharedSessionManagerConfig != null) {
+                final ServiceName parentServiceName = deploymentUnit.getParent().getServiceName();
+                sessionManagerFactory = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME));
+                sessionIdentifierCodec = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME));
+            } else {
                 Integer maxActiveSessions = (metaData.getMaxActiveSessions() != null) ? metaData.getMaxActiveSessions() : servletContainer.getMaxSessions();
                 SessionConfigMetaData sessionConfig = metaData.getSessionConfig();
                 int defaultSessionTimeout = ((sessionConfig != null) && sessionConfig.getSessionTimeoutSet()) ? sessionConfig.getSessionTimeout() : servletContainer.getDefaultSessionTimeout();
