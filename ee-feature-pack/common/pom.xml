@@ -461,7 +461,7 @@
 
         <dependency>
             <groupId>org.jboss.activemq.artemis.integration</groupId>
-            <artifactId>artemis-wildfly-jakarta-integration</artifactId>
+            <artifactId>artemis-wildfly-integration</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
