@@ -23,6 +23,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
@@ -88,6 +89,7 @@ public class JMXConnectorTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CB_DEPLOYMENT_NAME);
         archive.addClass(ConnectedBean.class);
         archive.addClass(ConnectedBeanInterface.class);
+        archive.addAsManifestResource(new StringAsset("Dependencies: jdk.naming.rmi\n"), "MANIFEST.MF");
         archive.addAsManifestResource(createPermissionsXmlAsset(
             new RuntimePermission("accessClassInPackage.com.sun.jndi.url.rmi"),
             new SocketPermission("*:*", "connect,resolve")

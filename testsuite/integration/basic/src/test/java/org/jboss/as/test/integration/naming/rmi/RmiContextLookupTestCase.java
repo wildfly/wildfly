@@ -26,6 +26,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +51,7 @@ public class RmiContextLookupTestCase {
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, RmiContextLookupTestCase.class.getSimpleName() + ".war")
             .addClasses(RmiContextLookupTestCase.class, RmiContextLookupBean.class)
+            .addAsManifestResource(new StringAsset("Dependencies: jdk.naming.rmi\n"), "MANIFEST.MF")
             .addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("accessClassInPackage.com.sun.jndi.url.rmi")), "permissions.xml");
     }
 
