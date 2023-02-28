@@ -288,7 +288,7 @@ vi:ts=4:sw=4:expandtab
 
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-iiop-client-jakarta</artifactId>
+            <artifactId>jboss-iiop-client</artifactId>
         </dependency>
 
         <dependency>

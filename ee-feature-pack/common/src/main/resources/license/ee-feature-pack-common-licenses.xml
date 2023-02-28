@@ -2430,7 +2430,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss</groupId>
-      <artifactId>jboss-iiop-client-jakarta</artifactId>
+      <artifactId>jboss-iiop-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
