@@ -22,6 +22,8 @@
 
 embed-server --server-config=standalone-load-balancer.xml
 
-/subsystem=undertow/configuration=filter/mod-cluster=load-balancer/affinity=ranked:add
+/subsystem=undertow/configuration=filter/mod-cluster=load-balancer:undefine-attribute(name=advertise-socket-binding)
+
+/subsystem=undertow/configuration=filter/mod-cluster=load-balancer/affinity=ranked:add()
 
 stop-embedded-server
