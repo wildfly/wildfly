@@ -69,10 +69,9 @@
             </dependency>
 
             <!-- Dependencies specific to this bom. Keep sorted -->
-
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
+                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-deployment</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>

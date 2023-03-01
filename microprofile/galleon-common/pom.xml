@@ -106,7 +106,7 @@
     <dependencies>
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
+            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-deployment</artifactId>
         </dependency>
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
