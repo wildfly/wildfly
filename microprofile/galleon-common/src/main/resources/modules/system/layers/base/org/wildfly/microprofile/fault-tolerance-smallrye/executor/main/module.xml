@@ -35,6 +35,7 @@
     <dependencies>
         <module name="java.naming"/>
 
+        <module name="jakarta.enterprise.api"/>
         <module name="jakarta.enterprise.concurrent.api"/>
 
         <module name="io.smallrye.fault-tolerance"/>

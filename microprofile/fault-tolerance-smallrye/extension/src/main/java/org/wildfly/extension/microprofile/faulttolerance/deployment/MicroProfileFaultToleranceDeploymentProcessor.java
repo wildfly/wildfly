@@ -27,18 +27,22 @@ import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.Capabilities;
 import org.jboss.as.weld.WeldCapability;
+import org.wildfly.extension.microprofile.faulttolerance.NoopMetricsFaultToleranceExtension;
 
 /**
+ * This {@link DeploymentUnitProcessor} registers required CDI portable extension that adds support
+ * for MP Fault Tolerance interceptor bindings. Moreover, it conditionally installs a portable extension that elects
+ * which metrics provider to use.
+ *
  * @author Radoslav Husar
  */
 public class MicroProfileFaultToleranceDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(DeploymentPhaseContext phaseContext) {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         if (!MicroProfileFaultToleranceMarker.isMarked(deploymentUnit)) {
@@ -55,6 +59,14 @@ public class MicroProfileFaultToleranceDeploymentProcessor implements Deployment
             throw new IllegalStateException();
         }
 
+        // Configure which metrics provider to use
+        boolean isMicroProfileMetricsRegistered = deploymentUnit.getAttachment(Attachments.REGISTERED_SUBSYSTEMS).contains("microprofile-metrics-smallrye");
+
+        if (!isMicroProfileMetricsRegistered) {
+            weldCapability.registerExtensionInstance(new NoopMetricsFaultToleranceExtension(), deploymentUnit);
+        }
+
+        // Register MP FT bindings
         weldCapability.registerExtensionInstance(new FaultToleranceExtension(), deploymentUnit);
     }
 }
