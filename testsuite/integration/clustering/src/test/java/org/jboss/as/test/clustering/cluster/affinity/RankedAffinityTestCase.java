@@ -27,12 +27,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
+import java.util.Set;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -54,7 +56,7 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -78,7 +80,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
     private static final String BALANCER_NAME = "mycluster";
 
     public RankedAffinityTestCase() {
-        super(new String[] { NODE_1, NODE_2, NODE_3, LOAD_BALANCER_1 }, THREE_DEPLOYMENTS);
+        super(Set.of(NODE_1, NODE_2, NODE_3, LOAD_BALANCER_1), DEPLOYMENT_1_2_3);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -184,19 +186,27 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
         ClusterHttpClientUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, nodes);
     }
 
-    static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder
-                    .node(THREE_NODES)
-                    .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=load-balancer-1:add(host=localhost,port=8590)")
-                    .setup("/subsystem=modcluster/proxy=default:write-attribute(name=proxies,value=[load-balancer-1])")
-                    .setup("/subsystem=modcluster/proxy=default:write-attribute(name=status-interval,value=1)")
-                    .setup("/subsystem=distributable-web/infinispan-session-management=default/affinity=ranked:add")
-                    .teardown("/subsystem=distributable-web/infinispan-session-management=default/affinity=primary-owner:add")
-                    .teardown("/subsystem=modcluster/proxy=default:undefine-attribute(name=status-interval)")
-                    .teardown("/subsystem=modcluster/proxy=default:undefine-attribute(name=proxies)")
-                    .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=load-balancer-1:remove")
-            ;
+            super(NODE_1_2_3, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=load-balancer-1:add(host=localhost, port=8590)")
+                            .add("/subsystem=modcluster/proxy=default:write-attribute(name=proxies, value=[load-balancer-1])")
+                            .add("/subsystem=modcluster/proxy=default:write-attribute(name=status-interval, value=1)")
+                            .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=ranked:add()")
+                            .endBatch()
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=primary-owner:add()")
+                            .add("/subsystem=modcluster/proxy=default:undefine-attribute(name=status-interval)")
+                            .add("/subsystem=modcluster/proxy=default:undefine-attribute(name=proxies)")
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=load-balancer-1:remove()")
+                            .endBatch()
+                            .build())
+                    .build());
         }
     }
+
 }
