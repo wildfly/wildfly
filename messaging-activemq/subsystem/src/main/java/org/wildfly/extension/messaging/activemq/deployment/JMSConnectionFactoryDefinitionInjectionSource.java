@@ -259,12 +259,16 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
         if(external) {
             serverName = null;
             Set<String> connectorsSocketBindings = new HashSet<>();
+            Set<String> sslContextNames = new HashSet<>();
             ExternalBrokerConfigurationService configuration = (ExternalBrokerConfigurationService)deploymentUnit.getServiceRegistry().getRequiredService(MessagingSubsystemRootResourceDefinition.CONFIGURATION_CAPABILITY.getCapabilityServiceName()).getService().getValue();
             TransportConfiguration[] tcs = new TransportConfiguration[connectors.size()];
             for (int i = 0; i < tcs.length; i++) {
                 tcs[i] = configuration.getConnectors().get(connectors.get(i));
                 if (tcs[i].getParams().containsKey(ModelDescriptionConstants.SOCKET_BINDING)) {
                     connectorsSocketBindings.add(tcs[i].getParams().get(ModelDescriptionConstants.SOCKET_BINDING).toString());
+                }
+                if (tcs[i].getParams().containsKey(ModelDescriptionConstants.SSL_CONTEXT)) {
+                    sslContextNames.add(tcs[i].getParams().get(ModelDescriptionConstants.SSL_CONTEXT).toString());
                 }
             }
             DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
@@ -273,14 +277,17 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
             }
             if (connectors.isEmpty() && discoveryGroupConfiguration == null) {
                 tcs = getExternalPooledConnectionFactory(resourceAdapter, deploymentUnit.getServiceRegistry()).getConnectors();
-                for(int i = 0 ; i < tcs.length; i++) {
-                 if(tcs[i].getParams().containsKey(ModelDescriptionConstants.SOCKET_BINDING)) {
-                    connectorsSocketBindings.add(tcs[i].getParams().get(ModelDescriptionConstants.SOCKET_BINDING).toString());
-                 }
-             }
+                for (int i = 0; i < tcs.length; i++) {
+                    if (tcs[i].getParams().containsKey(ModelDescriptionConstants.SOCKET_BINDING)) {
+                        connectorsSocketBindings.add(tcs[i].getParams().get(ModelDescriptionConstants.SOCKET_BINDING).toString());
+                    }
+                    if (tcs[i].getParams().containsKey(ModelDescriptionConstants.SSL_CONTEXT)) {
+                        sslContextNames.add(tcs[i].getParams().get(ModelDescriptionConstants.SSL_CONTEXT).toString());
+                    }
+                }
             }
             ExternalPooledConnectionFactoryService.installService(serviceTarget, configuration, pcfName, tcs, discoveryGroupConfiguration,
-                    connectorsSocketBindings, null, jgroupsChannelName, adapterParams, bindInfo, Collections.emptyList(),
+                    connectorsSocketBindings, sslContextNames, null, jgroupsChannelName, adapterParams, bindInfo, Collections.emptyList(),
                     txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, deploymentUnit.getAttachment(CAPABILITY_SERVICE_SUPPORT));
         } else {
             serverName = getActiveMQServerName(properties);

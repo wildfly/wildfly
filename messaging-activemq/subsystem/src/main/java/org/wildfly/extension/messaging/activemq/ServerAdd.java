@@ -31,6 +31,7 @@ import static org.jboss.as.server.services.net.SocketBindingResourceDefinition.S
 import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.DATA_SOURCE_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_SSL_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.JMX_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
@@ -134,6 +135,7 @@ import javax.management.MBeanServer;
 import javax.sql.DataSource;
 
 import io.undertow.server.handlers.ChannelUpgradeHandler;
+import javax.net.ssl.SSLContext;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.Interceptor;
@@ -350,7 +352,8 @@ class ServerAdd extends AbstractAddStepHandler {
 
             // Process acceptors and connectors
             final Set<String> socketBindingNames = new HashSet<String>();
-            TransportConfigOperationHandlers.processAcceptors(context, configuration, model, socketBindingNames);
+            final Map<String, String> sslContextNames = new HashMap<>();
+            TransportConfigOperationHandlers.processAcceptors(context, configuration, model, socketBindingNames, sslContextNames);
 
             Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
             for (final String socketBindingName : socketBindingNames) {
@@ -359,7 +362,13 @@ class ServerAdd extends AbstractAddStepHandler {
             }
 
             final Set<String> connectorsSocketBindings = new HashSet<String>();
-            configuration.setConnectorConfigurations(TransportConfigOperationHandlers.processConnectors(context, configuration.getName(), model, connectorsSocketBindings));
+            configuration.setConnectorConfigurations(TransportConfigOperationHandlers.processConnectors(context, configuration.getName(), model, connectorsSocketBindings, sslContextNames));
+
+            Map<String, Supplier<SSLContext>> sslContexts = new HashMap<>();
+            for (final Map.Entry<String, String> entry : sslContextNames.entrySet()) {
+                Supplier<SSLContext> sslContext = serviceBuilder.requires(ELYTRON_SSL_CONTEXT_CAPABILITY.getCapabilityServiceName(entry.getValue()));
+                sslContexts.put(entry.getValue(), sslContext);
+            }
 
             Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings = new HashMap<>();
             Map<String, Boolean> outbounds = TransportConfigOperationHandlers.listOutBoundSocketBinding(context, connectorsSocketBindings);
@@ -459,7 +468,8 @@ class ServerAdd extends AbstractAddStepHandler {
                     clusterNames,
                     elytronSecurityDomain,
                     mbeanServer,
-                    dataSource
+                    dataSource,
+                    sslContexts
             );
 
             // inject credential-references for bridges

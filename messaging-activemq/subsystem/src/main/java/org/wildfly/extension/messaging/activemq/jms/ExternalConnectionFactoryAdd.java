@@ -15,6 +15,7 @@
  */
 package org.wildfly.extension.messaging.activemq.jms;
 
+import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_SSL_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
@@ -59,6 +60,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX;
 
+import javax.net.ssl.SSLContext;
 import org.apache.activemq.artemis.jms.server.config.ConnectionFactoryConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 
@@ -122,7 +124,8 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
             Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings = new HashMap<>();
             Set<String> connectorsSocketBindings = new HashSet<>();
-            TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectorNames, connectorsSocketBindings);
+            final Set<String> sslContextNames = new HashSet<>();
+            TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectorNames, connectorsSocketBindings, sslContextNames);
             Map<String, Boolean> outbounds = TransportConfigOperationHandlers.listOutBoundSocketBinding(context, connectorsSocketBindings);
             for (final String connectorSocketBinding : connectorsSocketBindings) {
                 // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
@@ -136,7 +139,12 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
                     socketBindings.put(connectorSocketBinding, socketBindingsSupplier);
                 }
             }
-            service = new ExternalConnectionFactoryService(transportConfigurations, socketBindings, outboundSocketBindings, jmsFactoryType, ha, enable1Prefixes, config);
+            Map<String, Supplier<SSLContext>> sslContexts = new HashMap<>();
+            for (final String entry : sslContextNames) {
+                Supplier<SSLContext> sslContext = builder.requires(ELYTRON_SSL_CONTEXT_CAPABILITY.getCapabilityServiceName(entry));
+                sslContexts.put(entry, sslContext);
+            }
+            service = new ExternalConnectionFactoryService(transportConfigurations, socketBindings, outboundSocketBindings, sslContexts, jmsFactoryType, ha, enable1Prefixes, config);
         }
         builder.setInstance(service);
         builder.install();

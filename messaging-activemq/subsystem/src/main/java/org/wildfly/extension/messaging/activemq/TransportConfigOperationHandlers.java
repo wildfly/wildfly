@@ -177,6 +177,7 @@ public class TransportConfigOperationHandlers {
                 TransportConstants.NETTY_CONNECT_TIMEOUT);
         CONNECTORS_KEYS_MAP.put("anycast-prefix", "anycastPrefix");
         CONNECTORS_KEYS_MAP.put("multicast-prefix", "multicastPrefix");
+        CONNECTORS_KEYS_MAP.put("ssl-context", TransportConstants.SSL_CONTEXT_PROP_NAME);
         CONNECTORS_KEYS_MAP.put(VERIFY_HOST, TransportConstants.VERIFY_HOST_PROP_NAME);
 
         ACCEPTOR_KEYS_MAP.put(InVMTransportDefinition.SERVER_ID.getName(),
@@ -224,6 +225,7 @@ public class TransportConfigOperationHandlers {
                 TransportConstants.PROTOCOLS_PROP_NAME);
         ACCEPTOR_KEYS_MAP.put(SSL_ENABLED,
                 TransportConstants.SSL_ENABLED_PROP_NAME);
+        ACCEPTOR_KEYS_MAP.put("ssl-context", TransportConstants.SSL_CONTEXT_PROP_NAME);
         ACCEPTOR_KEYS_MAP.put("stomp-enable-message-id",
                 TransportConstants.STOMP_ENABLE_MESSAGE_ID);
         ACCEPTOR_KEYS_MAP.put("stomp-min-large-message-size",
@@ -266,7 +268,7 @@ public class TransportConfigOperationHandlers {
      * @param bindings      the referenced socket bindings
      * @throws OperationFailedException
      */
-    static void processAcceptors(final OperationContext context, final Configuration configuration, final ModelNode params, final Set<String> bindings) throws OperationFailedException {
+    static void processAcceptors(final OperationContext context, final Configuration configuration, final ModelNode params, final Set<String> bindings, final Map<String, String> sslContexts) throws OperationFailedException {
         final Map<String, TransportConfiguration> acceptors = new HashMap<>();
         if (params.hasDefined(ACCEPTOR)) {
             for (final Property property : params.get(ACCEPTOR).asPropertyList()) {
@@ -275,6 +277,12 @@ public class TransportConfigOperationHandlers {
                 final Map<String, Object> parameters = getParameters(context, config, ACCEPTOR_KEYS_MAP);
                 final Map<String, Object> extraParameters = getExtraParameters(TransportConstants.ALLOWABLE_ACCEPTOR_KEYS, parameters);
                 final String clazz = config.get(FACTORY_CLASS.getName()).asString();
+                if(config.hasDefined(CommonAttributes.SSL_CONTEXT.getName())) {
+                    String sslContextName = config.get(CommonAttributes.SSL_CONTEXT.getName()).asString();
+                    sslContexts.put(acceptorName, sslContextName);
+                    parameters.put(TransportConstants.SSL_CONTEXT_PROP_NAME, sslContextName);
+                    parameters.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+                }
                 ModelNode socketBinding = GenericTransportDefinition.SOCKET_BINDING.resolveModelAttribute(context, config);
                 if (socketBinding.isDefined()) {
                     bindings.add(socketBinding.asString());
@@ -294,6 +302,12 @@ public class TransportConfigOperationHandlers {
                 bindings.add(binding);
                 // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
                 parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
+                if(config.hasDefined(CommonAttributes.SSL_CONTEXT.getName())) {
+                    String sslContextName = config.get(CommonAttributes.SSL_CONTEXT.getName()).asString();
+                    sslContexts.put(acceptorName, sslContextName);
+                    parameters.put(TransportConstants.SSL_CONTEXT_PROP_NAME, sslContextName);
+                    parameters.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+                }
                 acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName, extraParameters));
             }
         }
@@ -314,6 +328,12 @@ public class TransportConfigOperationHandlers {
                 final Map<String, Object> parameters = getParameters(context, config, ACCEPTOR_KEYS_MAP);
                 final Map<String, Object> extraParameters = getExtraParameters(TransportConstants.ALLOWABLE_ACCEPTOR_KEYS, parameters);
                 parameters.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
+                if(config.hasDefined(CommonAttributes.SSL_CONTEXT.getName())) {
+                    String sslContextName = config.get(CommonAttributes.SSL_CONTEXT.getName()).asString();
+                    sslContexts.put(acceptorName, config.get(CommonAttributes.SSL_CONTEXT.getName()).asString());
+                    parameters.put(TransportConstants.SSL_CONTEXT_PROP_NAME, sslContextName);
+                    parameters.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+                }
                 acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName, extraParameters));
             }
         }
@@ -365,7 +385,8 @@ public class TransportConfigOperationHandlers {
      * @param bindings      the referenced socket bindings
      * @throws OperationFailedException
      */
-    static Map<String, TransportConfiguration> processConnectors(final OperationContext context, final String configServerName, final ModelNode params, final Set<String> bindings) throws OperationFailedException {
+    static Map<String, TransportConfiguration> processConnectors(final OperationContext context, final String configServerName,
+            final ModelNode params, final Set<String> bindings, Map<String, String> sslContexts) throws OperationFailedException {
         final Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
         if (params.hasDefined(CONNECTOR)) {
             for (final Property property : params.get(CONNECTOR).asPropertyList()) {
@@ -374,6 +395,12 @@ public class TransportConfigOperationHandlers {
                 final Map<String, Object> parameters = getParameters(context, config, CONNECTORS_KEYS_MAP);
                 final Map<String, Object> extraParameters = getExtraParameters(TransportConstants.ALLOWABLE_CONNECTOR_KEYS, parameters);
                 ModelNode socketBinding = GenericTransportDefinition.SOCKET_BINDING.resolveModelAttribute(context, config);
+                if(config.hasDefined(CommonAttributes.SSL_CONTEXT.getName())) {
+                    String sslContextName = config.get(CommonAttributes.SSL_CONTEXT.getName()).asString();
+                    sslContexts.put(connectorName, sslContextName);
+                    parameters.put(TransportConstants.SSL_CONTEXT_PROP_NAME, sslContextName);
+                    parameters.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+                }
                 if (socketBinding.isDefined()) {
                     bindings.add(socketBinding.asString());
                     // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
@@ -393,6 +420,12 @@ public class TransportConfigOperationHandlers {
                 bindings.add(binding);
                 // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
                 parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
+                if(config.hasDefined(CommonAttributes.SSL_CONTEXT.getName())) {
+                    String sslContextName = config.get(CommonAttributes.SSL_CONTEXT.getName()).asString();
+                    sslContexts.put(connectorName, sslContextName);
+                    parameters.put(TransportConstants.SSL_CONTEXT_PROP_NAME, sslContextName);
+                    parameters.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+                }
                 connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName, extraParameters));
             }
         }
@@ -424,6 +457,12 @@ public class TransportConfigOperationHandlers {
                 // use the name of this server if the server-name attribute is undefined
                 String serverName = serverNameModelNode.isDefined() ? serverNameModelNode.asString() : configServerName;
                 parameters.put(ACTIVEMQ_SERVER_NAME, serverName);
+                if (config.hasDefined(CommonAttributes.SSL_CONTEXT.getName())) {
+                    String sslContextName = config.get(CommonAttributes.SSL_CONTEXT.getName()).asString();
+                    sslContexts.put(connectorName, sslContextName);
+                    parameters.put(TransportConstants.SSL_CONTEXT_PROP_NAME, sslContextName);
+                    parameters.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+                }
 
                 connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName, extraParameters));
             }
@@ -431,7 +470,8 @@ public class TransportConfigOperationHandlers {
         return connectors;
     }
 
-    public static TransportConfiguration[] processConnectors(final OperationContext context, final Collection<String> names, Set<String> bindings) throws OperationFailedException {
+    public static TransportConfiguration[] processConnectors(final OperationContext context, final Collection<String> names,
+            Set<String> bindings, Set<String> sslContexts) throws OperationFailedException {
         final List<TransportConfiguration> connectors = new ArrayList<>();
         final PathAddress subsystemAddress = context.getCurrentAddress().getParent();
         Resource subsystemResource = context.readResourceFromRoot(subsystemAddress, false);
@@ -446,6 +486,12 @@ public class TransportConfigOperationHandlers {
                     bindings.add(socketBinding.asString());
                 }
                 final String clazz = FACTORY_CLASS.resolveModelAttribute(context, config).asString();
+                if (config.hasDefined(CommonAttributes.SSL_CONTEXT.getName())) {
+                    String sslContextName = config.get(CommonAttributes.SSL_CONTEXT.getName()).asString();
+                    sslContexts.add(sslContextName);
+                    parameters.put(TransportConstants.SSL_CONTEXT_PROP_NAME, sslContextName);
+                    parameters.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+                }
                 connectors.add(new TransportConfiguration(clazz, parameters, connectorName));
             }
             if (subsystemResource.hasChild(PathElement.pathElement(CommonAttributes.REMOTE_CONNECTOR, connectorName))) {
@@ -461,6 +507,12 @@ public class TransportConfigOperationHandlers {
                     config.get(FACTORY_CLASS.getName()).set(NettyConnectorFactory.class.getName());
                 }
                 final String clazz = FACTORY_CLASS.resolveModelAttribute(context, config).asString();
+                if (config.hasDefined(CommonAttributes.SSL_CONTEXT.getName())) {
+                    String sslContextName = config.get(CommonAttributes.SSL_CONTEXT.getName()).asString();
+                    sslContexts.add(sslContextName);
+                    parameters.put(TransportConstants.SSL_CONTEXT_PROP_NAME, sslContextName);
+                    parameters.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+                }
                 connectors.add(new TransportConfiguration(clazz, parameters, connectorName));
             }
             if (subsystemResource.hasChild(PathElement.pathElement(CommonAttributes.IN_VM_CONNECTOR, connectorName))) {
@@ -484,29 +536,18 @@ public class TransportConfigOperationHandlers {
                 if( serverNameModelNode.isDefined()) {
                     parameters.put(ACTIVEMQ_SERVER_NAME, serverNameModelNode.asString());
                 }
+                if (config.hasDefined(CommonAttributes.SSL_CONTEXT.getName())) {
+                    String sslContextName = config.get(CommonAttributes.SSL_CONTEXT.getName()).asString();
+                    sslContexts.add(sslContextName);
+                    parameters.put(TransportConstants.SSL_CONTEXT_PROP_NAME, sslContextName);
+                    parameters.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+                }
                 connectors.add(new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
         return connectors.toArray(new TransportConfiguration[connectors.size()]);
     }
 
-    /**
-     * Determines whether a socket-binding with the given name corresponds to a (local or remote) outbound-socket-binding
-     * or a socket-binding.
-     *
-     * If no socket-binding or outbound-socket-binding resources matches, throw an OperationFailedException.
-     */
-//    public static boolean isOutBoundSocketBinding(OperationContext context, String name) throws OperationFailedException {
-//        Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
-//        for (Resource.ResourceEntry resource : root.getChildren(ModelDescriptionConstants.SOCKET_BINDING_GROUP)) {
-//            if (resource.getChildrenNames(ModelDescriptionConstants.SOCKET_BINDING).contains(name)) {
-//                return false;
-//            } else if (resource.getChildrenNames(ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING).contains(name)
-//                    || resource.getChildrenNames(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING).contains(name))
-//                return true;
-//        }
-//        throw MessagingLogger.ROOT_LOGGER.noSocketBinding(name);
-//    }
     public static Map<String, Boolean> listOutBoundSocketBinding(OperationContext context, Collection<String> names) throws OperationFailedException {
         Map<String, Boolean> result = new HashMap<>();
         Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
