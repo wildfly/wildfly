@@ -53,8 +53,9 @@ public class UndertowDistributableSessionManagementProvider<C extends Distributa
     }
 
     @Override
-    public CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration) {
-        return new DistributableSessionManagerFactoryServiceConfigurator<>(name, configuration, this.provider, this.immutability);
+    public Iterable<CapabilityServiceConfigurator> getSessionManagerFactoryServiceConfigurators(ServiceName name, SessionManagerFactoryConfiguration configuration) {
+        CapabilityServiceConfigurator configurator = this.provider.getSessionManagerFactoryServiceConfigurator(new SessionManagerFactoryConfigurationAdapter<>(configuration, this.provider.getSessionManagementConfiguration(), this.immutability));
+        return List.of(configurator, new DistributableSessionManagerFactoryServiceConfigurator<>(name, configuration, new ServiceSupplierDependency<>(configurator)));
     }
 
     @Override

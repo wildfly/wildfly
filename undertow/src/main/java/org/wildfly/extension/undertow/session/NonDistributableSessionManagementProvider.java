@@ -46,8 +46,8 @@ public class NonDistributableSessionManagementProvider implements SessionManagem
     }
 
     @Override
-    public CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration) {
-        return new SessionManagerFactoryServiceConfigurator(name, () -> this.factory.apply(configuration));
+    public Iterable<CapabilityServiceConfigurator> getSessionManagerFactoryServiceConfigurators(ServiceName name, SessionManagerFactoryConfiguration configuration) {
+        return List.of(new SessionManagerFactoryServiceConfigurator(name, () -> this.factory.apply(configuration)));
     }
 
     @Override

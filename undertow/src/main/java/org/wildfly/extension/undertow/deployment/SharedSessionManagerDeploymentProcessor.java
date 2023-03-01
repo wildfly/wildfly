@@ -114,7 +114,9 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
                 return Duration.ofMinutes(defaultSessionTimeout);
             }
         };
-        provider.getSessionManagerFactoryServiceConfigurator(managerServiceName, configuration).configure(support).build(target).install();
+        for (CapabilityServiceConfigurator configurator : provider.getSessionManagerFactoryServiceConfigurators(managerServiceName, configuration)) {
+            configurator.configure(support).build(target).install();
+        }
         for (CapabilityServiceConfigurator configurator : provider.getSessionAffinityServiceConfigurators(affinityServiceName, configuration)) {
             configurator.configure(support).build(target).install();
         }

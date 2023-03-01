@@ -32,12 +32,12 @@ import org.jboss.msc.service.ServiceName;
 public interface SessionManagementProvider {
 
     /**
-     * Returns a configurator for a service providing a container-specific session manager factory.
+     * Returns a set of configurators for services providing a container-specific session manager factory.
      * @param name the service name of the session manager factory service
      * @param configuration the configuration of the session manager factory
-     * @return a service configurator
+     * @return a number of service configurators
      */
-    CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration);
+    Iterable<CapabilityServiceConfigurator> getSessionManagerFactoryServiceConfigurators(ServiceName name, SessionManagerFactoryConfiguration configuration);
 
     /**
      * Returns set of configurators for services providing container-specific session affinity logic.

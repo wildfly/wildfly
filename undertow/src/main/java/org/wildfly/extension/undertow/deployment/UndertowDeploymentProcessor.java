@@ -404,9 +404,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                         return Duration.ofMinutes(defaultSessionTimeout);
                     }
                 };
-                CapabilityServiceConfigurator factoryConfigurator = provider.getSessionManagerFactoryServiceConfigurator(factoryServiceName, configuration);
-                sessionManagerFactory = builder.requires(factoryConfigurator.getServiceName());
-                factoryConfigurator.configure(capabilitySupport).build(serviceTarget).install();
+                for (CapabilityServiceConfigurator configurator : provider.getSessionManagerFactoryServiceConfigurators(factoryServiceName, configuration)) {
+                    configurator.configure(capabilitySupport).build(serviceTarget).install();
+                }
+                sessionManagerFactory = builder.requires(factoryServiceName);
 
                 ServiceName affinityServiceName = deploymentServiceName.append("affinity");
                 for (CapabilityServiceConfigurator configurator : provider.getSessionAffinityServiceConfigurators(affinityServiceName, configuration)) {
