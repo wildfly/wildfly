@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class DatabaseTimerPersistenceTestCase {
 
-    private DatabaseTimerPersistence object = new DatabaseTimerPersistence("", "part", "nodeA", 1000000, true);
+    private DatabaseTimerPersistence object = new DatabaseTimerPersistence(null, null, null, null, "", "part", "nodeA", 1000000, true);
     private Field field;
     private Method method;
 

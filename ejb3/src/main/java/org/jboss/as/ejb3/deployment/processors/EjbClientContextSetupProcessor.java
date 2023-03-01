@@ -216,7 +216,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         }
 
         private static AuthenticationContext transformOne(RemotingProfileService.RemotingConnectionSpec connectionSpec, AuthenticationContext context) {
-            final OutboundConnection connectionService = connectionSpec.getInjector().getValue();
+            final OutboundConnection connectionService = connectionSpec.getSupplier().get();
             AuthenticationConfiguration authenticationConfiguration = connectionService.getAuthenticationConfiguration();
             SSLContext sslContext = connectionService.getSSLContext();
             final URI destinationUri = connectionService.getDestinationUri();
