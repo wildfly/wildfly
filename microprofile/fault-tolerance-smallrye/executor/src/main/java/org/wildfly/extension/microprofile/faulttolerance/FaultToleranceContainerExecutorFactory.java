@@ -35,7 +35,7 @@ import io.smallrye.faulttolerance.DefaultAsyncExecutorProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
- * Subclass of {@link DefaultAsyncExecutorProvider} that provides a ThreadFactory as
+ * Subclass of {@link DefaultAsyncExecutorProvider} that provides a {@link ThreadFactory} as
  * configured in the server.
  *
  * @author Radoslav Husar
@@ -43,6 +43,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
  */
 @Alternative
 public class FaultToleranceContainerExecutorFactory extends DefaultAsyncExecutorProvider {
+
     @Inject
     public FaultToleranceContainerExecutorFactory(
             @ConfigProperty(name = "io.smallrye.faulttolerance.mainThreadPoolSize") OptionalInt mainThreadPoolSize,
@@ -52,6 +53,7 @@ public class FaultToleranceContainerExecutorFactory extends DefaultAsyncExecutor
         super(mainThreadPoolSize, mainThreadPoolQueueSize, globalThreadPoolSize);
     }
 
+    @Override
     protected ThreadFactory threadFactory() {
         try {
             InitialContext initialContext = new InitialContext();
