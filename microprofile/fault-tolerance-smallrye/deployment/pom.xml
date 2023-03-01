@@ -36,9 +36,7 @@
     <artifactId>wildfly-microprofile-fault-tolerance-smallrye-deployment</artifactId>
 
     <name>WildFly: MicroProfile Fault Tolerance - Deployment</name>
-    <description>
-        Module containing classes that are added as user deployment dependencies.
-    </description>
+    <description>Module containing classes that are added as user deployment dependencies.</description>
 
     <dependencies>
         <dependency>
@@ -46,12 +44,12 @@
             <artifactId>smallrye-fault-tolerance</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.enterprise.concurrent</groupId>
-            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise.concurrent</groupId>
+            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.inject</groupId>
