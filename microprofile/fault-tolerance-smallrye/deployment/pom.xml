@@ -33,9 +33,12 @@
         <version>28.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
+    <artifactId>wildfly-microprofile-fault-tolerance-smallrye-deployment</artifactId>
 
-    <name>WildFly: MicroProfile Fault Tolerance - Executor</name>
+    <name>WildFly: MicroProfile Fault Tolerance - Deployment</name>
+    <description>
+        Module containing classes that are added as deployment dependencies.
+    </description>
 
     <dependencies>
         <dependency>

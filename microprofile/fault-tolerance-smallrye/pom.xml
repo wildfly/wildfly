@@ -40,7 +40,7 @@
     <description>Parent module for modules relating to MicroProfile Fault Tolerance integration.</description>
 
     <modules>
-        <module>executor</module>
+        <module>deployment</module>
         <module>extension</module>
     </modules>
 
