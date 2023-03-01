@@ -2316,7 +2316,7 @@
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
-                <artifactId>jboss-metadata-common-jakarta</artifactId>
+                <artifactId>jboss-metadata-common</artifactId>
                 <version>${version.org.jboss.metadata}</version>
                 <exclusions>
                     <exclusion>
@@ -2328,7 +2328,7 @@
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
-                <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+                <artifactId>jboss-metadata-ejb</artifactId>
                 <version>${version.org.jboss.metadata}</version>
                 <exclusions>
                     <exclusion>

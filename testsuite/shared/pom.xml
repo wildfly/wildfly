@@ -215,7 +215,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common-jakarta</artifactId>
+            <artifactId>jboss-metadata-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>

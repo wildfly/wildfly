@@ -316,7 +316,7 @@ projects that depend on this project.-->
 
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+            <artifactId>jboss-metadata-ejb</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>jakarta.ejb</groupId>
@@ -326,7 +326,7 @@ projects that depend on this project.-->
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common-jakarta</artifactId>
+            <artifactId>jboss-metadata-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
