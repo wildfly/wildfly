@@ -89,8 +89,6 @@ import org.jboss.as.web.common.SimpleWebInjectionContainer;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.as.web.common.WebInjectionContainer;
-import org.jboss.as.web.session.SessionIdentifierCodec;
-import org.jboss.as.web.session.AffinityLocator;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
@@ -131,8 +129,6 @@ import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.Registration;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
-import org.wildfly.extension.undertow.session.AffinitySessionConfigWrapper;
-import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
 import org.wildfly.extension.undertow.session.NonDistributableSessionManagementProvider;
 import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
 import org.wildfly.security.auth.server.SecurityDomain;
@@ -327,8 +323,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final ServiceBuilder<?> builder = serviceTarget.addService(deploymentInfoServiceName);
         final Consumer<DeploymentInfo> deploymentInfo = builder.provides(deploymentInfoServiceName, legacyDeploymentInfoServiceName);
         final Supplier<UndertowService> undertowService = builder.requires(UndertowService.UNDERTOW);
-        Supplier<SessionManagerFactory> sessionManagerFactory = null;
-        Supplier<SessionConfigWrapper> sessionConfigWrapperSupplier = null;
         final Supplier<ServletContainerService> servletContainerService = builder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
         final Supplier<ComponentRegistry> componentRegistryDependency = componentRegistryExists ? builder.requires(ComponentRegistry.serviceName(deploymentUnit)) : Functions.constantSupplier(componentRegistry);
         final Supplier<Host> host = builder.requires(hostServiceName);
@@ -368,20 +362,15 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             }
             controlPoint = builder.requires(ControlPointService.serviceName(topLevelName, UndertowExtension.SUBSYSTEM_NAME));
         }
+
+        Supplier<SessionManagerFactory> sessionManagerFactory = null;
+        Supplier<Function<CookieConfig, SessionConfigWrapper>> sessionConfigWrapperFactory = null;
         ServletContainerService servletContainer = deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE);
         if (servletContainer != null) {
-            final CookieConfig affinityCookieConfig = servletContainer.getAffinityCookieConfig();
-            Supplier<SessionIdentifierCodec> sessionIdentifierCodec = null;
-            Supplier<AffinityLocator> affinityLocator = null;
-
             if (sharedSessionManagerConfig != null) {
                 final ServiceName parentServiceName = deploymentUnit.getParent().getServiceName();
                 sessionManagerFactory = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME));
-                if (affinityCookieConfig == null) {
-                    sessionIdentifierCodec = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME));
-                } else {
-                    affinityLocator = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_AFFINITY_LOCATOR_SERVICE_NAME));
-                }
+                sessionConfigWrapperFactory = builder.requires(parentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_AFFINITY_SERVICE_NAME));
             } else {
                 Integer maxActiveSessions = (metaData.getMaxActiveSessions() != null) ? metaData.getMaxActiveSessions() : servletContainer.getMaxSessions();
                 SessionConfigMetaData sessionConfig = metaData.getSessionConfig();
@@ -419,45 +408,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 sessionManagerFactory = builder.requires(factoryConfigurator.getServiceName());
                 factoryConfigurator.configure(capabilitySupport).build(serviceTarget).install();
 
-                CapabilityServiceConfigurator routeLocatorServiceConfigurator = provider.getRouteLocatorServiceConfigurator(configuration);
-                // Skip route locator service installation in a non-distributable case
-                if (routeLocatorServiceConfigurator != null) {
-                    routeLocatorServiceConfigurator.configure(capabilitySupport).build(serviceTarget).install();
+                ServiceName affinityServiceName = deploymentServiceName.append("affinity");
+                for (CapabilityServiceConfigurator configurator : provider.getSessionAffinityServiceConfigurators(affinityServiceName, configuration)) {
+                    configurator.configure(capabilitySupport).build(serviceTarget).install();
                 }
-
-                if (affinityCookieConfig == null) {
-                    ServiceName codecServiceName = deploymentServiceName.append("codec");
-
-                    CapabilityServiceConfigurator codecConfigurator = provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration);
-                    sessionIdentifierCodec = builder.requires(codecConfigurator.getServiceName());
-
-                    codecConfigurator.configure(capabilitySupport).build(serviceTarget).install();
-                } else {
-                    ServiceName affinityServiceName = deploymentServiceName.append("affinity");
-
-                    CapabilityServiceConfigurator affinityConfigurator = provider.getAffinityLocatorServiceConfigurator(affinityServiceName, configuration);
-                    affinityLocator = builder.requires(affinityConfigurator.getServiceName());
-
-                    affinityConfigurator.configure(capabilitySupport).build(serviceTarget).install();
-                }
-            }
-
-            if (affinityCookieConfig == null) {
-                final Supplier<SessionIdentifierCodec> finalSessionIdentifierCodec = sessionIdentifierCodec;
-                sessionConfigWrapperSupplier = new Supplier<>() {
-                    @Override
-                    public SessionConfigWrapper get() {
-                        return new CodecSessionConfigWrapper(finalSessionIdentifierCodec.get());
-                    }
-                };
-            } else {
-                final Supplier<AffinityLocator> finalAffinityLocator = affinityLocator;
-                sessionConfigWrapperSupplier = new Supplier<>() {
-                    @Override
-                    public SessionConfigWrapper get() {
-                        return new AffinitySessionConfigWrapper(affinityCookieConfig, finalAffinityLocator.get());
-                    }
-                };
+                sessionConfigWrapperFactory = builder.requires(affinityServiceName);
             }
         }
 
@@ -487,7 +442,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 .setTempDir(warMetaData.getTempDir())
                 .setExternalResources(deploymentUnit.getAttachmentList(UndertowAttachments.EXTERNAL_RESOURCES))
                 .setAllowSuspendedRequests(deploymentUnit.getAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED))
-                .createUndertowDeploymentInfoService(deploymentInfo, undertowService, sessionManagerFactory, sessionConfigWrapperSupplier,
+                .createUndertowDeploymentInfoService(deploymentInfo, undertowService, sessionManagerFactory, sessionConfigWrapperFactory,
                         servletContainerService, componentRegistryDependency, host, controlPoint, suspendController, serverEnvironment, securityDomain, mechanismFactorySupplier, applySecurityFunction);
         builder.setInstance(undertowDeploymentInfoService);
 

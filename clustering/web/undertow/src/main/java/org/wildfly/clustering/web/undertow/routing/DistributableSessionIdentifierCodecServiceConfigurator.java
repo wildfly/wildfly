@@ -23,7 +23,6 @@ package org.wildfly.clustering.web.undertow.routing;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.web.session.RoutingSupport;
@@ -36,9 +35,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
-import org.wildfly.clustering.web.WebDeploymentConfiguration;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.web.routing.RouteLocator;
-import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 
 /**
  * Builds a distributable {@link SessionIdentifierCodec} service.
@@ -46,12 +44,12 @@ import org.wildfly.clustering.web.service.session.DistributableSessionManagement
  */
 public class DistributableSessionIdentifierCodecServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<RouteLocator, SessionIdentifierCodec> {
 
-    private final CapabilityServiceConfigurator configurator;
+    private final SupplierDependency<RouteLocator> locatorDependency;
     private final RoutingSupport routing = new SimpleRoutingSupport();
 
-    public DistributableSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration, DistributableSessionManagementProvider<?> provider) {
+    public DistributableSessionIdentifierCodecServiceConfigurator(ServiceName name, SupplierDependency<RouteLocator> locatorDependency) {
         super(name);
-        this.configurator = provider.getRouteLocatorServiceConfigurator(configuration);
+        this.locatorDependency = locatorDependency;
     }
 
     @Override
@@ -62,9 +60,8 @@ public class DistributableSessionIdentifierCodecServiceConfigurator extends Simp
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<SessionIdentifierCodec> codec = builder.provides(this.getServiceName());
-        Supplier<RouteLocator> locator = builder.requires(this.configurator.getServiceName());
-        Service service = new FunctionalService<>(codec, this, locator);
+        Consumer<SessionIdentifierCodec> codec = this.locatorDependency.register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(codec, this, this.locatorDependency);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

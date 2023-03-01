@@ -208,7 +208,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final Consumer<DeploymentInfo> deploymentInfoConsumer;
     private final Supplier<UndertowService> undertowService;
     private final Supplier<SessionManagerFactory> sessionManagerFactory;
-    private final Supplier<SessionConfigWrapper> sessionConfigWrapper;
+    private final Supplier<Function<CookieConfig, SessionConfigWrapper>> sessionConfigWrapperFactory;
     private final Supplier<ServletContainerService> container;
     private final Supplier<ComponentRegistry> componentRegistry;
     private final Supplier<Host> host;
@@ -228,7 +228,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final Consumer<DeploymentInfo> deploymentInfoConsumer,
             final Supplier<UndertowService> undertowService,
             final Supplier<SessionManagerFactory> sessionManagerFactory,
-            final Supplier<SessionConfigWrapper> sessionConfigWrapper,
+            final Supplier<Function<CookieConfig, SessionConfigWrapper>> sessionConfigWrapperFactory,
             final Supplier<ServletContainerService> container,
             final Supplier<ComponentRegistry> componentRegistry,
             final Supplier<Host> host,
@@ -242,7 +242,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.deploymentInfoConsumer = deploymentInfoConsumer;
         this.undertowService = undertowService;
         this.sessionManagerFactory = sessionManagerFactory;
-        this.sessionConfigWrapper = sessionConfigWrapper;
+        this.sessionConfigWrapperFactory = sessionConfigWrapperFactory;
         this.container = container;
         this.componentRegistry = componentRegistry;
         this.host = host;
@@ -478,9 +478,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             deploymentInfo.setSessionManagerFactory(managerFactory);
         }
 
-        SessionConfigWrapper sessionConfigWrapper = this.sessionConfigWrapper != null ? this.sessionConfigWrapper.get() : null;
-        if (sessionConfigWrapper != null) {
-            deploymentInfo.setSessionConfigWrapper(sessionConfigWrapper);
+        Function<CookieConfig, SessionConfigWrapper> sessionConfigWrapperFactory = this.sessionConfigWrapperFactory != null ? this.sessionConfigWrapperFactory.get() : null;
+        if (sessionConfigWrapperFactory != null) {
+            deploymentInfo.setSessionConfigWrapper(sessionConfigWrapperFactory.apply(this.container.get().getAffinityCookieConfig()));
         }
     }
 
@@ -1394,7 +1394,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 final Consumer<DeploymentInfo> deploymentInfoConsumer,
                 final Supplier<UndertowService> undertowService,
                 final Supplier<SessionManagerFactory> sessionManagerFactory,
-                final Supplier<SessionConfigWrapper> sessionConfigWrapper,
+                final Supplier<Function<CookieConfig, SessionConfigWrapper>> sessionConfigWrapperFactory,
                 final Supplier<ServletContainerService> container,
                 final Supplier<ComponentRegistry> componentRegistry,
                 final Supplier<Host> host,
@@ -1406,7 +1406,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 final Supplier<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> applySecurityFunction
         ) {
             return new UndertowDeploymentInfoService(deploymentInfoConsumer, undertowService, sessionManagerFactory,
-                    sessionConfigWrapper, container, componentRegistry, host, controlPoint,
+                    sessionConfigWrapperFactory, container, componentRegistry, host, controlPoint,
                     suspendController, serverEnvironment, rawSecurityDomain, rawMechanismFactory, applySecurityFunction, mergedMetaData, deploymentName, tldInfo, module,
                     scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays,
                     expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers,

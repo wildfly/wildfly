@@ -22,10 +22,12 @@
 
 package org.wildfly.extension.undertow.session;
 
+import java.util.List;
 import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.container.WebDeploymentConfiguration;
@@ -49,18 +51,10 @@ public class NonDistributableSessionManagementProvider implements SessionManagem
     }
 
     @Override
-    public CapabilityServiceConfigurator getRouteLocatorServiceConfigurator(WebDeploymentConfiguration configuration) {
-        return null;
+    public Iterable<CapabilityServiceConfigurator> getSessionAffinityServiceConfigurators(ServiceName name, WebDeploymentConfiguration configuration) {
+        CapabilityServiceConfigurator codecConfigurator = new SimpleSessionIdentifierCodecServiceConfigurator(name.append("codec"), configuration.getServerName());
+        CapabilityServiceConfigurator locatorConfigurator = new SimpleAffinityLocatorServiceConfigurator(name.append("locator"), configuration.getServerName());
+        CapabilityServiceConfigurator wrapperFactoryConfigurator = new SessionConfigWrapperFactoryServiceConfigurator(name, new ServiceSupplierDependency<>(codecConfigurator), new ServiceSupplierDependency<>(locatorConfigurator));
+        return List.of(codecConfigurator, locatorConfigurator, wrapperFactoryConfigurator);
     }
-
-    @Override
-    public CapabilityServiceConfigurator getSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration) {
-        return new SimpleSessionIdentifierCodecServiceConfigurator(name, configuration.getServerName());
-    }
-
-    @Override
-    public CapabilityServiceConfigurator getAffinityLocatorServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration) {
-        return new SimpleAffinityLocatorServiceConfigurator(name, configuration.getServerName());
-    }
-
 }

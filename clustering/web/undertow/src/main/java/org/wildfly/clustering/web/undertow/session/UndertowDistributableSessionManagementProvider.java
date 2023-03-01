@@ -22,10 +22,13 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.List;
+
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ee.Immutability;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.container.WebDeploymentConfiguration;
@@ -33,6 +36,7 @@ import org.wildfly.clustering.web.service.session.DistributableSessionManagement
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.undertow.routing.DistributableAffinityLocatorServiceConfigurator;
 import org.wildfly.clustering.web.undertow.routing.DistributableSessionIdentifierCodecServiceConfigurator;
+import org.wildfly.extension.undertow.session.SessionConfigWrapperFactoryServiceConfigurator;
 
 /**
  * {@link SessionManagementProvider} for Undertow.
@@ -54,17 +58,11 @@ public class UndertowDistributableSessionManagementProvider<C extends Distributa
     }
 
     @Override
-    public CapabilityServiceConfigurator getRouteLocatorServiceConfigurator(WebDeploymentConfiguration configuration) {
-        return this.provider.getRouteLocatorServiceConfigurator(new WebDeploymentConfigurationAdapter(configuration));
-    }
-
-    @Override
-    public CapabilityServiceConfigurator getSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration) {
-        return new DistributableSessionIdentifierCodecServiceConfigurator(name, new WebDeploymentConfigurationAdapter(configuration), this.provider);
-    }
-
-    @Override
-    public CapabilityServiceConfigurator getAffinityLocatorServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration) {
-        return new DistributableAffinityLocatorServiceConfigurator(name, new WebDeploymentConfigurationAdapter(configuration), this.provider);
+    public Iterable<CapabilityServiceConfigurator> getSessionAffinityServiceConfigurators(ServiceName name, WebDeploymentConfiguration configuration) {
+        CapabilityServiceConfigurator routeLocatorConfigurator = this.provider.getRouteLocatorServiceConfigurator(new WebDeploymentConfigurationAdapter(configuration));
+        CapabilityServiceConfigurator codecConfigurator = new DistributableSessionIdentifierCodecServiceConfigurator(name.append("codec"), new ServiceSupplierDependency<>(routeLocatorConfigurator));
+        CapabilityServiceConfigurator affinityLocatorConfigurator = new DistributableAffinityLocatorServiceConfigurator(name.append("affinity"), new ServiceSupplierDependency<>(routeLocatorConfigurator));
+        CapabilityServiceConfigurator wrapperFactoryConfigurator = new SessionConfigWrapperFactoryServiceConfigurator(name, new ServiceSupplierDependency<>(codecConfigurator), new ServiceSupplierDependency<>(affinityLocatorConfigurator));
+        return List.of(routeLocatorConfigurator, codecConfigurator, affinityLocatorConfigurator, wrapperFactoryConfigurator);
     }
 }

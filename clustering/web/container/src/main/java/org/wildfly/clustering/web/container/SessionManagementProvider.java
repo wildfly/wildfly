@@ -40,27 +40,10 @@ public interface SessionManagementProvider {
     CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration);
 
     /**
-     * Returns a configurator for a service providing a {@link org.wildfly.clustering.web.routing.RouteLocator} service.
+     * Returns set of configurators for services providing container-specific session affinity logic.
+     * @param name the service name of the session affinity service
      * @param configuration the configuration of the deployment
-     * @return a service configurator, {@literal null} if there is no service to install
+     * @return a number of service configurators
      */
-    CapabilityServiceConfigurator getRouteLocatorServiceConfigurator(WebDeploymentConfiguration configuration);
-
-    /**
-     * Returns a configurator for a service providing a {@link org.jboss.as.web.session.SessionIdentifierCodec} service.
-     * @param name the service name of the SessionIdentifierCodec service
-     * @param configuration the configuration of the deployment
-     * @return a service configurator
-     */
-    CapabilityServiceConfigurator getSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration);
-
-    /**
-     * Returns a configurator for a service providing an affinity locator service.
-     *
-     * @param name the service name of the affinity locator service
-     * @param configuration the configuration of the affinity locator factory
-     * @return a service configurator
-     */
-    CapabilityServiceConfigurator getAffinityLocatorServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration);
-
+    Iterable<CapabilityServiceConfigurator> getSessionAffinityServiceConfigurators(ServiceName name, WebDeploymentConfiguration configuration);
 }

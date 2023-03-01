@@ -85,8 +85,7 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
         ServiceName deploymentServiceName = deploymentUnit.getServiceName();
 
         ServiceName managerServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME);
-        ServiceName codecServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME);
-        ServiceName affinityServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_AFFINITY_LOCATOR_SERVICE_NAME);
+        ServiceName affinityServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_AFFINITY_SERVICE_NAME);
 
         SessionManagementProvider provider = this.getDistributableWebDeploymentProvider(deploymentUnit, sharedConfig);
         SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
@@ -116,13 +115,9 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
             }
         };
         provider.getSessionManagerFactoryServiceConfigurator(managerServiceName, configuration).configure(support).build(target).install();
-        CapabilityServiceConfigurator routeLocatorServiceConfigurator = provider.getRouteLocatorServiceConfigurator(configuration);
-        // Skip route locator service installation in a non-distributable case
-        if (routeLocatorServiceConfigurator != null) {
-            routeLocatorServiceConfigurator.configure(support).build(target).install();
+        for (CapabilityServiceConfigurator configurator : provider.getSessionAffinityServiceConfigurators(affinityServiceName, configuration)) {
+            configurator.configure(support).build(target).install();
         }
-        provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration).configure(support).build(target).install();
-        provider.getAffinityLocatorServiceConfigurator(affinityServiceName, configuration).configure(support).build(target).install();
     }
 
     @SuppressWarnings("deprecation")

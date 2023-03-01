@@ -22,10 +22,9 @@
 package org.wildfly.clustering.web.undertow.routing;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.web.session.AffinityLocator;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -33,35 +32,28 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
-import org.wildfly.clustering.web.WebDeploymentConfiguration;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.web.routing.RouteLocator;
-import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 
 /**
  * Builds a distributable {@link DistributableAffinityLocator} service.
  *
  * @author Radoslav Husar
  */
-public class DistributableAffinityLocatorServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<RouteLocator, DistributableAffinityLocator> {
+public class DistributableAffinityLocatorServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator {
 
-    private final CapabilityServiceConfigurator configurator;
+    private final SupplierDependency<RouteLocator> dependency;
 
-    public DistributableAffinityLocatorServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration, DistributableSessionManagementProvider<?> provider) {
+    public DistributableAffinityLocatorServiceConfigurator(ServiceName name, SupplierDependency<RouteLocator> dependency) {
         super(name);
-        this.configurator = provider.getRouteLocatorServiceConfigurator(configuration);
-    }
-
-    @Override
-    public DistributableAffinityLocator apply(RouteLocator locator) {
-        return new DistributableAffinityLocator(locator);
+        this.dependency = dependency;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<DistributableAffinityLocator> affinityLocator = builder.provides(this.getServiceName());
-        Supplier<RouteLocator> locator = builder.requires(this.configurator.getServiceName());
-        Service service = new FunctionalService<>(affinityLocator, this, locator);
+        Consumer<AffinityLocator> affinityLocator = this.dependency.register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(affinityLocator, DistributableAffinityLocator::new, this.dependency);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }
