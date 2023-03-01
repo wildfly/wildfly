@@ -2202,7 +2202,7 @@
 
             <dependency>
                 <groupId>org.jboss.genericjms</groupId>
-                <artifactId>generic-jakarta-messaging-ra-jar</artifactId>
+                <artifactId>generic-jms-ra-jar</artifactId>
                 <version>${version.org.jboss.genericjms}</version>
             </dependency>
 
