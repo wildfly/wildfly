@@ -218,7 +218,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final Supplier<ServerEnvironment> serverEnvironment;
     private final Supplier<SecurityDomain> rawSecurityDomain;
     private final Supplier<HttpServerAuthenticationMechanismFactory> rawMechanismFactory;
-    private final Supplier<BiFunction> applySecurityFunction;
+    private final Supplier<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> applySecurityFunction;
     private final Map<String, Supplier<Executor>> executorsByName = new HashMap<>();
     private final WebSocketDeploymentInfo webSocketDeploymentInfo;
     private final File tempDir;
@@ -238,7 +238,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final Supplier<ServerEnvironment> serverEnvironment,
             final Supplier<SecurityDomain> rawSecurityDomain,
             final Supplier<HttpServerAuthenticationMechanismFactory> rawMechanismFactory,
-            final Supplier<BiFunction> applySecurityFunction,
+            final Supplier<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> applySecurityFunction,
             final JBossWebMetaData mergedMetaData, final String deploymentName, final HashMap<String, TagLibraryInfo> tldInfo, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupHandler> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, WebSocketDeploymentInfo webSocketDeploymentInfo, File tempDir, List<File> externalResources, List<Predicate> allowSuspendedRequests) {
         this.deploymentInfoConsumer = deploymentInfoConsumer;
         this.undertowService = undertowService;
@@ -1403,7 +1403,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 final Supplier<ServerEnvironment> serverEnvironment,
                 final Supplier<SecurityDomain> rawSecurityDomain,
                 final Supplier<HttpServerAuthenticationMechanismFactory> rawMechanismFactory,
-                final Supplier<BiFunction> applySecurityFunction
+                final Supplier<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> applySecurityFunction
         ) {
             return new UndertowDeploymentInfoService(deploymentInfoConsumer, undertowService, sessionManagerFactory,
                     sessionIdentifierCodec, container, componentRegistry, host, controlPoint,

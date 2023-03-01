@@ -16,7 +16,7 @@ It's quite easy - a simple use case may even consist of one short .java
 file.
 
 Check WildFly {wildflyVersion}
-https://github.com/wildfly/wildfly/tree/master/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration[test
+https://github.com/wildfly/wildfly/tree/main/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration[test
 suite test cases] for examples.
 
 For more information, see <<WildFly_Testsuite_Test_Developer_Guide,WildFly Testsuite Test

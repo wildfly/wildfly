@@ -2166,7 +2166,7 @@
 
             <dependency>
                 <groupId>org.jboss</groupId>
-                <artifactId>jboss-iiop-client-jakarta</artifactId>
+                <artifactId>jboss-iiop-client</artifactId>
                 <version>${version.org.jboss.iiop-client}</version>
                 <exclusions>
                     <exclusion>
@@ -2178,7 +2178,7 @@
 
             <dependency>
                 <groupId>org.jboss</groupId>
-                <artifactId>jboss-transaction-spi-jakarta</artifactId>
+                <artifactId>jboss-transaction-spi</artifactId>
                 <version>${version.org.jboss.jboss-transaction-spi}</version>
                 <exclusions>
                     <exclusion>
@@ -2190,7 +2190,7 @@
 
             <dependency>
                 <groupId>org.jboss.activemq.artemis.integration</groupId>
-                <artifactId>artemis-wildfly-jakarta-integration</artifactId>
+                <artifactId>artemis-wildfly-integration</artifactId>
                 <version>${version.org.jboss.activemq.artemis.integration}</version>
                 <exclusions>
                     <exclusion>
@@ -2202,7 +2202,7 @@
 
             <dependency>
                 <groupId>org.jboss.genericjms</groupId>
-                <artifactId>generic-jakarta-messaging-ra-jar</artifactId>
+                <artifactId>generic-jms-ra-jar</artifactId>
                 <version>${version.org.jboss.genericjms}</version>
             </dependency>
 
@@ -2316,7 +2316,7 @@
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
-                <artifactId>jboss-metadata-common-jakarta</artifactId>
+                <artifactId>jboss-metadata-common</artifactId>
                 <version>${version.org.jboss.metadata}</version>
                 <exclusions>
                     <exclusion>
@@ -2328,7 +2328,7 @@
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
-                <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+                <artifactId>jboss-metadata-ejb</artifactId>
                 <version>${version.org.jboss.metadata}</version>
                 <exclusions>
                     <exclusion>
@@ -2802,7 +2802,6 @@
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-resources</artifactId>
                 <version>${version.org.jboss.ws.cxf}</version>
-                <classifier>wildfly2700</classifier>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

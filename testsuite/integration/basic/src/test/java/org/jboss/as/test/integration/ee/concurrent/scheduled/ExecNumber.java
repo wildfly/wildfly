@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.integration.ee.concurrent.scheduled;
 
-package org.jboss.as.clustering.function;
+public interface ExecNumber {
 
-import java.util.function.Predicate;
+    void cease();
 
-/**
- * {@link Predicate} utility methods.
- * @author Paul Ferraro
- */
-public class Predicates {
+    void start();
 
-    public static <T> Predicate<T> always() {
-        return when(true);
-    }
+    int actual();
 
-    public static <T> Predicate<T> never() {
-        return when(false);
-    }
-
-    public static <T> Predicate<T> when(boolean condition) {
-        return test -> condition;
-    }
-
-    public static <T> Predicate<T> same(T object) {
-        return test -> test == object;
-    }
+    int expected();
 }

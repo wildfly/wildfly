@@ -243,7 +243,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
     // TODO: if this attribute is set, warn/error if any fs-related journal attribute is set.
-    // TODO: add capability for data-source https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/data-source/capability.adoc
+    // TODO: add capability for data-source https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/data-source/capability.adoc
     public static final SimpleAttributeDefinition JOURNAL_DATASOURCE = create("journal-datasource", STRING)
             .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("datasource")

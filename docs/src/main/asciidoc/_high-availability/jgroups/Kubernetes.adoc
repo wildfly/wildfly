@@ -19,4 +19,4 @@ run-batch
 
 NOTE: To be able to query the Kubernetes server ensure view permissions are granted on the service account.
 
-For advanced configuration options, please visit protocol's documentation https://github.com/jgroups-extras/jgroups-kubernetes/blob/master/README.adoc[here].
+For advanced configuration options, please visit protocol's documentation https://github.com/jgroups-extras/jgroups-kubernetes/blob/main/README.adoc[here].

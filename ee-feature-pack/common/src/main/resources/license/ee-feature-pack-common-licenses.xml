@@ -2430,7 +2430,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss</groupId>
-      <artifactId>jboss-iiop-client-jakarta</artifactId>
+      <artifactId>jboss-iiop-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -2441,7 +2441,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss</groupId>
-      <artifactId>jboss-transaction-spi-jakarta</artifactId>
+      <artifactId>jboss-transaction-spi</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>

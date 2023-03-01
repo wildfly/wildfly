@@ -38,6 +38,7 @@ import org.jboss.msc.service.StartException;
 import jakarta.mail.Authenticator;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -169,7 +170,18 @@ class SessionProviderFactory {
 
         @Override
         public Session getSession() {
-            final Session session = Session.getInstance(properties, new ManagedPasswordAuthenticator(sessionConfig));
+            final Session session;
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            if (current == null) {
+                try {
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(Session.class.getClassLoader());
+                    session = Session.getInstance(properties, new ManagedPasswordAuthenticator(sessionConfig));
+                } finally {
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+                }
+            } else {
+                session = Session.getInstance(properties, new ManagedPasswordAuthenticator(sessionConfig));
+            }
             return session;
         }
     }

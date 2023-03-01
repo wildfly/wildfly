@@ -59,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-iiop-client-jakarta</artifactId>
+            <artifactId>jboss-iiop-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

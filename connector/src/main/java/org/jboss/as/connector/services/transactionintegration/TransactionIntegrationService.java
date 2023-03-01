@@ -24,18 +24,18 @@ package org.jboss.as.connector.services.transactionintegration;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import jakarta.transaction.TransactionSynchronizationRegistry;
 
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.txn.integration.JBossContextXATerminator;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.core.tx.jbossts.TransactionIntegrationImpl;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -44,54 +44,40 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  * A WorkManager Service.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-public final class TransactionIntegrationService implements Service<TransactionIntegration> {
+public final class TransactionIntegrationService implements Service {
 
-    private volatile TransactionIntegration value;
+    private final Consumer<TransactionIntegration> tiConsumer;
 
-    private final InjectedValue<TransactionSynchronizationRegistry> tsr = new InjectedValue<TransactionSynchronizationRegistry>();
+    private final Supplier<TransactionSynchronizationRegistry> tsrSupplier;
 
-    private final InjectedValue<UserTransactionRegistry> utr = new InjectedValue<UserTransactionRegistry>();
+    private final Supplier<UserTransactionRegistry> utrSupplier;
 
-    private final InjectedValue<JBossContextXATerminator> terminator = new InjectedValue<JBossContextXATerminator>();
+    private final Supplier<JBossContextXATerminator> terminatorSupplier;
 
-    private final InjectedValue<XAResourceRecoveryRegistry> rr = new InjectedValue<XAResourceRecoveryRegistry>();
+    private final Supplier<XAResourceRecoveryRegistry> rrSupplier;
 
     /** create an instance **/
-    public TransactionIntegrationService() {
-        super();
+    public TransactionIntegrationService(final Consumer<TransactionIntegration> tiConsumer,
+                                         final Supplier<TransactionSynchronizationRegistry> tsrSupplier,
+                                         final Supplier<UserTransactionRegistry> utrSupplier,
+                                         final Supplier<JBossContextXATerminator> terminatorSupplier,
+                                         final Supplier<XAResourceRecoveryRegistry> rrSupplier) {
+        this.tiConsumer = tiConsumer;
+        this.tsrSupplier = tsrSupplier;
+        this.utrSupplier = utrSupplier;
+        this.terminatorSupplier = terminatorSupplier;
+        this.rrSupplier = rrSupplier;
     }
 
     @Override
-    public TransactionIntegration getValue() throws IllegalStateException {
-        return ConnectorServices.notNull(value);
-    }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-        this.value = new TransactionIntegrationImpl(ContextTransactionManager.getInstance(), tsr.getValue(), utr.getValue(), terminator.getValue(),
-                rr.getValue());
+    public void start(final StartContext context) throws StartException {
+        tiConsumer.accept(new TransactionIntegrationImpl(ContextTransactionManager.getInstance(),
+                tsrSupplier.get(), utrSupplier.get(), terminatorSupplier.get(), rrSupplier.get()));
         ROOT_LOGGER.debugf("Starting Jakarta Connectors TransactionIntegrationService");
     }
 
     @Override
-    public void stop(StopContext context) {
-
+    public void stop(final StopContext context) {
+        tiConsumer.accept(null);
     }
-
-    public Injector<TransactionSynchronizationRegistry> getTsrInjector() {
-        return tsr;
-    }
-
-    public Injector<UserTransactionRegistry> getUtrInjector() {
-        return utr;
-    }
-
-    public Injector<JBossContextXATerminator> getTerminatorInjector() {
-        return terminator;
-    }
-
-    public Injector<XAResourceRecoveryRegistry> getRrInjector() {
-        return rr;
-    }
-
 }

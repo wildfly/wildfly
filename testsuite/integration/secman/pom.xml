@@ -44,12 +44,12 @@
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-transaction-spi-jakarta</artifactId>
+            <artifactId>jboss-transaction-spi</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common-jakarta</artifactId>
+            <artifactId>jboss-metadata-common</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

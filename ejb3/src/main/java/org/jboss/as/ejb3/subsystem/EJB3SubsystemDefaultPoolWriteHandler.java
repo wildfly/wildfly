@@ -27,6 +27,9 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTAN
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_POOL_CONFIG_CAPABILITY;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_POOL_CONFIG_CAPABILITY;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -38,10 +41,13 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ValueInjectionService;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 
 /**
  * User: jpai
@@ -185,13 +191,29 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
 
         if (poolName.isDefined()) {
             // now install default pool config service which points to an existing pool config service
-            final ValueInjectionService<PoolConfig> newDefaultPoolConfigService = new ValueInjectionService<PoolConfig>();
-
-            ServiceName poolConfigDependencyServiceName = context.getCapabilityServiceName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, PoolConfig.class, poolName.asString());
-            ServiceController<?> newController = context.getServiceTarget().addService(poolConfigServiceName, newDefaultPoolConfigService)
-                    .addDependency(poolConfigDependencyServiceName, PoolConfig.class, newDefaultPoolConfigService.getInjector())
-                    .install();
+            final ServiceName poolConfigDependencyServiceName = context.getCapabilityServiceName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, PoolConfig.class, poolName.asString());
+            final ServiceBuilder<?> sb = context.getServiceTarget().addService(poolConfigServiceName);
+            final Consumer<PoolConfig> poolConfigConsumer = sb.provides(poolConfigServiceName);
+            final Supplier<PoolConfig> poolConfigSupplier = sb.requires(poolConfigDependencyServiceName);
+            sb.setInstance(new DefaultPoolConfigService(poolConfigConsumer, poolConfigSupplier)).install();
+        }
+    }
+    private static final class DefaultPoolConfigService implements Service {
+        private final Consumer<PoolConfig> poolConfigConsumer;
+        private final Supplier<PoolConfig> poolConfigSupplier;
+        private DefaultPoolConfigService(final Consumer<PoolConfig> poolConfigConsumer, final Supplier<PoolConfig> poolConfigSupplier) {
+            this.poolConfigConsumer = poolConfigConsumer;
+            this.poolConfigSupplier = poolConfigSupplier;
         }
 
+        @Override
+        public void start(final StartContext startContext) {
+            poolConfigConsumer.accept(poolConfigSupplier.get());
+        }
+
+        @Override
+        public void stop(final StopContext stopContext) {
+            poolConfigConsumer.accept(null);
+        }
     }
 }

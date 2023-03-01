@@ -46,10 +46,6 @@
         <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
     </plugins>
 
-    <resources>
-        <copy artifact="org.wildfly.galleon-plugins:wildfly-config-gen" to="wildfly/wildfly-config-gen.jar"/>
-    </resources>
-
     <generate-feature-specs>
         <extensions>
             <standalone>

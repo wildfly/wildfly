@@ -110,7 +110,7 @@ public abstract class AbstractClusteringTestCase {
     public static final String DB_PORT = System.getProperty("dbport", "9092");
 
     // Timeouts
-    public static final int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(3000);
+    public static final int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(4000);
     public static final int GRACE_TIME_TOPOLOGY_CHANGE = TimeoutUtil.adjust(3000);
     public static final int GRACEFUL_SHUTDOWN_TIMEOUT = TimeoutUtil.adjust(15);
     public static final int GRACE_TIME_TO_MEMBERSHIP_CHANGE = TimeoutUtil.adjust(10000);
