@@ -16,6 +16,7 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
+import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_SSL_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS_PROP_NAME;
@@ -25,10 +26,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+import javax.net.ssl.SSLContext;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
@@ -108,7 +111,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.common.function.ExceptionSupplier;
-import org.wildfly.extension.messaging.activemq.ActiveMQResourceAdapter;
 import org.wildfly.extension.messaging.activemq.ExternalBrokerConfigurationService;
 import org.wildfly.extension.messaging.activemq.GroupBindingService;
 import org.wildfly.extension.messaging.activemq.JGroupsDiscoveryGroupAdd;
@@ -136,7 +138,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
     public static final String CONNECTION_PARAMETERS = "connectionParameters";
     private static final String ACTIVEMQ_ACTIVATION = "org.apache.activemq.artemis.ra.inflow.ActiveMQActivationSpec";
     private static final String ACTIVEMQ_CONN_DEF = "ActiveMQConnectionDefinition";
-    private static final String ACTIVEMQ_RESOURCE_ADAPTER = ActiveMQResourceAdapter.class.getName();
+    private static final String ACTIVEMQ_RESOURCE_ADAPTER = "org.wildfly.extension.messaging.activemq.ActiveMQResourceAdapter";
     private static final String RAMANAGED_CONN_FACTORY = "org.apache.activemq.artemis.ra.ActiveMQRAManagedConnectionFactory";
     private static final String RA_CONN_FACTORY = "org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactory";
     private static final String RA_CONN_FACTORY_IMPL = "org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactoryImpl";
@@ -166,9 +168,12 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
     private String name;
     private final Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
     private final Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings = new HashMap<>();
+
     private Map<String, Supplier<SocketBinding>> groupBindings = new HashMap<>();
     // mapping between the {discovery}-groups and the cluster names they use
     private final Map<String, String> clusterNames = new HashMap<>();
+    private final Map<String, Supplier<SSLContext>> sslContexts = new HashMap<>();
+    private Set<String> sslContextNames = new HashSet<>();
     // mapping between the {discovery}-groups and the command dispatcher factory they use
     private final Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
     private BindInfo bindInfo;
@@ -224,6 +229,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
             TransportConfiguration[] connectors,
             DiscoveryGroupConfiguration groupConfiguration,
             Set<String> connectorsSocketBindings,
+            Set<String> sslContextNames,
             String jgroupClusterName,
             String jgroupChannelName,
             List<PooledConnectionFactoryConfigProperties> adapterParams,
@@ -243,7 +249,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
                 bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace,
                 capabilityServiceSupport, false);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName);
-        installService0(serviceBuilder, configuration, service, groupConfiguration, connectorsSocketBindings, capabilityServiceSupport);
+        installService0(serviceBuilder, configuration, service, groupConfiguration, connectorsSocketBindings, sslContextNames, capabilityServiceSupport);
         return service;
     }
 
@@ -252,6 +258,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
             TransportConfiguration[] connectors,
             DiscoveryGroupConfiguration groupConfiguration,
             Set<String> connectorsSocketBindings,
+            Set<String> sslContextNames,
             String jgroupClusterName,
             String jgroupChannelName,
             List<PooledConnectionFactoryConfigProperties> adapterParams,
@@ -268,7 +275,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
         ExternalPooledConnectionFactoryService service = new ExternalPooledConnectionFactoryService(name,
                 connectors, groupConfiguration, jgroupClusterName, jgroupChannelName, adapterParams,
                 bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, context.getCapabilityServiceSupport(), true);
-        installService0(context, serviceName, service, groupConfiguration, connectorsSocketBindings, model);
+        installService0(context, serviceName, service, groupConfiguration, connectorsSocketBindings, sslContextNames, model);
         return service;
     }
 
@@ -277,6 +284,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
             ExternalPooledConnectionFactoryService service,
             DiscoveryGroupConfiguration groupConfiguration,
             Set<String> connectorsSocketBindings,
+            Set<String> sslContextNames,
             ModelNode model) throws OperationFailedException {
         ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName);
         serviceBuilder.requires(context.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null));
@@ -286,6 +294,11 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
         if (credentialReference.isDefined()) {
             service.credentialSourceSupplier = CredentialReference.getCredentialSourceSupplier(context, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE, model, serviceBuilder);
         }
+        for (final String entry : sslContextNames) {
+            Supplier<SSLContext> sslContext = serviceBuilder.requires(ELYTRON_SSL_CONTEXT_CAPABILITY.getCapabilityServiceName(entry));
+            service.sslContexts.put(entry, sslContext);
+        }
+        service.sslContextNames.addAll(sslContextNames);
         Map<String, Boolean> outbounds = TransportConfigOperationHandlers.listOutBoundSocketBinding(context, connectorsSocketBindings);
         for (final String connectorSocketBinding : connectorsSocketBindings) {
             // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
@@ -320,10 +333,16 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
             ExternalPooledConnectionFactoryService service,
             DiscoveryGroupConfiguration groupConfiguration,
             Set<String> connectorsSocketBindings,
+            Set<String> sslContextNames,
             CapabilityServiceSupport capabilityServiceSupport) throws OperationFailedException {
         serviceBuilder.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
         // ensures that Artemis client thread pools are not stopped before any deployment depending on a pooled-connection-factory
         serviceBuilder.requires(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
+        for (final String entry : sslContextNames) {
+            Supplier<SSLContext> sslContext = serviceBuilder.requires(ELYTRON_SSL_CONTEXT_CAPABILITY.getCapabilityServiceName(entry));
+            service.sslContexts.put(entry, sslContext);
+        }
+        service.sslContextNames.addAll(sslContextNames);
         Map<String, ServiceName> outbounds = configuration.getOutboundSocketBindings();
         for (final String connectorSocketBinding : connectorsSocketBindings) {
             // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
@@ -378,10 +397,6 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
             for (TransportConfiguration tc : connectors) {
                 if (tc == null) {
                     throw MessagingLogger.ROOT_LOGGER.connectorNotDefined("null");
-                }
-                if (connectorClassname.length() > 0) {
-                    connectorClassname.append(",");
-                    connectorParams.append(",");
                 }
                 connectorClassname.append(tc.getFactoryClassName());
                 Map<String, Object> params = tc.getParams();

@@ -22,10 +22,15 @@
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_CONNECTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_ACCEPTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_MASTER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_PRIMARY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_SECONDARY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_SLAVE_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.SERVER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_COLOCATED_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_MASTER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_PRIMARY_PATH;
@@ -43,6 +48,7 @@ import static org.wildfly.extension.messaging.activemq.MessagingExtension.SHARED
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
@@ -68,11 +74,26 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
+        registerTransformers_WF_28(builder.createBuilder(MessagingExtension.VERSION_15_0_0, MessagingExtension.VERSION_14_0_0));
         registerTransformers_WF_27(builder.createBuilder(MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_13_1_0));
         registerTransformers_WF_26_1(builder.createBuilder(MessagingExtension.VERSION_13_1_0, MessagingExtension.VERSION_13_0_0));
-
         builder.buildAndRegister(registration, new ModelVersion[]{MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_13_1_0,
-            MessagingExtension.VERSION_14_0_0});
+            MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_15_0_0});
+    }
+    private static void registerTransformers_WF_28(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(SERVER_PATH);
+                server.addChildResource(PathElement.pathElement(REMOTE_ACCEPTOR)).getAttributeBuilder()
+                .addRejectCheck(DEFINED, CommonAttributes.SSL_CONTEXT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CommonAttributes.SSL_CONTEXT);
+        server.addChildResource(PathElement.pathElement(HTTP_ACCEPTOR)).getAttributeBuilder()
+                .addRejectCheck(DEFINED, CommonAttributes.SSL_CONTEXT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CommonAttributes.SSL_CONTEXT);
+        server.addChildResource(PathElement.pathElement(REMOTE_CONNECTOR)).getAttributeBuilder()
+                .addRejectCheck(DEFINED, CommonAttributes.SSL_CONTEXT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CommonAttributes.SSL_CONTEXT);
+        server.addChildResource(PathElement.pathElement(HTTP_CONNECTOR)).getAttributeBuilder()
+                .addRejectCheck(DEFINED, CommonAttributes.SSL_CONTEXT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CommonAttributes.SSL_CONTEXT);
     }
 
     private static void registerTransformers_WF_27(ResourceTransformationDescriptionBuilder subsystem) {

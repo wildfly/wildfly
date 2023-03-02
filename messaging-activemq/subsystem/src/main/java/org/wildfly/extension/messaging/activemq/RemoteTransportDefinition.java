@@ -52,7 +52,7 @@ public class RemoteTransportDefinition extends AbstractTransportDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
-    static AttributeDefinition[] ATTRIBUTES = { SOCKET_BINDING, CommonAttributes.PARAMS };
+    static AttributeDefinition[] ATTRIBUTES = {SOCKET_BINDING, CommonAttributes.PARAMS, CommonAttributes.SSL_CONTEXT};
 
     static RemoteTransportDefinition createAcceptorDefinition(boolean registerRuntimeOnly) {
         return new RemoteTransportDefinition(true, CommonAttributes.REMOTE_ACCEPTOR, registerRuntimeOnly);

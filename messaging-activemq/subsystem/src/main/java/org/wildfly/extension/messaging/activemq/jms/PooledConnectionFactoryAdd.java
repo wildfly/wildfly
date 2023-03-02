@@ -39,7 +39,10 @@ import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttr
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
 
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -55,6 +58,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
 
 /**
@@ -143,6 +147,9 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         }
 
         List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(resolvedModel, context, PooledConnectionFactoryDefinition.ATTRIBUTES);
+        final Set<String> connectorsSocketBindings = new HashSet<>();
+        final Set<String> sslContextNames = new HashSet<>();
+        TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectors, connectorsSocketBindings, sslContextNames);
         String serverName = serverAddress.getLastElement().getValue();
         PooledConnectionFactoryService.installService(context,
                 name, serverName, connectors, discoveryGroupName, jgroupClusterName,

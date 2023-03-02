@@ -69,7 +69,7 @@ public class HTTPAcceptorDefinition extends PersistentResourceDefinition {
             .setRequired(false)
             .setAllowExpression(true)
             .build();
-    static AttributeDefinition[] ATTRIBUTES = { HTTP_LISTENER, PARAMS, UPGRADE_LEGACY };
+    static AttributeDefinition[] ATTRIBUTES = {HTTP_LISTENER, PARAMS, UPGRADE_LEGACY, CommonAttributes.SSL_CONTEXT};
 
     HTTPAcceptorDefinition() {
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.HTTP_ACCEPTOR_PATH,
@@ -80,6 +80,11 @@ public class HTTPAcceptorDefinition extends PersistentResourceDefinition {
                     }
                 })
                 .addCapabilities(CAPABILITY)
+                .setAdditionalPackages(
+                        RuntimePackageDependency.required("io.undertow.core"),
+                        RuntimePackageDependency.required("org.jboss.as.remoting"),
+                        RuntimePackageDependency.required("org.jboss.xnio"),
+                        RuntimePackageDependency.required("org.jboss.xnio.netty.netty-xnio-transport"))
                 .setAddHandler(HTTPAcceptorAdd.INSTANCE)
                 .setRemoveHandler(HTTPAcceptorRemove.INSTANCE));
     }

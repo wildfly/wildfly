@@ -25,10 +25,10 @@ HornetQ-based ConnectionFactory.
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0"> 
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
     <server name="default">
         ...
-        <legacy-connection-factory name="legacyConnectionFactory-discovery" 
+        <legacy-connection-factory name="legacyConnectionFactory-discovery"
                                    entries="java:jboss/exported/jms/RemoteConnectionFactory"
                                    ... />
     </server>
