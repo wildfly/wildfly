@@ -17,12 +17,6 @@
  */
 package org.jboss.as.ee.concurrent.handle;
 
-import jakarta.enterprise.concurrent.ContextService;
-import jakarta.enterprise.concurrent.spi.ThreadContextProvider;
-import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
-import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
-import org.wildfly.security.manager.WildFlySecurityManager;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -33,6 +27,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+
+import jakarta.enterprise.concurrent.ContextService;
+import jakarta.enterprise.concurrent.spi.ThreadContextProvider;
+import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
+import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * The context handle factory responsible for saving and setting the context for a deployement's ThreadContextProvider.
@@ -112,7 +112,7 @@ public class ThreadContextProviderContextHandleFactory implements EE10ContextHan
                 }
                 @Override
                 public String getFactoryName() {
-                    return getFactoryName();
+                    return factoryName;
                 }
             };
         }

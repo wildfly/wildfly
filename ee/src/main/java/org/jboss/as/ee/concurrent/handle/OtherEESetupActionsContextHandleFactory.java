@@ -21,11 +21,6 @@
  */
 package org.jboss.as.ee.concurrent.handle;
 
-import jakarta.enterprise.concurrent.ContextServiceDefinition;
-import org.jboss.as.ee.logging.EeLogger;
-import org.jboss.as.server.deployment.SetupAction;
-
-import jakarta.enterprise.concurrent.ContextService;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -33,6 +28,11 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import jakarta.enterprise.concurrent.ContextService;
+import jakarta.enterprise.concurrent.ContextServiceDefinition;
+import org.jboss.as.ee.logging.EeLogger;
+import org.jboss.as.server.deployment.SetupAction;
 
 /**
  * The context handle factory responsible for setting EE setup actions in the invocation context.
@@ -190,7 +190,7 @@ public class OtherEESetupActionsContextHandleFactory implements EE10ContextHandl
                 }
                 @Override
                 public String getFactoryName() {
-                    return getFactoryName();
+                    return NAME;
                 }
             };
         }
