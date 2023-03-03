@@ -34,12 +34,12 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
  * @author Tomaz Cerar
  * @created 19.12.11 20:04
  */
-class MailSubsystemResource extends PersistentResourceDefinition {
+class MailSubsystemDefinition extends PersistentResourceDefinition {
 
-    MailSubsystemResource() {
+    MailSubsystemDefinition() {
         super(MailExtension.SUBSYSTEM_PATH,
                 MailExtension.getResourceDescriptionResolver(),
-                MailSubsystemAdd.INSTANCE,
+                new MailSubsystemAdd(),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

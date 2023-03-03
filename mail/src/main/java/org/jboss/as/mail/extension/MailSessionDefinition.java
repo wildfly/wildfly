@@ -27,8 +27,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -36,9 +37,12 @@ import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.common.function.ExceptionBiConsumer;
 
 import jakarta.mail.Session;
 
@@ -57,11 +61,11 @@ class MailSessionDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.JNDI_NAME, ModelType.STRING, false)
                     .setAllowExpression(true)
-                    .setRestartAllServices()
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
     protected static final SimpleAttributeDefinition FROM =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.FROM, ModelType.STRING, true)
-                    .setRestartAllServices()
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .build();
@@ -69,7 +73,7 @@ class MailSessionDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.DEBUG, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
                     .setDefaultValue(ModelNode.FALSE)
-                    .setRestartAllServices()
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
     static final AttributeDefinition[] ATTRIBUTES = {DEBUG, JNDI_NAME, FROM};
@@ -77,8 +81,9 @@ class MailSessionDefinition extends PersistentResourceDefinition {
     MailSessionDefinition() {
         super(new SimpleResourceDefinition.Parameters(MailExtension.MAIL_SESSION_PATH,
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION))
-                .setAddHandler(MailSessionAdd.INSTANCE)
-                .setRemoveHandler(new ServiceRemoveStepHandler(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(), MailSessionAdd.INSTANCE))
+                .setAddHandler(new MailSessionAdd())
+                .setRemoveHandler(new MailSessionRemove())
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(SESSION_CAPABILITY)
         );
         ApplicationTypeConfig atc = new ApplicationTypeConfig(MailExtension.SUBSYSTEM_NAME, MailSubsystemModel.MAIL_SESSION);
@@ -86,11 +91,15 @@ class MailSessionDefinition extends PersistentResourceDefinition {
     }
 
     @Override
-    public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {
-        MailServerWriteAttributeHandler handler = new MailServerWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            rootResourceRegistration.registerReadWriteAttribute(attr, null, handler);
+    public void registerAttributes(final ManagementResourceRegistration registration) {
+        ExceptionBiConsumer<OperationContext, ModelNode, OperationFailedException> remover = MailSessionRemove::removeSessionProviderService;
+        ExceptionBiConsumer<OperationContext, ModelNode, OperationFailedException> installer = MailSessionAdd::installSessionProviderService;
+        for (AttributeDefinition attribute : ATTRIBUTES) {
+            if (!attribute.getName().equals(JNDI_NAME.getName())) {
+                registration.registerReadWriteAttribute(attribute, null, new MailSessionWriteAttributeHandler(attribute, remover, installer));
+            }
         }
+        registration.registerReadWriteAttribute(JNDI_NAME, null, new MailSessionWriteAttributeHandler(JNDI_NAME, MailSessionRemove::removeBinderService, MailSessionAdd::installBinderService));
     }
 
     @Override
@@ -116,5 +125,4 @@ class MailSessionDefinition extends PersistentResourceDefinition {
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return accessConstraints;
     }
-
 }

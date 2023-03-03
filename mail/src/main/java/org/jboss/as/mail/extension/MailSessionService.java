@@ -22,16 +22,15 @@
 
 package org.jboss.as.mail.extension;
 
-import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.msc.service.Service;
+import jakarta.mail.Session;
+
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import jakarta.mail.Session;
 
 /**
  * Service that provides a jakarta.mail.Session.
@@ -39,31 +38,22 @@ import jakarta.mail.Session;
  * @author Tomaz Cerar
  * @created 27.7.11 0:14
  */
-public class MailSessionService implements Service<Session> {
-    private final MailSessionConfig config;
-    private final Map<String, Supplier<OutboundSocketBinding>> socketBindings;
-    private volatile SessionProvider provider;
+public class MailSessionService implements Service {
+    private final Consumer<Session> session;
+    private final Supplier<SessionProvider> provider;
 
-    public MailSessionService(final MailSessionConfig config, final Map<String, Supplier<OutboundSocketBinding>> socketBindings) {
-        MailLogger.ROOT_LOGGER.tracef("service constructed with config: %s", config);
-        this.config = config;
-        this.socketBindings = socketBindings;
+    public MailSessionService(Consumer<Session> session, Supplier<SessionProvider> provider) {
+        this.session = session;
+        this.provider = provider;
     }
 
-    MailSessionConfig getConfig() {
-        return config;
-    }
-
+    @Override
     public void start(final StartContext startContext) throws StartException {
-        MailLogger.ROOT_LOGGER.trace("start...");
-        provider = SessionProviderFactory.create(config, socketBindings);
+        this.session.accept(this.provider.get().getSession());
     }
 
+    @Override
     public void stop(final StopContext stopContext) {
-        MailLogger.ROOT_LOGGER.trace("stop...");
-    }
-
-    public Session getValue() throws IllegalStateException, IllegalArgumentException {
-        return provider.getSession();
+        // Nothing to stop
     }
 }

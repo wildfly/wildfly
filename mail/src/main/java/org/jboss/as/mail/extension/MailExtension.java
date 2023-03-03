@@ -70,7 +70,7 @@ public class MailExtension implements Extension {
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
-        final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(new MailSubsystemResource());
+        final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(new MailSubsystemDefinition());
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         subsystem.registerXMLElementWriter(new MailSubsystemParser4_0());

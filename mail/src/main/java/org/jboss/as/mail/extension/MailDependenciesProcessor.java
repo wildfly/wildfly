@@ -8,20 +8,16 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
-
-import jakarta.mail.Session;
 
 /**
  * @author Stuart Douglas
  */
 public class MailDependenciesProcessor implements DeploymentUnitProcessor {
 
-
-    private static final ModuleIdentifier MAIL_API = ModuleIdentifier.create("javax.mail.api");
-    private static final ModuleIdentifier ACTIVATION_API = ModuleIdentifier.create("javax.activation.api");
+    private static final String MAIL_API = "jakarta.mail.api";
+    private static final String ACTIVATION_API = "jakarta.activation.api";
     private static final String ANGUS_MAIL_IMPL = "org.eclipse.angus.mail";
     private static final String ANGUS_ACTIVATION_IMPL = "org.eclipse.angus.activation";
 
@@ -33,11 +29,9 @@ public class MailDependenciesProcessor implements DeploymentUnitProcessor {
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, MAIL_API, false, false, true, false));
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ACTIVATION_API, false, false, true, false));
 
-        if (!Session.class.getName().startsWith("javax")) {
-            ModuleDependency angusMailModDep = new ModuleDependency(moduleLoader, ANGUS_MAIL_IMPL, false, false, true, false);
-            angusMailModDep.addImportFilter(PathFilters.getMetaInfFilter(), true);
-            moduleSpec.addSystemDependency(angusMailModDep);
-            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ANGUS_ACTIVATION_IMPL, false, false, true, false));
-        }
+        ModuleDependency angusMailModDep = new ModuleDependency(moduleLoader, ANGUS_MAIL_IMPL, false, false, true, false);
+        angusMailModDep.addImportFilter(PathFilters.getMetaInfFilter(), true);
+        moduleSpec.addSystemDependency(angusMailModDep);
+        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ANGUS_ACTIVATION_IMPL, false, false, true, false));
     }
 }

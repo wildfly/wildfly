@@ -24,6 +24,8 @@
 
 package org.jboss.as.mail.extension;
 
+import java.util.function.Supplier;
+
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -34,10 +36,10 @@ import org.jboss.as.naming.ValueManagedReference;
 */
 class MailSessionManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
 
-    private final MailSessionService service;
+    private final Supplier<SessionProvider> provider;
 
-    public MailSessionManagedReferenceFactory(MailSessionService service) {
-        this.service = service;
+    public MailSessionManagedReferenceFactory(Supplier<SessionProvider> provider) {
+        this.provider = provider;
     }
 
     @Override
@@ -53,6 +55,6 @@ class MailSessionManagedReferenceFactory implements ContextListAndJndiViewManage
 
     @Override
     public ManagedReference getReference() {
-        return new ValueManagedReference(service.getValue());
+        return new ValueManagedReference(this.provider.get().getSession());
     }
 }
