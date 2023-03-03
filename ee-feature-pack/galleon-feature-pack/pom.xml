@@ -42,6 +42,8 @@
     <packaging>pom</packaging>
 
     <properties>
+        <galleon.shared.resources.directory>${basedir}/../galleon-shared/src/main/resources</galleon.shared.resources.directory>
+        <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
         <oidc.galleon.common.resources.directory>${basedir}/../../elytron-oidc-client/galleon-common/src/main/resources</oidc.galleon.common.resources.directory>
         <servlet.common.resources.directory>${basedir}/../../servlet-feature-pack/common/src/main/resources</servlet.common.resources.directory>
         <servlet.galleon-common.resources.directory>${basedir}/../../servlet-feature-pack/galleon-common/src/main/resources</servlet.galleon-common.resources.directory>
@@ -124,6 +126,38 @@
                             <resources>
                                 <resource>
                                     <directory>${basedir}/target/unpacked-wildfly-core-galleon-resources</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-galleon-shared-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.shared.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-galleon-local-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.shared.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -276,6 +310,7 @@
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFiles>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
@@ -408,6 +443,22 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-local</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -474,6 +525,8 @@
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-galleon-pruned</exclude>
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-galleon-common</exclude>
+                                                <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
+                                                <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-local</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-oidc-feature-pack-galleon-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-servlet-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-servlet-feature-pack-galleon-legacy</exclude>

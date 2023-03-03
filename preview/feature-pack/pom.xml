@@ -40,6 +40,7 @@
 
     <properties>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
+        <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
         <mp.galleon.common.resources.directory>${basedir}/../../microprofile/galleon-common/src/main/resources</mp.galleon.common.resources.directory>
         <oidc.galleon.common.resources.directory>${basedir}/../../elytron-oidc-client/galleon-common/src/main/resources</oidc.galleon.common.resources.directory>
         <full.common.resources.directory>${basedir}/../../ee-feature-pack/common/src/main/resources</full.common.resources.directory>
@@ -129,6 +130,23 @@
                             <resources>
                                 <resource>
                                     <directory>${basedir}/target/unpacked-wildfly-core-galleon-resources</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-ee-galleon-shared-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
+                            <resources>
+                                <resource>
+                                    <directory>${ee.galleon.shared.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -362,6 +380,7 @@
                         <configuration>
                             <licensesConfigFiles>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
@@ -527,6 +546,14 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-servlet-feature-pack-common</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
@@ -620,6 +647,7 @@
                                                 <!-- Ignore the shared resource poms as those we want their
                                                      transitives. Those poms ban transitives at their level -->
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
+                                                <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
                                                 <exclude>${full.maven.groupId}:wildfly-mp-feature-pack-galleon-common</exclude>
                                                 <exclude>${full.maven.groupId}:wildfly-oidc-feature-pack-galleon-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-common</exclude>

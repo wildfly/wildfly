@@ -665,6 +665,34 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-local</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-local</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee-feature-pack-pruned</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
