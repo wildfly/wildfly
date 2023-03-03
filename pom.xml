@@ -500,9 +500,8 @@
         <version.org.jboss.mod_cluster>2.0.1.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>6.0.0.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>9.0.1.Final</version.org.jboss.openjdk-orb>
-        <legacy.version.org.jboss.resteasy>4.7.4.Final</legacy.version.org.jboss.resteasy>
-        <version.org.jboss.resteasy>6.2.2.Final</version.org.jboss.resteasy>
-        <version.org.jboss.resteasy.microprofile>2.0.0.Final</version.org.jboss.resteasy.microprofile>
+        <version.org.jboss.resteasy>6.2.3.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy.microprofile>2.1.0.Final</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.0.1.Final</version.org.jboss.resteasy.spring>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
@@ -1012,7 +1011,7 @@
             </dependency>
 
             <!--
-            TODO used both in testsuite/integration/legacy-ejb-client and in legacy code.
+            TODO used in legacy code.
             Once legacy code use is gone, convert to <scope>test</scope>
             -->
             <dependency>
