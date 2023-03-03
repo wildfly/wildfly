@@ -144,9 +144,12 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT);
         PathAddress servletContainerAddress = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.PATH_ELEMENT.getKey(), "rejected-container"));
+        PathAddress affinityCookiePath = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.PATH_ELEMENT.getKey(), "affinity-cookie-container")).append(AffinityCookieDefinition.PATH_ELEMENT);
 
         if (UndertowModel.VERSION_13_0_0.requiresTransformation(this.modelVersion)) {
             config.addFailedAttribute(servletContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(ServletContainerDefinition.ORPHAN_SESSION_ALLOWED));
+
+            config.addFailedAttribute(affinityCookiePath, FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 
         List<ModelNode> operations = builder.parseXmlResource("undertow-transform-reject.xml");

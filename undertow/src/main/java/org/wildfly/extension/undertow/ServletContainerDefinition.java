@@ -244,6 +244,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
     public List<? extends PersistentResourceDefinition> getChildren() {
         return List.of(
                 new JspDefinition(),
+                new AffinityCookieDefinition(),
                 new SessionCookieDefinition(),
                 new PersistentSessionsDefinition(),
                 new WebsocketsDefinition(),

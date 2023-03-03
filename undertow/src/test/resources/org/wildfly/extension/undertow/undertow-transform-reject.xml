@@ -26,4 +26,7 @@
     </server>
     <servlet-container name="default-container"/>
     <servlet-container name="rejected-container" allow-orphan-session="true"/>
+    <servlet-container name="affinity-cookie-container">
+        <affinity-cookie name="SRV"/>
+    </servlet-container>
 </subsystem>

@@ -34,7 +34,7 @@ public class SharedSessionManagerConfig {
 
     public static final AttachmentKey<SharedSessionManagerConfig> ATTACHMENT_KEY = AttachmentKey.create(SharedSessionManagerConfig.class);
     public static final ServiceName SHARED_SESSION_MANAGER_SERVICE_NAME = ServiceName.of("web", "shared-session-manager");
-    public static final ServiceName SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME = SHARED_SESSION_MANAGER_SERVICE_NAME.append("codec");
+    public static final ServiceName SHARED_SESSION_AFFINITY_SERVICE_NAME = SHARED_SESSION_MANAGER_SERVICE_NAME.append("affinity");
 
     private boolean distributable = false;
     private Integer maxActiveSessions;

@@ -117,8 +117,10 @@ public interface Constants {
     String FILTERS = "filters";
     String FILTER_REF = "filter-ref";
 
-    //session cookie config
+    // session and affinity cookie config
     String SESSION_COOKIE = "session-cookie";
+    String AFFINITY_COOKIE = "affinity-cookie";
+
     String DOMAIN = "domain";
     String COMMENT = "comment";
     String HTTP_ONLY = "http-only";

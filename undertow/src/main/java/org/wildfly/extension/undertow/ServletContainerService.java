@@ -50,7 +50,9 @@ public interface ServletContainerService {
 
     ServletStackTraces getStackTraces();
 
-    SessionCookieConfig getSessionCookieConfig();
+    CookieConfig getSessionCookieConfig();
+
+    CookieConfig getAffinityCookieConfig();
 
     DirectBufferCache getBufferCache();
 

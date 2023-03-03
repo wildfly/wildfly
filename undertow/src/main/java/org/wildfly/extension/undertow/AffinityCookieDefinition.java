@@ -33,22 +33,23 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Resource description for the session cookie configuration.
+ * Resource description for the affinity cookie configuration with cookie name being required and no comment being defined.
  *
  * @author Radoslav Husar
  */
-class SessionCookieDefinition extends AbstractCookieDefinition {
+class AffinityCookieDefinition extends AbstractCookieDefinition {
 
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.AFFINITY_COOKIE);
 
-    static final Collection<AttributeDefinition> ATTRIBUTES = EnumSet.complementOf(EnumSet.of(Attribute.REQUIRED_NAME))
+    static final Collection<AttributeDefinition> ATTRIBUTES = EnumSet.complementOf(EnumSet.of(Attribute.OPTIONAL_NAME, Attribute.COMMENT))
             .stream().map(Attribute::getDefinition).collect(Collectors.toUnmodifiableSet());
 
-    SessionCookieDefinition() {
+    AffinityCookieDefinition() {
         super(PATH_ELEMENT, ATTRIBUTES);
     }
 
     static CookieConfig getConfig(final ExpressionResolver context, final ModelNode model) throws OperationFailedException {
-        return AbstractCookieDefinition.getConfig(Attribute.OPTIONAL_NAME, context, model);
+        return AbstractCookieDefinition.getConfig(Attribute.REQUIRED_NAME, context, model);
     }
+
 }
