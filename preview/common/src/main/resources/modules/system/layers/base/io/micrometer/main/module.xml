@@ -30,6 +30,9 @@
     <resources>
         <artifact name="${io.micrometer:micrometer-core}"/>
         <artifact name="${io.micrometer:micrometer-registry-prometheus}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-exporter-common}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
     </resources>
 
     <dependencies>
