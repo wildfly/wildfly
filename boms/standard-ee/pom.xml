@@ -2996,8 +2996,8 @@
                 <version>${version.org.wildfly.naming-client}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.remoting3</groupId>
-                        <artifactId>jboss-remoting</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
