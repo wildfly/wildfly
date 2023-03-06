@@ -44,7 +44,6 @@
     <name>WildFly: Servlet Feature Pack Parent</name>
 
     <modules>
-        <module>galleon-common</module>
         <module>galleon-pruned</module>
     </modules>
 
