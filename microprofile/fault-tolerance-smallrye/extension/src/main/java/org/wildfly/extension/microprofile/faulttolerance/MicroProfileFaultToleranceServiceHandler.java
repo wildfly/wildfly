@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.microprofile.faulttolerance;
 
+import static org.wildfly.extension.microprofile.faulttolerance.MicroProfileFaultToleranceLogger.ROOT_LOGGER;
+
 import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -39,7 +41,7 @@ public class MicroProfileFaultToleranceServiceHandler implements ResourceService
 
     @Override
     public void installServices(OperationContext context, ModelNode model) {
-        MicroProfileFaultToleranceLogger.ROOT_LOGGER.activatingSubsystem();
+        ROOT_LOGGER.activatingSubsystem();
     }
 
     @Override

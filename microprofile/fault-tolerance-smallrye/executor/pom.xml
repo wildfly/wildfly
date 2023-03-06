@@ -37,7 +37,6 @@
 
     <name>WildFly: MicroProfile Fault Tolerance - Executor</name>
 
-
     <dependencies>
         <dependency>
             <groupId>io.smallrye</groupId>
