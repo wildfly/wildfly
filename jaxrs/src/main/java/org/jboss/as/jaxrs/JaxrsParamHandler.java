@@ -26,8 +26,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * An AbstractWriteAttributeHandler extension for updating basic RESTEasy config attributes
@@ -47,11 +45,8 @@ final class JaxrsParamHandler extends AbstractWriteAttributeHandler<Void> {
             ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder)
                     throws OperationFailedException {
 
-        //If the required value is the current one, we do not need to do anything.
-        if (!isSameValue(context, resolvedValue, currentValue, attributeName)) {
-            updateServerConfig(context, attributeName, resolvedValue, false);
-        }
-        return false;
+        // Currently all attributes are set as context parameters and therefore require a reload or at least a re-deploy
+        return !isSameValue(context, resolvedValue, currentValue, attributeName);
     }
 
     private boolean isSameValue(OperationContext context, ModelNode resolvedValue, ModelNode currentValue, String attributeName)
@@ -68,63 +63,6 @@ final class JaxrsParamHandler extends AbstractWriteAttributeHandler<Void> {
     @Override
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
             ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-        updateServerConfig(null, attributeName, valueToRestore, true);
-    }
-
-    /**
-     * Returns true if the update operation succeeds in modifying the runtime, false otherwise.
-     * @param context TODO
-     * @param attributeName
-     * @param value
-     */
-    private void updateServerConfig(OperationContext context, String attributeName, ModelNode value, boolean isRevert) throws OperationFailedException {
-        ServiceRegistry registry = context.getServiceRegistry(true);
-        ServiceName name = JaxrsServerConfigService.CONFIG_SERVICE;
-        @SuppressWarnings("deprecation")
-        JaxrsServerConfig config = (JaxrsServerConfig) registry.getRequiredService(name).getValue();
-
-        if (JaxrsConstants.JAXRS_2_0_REQUEST_MATCHING.equals(attributeName)) {
-            config.setJaxrs20RequestMatching(value);
-        } else if (JaxrsConstants.RESTEASY_ADD_CHARSET.equals(attributeName)) {
-            config.setResteasyAddCharset(value);
-        } else if (JaxrsConstants.RESTEASY_BUFFER_EXCEPTION_ENTITY.equals(attributeName)) {
-            config.setResteasyBufferExceptionEntity(value);
-        } else if (JaxrsConstants.RESTEASY_DISABLE_HTML_SANITIZER.equals(attributeName)) {
-            config.setResteasyDisableHtmlSanitizer(value);
-        } else if (JaxrsConstants.RESTEASY_DISABLE_PROVIDERS.equals(attributeName)) {
-            config.setResteasyDisableProviders(value);
-        } else if (JaxrsConstants.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES.equals(attributeName)) {
-            config.setResteasyDocumentExpandEntityReferences(value);
-        } else if (JaxrsConstants.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS.equals(attributeName)) {
-            config.setResteasySecureDisableDTDs(value);
-        } else if (JaxrsConstants.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE.equals(attributeName)) {
-            config.setResteasyDocumentSecureProcessingFeature(value);
-        } else if (JaxrsConstants.RESTEASY_GZIP_MAX_INPUT.equals(attributeName)) {
-            config.setResteasyGzipMaxInput(value);
-        } else if (JaxrsConstants.RESTEASY_JNDI_RESOURCES.equals(attributeName)) {
-            config.setResteasyJndiResources(value);
-        } else if (JaxrsConstants.RESTEASY_LANGUAGE_MAPPINGS.equals(attributeName)) {
-            config.setResteasyLanguageMappings(value);
-        } else if (JaxrsConstants.RESTEASY_MEDIA_TYPE_MAPPINGS.equals(attributeName)) {
-            config.setResteasyMediaTypeMappings(value);
-        } else if (JaxrsConstants.RESTEASY_MEDIA_TYPE_PARAM_MAPPING.equals(attributeName)) {
-            config.setResteasyMediaTypeParamMapping(value);
-        } else if (JaxrsConstants.RESTEASY_PREFER_JACKSON_OVER_JSONB.equals(attributeName)) {
-            config.setResteasyPreferJacksonOverJsonB(value);
-        } else if (JaxrsConstants.RESTEASY_PROVIDERS.equals(attributeName)) {
-            config.setResteasyProviders(value);
-        } else if (JaxrsConstants.RESTEASY_RFC7232_PRECONDITIONS.equals(attributeName)) {
-            config.setResteasyRFC7232Preconditions(value);
-        } else if (JaxrsConstants.RESTEASY_ROLE_BASED_SECURITY.equals(attributeName)) {
-            config.setResteasyRoleBasedSecurity(value);
-        } else if (JaxrsConstants.RESTEASY_SECURE_RANDOM_MAX_USE.equals(attributeName)) {
-            config.setResteasySecureRandomMaxUse(value);
-        } else if (JaxrsConstants.RESTEASY_USE_BUILTIN_PROVIDERS.equals(attributeName)) {
-            config.setResteasyUseBuiltinProviders(value);
-        } else if (JaxrsConstants.RESTEASY_USE_CONTAINER_FORM_PARAMS.equals(attributeName)) {
-            config.setResteasyUseContainerFormParams(value);
-        } else if (JaxrsConstants.RESTEASY_WIDER_REQUEST_MATCHING.equals(attributeName)) {
-            config.setResteasyWiderRequestMatching(value);
-        }
+        // Nothing to do, as nothing was changed
     }
 }

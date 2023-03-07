@@ -22,28 +22,30 @@
 
 package org.jboss.as.jaxrs;
 
-import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.EnumSet;
 import java.util.List;
-
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:rsigal@redhat.com">Ron Sigal</a>
  */
-public class JaxrsSubsystemParser_2_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
+public class JaxrsSubsystemParser_3_0 extends JaxrsSubsystemParser_2_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+
+    private static final String NAMESPACE = "urn:jboss:domain:jaxrs:3.0";
 
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
@@ -141,70 +143,40 @@ public class JaxrsSubsystemParser_2_0 implements XMLStreamConstants, XMLElementR
                     handleSimpleElement(reader, encountered, subsystem, JaxrsElement.RESTEASY_WIDER_REQUEST_MATCHING);
                     break;
 
+                case TRACING_TYPE:
+                    JaxrsAttribute.TRACING_TYPE.parseAndSetParameter(parseSimpleValue(reader, encountered, element), subsystem, reader);
+                    break;
+
+                case TRACING_THRESHOLD:
+                    JaxrsAttribute.TRACING_THRESHOLD.parseAndSetParameter(parseSimpleValue(reader, encountered, element), subsystem, reader);
+                    break;
+
                 default:
                     throw unexpectedElement(reader);
             }
         }
     }
 
-    protected void handleSimpleElement(final XMLExtendedStreamReader reader,
-            final EnumSet<JaxrsElement> encountered,
-            final ModelNode subsystem,
-            final JaxrsElement element) throws XMLStreamException {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void writeContent(final XMLExtendedStreamWriter streamWriter, final SubsystemMarshallingContext context) throws XMLStreamException {
+        context.startSubsystemElement(NAMESPACE, false);
+        ModelNode subsystem = context.getModelNode();
+        for (AttributeDefinition attr : JaxrsAttribute.ATTRIBUTES) {
+            attr.marshallAsElement(subsystem, true, streamWriter);
+        }
+        streamWriter.writeEndElement();
+    }
+
+    protected String parseSimpleValue(final XMLExtendedStreamReader reader,
+                                      final EnumSet<JaxrsElement> encountered,
+                                      final JaxrsElement element) throws XMLStreamException {
 
         if (!encountered.add(element)) {
             throw unexpectedElement(reader);
         }
-        final String name = element.getLocalName();
-        final String value = parseElementNoAttributes(reader);
-        final SimpleAttributeDefinition attribute = (SimpleAttributeDefinition) JaxrsConstants.nameToAttributeMap.get(name);
-        attribute.parseAndSetParameter(value, subsystem, reader);
-    }
-
-    protected void handleList(final String tag,
-            final XMLExtendedStreamReader reader,
-            final EnumSet<JaxrsElement> encountered,
-            final ModelNode subsystem,
-            final JaxrsElement element) throws XMLStreamException {
-
-        if (!encountered.add(element)) {
-            throw unexpectedElement(reader);
-        }
-        final String name = element.getLocalName();
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            if (!tag.equals(reader.getLocalName())) {
-                throw unexpectedElement(reader);
-            }
-            String value = parseElementNoAttributes(reader);
-            subsystem.get(name).add(value);
-        }
-    }
-
-    protected void handleMap(final XMLExtendedStreamReader reader,
-            final EnumSet<JaxrsElement> encountered,
-            final ModelNode subsystem,
-            final JaxrsElement element) throws XMLStreamException {
-
-        if (!encountered.add(element)) {
-            throw unexpectedElement(reader);
-        }
-        final String name = element.getLocalName();
-        final PropertiesAttributeDefinition attribute = (PropertiesAttributeDefinition) JaxrsConstants.nameToAttributeMap.get(name);
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            if (!"entry".equals(reader.getLocalName())) {
-                throw unexpectedElement(reader);
-            }
-            final String[] array = requireAttributes(reader, "key");
-            if (array.length != 1) {
-                throw unexpectedElement(reader);
-            }
-            String value = reader.getElementText().trim();
-            attribute.parseAndAddParameterElement(array[0], value, subsystem, reader);
-        }
-    }
-
-    protected String parseElementNoAttributes(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        requireNoAttributes(reader);
-        return reader.getElementText().trim();
+        return parseElementNoAttributes(reader);
     }
 }

@@ -36,7 +36,10 @@ import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -49,6 +52,14 @@ import org.jboss.dmr.Property;
 public abstract class JaxrsAttribute {
 
     public static final String RESTEASY_PARAMETER_GROUP = "resteasy";
+
+    /*
+     * All users can read see and read the attribute. However, users must have explicit permissions to write the
+     * constrained by this constraint.
+     */
+    private static final SensitiveTargetAccessConstraintDefinition TRACING_MANAGEMENT_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
+            new SensitivityClassification(JaxrsExtension.SUBSYSTEM_NAME, "tracing-management", false, false, true)
+    );
 
     public static final SimpleAttributeDefinition JAXRS_2_0_REQUEST_MATCHING = new SimpleAttributeDefinitionBuilder(JaxrsConstants.JAXRS_2_0_REQUEST_MATCHING, ModelType.BOOLEAN)
             .setRequired(false)
@@ -218,6 +229,24 @@ public abstract class JaxrsAttribute {
             .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
             .build();
 
+    static final SimpleAttributeDefinition TRACING_TYPE = SimpleAttributeDefinitionBuilder.create("tracing-type", ModelType.STRING)
+            .addAccessConstraint(TRACING_MANAGEMENT_CONSTRAINT)
+            .setAllowExpression(true)
+            .setAttributeGroup("tracing")
+            .setDefaultValue(new ModelNode("OFF"))
+            .setRequired(false)
+            .setValidator(new StringAllowedValuesValidator("OFF", "ON_DEMAND", "ALL"))
+            .build();
+
+    static final SimpleAttributeDefinition TRACING_THRESHOLD = SimpleAttributeDefinitionBuilder.create("tracing-threshold", ModelType.STRING)
+            .addAccessConstraint(TRACING_MANAGEMENT_CONSTRAINT)
+            .setAllowExpression(true)
+            .setAttributeGroup("tracing")
+            .setDefaultValue(new ModelNode("SUMMARY"))
+            .setRequired(false)
+            .setValidator(new StringAllowedValuesValidator("SUMMARY", "TRACE", "VERBOSE"))
+            .build();
+
     public static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
             JAXRS_2_0_REQUEST_MATCHING,
             RESTEASY_ADD_CHARSET,
@@ -239,7 +268,9 @@ public abstract class JaxrsAttribute {
             RESTEASY_SECURE_RANDOM_MAX_USE,
             RESTEASY_USE_BUILTIN_PROVIDERS,
             RESTEASY_USE_CONTAINER_FORM_PARAMS,
-            RESTEASY_WIDER_REQUEST_MATCHING
+            RESTEASY_WIDER_REQUEST_MATCHING,
+            TRACING_TYPE,
+            TRACING_THRESHOLD,
     };
 
     public static final AttributeDefinition[] simpleAttributesArray = new AttributeDefinition[] {
@@ -258,7 +289,9 @@ public abstract class JaxrsAttribute {
             RESTEASY_SECURE_RANDOM_MAX_USE,
             RESTEASY_USE_BUILTIN_PROVIDERS,
             RESTEASY_USE_CONTAINER_FORM_PARAMS,
-            RESTEASY_WIDER_REQUEST_MATCHING
+            RESTEASY_WIDER_REQUEST_MATCHING,
+            TRACING_TYPE,
+            TRACING_THRESHOLD,
     };
 
     public static final AttributeDefinition[] listAttributeArray = new AttributeDefinition[] {

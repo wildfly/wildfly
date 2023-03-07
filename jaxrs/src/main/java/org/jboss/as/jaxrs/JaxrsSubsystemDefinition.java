@@ -47,6 +47,7 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
     public static final ModuleIdentifier RESTEASY_JSAPI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jsapi");
     public static final ModuleIdentifier RESTEASY_MULTIPART = ModuleIdentifier.create("org.jboss.resteasy.resteasy-multipart-provider");
 
+    public static final ModuleIdentifier RESTEASY_TRACING = ModuleIdentifier.create("org.jboss.resteasy.resteasy-tracing-api");
 
     public static final ModuleIdentifier JACKSON_DATATYPE_JDK8 = ModuleIdentifier.create("com.fasterxml.jackson.datatype.jackson-datatype-jdk8");
     public static final ModuleIdentifier JACKSON_DATATYPE_JSR310 = ModuleIdentifier.create("com.fasterxml.jackson.datatype.jackson-datatype-jsr310");
@@ -81,6 +82,7 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
                     RuntimePackageDependency.optional(RESTEASY_JSON_P_PROVIDER.getName()),
                     RuntimePackageDependency.optional(RESTEASY_JSAPI.getName()),
                     RuntimePackageDependency.optional(RESTEASY_MULTIPART.getName()),
+                    RuntimePackageDependency.optional(RESTEASY_TRACING.getName()),
                     RuntimePackageDependency.optional(RESTEASY_CRYPTO.getName()),
                     RuntimePackageDependency.optional(JACKSON_DATATYPE_JDK8.getName()),
                     RuntimePackageDependency.optional(JACKSON_DATATYPE_JSR310.getName()),

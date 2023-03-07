@@ -50,11 +50,11 @@ public class JaxrsSubsystem20TestCase extends AbstractSubsystemBaseTest {
 
     @Override
     public void testSubsystem() throws Exception {
-        standardSubsystemTest(null);
+        standardSubsystemTest(null, false);
     }
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("jaxrs-2.0-expressions.xml");
+        standardSubsystemTest("jaxrs-2.0-expressions.xml", false);
     }
 }
