@@ -108,7 +108,6 @@
         <module>security</module>
         <module>system-jmx</module>
         <module>spec-api</module>
-        <module>servlet-feature-pack</module>
         <module>weld</module>
         <module>testsuite/test-feature-pack</module>
         <module>testsuite/shared</module>
