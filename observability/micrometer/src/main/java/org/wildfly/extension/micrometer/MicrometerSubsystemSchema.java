@@ -18,18 +18,15 @@
  */
 package org.wildfly.extension.micrometer;
 
-import java.util.List;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.SubsystemSchema;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemURN;
 import org.jboss.as.controller.xml.VersionedNamespace;
-import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.IntVersion;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 
-public enum MicrometerSubsystemSchema implements SubsystemSchema<MicrometerSubsystemSchema> {
+public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<MicrometerSubsystemSchema> {
     VERSION_1_0(1, 0), // WildFly Preview 27
     ;
     public static final MicrometerSubsystemSchema CURRENT = VERSION_1_0;
@@ -46,7 +43,9 @@ public enum MicrometerSubsystemSchema implements SubsystemSchema<MicrometerSubsy
     }
 
     @Override
-    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-        new MicrometerParser(this).readElement(reader, operations);
+    public PersistentResourceXMLDescription getXMLDescription() {
+        return builder(org.wildfly.extension.micrometer.MicrometerSubsystemExtension.SUBSYSTEM_PATH, this.namespace)
+                .addAttributes(MicrometerSubsystemDefinition.ATTRIBUTES)
+                .build();
     }
 }
