@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 package org.jboss.as.test.integration.mail.cdi;
 
 import java.io.IOException;
@@ -34,10 +35,10 @@ import jakarta.inject.Inject;
 import jakarta.mail.Session;
 
 /**
- * Verifies Mail Session can be injected using CDI
+ * Verifies Mail Session created from an annotation can be injected using CDI
  */
 @RunWith(Arquillian.class)
-public class MailSessionCDIInjectionTest {
+public class MailAnnotationSessionCDIInjectionTest {
 
     @Inject
     Session sessionOne;
@@ -48,8 +49,8 @@ public class MailSessionCDIInjectionTest {
 
     @Deployment
     public static Archive<?> deploy() {
-        return ShrinkWrap.create(WebArchive.class, "mail-cdi-injection-test.war")
-                .addClasses(MailSessionProducer.class, MethodInjectQualifier.class)
+        return ShrinkWrap.create(WebArchive.class, "mail-annotation-cdi-injection-test.war")
+                .addClasses(MethodInjectQualifier.class, MailAnnotationSessionProducer.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
