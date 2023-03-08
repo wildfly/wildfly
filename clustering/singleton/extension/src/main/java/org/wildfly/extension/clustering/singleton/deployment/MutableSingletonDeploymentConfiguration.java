@@ -36,10 +36,6 @@ public class MutableSingletonDeploymentConfiguration implements SingletonDeploym
 
     private volatile String policy;
 
-    public MutableSingletonDeploymentConfiguration() {
-        this.replacer = null;
-    }
-
     public MutableSingletonDeploymentConfiguration(DeploymentUnit unit) {
         this(JBossDescriptorPropertyReplacement.propertyReplacer(unit));
     }
@@ -49,7 +45,7 @@ public class MutableSingletonDeploymentConfiguration implements SingletonDeploym
     }
 
     public void setPolicy(String value) {
-        this.policy = (this.replacer != null) ? this.replacer.replaceProperties(value) : value;
+        this.policy = this.replacer.replaceProperties(value);
     }
 
     @Override

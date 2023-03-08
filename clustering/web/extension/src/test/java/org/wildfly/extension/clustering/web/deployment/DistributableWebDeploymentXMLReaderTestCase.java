@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.metadata.property.PropertyReplacers;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -75,7 +76,7 @@ public class DistributableWebDeploymentXMLReaderTestCase {
         mapper.registerRootElement(this.schema.getQualifiedName(), this.schema);
         try (InputStream input = url.openStream()) {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration();
+            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PropertyReplacers.noop());
             mapper.parseDocument(config, reader);
 
             Assert.assertNull(config.getSessionManagement());
@@ -95,7 +96,7 @@ public class DistributableWebDeploymentXMLReaderTestCase {
         mapper.registerRootElement(this.schema.getQualifiedName(), this.schema);
         try (InputStream input = url.openStream()) {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration();
+            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PropertyReplacers.noop());
             mapper.parseDocument(config, reader);
 
             Assert.assertNull(config.getSessionManagementName());
@@ -132,7 +133,7 @@ public class DistributableWebDeploymentXMLReaderTestCase {
         mapper.registerRootElement(this.schema.getQualifiedName(), new DistributableWebDeploymentXMLReader(this.schema));
         try (InputStream input = url.openStream()) {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration();
+            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PropertyReplacers.noop());
             mapper.parseDocument(config, reader);
 
             Assert.assertNull(config.getSessionManagementName());

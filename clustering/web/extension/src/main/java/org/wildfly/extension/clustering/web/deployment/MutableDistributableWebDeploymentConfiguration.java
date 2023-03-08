@@ -45,12 +45,12 @@ public class MutableDistributableWebDeploymentConfiguration implements Distribut
     private String managementName;
     private DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> management;
 
-    public MutableDistributableWebDeploymentConfiguration() {
-        this.replacer = null;
+    public MutableDistributableWebDeploymentConfiguration(PropertyReplacer replacer) {
+        this.replacer = replacer;
     }
 
     public MutableDistributableWebDeploymentConfiguration(DeploymentUnit unit) {
-        this.replacer = JBossDescriptorPropertyReplacement.propertyReplacer(unit);
+        this(JBossDescriptorPropertyReplacement.propertyReplacer(unit));
     }
 
     @Override
@@ -83,6 +83,6 @@ public class MutableDistributableWebDeploymentConfiguration implements Distribut
 
     @Override
     public String apply(String value) {
-        return (this.replacer != null) ? this.replacer.replaceProperties(value) : value;
+        return this.replacer.replaceProperties(value);
     }
 }
