@@ -137,6 +137,7 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setXmlName(OpenTelemetryConfigurationConstants.TYPE)
             .setAttributeGroup(GROUP_SAMPLER)
             .setAllowedValues(ALLOWED_SAMPLERS)
+            .setValidator(new StringAllowedValuesValidator(ALLOWED_SAMPLERS))
             .setRestartAllServices()
             .build();
 
