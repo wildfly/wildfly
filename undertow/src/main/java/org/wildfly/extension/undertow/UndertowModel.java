@@ -22,14 +22,14 @@
 
 package org.wildfly.extension.undertow;
 
-import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SubsystemModel;
 
 /**
  * Enumerates the supported versions of the Undertow subsystem model.
  * @author Paul Ferraro
  */
-public enum UndertowModel implements Model {
+public enum UndertowModel implements SubsystemModel {
 
     VERSION_11_0_0(11), // WildFly 23-26.x, EAP 7.4.x
     VERSION_12_0_0(12), // WildFly 27

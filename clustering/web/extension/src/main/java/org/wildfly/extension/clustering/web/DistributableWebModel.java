@@ -22,14 +22,14 @@
 
 package org.wildfly.extension.clustering.web;
 
-import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SubsystemModel;
 
 /**
  * Enumerates the model versions for the distributable-web subsystem.
  * @author Paul Ferraro
  */
-public enum DistributableWebModel implements Model {
+public enum DistributableWebModel implements SubsystemModel {
 
     /*
     List of unsupported versions commented out for reference purposes:

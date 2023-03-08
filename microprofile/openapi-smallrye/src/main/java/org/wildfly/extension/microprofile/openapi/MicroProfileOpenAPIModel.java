@@ -21,14 +21,14 @@
  */
 package org.wildfly.extension.microprofile.openapi;
 
-import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SubsystemModel;
 
 /**
  * Enumeration of MicroProfile OpenAPI subsystem model versions.
  * @author Paul Ferraro
  */
-public enum MicroProfileOpenAPIModel implements Model {
+public enum MicroProfileOpenAPIModel implements SubsystemModel {
 
     VERSION_1_0_0(1, 0, 0), // WildFly 19
     ;

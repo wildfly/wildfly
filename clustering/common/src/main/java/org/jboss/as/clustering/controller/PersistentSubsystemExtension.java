@@ -25,12 +25,13 @@ package org.jboss.as.clustering.controller;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.SubsystemModel;
 
 /**
  * Generic extension implementation that registers a single subsystem whose XML readers/writer are created from a {@link PersistentResourceXMLDescription}.
  * @author Paul Ferraro
  */
-public class PersistentSubsystemExtension<S extends Enum<S> &  PersistentSubsystemSchema<S>> extends SubsystemExtension<S> {
+public class PersistentSubsystemExtension<S extends Enum<S> & PersistentSubsystemSchema<S>> extends SubsystemExtension<S> {
 
     /**
      * Constructs a new extension using a reader/writer factory.
@@ -40,12 +41,12 @@ public class PersistentSubsystemExtension<S extends Enum<S> &  PersistentSubsyst
      * @param currentSchema the current schema
      * @param descriptionFactory an XML description factory
      */
-    protected PersistentSubsystemExtension(String name, Model currentModel, Supplier<ManagementRegistrar<SubsystemRegistration>> registrarFactory, S currentSchema) {
+    protected PersistentSubsystemExtension(String name, SubsystemModel currentModel, Supplier<ManagementRegistrar<SubsystemRegistration>> registrarFactory, S currentSchema) {
         // Build xml description for current schema only once
         this(name, currentModel, registrarFactory, currentSchema, new PersistentXMLDescriptionMarshaller(currentSchema));
     }
 
-    private PersistentSubsystemExtension(String name, Model currentModel, Supplier<ManagementRegistrar<SubsystemRegistration>> registrarFactory, S currentSchema, PersistentXMLDescriptionMarshaller marshaller) {
+    private PersistentSubsystemExtension(String name, SubsystemModel currentModel, Supplier<ManagementRegistrar<SubsystemRegistration>> registrarFactory, S currentSchema, PersistentXMLDescriptionMarshaller marshaller) {
         // Reuse current xml description between reader and writer
         // Supply reader for current schema eagerly, since we already created its xml description
         super(name, currentModel, registrarFactory, currentSchema, marshaller, marshaller);

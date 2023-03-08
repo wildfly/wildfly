@@ -22,14 +22,14 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SubsystemModel;
 
 /**
  * Enumeration of supported versions of management model.
  * @author Paul Ferraro
  */
-public enum SingletonModel implements Model {
+public enum SingletonModel implements SubsystemModel {
 /*  Unsupported model versions - for reference purposes only
     VERSION_1_0_0(1, 0, 0), // WildFly 10, EAP 7.0
     VERSION_2_0_0(2, 0, 0), // WildFly 11-14, EAP 7.1-7.2

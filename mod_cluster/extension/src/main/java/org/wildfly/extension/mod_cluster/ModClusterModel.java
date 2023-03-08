@@ -21,15 +21,15 @@
  */
 package org.wildfly.extension.mod_cluster;
 
-import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SubsystemModel;
 
 /**
  * Enumerates the supported mod_cluster model versions.
  *
  * @author Radoslav Husar
  */
-public enum ModClusterModel implements Model {
+public enum ModClusterModel implements SubsystemModel {
 /*  Unsupported model versions - for reference only:
 
     VERSION_1_5_0(1, 5, 0), // EAP 6.3-6.4

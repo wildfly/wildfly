@@ -21,14 +21,14 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SubsystemModel;
 
 /**
  * Enumerates the supported model versions.
  * @author Paul Ferraro
  */
-public enum InfinispanModel implements Model {
+public enum InfinispanModel implements SubsystemModel {
 /*  Unsupported model versions - for reference only
     VERSION_1_6_0(1, 6, 0), // EAP 6.4
     VERSION_2_0_0(2, 0, 0), // WildFly 8
