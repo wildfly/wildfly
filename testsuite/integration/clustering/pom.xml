@@ -439,7 +439,7 @@
                             <cli-sessions>
                                 <cli-session>
                                     <script-files>
-                                        <script>clustering-bootable.cli</script>
+                                        <script>clustering-ha-bootable-jar.cli</script>
                                     </script-files>
                                 </cli-session>
                             </cli-sessions>
@@ -479,7 +479,7 @@
                             <cli-sessions>
                                 <cli-session>
                                     <script-files>
-                                        <script>clustering-bootable.cli</script>
+                                        <script>clustering-ha-bootable-jar.cli</script>
                                     </script-files>
                                 </cli-session>
                             </cli-sessions>
@@ -521,7 +521,7 @@
                             <cli-sessions>
                                 <cli-session>
                                     <script-files>
-                                        <script>clustering-lb-bootable.cli</script>
+                                        <script>clustering-load-balancer-bootable-jar.cli</script>
                                     </script-files>
                                 </cli-session>
                             </cli-sessions>
@@ -569,7 +569,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
                                     </scripts>
                                     <jboss-home>${wildfly.dir}</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
@@ -589,7 +589,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-lb.cli</script>
+                                        <script>clustering-load-balancer.cli</script>
                                     </scripts>
                                     <jboss-home>${wildfly.dir}</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
@@ -1520,7 +1520,7 @@
                                         <!-- Also produce a standalone-ha.xml file with the same content
                                              as standalone-full-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1573,7 +1573,7 @@
                                         <!-- Also produce a standalone-full-ha.xml file with the same content
                                              as standalone-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1660,7 +1660,7 @@
                                         <!-- Also produce a standalone-ha.xml file with the same content
                                              as standalone-full-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1734,7 +1734,7 @@
                                         <!-- Also produce a standalone-ha.xml file with the same content
                                              as standalone-full-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1804,7 +1804,7 @@
                                         <!-- Also produce a standalone-ha.xml file with the same content
                                              as standalone-full-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1867,7 +1867,7 @@
                                         <!-- Also produce a standalone-ha.xml file with the same content
                                              as standalone-full-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1976,7 +1976,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-clustering-mod_cluster</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-clustering-mod_cluster-plugin.log</stdout>
@@ -1996,7 +1996,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-lb.cli</script>
+                                        <script>clustering-load-balancer.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-clustering-mod_cluster</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-clustering-mod_cluster-lb-plugin.log</stdout>
@@ -2016,7 +2016,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-clustering-ejb</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-ejb-xpc-plugin.log</stdout>
@@ -2036,7 +2036,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-jpa-dist</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-jpa-dist-plugin.log</stdout>
@@ -2056,7 +2056,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-clustering-jsf</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-clustering-jsf-plugin.log</stdout>
@@ -2076,7 +2076,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-clustering-singleton-ha</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-clustering-singleton-ha-plugin.log</stdout>
@@ -2449,7 +2449,7 @@
                 <plugins>
                     <!-- Update server profile with shared configuration changes.
                          Override the default ts.config-as.configure-wildfly execution
-                         to run the clustering-mp.cli script -->
+                         to run the clustering-microprofile-ha.cli script -->
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
@@ -2459,7 +2459,7 @@
                                 <id>ts.config-as.configure-wildfly</id>
                                 <configuration>
                                     <scripts>
-                                        <script>clustering-mp.cli</script>
+                                        <script>clustering-microprofile-ha.cli</script>
                                     </scripts>
                                 </configuration>
                             </execution>
