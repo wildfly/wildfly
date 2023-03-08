@@ -25,15 +25,15 @@ import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 
 public class OpenTelemetryParser extends PersistentResourceXMLParser {
-    private final OpenTelemetrySchema schema;
+    private final OpenTelemetrySubsystemSchema schema;
 
-    public OpenTelemetryParser(OpenTelemetrySchema schema) {
+    public OpenTelemetryParser(OpenTelemetrySubsystemSchema schema) {
         this.schema = schema;
     }
 
     @Override
     public PersistentResourceXMLDescription getParserDescription() {
-        return builder(OpenTelemetrySubsystemExtension.SUBSYSTEM_PATH, schema.getNamespaceUri())
+        return builder(OpenTelemetrySubsystemExtension.SUBSYSTEM_PATH, schema.getNamespace())
                 .addAttributes(OpenTelemetrySubsystemDefinition.ATTRIBUTES)
                 .build();
     }

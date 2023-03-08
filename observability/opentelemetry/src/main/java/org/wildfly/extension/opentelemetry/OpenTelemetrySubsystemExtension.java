@@ -57,20 +57,17 @@ public class OpenTelemetrySubsystemExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME,
-                OpenTelemetryModel.CURRENT.getVersion());
-        subsystem.registerXMLElementWriter(new OpenTelemetryParser(OpenTelemetrySchema.CURRENT));
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, OpenTelemetryModel.CURRENT.getVersion());
+        subsystem.registerXMLElementWriter(new OpenTelemetryParser(OpenTelemetrySubsystemSchema.CURRENT));
 
-        final ManagementResourceRegistration registration =
-                subsystem.registerSubsystemModel(new OpenTelemetrySubsystemDefinition());
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION,
-                GenericSubsystemDescribeHandler.INSTANCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new OpenTelemetrySubsystemDefinition());
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        for (OpenTelemetrySchema schema : EnumSet.allOf(OpenTelemetrySchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new OpenTelemetryParser(schema));
+        for (OpenTelemetrySubsystemSchema schema : EnumSet.allOf(OpenTelemetrySubsystemSchema.class)) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespace().getUri(), schema);
         }
     }
 }
