@@ -132,7 +132,8 @@ public class LayersTestCase {
             "com.fasterxml.jackson.dataformat.jackson-dataformat-cbor",
             "org.jgroups.aws",
             "org.wildfly.extension.microprofile.metrics-smallrye",
-            "org.wildfly.extension.microprofile.opentracing-smallrye"
+            "org.wildfly.extension.microprofile.opentracing-smallrye",
+            "io.smallrye.metrics",
     };
     private static final String[] NOT_USED;
     // Packages that are not referenced from the module graph but needed.
