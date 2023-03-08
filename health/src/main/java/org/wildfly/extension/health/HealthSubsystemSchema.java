@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,33 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.extension.health;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.PersistentResourceXMLParser;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.staxmapper.IntVersion;
 
 /**
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2020 Red Hat inc.
+ * Enumerates the supported namespaces for the health subsystem.
+ * @author Paul Ferraro
  */
-public class HealthParser_1_0 extends PersistentResourceXMLParser {
-    /**
-     * The name space used for the {@code subsystem} element
-     */
-    public static final String NAMESPACE = "urn:wildfly:health:1.0";
+public enum HealthSubsystemSchema implements PersistentSubsystemSchema<HealthSubsystemSchema> {
 
-    private static final PersistentResourceXMLDescription xmlDescription;
+    VERSION_1_0(1),
+    ;
+    static final HealthSubsystemSchema CURRENT = VERSION_1_0;
 
-    static {
-        xmlDescription = builder(HealthExtension.SUBSYSTEM_PATH, NAMESPACE)
-                .addAttributes(
-                        HealthSubsystemDefinition.SECURITY_ENABLED)
-                .build();
+    private final VersionedNamespace<IntVersion, HealthSubsystemSchema> namespace;
+
+    HealthSubsystemSchema(int major) {
+        this.namespace = new SubsystemURN<>(HealthExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
     @Override
-    public PersistentResourceXMLDescription getParserDescription() {
-        return xmlDescription;
+    public VersionedNamespace<IntVersion, HealthSubsystemSchema> getNamespace() {
+        return this.namespace;
+    }
+
+    @Override
+    public PersistentResourceXMLDescription getXMLDescription() {
+        return builder(HealthExtension.SUBSYSTEM_PATH, this.namespace)
+                .addAttributes(HealthSubsystemDefinition.ATTRIBUTES)
+                .build();
     }
 }
