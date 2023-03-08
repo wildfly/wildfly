@@ -37,7 +37,6 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
-import org.wildfly.extension.micrometer.model.MicrometerModel;
 
 public class MicrometerSubsystemExtension implements Extension {
     public static final String WELD_CAPABILITY_NAME = "org.wildfly.weld";
@@ -50,7 +49,7 @@ public class MicrometerSubsystemExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MicrometerModel.CURRENT.getVersion());
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MicrometerSubsystemModel.CURRENT.getVersion());
         subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(this.currentDescription));
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new MicrometerSubsystemDefinition());
