@@ -21,6 +21,8 @@
  */
 package org.wildfly.extension.microprofile.faulttolerance;
 
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemURN;
@@ -51,6 +53,6 @@ public enum MicroProfileFaultToleranceSchema implements PersistentSubsystemSchem
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return MicroProfileFaultToleranceXMLDescriptionFactory.INSTANCE.apply(this);
+        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, this.namespace).build();
     }
 }

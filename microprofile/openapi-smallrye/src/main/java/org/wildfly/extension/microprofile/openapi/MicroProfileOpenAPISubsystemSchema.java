@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.microprofile.openapi;
 
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemURN;
@@ -51,6 +53,6 @@ public enum MicroProfileOpenAPISubsystemSchema implements PersistentSubsystemSch
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return MicroProfileOpenAPIXMLDescriptionFactory.INSTANCE.apply(this);
+        return builder(MicroProfileOpenAPISubsystemDefinition.PATH, this.namespace).build();
     }
 }
