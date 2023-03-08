@@ -23,27 +23,40 @@
 package org.wildfly.extension.beanvalidation;
 
 import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Locale;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Jakarta Bean Validation subsystem tests.
  *
  * @author Eduardo Martins
  */
+@RunWith(Parameterized.class)
 public class BeanValidationSubsystemTestCase extends AbstractSubsystemBaseTest {
+    @Parameters
+    public static Iterable<BeanValidationSubsystemSchema> parameters() {
+        return EnumSet.allOf(BeanValidationSubsystemSchema.class);
+    }
 
-    public BeanValidationSubsystemTestCase() {
+    private final BeanValidationSubsystemSchema schema;
+
+    public BeanValidationSubsystemTestCase(BeanValidationSubsystemSchema schema) {
         super(BeanValidationExtension.SUBSYSTEM_NAME, new BeanValidationExtension());
+        this.schema = schema;
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("bean-validation-1.0.xml");
+        return readResource(String.format(Locale.ROOT, "bean-validation-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-bean-validation_1_0.xsd";
+        return String.format(Locale.ROOT, "schema/wildfly-bean-validation_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
     }
 }
