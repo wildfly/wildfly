@@ -24,10 +24,16 @@ package org.jboss.as.jdr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.EnumSet;
+import java.util.List;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLDescriptionReader;
+import org.jboss.as.controller.PersistentResourceXMLDescriptionWriter;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -35,6 +41,8 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * Extension for triggering, requesting, generating and accessing JDR reports.
@@ -64,6 +72,8 @@ public class JdrReportExtension implements Extension {
 
     static final SensitiveTargetAccessConstraintDefinition JDR_SENSITIVITY_DEF = new SensitiveTargetAccessConstraintDefinition(JDR_SENSITIVITY);
 
+    private final PersistentResourceXMLDescription currentDescription = JdrReportSubsystemSchema.CURRENT.getXMLDescription();
+
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
@@ -75,12 +85,14 @@ public class JdrReportExtension implements Extension {
         if (context.isRuntimeOnlyRegistrationValid()) {
             root.registerOperationHandler(JdrReportRequestHandler.DEFINITION, JdrReportRequestHandler.INSTANCE);
         }
-        subsystemRegistration.registerXMLElementWriter(JdrReportSubsystemParser.INSTANCE);
+        subsystemRegistration.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(this.currentDescription));
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), () -> JdrReportSubsystemParser.INSTANCE);
+        for (JdrReportSubsystemSchema schema : EnumSet.allOf(JdrReportSubsystemSchema.class)) {
+            XMLElementReader<List<ModelNode>> reader = (schema == JdrReportSubsystemSchema.CURRENT) ? new PersistentResourceXMLDescriptionReader(this.currentDescription) : schema;
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespace().getUri(), reader);
+        }
     }
-
 }

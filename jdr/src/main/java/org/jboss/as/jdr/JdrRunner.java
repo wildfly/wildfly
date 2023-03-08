@@ -94,7 +94,7 @@ public class JdrRunner implements JdrReportCollector {
 
         ByteArrayOutputStream versionStream = new ByteArrayOutputStream();
         PrintWriter versionWriter = new PrintWriter(new OutputStreamWriter(versionStream, StandardCharsets.UTF_8));
-        versionWriter.println("JDR: " + Namespace.CURRENT.getUriString());
+        versionWriter.println("JDR: " + JdrReportSubsystemSchema.CURRENT.getNamespace().getUri());
 
         try {
             InputStream is = this.getClass().getClassLoader().getResourceAsStream("plugins.properties");
