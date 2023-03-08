@@ -32,7 +32,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.micrometer.model.MicrometerModel;
-import org.wildfly.extension.micrometer.model.MicrometerSchema;
 
 public class MicrometerSubsystemExtension implements Extension {
     public static final String WELD_CAPABILITY_NAME = "org.wildfly.weld";
@@ -56,20 +55,17 @@ public class MicrometerSubsystemExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME,
-                MicrometerModel.CURRENT.getVersion());
-        subsystem.registerXMLElementWriter(new MicrometerParser(MicrometerSchema.CURRENT));
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MicrometerModel.CURRENT.getVersion());
+        subsystem.registerXMLElementWriter(new MicrometerParser(MicrometerSubsystemSchema.CURRENT));
 
-        final ManagementResourceRegistration registration =
-                subsystem.registerSubsystemModel(new MicrometerSubsystemDefinition());
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION,
-                GenericSubsystemDescribeHandler.INSTANCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new MicrometerSubsystemDefinition());
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        for (MicrometerSchema schema : EnumSet.allOf(MicrometerSchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new MicrometerParser(schema));
+        for (MicrometerSubsystemSchema schema : EnumSet.allOf(MicrometerSubsystemSchema.class)) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespace().getUri(), schema);
         }
     }
 }

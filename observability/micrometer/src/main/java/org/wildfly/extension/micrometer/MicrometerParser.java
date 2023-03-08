@@ -22,18 +22,17 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
-import org.wildfly.extension.micrometer.model.MicrometerSchema;
 
 class MicrometerParser extends PersistentResourceXMLParser {
-    private final MicrometerSchema schema;
+    private final MicrometerSubsystemSchema schema;
 
-    MicrometerParser(MicrometerSchema schema) {
+    MicrometerParser(MicrometerSubsystemSchema schema) {
         this.schema = schema;
     }
 
     @Override
     public PersistentResourceXMLDescription getParserDescription() {
-        return  builder(org.wildfly.extension.micrometer.MicrometerSubsystemExtension.SUBSYSTEM_PATH, schema.getNamespaceUri())
+        return  builder(org.wildfly.extension.micrometer.MicrometerSubsystemExtension.SUBSYSTEM_PATH, schema.getNamespace())
                 .addAttributes(MicrometerSubsystemDefinition.ATTRIBUTES)
                 .build();
     }
