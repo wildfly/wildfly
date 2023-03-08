@@ -338,7 +338,7 @@ link:#gal.cdi[cdi] +
 |
 link:#gal.cdi[cdi] +
 link:#gal.microprofile-config[microprofile-config] +
-link:#gal.microprofile-metrics[microprofile-metrics] +
+link:#gal.microprofile-metrics[microprofile-metrics] (optional) +
 
 |[[gal.microprofile-health]]microprofile-health
 |Support for MicroProfile Health.

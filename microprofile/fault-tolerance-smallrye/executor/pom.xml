@@ -37,19 +37,18 @@
 
     <name>WildFly: MicroProfile Fault Tolerance - Executor</name>
 
-
     <dependencies>
         <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-fault-tolerance</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.enterprise.concurrent</groupId>
-            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise.concurrent</groupId>
+            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.inject</groupId>
