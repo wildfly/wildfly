@@ -426,7 +426,7 @@
         <version.org.apache.ds>2.0.0.AM26</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.9</version.org.apache.james.apache-mime4j>
-        <version.org.apache.kafka>3.2.2</version.org.apache.kafka>
+        <version.org.apache.kafka>3.4.0</version.org.apache.kafka>
         <version.org.apache.lucene>8.11.1</version.org.apache.lucene>
         <version.org.apache.myfaces.core>3.0.2</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
@@ -538,7 +538,6 @@
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.4</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.springframework.kafka>2.9.1</version.org.springframework.kafka>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>

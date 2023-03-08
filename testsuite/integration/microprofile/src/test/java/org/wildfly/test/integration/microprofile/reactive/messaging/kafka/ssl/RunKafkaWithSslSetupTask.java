@@ -22,48 +22,78 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.ssl;
 
+import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
+import io.smallrye.reactive.messaging.kafka.companion.test.EmbeddedKafkaBroker;
+import org.apache.kafka.common.Endpoint;
+import org.apache.kafka.common.config.SslConfigs;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
-import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
+import static io.smallrye.reactive.messaging.kafka.companion.test.EmbeddedKafkaBroker.endpoint;
+import static org.apache.kafka.common.security.auth.SecurityProtocol.PLAINTEXT;
+import static org.apache.kafka.common.security.auth.SecurityProtocol.SSL;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class RunKafkaWithSslSetupTask extends RunKafkaSetupTask {
-    private final String SERVER_KEYSTORE =
+public class RunKafkaWithSslSetupTask implements ServerSetupTask {
+    private static final String SERVER_KEYSTORE =
             "src/test/resources/org/wildfly/test/integration/microprofile/reactive/messaging/kafka/server.keystore.p12";
-    private final String KEYSTORE_PWD = "serverks";
+    private static final String KEYSTORE_PWD = "serverks";
+
+    volatile EmbeddedKafkaBroker broker;
+    volatile KafkaCompanion companion;
 
     @Override
-    protected WildFlyEmbeddedKafkaBroker augmentKafkaBroker(WildFlyEmbeddedKafkaBroker broker) {
+    public void setup(ManagementClient managementClient, String s) throws Exception {
+        try {
+            Path keyStorePath = Paths.get(SERVER_KEYSTORE)
+                    .toAbsolutePath()
+                    .normalize();
+            if (!Files.exists(keyStorePath)) {
+                throw new IllegalStateException(keyStorePath.toString());
+            }
 
-        Path path = Paths.get(SERVER_KEYSTORE)
-                .toAbsolutePath()
-                .normalize();
-        if (!Files.exists(path)) {
-            throw new IllegalStateException(path.toString());
+
+            Endpoint external = endpoint("EXTERNAL", SSL, "localhost", 9092);
+            Endpoint internal = endpoint("INTERNAL", PLAINTEXT, "localhost", 19002);
+            broker = new EmbeddedKafkaBroker()
+                    .withAdvertisedListeners(external, internal)
+                    .withAdditionalProperties(properties -> {
+                        properties.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, keyStorePath.toString());
+                        properties.put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, KEYSTORE_PWD);
+                        properties.put(SslConfigs.SSL_KEY_PASSWORD_CONFIG, KEYSTORE_PWD);
+                        properties.put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, "PKCS12");
+                        properties.put(SslConfigs.SSL_SECURE_RANDOM_IMPLEMENTATION_CONFIG, "SHA1PRNG");
+                    })
+                    .withDeleteLogDirsOnClose(true);
+            broker.start();
+
+            companion = new KafkaCompanion(EmbeddedKafkaBroker.toListenerString(internal));
+            companion.topics().createAndWait("testing", 1, Duration.of(10, ChronoUnit.SECONDS));
+        } catch (Exception e) {
+            if (companion != null) {
+                companion.close();
+            }
+            if (broker != null) {
+                broker.close();
+            }
         }
+    }
 
-        // This sets up SSL on port 9092 and PLAINTEXT on 19092
-        Map<String, String> properties = new HashMap<>();
-        properties.put("listeners", "SSL://localhost:9092,PLAINTEXT://localhost:19092");
-        properties.put("advertised.listeners", "SSL://localhost:9092,PLAINTEXT://localhost:19092");
-        properties.put("security.inter.broker.protocol", "PLAINTEXT");
-        // TODO load from resources folder
-        properties.put("ssl.keystore.location", path.toString());
-        properties.put("ssl.keystore.password", KEYSTORE_PWD);
-        properties.put("ssl.key.password", KEYSTORE_PWD);
-        properties.put("ssl.keystore.type", "PKCS12");
-        properties.put("ssl.secure.random.implementation", "SHA1PRNG");
-        broker.brokerProperties(properties);
-
-        // Set the port to the PLAINTEXT one, as this is the one the AdminClient will use to create the topics
-        broker.kafkaPorts(19092);
-
-        return broker;
+    @Override
+    public void tearDown(ManagementClient managementClient, String s) throws Exception {
+        if (companion != null) {
+            companion.close();
+        }
+        if (broker != null) {
+            broker.close();
+        }
     }
 }

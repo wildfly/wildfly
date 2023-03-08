@@ -22,131 +22,86 @@
 
 package org.wildfly.test.integration.microprofile.reactive;
 
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
+import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
+import io.smallrye.reactive.messaging.kafka.companion.test.EmbeddedKafkaBroker;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.kafka.test.core.BrokerAddress;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import java.security.PrivilegedAction;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class RunKafkaSetupTask implements ServerSetupTask {
-    EmbeddedKafkaBroker broker;
-    Path kafkaDir;
+    volatile EmbeddedKafkaBroker broker;
+    volatile KafkaCompanion companion;
+
     final boolean ipv6 = WildFlySecurityManager.doChecked(
             (PrivilegedAction<Boolean>) () -> System.getProperties().containsKey("ipv6"));
     protected final String LOOPBACK = ipv6 ? "[::1]" : "127.0.0.1";
 
     @Override
     public void setup(ManagementClient managementClient, String s) throws Exception {
-        Path target = Paths.get("target").toAbsolutePath().normalize();
-        kafkaDir = Files.createTempDirectory(target, "kafka").toAbsolutePath();
+        try {
+            broker = new EmbeddedKafkaBroker()
+                    .withNodeId(0)
+                    .withKafkaPort(9092)
+                    .withDeleteLogDirsOnClose(true);
 
-        Files.createDirectories(kafkaDir);
+            broker.withAdditionalProperties(props -> addBrokerProperties(props));
+            broker = augmentKafkaBroker(broker);
+            broker.start();
 
-        broker = new WildFlyEmbeddedKafkaBroker(1, true, getPartitions(), getTopics())
-                .zkPort(2181)
-                .kafkaPorts(9092)
-                .brokerProperty("log.dir", kafkaDir.toString());
+            companion = new KafkaCompanion(broker.getAdvertisedListeners());
 
-        broker = augmentKafkaBroker((WildFlyEmbeddedKafkaBroker)broker);
-        broker.afterPropertiesSet();
+
+            for (Map.Entry<String, Integer> topicAndPartition : getTopicsAndPartitions().entrySet()) {
+                companion.topics().createAndWait(topicAndPartition.getKey(), topicAndPartition.getValue(), Duration.of(10, ChronoUnit.SECONDS));
+            }
+        } catch (Exception e) {
+            if (companion != null) {
+                companion.close();
+            }
+            if (broker != null) {
+                broker.close();
+            }
+        }
     }
 
-    protected WildFlyEmbeddedKafkaBroker augmentKafkaBroker(WildFlyEmbeddedKafkaBroker broker) {
+    protected EmbeddedKafkaBroker augmentKafkaBroker(EmbeddedKafkaBroker broker) {
         return broker;
     }
 
-    protected Map<String, String> additionalBrokerProperties() {
-        return Collections.emptyMap();
+    protected void addBrokerProperties(Properties brokerProperties) {
+
     }
 
-    protected String[] getTopics() {
-        return new String[]{"testing"};
+
+    protected Map<String, Integer> getTopicsAndPartitions() {
+        return Collections.singletonMap("testing", 1);
     }
 
-    protected int getPartitions() {
-        return 1;
-    }
+//    protected String[] getTopics() {
+//        return new String[]{"testing"};
+//    }
+//
+//    protected int getPartitions() {
+//        return 1;
+//    }
 
     @Override
     public void tearDown(ManagementClient managementClient, String s) throws Exception {
-        try {
-            if (broker != null) {
-                broker.destroy();
-            }
-        } finally {
-            try {
-                System.out.println("======> Exists " + kafkaDir + ": " + Files.exists(kafkaDir));
-                if (Files.exists(kafkaDir)) {
-                    Files.walkFileTree(kafkaDir, new SimpleFileVisitor<Path>() {
-                        @Override
-                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                            if (!Files.isDirectory(file)) {
-                                Files.delete(file);
-                            }
-                            return super.visitFile(file, attrs);
-                        }
-
-                        @Override
-                        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                            Files.delete(dir);
-                            return super.postVisitDirectory(dir, exc);
-                        }
-                    });
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if (companion != null) {
+            companion.close();
         }
-    }
-
-    protected class WildFlyEmbeddedKafkaBroker extends EmbeddedKafkaBroker {
-        final int count;
-        private int[] kafkaPorts;
-
-        protected WildFlyEmbeddedKafkaBroker(int count) {
-            this(count, false);
-        }
-
-        protected WildFlyEmbeddedKafkaBroker(int count, boolean controlledShutdown, String... topics) {
-            this(count, controlledShutdown, 2, topics);
-        }
-
-        protected WildFlyEmbeddedKafkaBroker(int count, boolean controlledShutdown, int partitions, String... topics) {
-            super(count, controlledShutdown, partitions, topics);
-            this.count = count;
-        }
-
-        public EmbeddedKafkaBroker kafkaPorts(int... ports) {
-            super.kafkaPorts(ports);
-            // Override so we have our own copy
-            this.kafkaPorts = Arrays.copyOf(ports, ports.length);
-            return this;
-        }
-
-        public BrokerAddress[] getBrokerAddresses() {
-            List<BrokerAddress> addresses = new ArrayList<BrokerAddress>();
-
-            for (int kafkaPort : kafkaPorts) {
-                addresses.add(new BrokerAddress(LOOPBACK, kafkaPort));
-            }
-            return addresses.toArray(new BrokerAddress[0]);
+        if (broker != null) {
+            broker.close();
         }
     }
 }
