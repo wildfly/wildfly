@@ -25,7 +25,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
-import static org.wildfly.extension.datasources.agroal.AgroalExtension.getResolver;
 
 import java.util.Collection;
 
@@ -76,7 +75,7 @@ class DriverDefinition extends PersistentResourceDefinition {
     // --- //
 
     DriverDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH, getResolver("driver"))
+        super(new SimpleResourceDefinition.Parameters(PATH, AgroalExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH))
                 .setCapabilities(AGROAL_DRIVER_CAPABILITY)
                 .setAddHandler(DriverOperations.ADD_OPERATION)
                 .setRemoveHandler(DriverOperations.REMOVE_OPERATION)
