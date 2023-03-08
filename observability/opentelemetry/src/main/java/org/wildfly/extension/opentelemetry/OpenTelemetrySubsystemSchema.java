@@ -1,17 +1,14 @@
 package org.wildfly.extension.opentelemetry;
 
-import java.util.List;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.SubsystemSchema;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemURN;
 import org.jboss.as.controller.xml.VersionedNamespace;
-import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.IntVersion;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 
-public enum OpenTelemetrySubsystemSchema implements SubsystemSchema<OpenTelemetrySubsystemSchema> {
+public enum OpenTelemetrySubsystemSchema implements PersistentSubsystemSchema<OpenTelemetrySubsystemSchema> {
     VERSION_1_0(1, 0), // WildFly 25
     ;
     public static final OpenTelemetrySubsystemSchema CURRENT = VERSION_1_0;
@@ -28,7 +25,9 @@ public enum OpenTelemetrySubsystemSchema implements SubsystemSchema<OpenTelemetr
     }
 
     @Override
-    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-        new OpenTelemetryParser(this).readElement(reader, operations);
+    public PersistentResourceXMLDescription getXMLDescription() {
+        return builder(OpenTelemetrySubsystemExtension.SUBSYSTEM_PATH, this.namespace)
+                .addAttributes(OpenTelemetrySubsystemDefinition.ATTRIBUTES)
+                .build();
     }
 }
