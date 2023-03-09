@@ -55,12 +55,12 @@ public class UndertowExtension implements Extension {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, UndertowExtension.class.getClassLoader(), true, false);
     }
 
-    private final PersistentResourceXMLDescription currentDescription = UndertowSchema.CURRENT.getXMLDescription();
+    private final PersistentResourceXMLDescription currentDescription = UndertowSubsystemSchema.CURRENT.getXMLDescription();
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        for (UndertowSchema schema : EnumSet.allOf(UndertowSchema.class)) {
-            XMLElementReader<List<ModelNode>> reader = (schema == UndertowSchema.CURRENT) ? new PersistentResourceXMLDescriptionReader(this.currentDescription) : schema;
+        for (UndertowSubsystemSchema schema : EnumSet.allOf(UndertowSubsystemSchema.class)) {
+            XMLElementReader<List<ModelNode>> reader = (schema == UndertowSubsystemSchema.CURRENT) ? new PersistentResourceXMLDescriptionReader(this.currentDescription) : schema;
             context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespace().getUri(), reader);
         }
     }

@@ -32,7 +32,7 @@ import org.jboss.staxmapper.IntVersion;
  * Enumerates the supported Undertow subsystem schemas.
  * @author Paul Ferraro
  */
-public enum UndertowSchema implements PersistentSubsystemSchema<UndertowSchema> {
+public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<UndertowSubsystemSchema> {
 /*  Unsupported, for documentation purposes only
     VERSION_1_0(1, 0),  // WildFly 8.0
     VERSION_1_1(1, 1),  // WildFly 8.1
@@ -53,24 +53,24 @@ public enum UndertowSchema implements PersistentSubsystemSchema<UndertowSchema> 
     VERSION_13_0(13),   // WildFly 27       N.B. There were no schema changes between 12.0 and 13.0!
     VERSION_14_0(14),   // WildFly 28-present
     ;
-    static final UndertowSchema CURRENT = VERSION_14_0;
+    static final UndertowSubsystemSchema CURRENT = VERSION_14_0;
 
-    private final VersionedNamespace<IntVersion, UndertowSchema> namespace;
+    private final VersionedNamespace<IntVersion, UndertowSubsystemSchema> namespace;
 
-    UndertowSchema(int major) {
+    UndertowSubsystemSchema(int major) {
         this(new IntVersion(major));
     }
 
-    UndertowSchema(int major, int minor) {
+    UndertowSubsystemSchema(int major, int minor) {
         this(new IntVersion(major, minor));
     }
 
-    UndertowSchema(IntVersion version) {
+    UndertowSubsystemSchema(IntVersion version) {
         this.namespace = new LegacySubsystemURN<>(UndertowExtension.SUBSYSTEM_NAME, version);
     }
 
     @Override
-    public VersionedNamespace<IntVersion, UndertowSchema> getNamespace() {
+    public VersionedNamespace<IntVersion, UndertowSubsystemSchema> getNamespace() {
         return this.namespace;
     }
 

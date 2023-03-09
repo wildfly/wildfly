@@ -51,13 +51,13 @@ import org.junit.Test;
 
 public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
     final Map<ServiceName, Supplier<Object>> values = new ConcurrentHashMap<>();
-    private final UndertowSchema schema;
+    private final UndertowSubsystemSchema schema;
 
     AbstractUndertowSubsystemTestCase() {
-        this(UndertowSchema.CURRENT);
+        this(UndertowSubsystemSchema.CURRENT);
     }
 
-    AbstractUndertowSubsystemTestCase(UndertowSchema schema) {
+    AbstractUndertowSubsystemTestCase(UndertowSubsystemSchema schema) {
         super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
         this.schema = schema;
     }
@@ -185,7 +185,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Assert.assertNotNull(accessLogService);
         Assert.assertFalse(accessLogService.isRotate());
 
-        if (this.schema.since(UndertowSchema.VERSION_13_0)) {
+        if (this.schema.since(UndertowSubsystemSchema.VERSION_13_0)) {
             PathAddress address = PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT, PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN, "other"), SingleSignOnDefinition.PATH_ELEMENT);
             ModelNode result = mainServices.executeOperation(Util.getWriteAttributeOperation(address, SingleSignOnDefinition.Attribute.PATH.getName(), new ModelNode("/modified-path")));
             assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
