@@ -37,7 +37,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
-public enum ModClusterSchema implements SubsystemSchema<ModClusterSchema> {
+public enum ModClusterSubsystemSchema implements SubsystemSchema<ModClusterSubsystemSchema> {
 
     MODCLUSTER_1_0(1, 0), // AS 7.0
     MODCLUSTER_1_1(1, 1), // EAP 6.0-6.2
@@ -48,16 +48,16 @@ public enum ModClusterSchema implements SubsystemSchema<ModClusterSchema> {
     MODCLUSTER_5_0(5, 0), // WildFly 16-26, EAP 7.3-7.4
     MODCLUSTER_6_0(6, 0), // WildFly 27-present
     ;
-    public static final ModClusterSchema CURRENT = MODCLUSTER_6_0;
+    public static final ModClusterSubsystemSchema CURRENT = MODCLUSTER_6_0;
 
-    private final VersionedNamespace<IntVersion, ModClusterSchema> namespace;
+    private final VersionedNamespace<IntVersion, ModClusterSubsystemSchema> namespace;
 
-    ModClusterSchema(int major, int minor) {
+    ModClusterSubsystemSchema(int major, int minor) {
         this.namespace = new LegacySubsystemURN<>(ModClusterExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public VersionedNamespace<IntVersion, ModClusterSchema> getNamespace() {
+    public VersionedNamespace<IntVersion, ModClusterSubsystemSchema> getNamespace() {
         return this.namespace;
     }
 
