@@ -36,6 +36,18 @@
 
     <name>WildFly: MicroProfile Metrics Extension With SmallRye</name>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>jakarta.json</groupId>
