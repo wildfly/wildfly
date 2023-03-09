@@ -40,7 +40,7 @@ public class JGroupsExtension extends SubsystemExtension<JGroupsSchema> {
     static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, JGroupsExtension.class);
 
     public JGroupsExtension() {
-        super(SUBSYSTEM_NAME, JGroupsModel.CURRENT, JGroupsSubsystemResourceDefinition::new, JGroupsSchema.CURRENT, new JGroupsSubsystemXMLWriter());
+        super(SUBSYSTEM_NAME, JGroupsSubsystemModel.CURRENT, JGroupsSubsystemResourceDefinition::new, JGroupsSchema.CURRENT, new JGroupsSubsystemXMLWriter());
 
         // Workaround for JGRP-1475
         // Configure JGroups to use jboss-logging.

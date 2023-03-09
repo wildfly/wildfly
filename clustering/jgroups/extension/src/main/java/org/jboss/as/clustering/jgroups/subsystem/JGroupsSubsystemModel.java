@@ -28,7 +28,7 @@ import org.jboss.as.controller.SubsystemModel;
  * Enumerates the supported model versions.
  * @author Paul Ferraro
  */
-public enum JGroupsModel implements SubsystemModel {
+public enum JGroupsSubsystemModel implements SubsystemModel {
 /*  Unsupported model versions - for reference only
     VERSION_1_3_0(1, 3, 0), // EAP 6.4
     VERSION_2_0_0(2, 0, 0), // WildFly 8
@@ -44,11 +44,11 @@ public enum JGroupsModel implements SubsystemModel {
     VERSION_8_0_0(8, 0, 0), // WildFly 20-26, EAP 7.4
     VERSION_9_0_0(9, 0, 0), // WildFly 27-present
     ;
-    static final JGroupsModel CURRENT = VERSION_9_0_0;
+    static final JGroupsSubsystemModel CURRENT = VERSION_9_0_0;
 
     private final ModelVersion version;
 
-    JGroupsModel(int major, int minor, int micro) {
+    JGroupsSubsystemModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 

@@ -40,7 +40,7 @@ public class EncryptProtocolResourceTransformer extends ProtocolResourceTransfor
     @Override
     public void accept(ModelVersion version) {
 
-        if (JGroupsModel.VERSION_8_0_0.requiresTransformation(version)) {
+        if (JGroupsSubsystemModel.VERSION_8_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                     .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, Attribute.KEY_CREDENTIAL.getName())
                     .end();

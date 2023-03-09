@@ -101,7 +101,7 @@ public enum ChannelMetric implements Metric<JChannel> {
         this(name, type, null);
     }
 
-    ChannelMetric(String name, ModelType type, JGroupsModel deprecation) {
+    ChannelMetric(String name, ModelType type, JGroupsSubsystemModel deprecation) {
         SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime();
         if (deprecation != null) {
             builder.setDeprecated(deprecation.getVersion());
