@@ -27,30 +27,44 @@ import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfile
 import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingExtension.WELD_CAPABILITY_NAME;
 
 import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Locale;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
+@RunWith(Parameterized.class)
 public class MicroprofileReactiveMessagingSubsystemTestCase extends AbstractSubsystemBaseTest {
+    @Parameters
+    public static Iterable<MicroProfileReactiveMessagingSubsystemSchema> parameters() {
+        return EnumSet.allOf(MicroProfileReactiveMessagingSubsystemSchema.class);
+    }
 
-    public MicroprofileReactiveMessagingSubsystemTestCase() {
+    private final MicroProfileReactiveMessagingSubsystemSchema schema;
+
+    public MicroprofileReactiveMessagingSubsystemTestCase(MicroProfileReactiveMessagingSubsystemSchema schema) {
         super(MicroProfileReactiveMessagingExtension.SUBSYSTEM_NAME, new MicroProfileReactiveMessagingExtension());
+        this.schema = schema;
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
         //test configuration put in standalone.xml
-        return readResource("reactive-messaging.xml");
+        return readResource(String.format(Locale.ROOT, "reactive-messaging-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-microprofile-reactive-messaging-smallrye_1_0.xsd";
+        return String.format(Locale.ROOT, "schema/wildfly-microprofile-reactive-messaging-smallrye_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
     }
 
+    @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(CONFIG_CAPABILITY_NAME, REACTIVE_STREAMS_OPERATORS_CAPABILITY_NAME, WELD_CAPABILITY_NAME);
     }
