@@ -366,10 +366,9 @@
                                     <artifactId>commons-logging-jboss-logging</artifactId>
                                 </dependency>
                                 <!-- include narayana -->
-                                <!-- replaces org.jboss.narayana.xts:jbossxts -->
                                 <dependency>
                                     <groupId>org.jboss.narayana.xts</groupId>
-                                    <artifactId>jbossxts-jakarta</artifactId>
+                                    <artifactId>jbossxts</artifactId>
                                     <classifier>api</classifier>
                                 </dependency>
                                 <!-- include resteasy -->
