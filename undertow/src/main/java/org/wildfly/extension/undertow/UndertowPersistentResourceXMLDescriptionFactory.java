@@ -60,7 +60,7 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
 
     @Override
     public PersistentResourceXMLDescription apply(UndertowSchema schema) {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(UndertowRootDefinition.PATH_ELEMENT, schema.getUri());
+        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(UndertowRootDefinition.PATH_ELEMENT, schema.getNamespace());
 
         if (schema.since(UndertowSchema.VERSION_6_0)) {
             builder.addChild(builder(ByteBufferPoolDefinition.PATH_ELEMENT).addAttributes(ByteBufferPoolDefinition.ATTRIBUTES.stream()));

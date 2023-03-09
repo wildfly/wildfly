@@ -22,11 +22,15 @@
 package org.wildfly.extension.clustering.singleton;
 
 import java.util.List;
-import java.util.Locale;
 
-import org.jboss.as.clustering.controller.SubsystemSchema;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.LegacySubsystemURN;
+import org.jboss.as.controller.SubsystemSchema;
+import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.IntVersion;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Enumeration of supported subsystem schemas.
@@ -38,31 +42,19 @@ public enum SingletonSchema implements SubsystemSchema<SingletonSchema> {
     ;
     static final SingletonSchema CURRENT = VERSION_1_0;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, SingletonSchema> namespace;
 
     SingletonSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+        this.namespace = new LegacySubsystemURN<>(SingletonExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public int major() {
-        return this.major;
+    public VersionedNamespace<IntVersion, SingletonSchema> getNamespace() {
+        return this.namespace;
     }
 
     @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:jboss:domain:singleton:%d.%d", this.major, this.minor);
-    }
-
-    @Override
-    public XMLElementReader<List<ModelNode>> get() {
-        return new SingletonXMLReader(this);
+    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        new SingletonXMLReader(this).readElement(reader, operations);
     }
 }

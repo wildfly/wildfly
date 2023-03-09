@@ -37,6 +37,6 @@ public enum MicroProfileFaultToleranceXMLDescriptionFactory implements Function<
 
     @Override
     public PersistentResourceXMLDescription apply(MicroProfileFaultToleranceSchema schema) {
-        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, schema.getUri()).build();
+        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, schema.getNamespace()).build();
     }
 }

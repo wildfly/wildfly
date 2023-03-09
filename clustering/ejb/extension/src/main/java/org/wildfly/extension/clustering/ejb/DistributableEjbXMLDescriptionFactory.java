@@ -39,7 +39,7 @@ public enum DistributableEjbXMLDescriptionFactory implements Function<Distributa
 
     @Override
     public PersistentResourceXMLDescription apply(DistributableEjbSchema schema) {
-        return builder(DistributableEjbResourceDefinition.PATH, schema.getUri()).addAttributes(Attribute.stream(DistributableEjbResourceDefinition.Attribute.class))
+        return builder(DistributableEjbResourceDefinition.PATH, schema.getNamespace()).addAttributes(Attribute.stream(DistributableEjbResourceDefinition.Attribute.class))
                 .addChild(builder(InfinispanBeanManagementResourceDefinition.WILDCARD_PATH).addAttributes(Stream.concat(Attribute.stream(BeanManagementResourceDefinition.Attribute.class), Attribute.stream(InfinispanBeanManagementResourceDefinition.Attribute.class))))
                 .addChild(builder(LocalClientMappingsRegistryProviderResourceDefinition.PATH).setXmlElementName("local-client-mappings-registry"))
                 .addChild(builder(InfinispanClientMappingsRegistryProviderResourceDefinition.PATH).addAttributes(Attribute.stream(InfinispanClientMappingsRegistryProviderResourceDefinition.Attribute.class)).setXmlElementName("infinispan-client-mappings-registry"))

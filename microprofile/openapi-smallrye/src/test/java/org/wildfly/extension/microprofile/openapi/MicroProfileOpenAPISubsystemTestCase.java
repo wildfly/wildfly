@@ -51,11 +51,11 @@ public class MicroProfileOpenAPISubsystemTestCase extends AbstractSubsystemBaseT
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return this.readResource(String.format(Locale.ROOT, "%s_%d_%d.xml", this.getMainSubsystemName(), this.schema.major(), this.schema.minor()));
+        return this.readResource(String.format(Locale.ROOT, "%s_%d_%d.xml", this.getMainSubsystemName(), this.schema.getVersion().major(), this.schema.getVersion().minor()));
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return String.format(Locale.ROOT, "schema/wildfly-%s_%d_%d.xsd", this.getMainSubsystemName(), this.schema.major(), this.schema.minor());
+        return String.format(Locale.ROOT, "schema/wildfly-%s_%d_%d.xsd", this.getMainSubsystemName(), this.schema.getVersion().major(), this.schema.getVersion().minor());
     }
 }

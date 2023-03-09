@@ -37,6 +37,6 @@ public enum MicroProfileOpenAPIXMLDescriptionFactory implements Function<MicroPr
 
     @Override
     public PersistentResourceXMLDescription apply(MicroProfileOpenAPISchema schema) {
-        return builder(MicroProfileOpenAPISubsystemDefinition.PATH, schema.getUri()).build();
+        return builder(MicroProfileOpenAPISubsystemDefinition.PATH, schema.getNamespace()).build();
     }
 }

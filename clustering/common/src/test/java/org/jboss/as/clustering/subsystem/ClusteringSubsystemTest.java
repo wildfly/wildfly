@@ -30,8 +30,8 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.clustering.controller.SubsystemSchema;
 import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 /**
@@ -52,12 +52,12 @@ public abstract class ClusteringSubsystemTest<S extends SubsystemSchema<S>> exte
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource(String.format(Locale.ROOT, this.xmlPattern, this.testSchema.major(), this.testSchema.minor()));
+        return readResource(String.format(Locale.ROOT, this.xmlPattern, this.testSchema.getVersion().major(), this.testSchema.getVersion().minor()));
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return String.format(Locale.ROOT, this.xsdPattern, this.testSchema.major(), this.testSchema.minor());
+        return String.format(Locale.ROOT, this.xsdPattern, this.testSchema.getVersion().major(), this.testSchema.getVersion().minor());
     }
 
     /**

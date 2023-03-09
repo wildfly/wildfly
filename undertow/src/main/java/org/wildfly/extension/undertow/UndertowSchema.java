@@ -22,8 +22,11 @@
 
 package org.wildfly.extension.undertow;
 
-import org.jboss.as.clustering.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.staxmapper.IntVersion;
 
 /**
  * Enumerates the supported Undertow subsystem schemas.
@@ -52,31 +55,23 @@ public enum UndertowSchema implements PersistentSubsystemSchema<UndertowSchema> 
     ;
     static final UndertowSchema CURRENT = VERSION_14_0;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, UndertowSchema> namespace;
 
     UndertowSchema(int major) {
-        this(major, 0);
+        this(new IntVersion(major));
     }
 
     UndertowSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+        this(new IntVersion(major, minor));
+    }
+
+    UndertowSchema(IntVersion version) {
+        this.namespace = new LegacySubsystemURN<>(UndertowExtension.SUBSYSTEM_NAME, version);
     }
 
     @Override
-    public int major() {
-        return this.major;
-    }
-
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format("urn:jboss:domain:undertow:%d.%d", this.major, this.minor);
+    public VersionedNamespace<IntVersion, UndertowSchema> getNamespace() {
+        return this.namespace;
     }
 
     @Override

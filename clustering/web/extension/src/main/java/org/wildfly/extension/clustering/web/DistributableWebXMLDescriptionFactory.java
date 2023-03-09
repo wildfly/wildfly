@@ -40,7 +40,7 @@ public enum DistributableWebXMLDescriptionFactory implements Function<Distributa
 
     @Override
     public PersistentResourceXMLDescription apply(DistributableWebSchema schema) {
-        return builder(DistributableWebResourceDefinition.PATH, schema.getUri()).addAttributes(Attribute.stream(DistributableWebResourceDefinition.Attribute.class))
+        return builder(DistributableWebResourceDefinition.PATH, schema.getNamespace()).addAttributes(Attribute.stream(DistributableWebResourceDefinition.Attribute.class))
                 .addChild(getInfinispanSessionManagementResourceXMLBuilder(schema))
                 .addChild(getHotRodSessionManagementResourceXMLBuilder(schema))
                 .addChild(builder(InfinispanSSOManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(InfinispanSSOManagementResourceDefinition.Attribute.class)))

@@ -64,12 +64,12 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource(String.format("undertow-%d.%d.xml", this.schema.major(), this.schema.minor()));
+        return readResource(String.format("undertow-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return String.format("schema/wildfly-undertow_%d_%d.xsd", this.schema.major(), this.schema.minor());
+        return String.format("schema/wildfly-undertow_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
     }
 
     @Override

@@ -22,11 +22,15 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.List;
-import java.util.Locale;
 
-import org.jboss.as.clustering.controller.SubsystemSchema;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.LegacySubsystemURN;
+import org.jboss.as.controller.SubsystemSchema;
+import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.IntVersion;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Enumeration of the supported subsystem xml schemas.
@@ -47,31 +51,19 @@ public enum JGroupsSchema implements SubsystemSchema<JGroupsSchema> {
     ;
     static final JGroupsSchema CURRENT = VERSION_9_0;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, JGroupsSchema> namespace;
 
     JGroupsSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+        this.namespace = new LegacySubsystemURN<>(JGroupsExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public int major() {
-        return this.major;
+    public VersionedNamespace<IntVersion, JGroupsSchema> getNamespace() {
+        return this.namespace;
     }
 
     @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:jboss:domain:jgroups:%d.%d", this.major, this.minor);
-    }
-
-    @Override
-    public XMLElementReader<List<ModelNode>> get() {
-        return new JGroupsSubsystemXMLReader(this);
+    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        new JGroupsSubsystemXMLReader(this).readElement(reader, operations);
     }
 }

@@ -21,10 +21,11 @@
  */
 package org.wildfly.extension.microprofile.faulttolerance;
 
-import java.util.Locale;
-
-import org.jboss.as.clustering.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.staxmapper.IntVersion;
 
 /**
  * Enumeration of supported subsystem schemas.
@@ -37,27 +38,15 @@ public enum MicroProfileFaultToleranceSchema implements PersistentSubsystemSchem
     ;
     public static final MicroProfileFaultToleranceSchema CURRENT = VERSION_1_0;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, MicroProfileFaultToleranceSchema> namespace;
 
     MicroProfileFaultToleranceSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+        this.namespace = new SubsystemURN<>(MicroProfileFaultToleranceExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public int major() {
-        return this.major;
-    }
-
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:wildfly:microprofile-fault-tolerance-smallrye:%d.%d", this.major, this.minor);
+    public VersionedNamespace<IntVersion, MicroProfileFaultToleranceSchema> getNamespace() {
+        return this.namespace;
     }
 
     @Override

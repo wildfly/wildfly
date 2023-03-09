@@ -22,10 +22,11 @@
 
 package org.wildfly.extension.microprofile.openapi;
 
-import java.util.Locale;
-
-import org.jboss.as.clustering.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.staxmapper.IntVersion;
 
 /**
  * Enumeration of MicroProfile OpenAPI subsystem schema versions.
@@ -37,27 +38,15 @@ public enum MicroProfileOpenAPISchema implements PersistentSubsystemSchema<Micro
     ;
     static final MicroProfileOpenAPISchema CURRENT = VERSION_1_0;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, MicroProfileOpenAPISchema> namespace;
 
     MicroProfileOpenAPISchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+        this.namespace = new SubsystemURN<>(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public int major() {
-        return this.major;
-    }
-
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:wildfly:%s:%d.%d", MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, this.major, this.minor);
+    public VersionedNamespace<IntVersion, MicroProfileOpenAPISchema> getNamespace() {
+        return this.namespace;
     }
 
     @Override
