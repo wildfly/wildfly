@@ -50,7 +50,7 @@ abstract class AbstractCookieDefinition extends PersistentResourceDefinition {
         OPTIONAL_NAME(Constants.NAME, ModelType.STRING),
         REQUIRED_NAME(Constants.NAME, ModelType.STRING, ad -> ad.setRequired(true)),
         DOMAIN(Constants.DOMAIN, ModelType.STRING),
-        COMMENT(Constants.COMMENT, ModelType.STRING, ad -> ad.setDeprecated(UndertowModel.VERSION_13_0_0.getVersion())),
+        COMMENT(Constants.COMMENT, ModelType.STRING, ad -> ad.setDeprecated(UndertowSubsystemModel.VERSION_13_0_0.getVersion())),
         HTTP_ONLY(Constants.HTTP_ONLY, ModelType.BOOLEAN),
         SECURE(Constants.SECURE, ModelType.BOOLEAN),
         MAX_AGE(Constants.MAX_AGE, ModelType.INT),

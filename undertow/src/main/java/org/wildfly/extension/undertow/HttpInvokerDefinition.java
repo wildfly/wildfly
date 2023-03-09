@@ -78,7 +78,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .setAlternatives(Constants.HTTP_AUTHENTICATION_FACTORY)
-            .setDeprecated(UndertowModel.VERSION_12_0_0.getVersion())
+            .setDeprecated(UndertowSubsystemModel.VERSION_12_0_0.getVersion())
             .build();
 
     protected static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)
