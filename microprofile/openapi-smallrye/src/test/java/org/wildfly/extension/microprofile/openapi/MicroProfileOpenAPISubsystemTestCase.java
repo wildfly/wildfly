@@ -37,14 +37,14 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(value = Parameterized.class)
 public class MicroProfileOpenAPISubsystemTestCase extends AbstractSubsystemBaseTest {
 
-    private final MicroProfileOpenAPISchema schema;
+    private final MicroProfileOpenAPISubsystemSchema schema;
 
     @Parameters
-    public static Iterable<MicroProfileOpenAPISchema> parameters() {
-        return EnumSet.allOf(MicroProfileOpenAPISchema.class);
+    public static Iterable<MicroProfileOpenAPISubsystemSchema> parameters() {
+        return EnumSet.allOf(MicroProfileOpenAPISubsystemSchema.class);
     }
 
-    public MicroProfileOpenAPISubsystemTestCase(MicroProfileOpenAPISchema schema) {
+    public MicroProfileOpenAPISubsystemTestCase(MicroProfileOpenAPISubsystemSchema schema) {
         super(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, new MicroProfileOpenAPIExtension());
         this.schema = schema;
     }

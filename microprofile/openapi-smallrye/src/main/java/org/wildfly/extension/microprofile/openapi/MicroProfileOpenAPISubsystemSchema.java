@@ -32,20 +32,20 @@ import org.jboss.staxmapper.IntVersion;
  * Enumeration of MicroProfile OpenAPI subsystem schema versions.
  * @author Paul Ferraro
  */
-public enum MicroProfileOpenAPISchema implements PersistentSubsystemSchema<MicroProfileOpenAPISchema> {
+public enum MicroProfileOpenAPISubsystemSchema implements PersistentSubsystemSchema<MicroProfileOpenAPISubsystemSchema> {
 
     VERSION_1_0(1, 0), // WildFly 19
     ;
-    static final MicroProfileOpenAPISchema CURRENT = VERSION_1_0;
+    static final MicroProfileOpenAPISubsystemSchema CURRENT = VERSION_1_0;
 
-    private final VersionedNamespace<IntVersion, MicroProfileOpenAPISchema> namespace;
+    private final VersionedNamespace<IntVersion, MicroProfileOpenAPISubsystemSchema> namespace;
 
-    MicroProfileOpenAPISchema(int major, int minor) {
+    MicroProfileOpenAPISubsystemSchema(int major, int minor) {
         this.namespace = new SubsystemURN<>(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public VersionedNamespace<IntVersion, MicroProfileOpenAPISchema> getNamespace() {
+    public VersionedNamespace<IntVersion, MicroProfileOpenAPISubsystemSchema> getNamespace() {
         return this.namespace;
     }
 

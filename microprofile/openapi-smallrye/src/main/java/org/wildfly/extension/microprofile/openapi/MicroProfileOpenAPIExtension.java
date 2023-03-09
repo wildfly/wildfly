@@ -33,12 +33,12 @@ import org.kohsuke.MetaInfServices;
  * @author Paul Ferraro
  */
 @MetaInfServices(Extension.class)
-public class MicroProfileOpenAPIExtension extends PersistentSubsystemExtension<MicroProfileOpenAPISchema> {
+public class MicroProfileOpenAPIExtension extends PersistentSubsystemExtension<MicroProfileOpenAPISubsystemSchema> {
 
     static final String SUBSYSTEM_NAME = "microprofile-openapi-smallrye";
     static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, MicroProfileOpenAPIExtension.class);
 
     public MicroProfileOpenAPIExtension() {
-        super(SUBSYSTEM_NAME, MicroProfileOpenAPISubsystemModel.CURRENT, MicroProfileOpenAPISubsystemDefinition::new, MicroProfileOpenAPISchema.CURRENT);
+        super(SUBSYSTEM_NAME, MicroProfileOpenAPISubsystemModel.CURRENT, MicroProfileOpenAPISubsystemDefinition::new, MicroProfileOpenAPISubsystemSchema.CURRENT);
     }
 }
