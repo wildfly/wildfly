@@ -43,7 +43,7 @@ import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
-import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
+import org.jboss.as.clustering.infinispan.subsystem.InfinispanSubsystemModel;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -190,13 +190,13 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
     }
 
     public enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, InfinispanModel.VERSION_15_0_0) {
+        KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, InfinispanSubsystemModel.VERSION_15_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setDefaultValue(new ModelNode(64));
             }
         },
-        VALUE_SIZE_ESTIMATE("value-size-estimate", ModelType.INT, InfinispanModel.VERSION_15_0_0) {
+        VALUE_SIZE_ESTIMATE("value-size-estimate", ModelType.INT, InfinispanSubsystemModel.VERSION_15_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setDefaultValue(new ModelNode(512));
@@ -205,7 +205,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
+        DeprecatedAttribute(String name, ModelType type, InfinispanSubsystemModel deprecation) {
             this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)

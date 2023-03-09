@@ -54,7 +54,7 @@ public class CacheContainerResourceTransformer implements Consumer<ModelVersion>
     @SuppressWarnings("deprecation")
     @Override
     public void accept(ModelVersion version) {
-        if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+        if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                     .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
                         @Override
@@ -71,7 +71,7 @@ public class CacheContainerResourceTransformer implements Consumer<ModelVersion>
                     }, ListAttribute.MODULES.getDefinition())
                     .end();
         }
-        if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
+        if (InfinispanSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())
                     .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MARSHALLER.getDefinition().getDefaultValue()), Attribute.MARSHALLER.getDefinition())

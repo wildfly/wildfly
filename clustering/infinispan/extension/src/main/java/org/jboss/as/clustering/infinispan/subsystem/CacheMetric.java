@@ -88,7 +88,7 @@ public enum CacheMetric implements Metric<CacheMgmtInterceptor>, UnaryOperator<S
 
         @Override
         public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-            return builder.setDeprecated(InfinispanModel.VERSION_16_0_0.getVersion());
+            return builder.setDeprecated(InfinispanSubsystemModel.VERSION_16_0_0.getVersion());
         }
     },
     @Deprecated NUMBER_OF_ENTRIES_IN_MEMORY("number-of-entries-in-memory", ModelType.INT, AttributeAccess.Flag.GAUGE_METRIC) {
@@ -99,7 +99,7 @@ public enum CacheMetric implements Metric<CacheMgmtInterceptor>, UnaryOperator<S
 
         @Override
         public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-            return builder.setDeprecated(InfinispanModel.VERSION_16_0_0.getVersion());
+            return builder.setDeprecated(InfinispanSubsystemModel.VERSION_16_0_0.getVersion());
         }
     },
     READ_WRITE_RATIO("read-write-ratio", ModelType.DOUBLE, AttributeAccess.Flag.GAUGE_METRIC) {

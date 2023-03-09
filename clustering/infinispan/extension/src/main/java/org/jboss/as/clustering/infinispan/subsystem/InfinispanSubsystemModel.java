@@ -28,7 +28,7 @@ import org.jboss.as.controller.SubsystemModel;
  * Enumerates the supported model versions.
  * @author Paul Ferraro
  */
-public enum InfinispanModel implements SubsystemModel {
+public enum InfinispanSubsystemModel implements SubsystemModel {
 /*  Unsupported model versions - for reference only
     VERSION_1_6_0(1, 6, 0), // EAP 6.4
     VERSION_2_0_0(2, 0, 0), // WildFly 8
@@ -53,11 +53,11 @@ public enum InfinispanModel implements SubsystemModel {
     VERSION_16_0_0(16, 0, 0), // WildFly 27
     VERSION_17_0_0(17, 0, 0), // WildFly 28-present
     ;
-    static final InfinispanModel CURRENT = VERSION_17_0_0;
+    static final InfinispanSubsystemModel CURRENT = VERSION_17_0_0;
 
     private final ModelVersion version;
 
-    InfinispanModel(int major, int minor, int micro) {
+    InfinispanSubsystemModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 

@@ -44,7 +44,7 @@ public class InfinispanExtensionTransformerRegistration implements ExtensionTran
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         // Register transformers for all but the current model
-        for (InfinispanModel model : EnumSet.complementOf(EnumSet.of(InfinispanModel.CURRENT))) {
+        for (InfinispanSubsystemModel model : EnumSet.complementOf(EnumSet.of(InfinispanSubsystemModel.CURRENT))) {
             ModelVersion version = model.getVersion();
             TransformationDescription.Tools.register(new InfinispanSubsystemResourceTransformer().apply(version), registration, version);
         }

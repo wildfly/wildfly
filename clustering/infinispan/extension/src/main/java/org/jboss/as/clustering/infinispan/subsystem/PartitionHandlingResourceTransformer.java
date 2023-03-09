@@ -52,7 +52,7 @@ public class PartitionHandlingResourceTransformer implements Consumer<ModelVersi
 
     @Override
     public void accept(ModelVersion version) {
-        if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+        if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, MERGE_POLICY.getDefinition(), WHEN_SPLIT.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, MERGE_POLICY.getDefinition())

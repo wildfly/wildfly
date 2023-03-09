@@ -84,6 +84,6 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
     RemoteStoreResourceDefinition() {
         super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), RemoteStoreServiceConfigurator::new);
-        this.setDeprecated(InfinispanModel.VERSION_7_0_0.getVersion());
+        this.setDeprecated(InfinispanSubsystemModel.VERSION_7_0_0.getVersion());
     }
 }
