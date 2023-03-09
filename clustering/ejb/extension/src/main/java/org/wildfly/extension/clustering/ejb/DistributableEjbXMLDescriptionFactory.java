@@ -34,11 +34,11 @@ import org.jboss.as.controller.PersistentResourceXMLDescription;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public enum DistributableEjbXMLDescriptionFactory implements Function<DistributableEjbSchema, PersistentResourceXMLDescription> {
+public enum DistributableEjbXMLDescriptionFactory implements Function<DistributableEjbSubsystemSchema, PersistentResourceXMLDescription> {
     INSTANCE;
 
     @Override
-    public PersistentResourceXMLDescription apply(DistributableEjbSchema schema) {
+    public PersistentResourceXMLDescription apply(DistributableEjbSubsystemSchema schema) {
         return builder(DistributableEjbResourceDefinition.PATH, schema.getNamespace()).addAttributes(Attribute.stream(DistributableEjbResourceDefinition.Attribute.class))
                 .addChild(builder(InfinispanBeanManagementResourceDefinition.WILDCARD_PATH).addAttributes(Stream.concat(Attribute.stream(BeanManagementResourceDefinition.Attribute.class), Attribute.stream(InfinispanBeanManagementResourceDefinition.Attribute.class))))
                 .addChild(builder(LocalClientMappingsRegistryProviderResourceDefinition.PATH).setXmlElementName("local-client-mappings-registry"))

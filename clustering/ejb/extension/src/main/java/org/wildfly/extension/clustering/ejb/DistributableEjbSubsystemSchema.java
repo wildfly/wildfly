@@ -32,20 +32,20 @@ import org.jboss.staxmapper.IntVersion;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public enum DistributableEjbSchema implements PersistentSubsystemSchema<DistributableEjbSchema> {
+public enum DistributableEjbSubsystemSchema implements PersistentSubsystemSchema<DistributableEjbSubsystemSchema> {
 
     VERSION_1_0(1, 0), // WildFly 27
     ;
-    static final DistributableEjbSchema CURRENT = VERSION_1_0;
+    static final DistributableEjbSubsystemSchema CURRENT = VERSION_1_0;
 
-    private final VersionedNamespace<IntVersion, DistributableEjbSchema> namespace;
+    private final VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> namespace;
 
-    DistributableEjbSchema(int major, int minor) {
+    DistributableEjbSubsystemSchema(int major, int minor) {
         this.namespace = new LegacySubsystemURN<>(DistributableEjbExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public VersionedNamespace<IntVersion, DistributableEjbSchema> getNamespace() {
+    public VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> getNamespace() {
         return this.namespace;
     }
 
