@@ -29,7 +29,7 @@ import org.jboss.as.controller.SubsystemModel;
  * Enumerates the model versions for the distributable-web subsystem.
  * @author Paul Ferraro
  */
-public enum DistributableWebModel implements SubsystemModel {
+public enum DistributableWebSubsystemModel implements SubsystemModel {
 
     /*
     List of unsupported versions commented out for reference purposes:
@@ -39,11 +39,11 @@ public enum DistributableWebModel implements SubsystemModel {
     VERSION_2_0_0(2, 0, 0), // WildFly 18-26
     VERSION_3_0_0(3, 0, 0), // WildFly 27
     ;
-    public static final DistributableWebModel CURRENT = VERSION_3_0_0;
+    public static final DistributableWebSubsystemModel CURRENT = VERSION_3_0_0;
 
     private final ModelVersion version;
 
-    DistributableWebModel(int major, int minor, int micro) {
+    DistributableWebSubsystemModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 

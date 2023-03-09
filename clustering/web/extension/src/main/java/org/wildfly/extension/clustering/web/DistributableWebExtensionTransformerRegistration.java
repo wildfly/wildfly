@@ -45,7 +45,7 @@ public class DistributableWebExtensionTransformerRegistration implements Extensi
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         // Register transformers for all but the current model
-        for (DistributableWebModel model : EnumSet.complementOf(EnumSet.of(DistributableWebModel.CURRENT))) {
+        for (DistributableWebSubsystemModel model : EnumSet.complementOf(EnumSet.of(DistributableWebSubsystemModel.CURRENT))) {
             ModelVersion version = model.getVersion();
             TransformationDescription transformation = new DistributableWebResourceTransformer().apply(version).build();
             TransformationDescription.Tools.register(transformation, registration, version);
