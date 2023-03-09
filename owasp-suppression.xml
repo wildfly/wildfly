@@ -962,4 +962,12 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.kafka/kafka\-clients@.*$</packageUrl>
         <vulnerabilityName>CVE-2023-25194</vulnerabilityName>
     </suppress>
+    <!-- [PJFCB-3778] False positive as we don't use Apache SOAP -->
+    <suppress>
+        <notes><![CDATA[
+   file name: cxf-rt-bindings-soap-3.4.10.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.cxf/cxf\-rt\-bindings\-soap@.*$</packageUrl>
+        <cve>CVE-2022-40705</cve>
+    </suppress>
 </suppressions>
