@@ -36,7 +36,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * Enumeration of the supported subsystem xml schemas.
  * @author Paul Ferraro
  */
-public enum JGroupsSchema implements SubsystemSchema<JGroupsSchema> {
+public enum JGroupsSubsystemSchema implements SubsystemSchema<JGroupsSubsystemSchema> {
 
     VERSION_1_0(1, 0), // AS 7.0
     VERSION_1_1(1, 1), // AS 7.1
@@ -49,16 +49,16 @@ public enum JGroupsSchema implements SubsystemSchema<JGroupsSchema> {
     VERSION_8_0(8, 0), // WildFly 20-26, EAP 7.4
     VERSION_9_0(9, 0), // WildFly 27-present
     ;
-    static final JGroupsSchema CURRENT = VERSION_9_0;
+    static final JGroupsSubsystemSchema CURRENT = VERSION_9_0;
 
-    private final VersionedNamespace<IntVersion, JGroupsSchema> namespace;
+    private final VersionedNamespace<IntVersion, JGroupsSubsystemSchema> namespace;
 
-    JGroupsSchema(int major, int minor) {
+    JGroupsSubsystemSchema(int major, int minor) {
         this.namespace = new LegacySubsystemURN<>(JGroupsExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public VersionedNamespace<IntVersion, JGroupsSchema> getNamespace() {
+    public VersionedNamespace<IntVersion, JGroupsSubsystemSchema> getNamespace() {
         return this.namespace;
     }
 

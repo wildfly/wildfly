@@ -49,16 +49,16 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 @RunWith(value = Parameterized.class)
-public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSchema> {
+public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSubsystemSchema> {
 
     @Parameters
-    public static Iterable<JGroupsSchema> parameters() {
-        return EnumSet.allOf(JGroupsSchema.class);
+    public static Iterable<JGroupsSubsystemSchema> parameters() {
+        return EnumSet.allOf(JGroupsSubsystemSchema.class);
     }
 
-    private final JGroupsSchema schema;
+    private final JGroupsSubsystemSchema schema;
 
-    public JGroupsSubsystemTestCase(JGroupsSchema schema) {
+    public JGroupsSubsystemTestCase(JGroupsSubsystemSchema schema) {
         super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema, "subsystem-jgroups-%d_%d.xml", "schema/jboss-as-jgroups_%d_%d.xsd");
         this.schema = schema;
     }
@@ -98,7 +98,7 @@ public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSch
      */
     @Test
     public void testIndexedAdds() throws Exception {
-        if (!this.schema.since(JGroupsSchema.VERSION_3_0)) return;
+        if (!this.schema.since(JGroupsSubsystemSchema.VERSION_3_0)) return;
 
         final KernelServices services = this.buildKernelServices();
 
