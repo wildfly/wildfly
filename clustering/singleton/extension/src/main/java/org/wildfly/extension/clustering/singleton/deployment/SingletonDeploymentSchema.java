@@ -22,41 +22,30 @@
 
 package org.wildfly.extension.clustering.singleton.deployment;
 
-import java.util.Locale;
+import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.clustering.xml.XMLElementSchema;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.as.controller.xml.VersionedURN;
+import org.jboss.as.controller.xml.XMLElementSchema;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.jbossallxml.JBossAllSchema;
+import org.jboss.staxmapper.IntVersion;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Enumerates the singleton deployment configuration schemas.
  * @author Paul Ferraro
  */
-public enum SingletonDeploymentSchema implements XMLElementSchema<MutableSingletonDeploymentConfiguration, SingletonDeploymentSchema> {
+public enum SingletonDeploymentSchema implements XMLElementSchema<SingletonDeploymentSchema, MutableSingletonDeploymentConfiguration>, JBossAllSchema<SingletonDeploymentSchema, SingletonDeploymentConfiguration> {
 
     VERSION_1_0(1, 0),
     ;
     public static final SingletonDeploymentSchema CURRENT = VERSION_1_0;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, SingletonDeploymentSchema> namespace;
 
     SingletonDeploymentSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
-    }
-
-    @Override
-    public int major() {
-        return this.major;
-    }
-
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:jboss:%s:%d.%d", this.getLocalName(), this.major, this.minor);
+        this.namespace = new VersionedURN<>(VersionedURN.JBOSS_IDENTIFIER, this.getLocalName(), new IntVersion(major, minor));
     }
 
     @Override
@@ -65,7 +54,19 @@ public enum SingletonDeploymentSchema implements XMLElementSchema<MutableSinglet
     }
 
     @Override
-    public SingletonDeploymentXMLReader get() {
-        return new SingletonDeploymentXMLReader(this);
+    public VersionedNamespace<IntVersion, SingletonDeploymentSchema> getNamespace() {
+        return this.namespace;
+    }
+
+    @Override
+    public void readElement(XMLExtendedStreamReader reader, MutableSingletonDeploymentConfiguration configuration) throws XMLStreamException {
+        new SingletonDeploymentXMLReader(this).readElement(reader, configuration);
+    }
+
+    @Override
+    public SingletonDeploymentConfiguration parse(XMLExtendedStreamReader reader, DeploymentUnit unit) throws XMLStreamException {
+        MutableSingletonDeploymentConfiguration configuration = new MutableSingletonDeploymentConfiguration(unit);
+        this.readElement(reader, configuration);
+        return configuration;
     }
 }

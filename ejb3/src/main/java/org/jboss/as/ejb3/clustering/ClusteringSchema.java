@@ -22,45 +22,34 @@
 
 package org.jboss.as.ejb3.clustering;
 
-import java.util.Locale;
-
-import org.jboss.as.clustering.xml.Schema;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.as.controller.xml.VersionedSchema;
+import org.jboss.as.controller.xml.VersionedURN;
+import org.jboss.staxmapper.IntVersion;
 
 /**
  * @author Paul Ferraro
  */
-public enum ClusteringSchema implements Schema<ClusteringSchema> {
+public enum ClusteringSchema implements VersionedSchema<IntVersion, ClusteringSchema> {
 
     VERSION_1_0(1, 0),
     VERSION_1_1(1, 1),
     ;
     static final ClusteringSchema CURRENT = VERSION_1_1;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, ClusteringSchema> namespace;
 
     ClusteringSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
-    }
-
-    @Override
-    public int major() {
-        return this.major;
-    }
-
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:%s:%d.%d", this.getLocalName(), this.major, this.minor);
+        this.namespace = new VersionedURN<>(this.getLocalName(), new IntVersion(major, minor));
     }
 
     @Override
     public String getLocalName() {
         return "clustering";
+    }
+
+    @Override
+    public VersionedNamespace<IntVersion, ClusteringSchema> getNamespace() {
+        return this.namespace;
     }
 }

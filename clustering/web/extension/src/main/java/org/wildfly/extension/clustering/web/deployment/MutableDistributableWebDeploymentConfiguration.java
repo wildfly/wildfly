@@ -37,7 +37,7 @@ import org.wildfly.clustering.web.session.DistributableSessionManagementConfigur
 /**
  * @author Paul Ferraro
  */
-public class MutableDistributableDeploymentConfiguration implements DistributableWebDeploymentConfiguration, UnaryOperator<String>, Consumer<String> {
+public class MutableDistributableWebDeploymentConfiguration implements DistributableWebDeploymentConfiguration, UnaryOperator<String>, Consumer<String> {
 
     private final List<String> immutableClasses = new LinkedList<>();
     private final PropertyReplacer replacer;
@@ -45,11 +45,11 @@ public class MutableDistributableDeploymentConfiguration implements Distributabl
     private String managementName;
     private DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> management;
 
-    public MutableDistributableDeploymentConfiguration() {
+    public MutableDistributableWebDeploymentConfiguration() {
         this.replacer = null;
     }
 
-    public MutableDistributableDeploymentConfiguration(DeploymentUnit unit) {
+    public MutableDistributableWebDeploymentConfiguration(DeploymentUnit unit) {
         this.replacer = JBossDescriptorPropertyReplacement.propertyReplacer(unit);
     }
 
