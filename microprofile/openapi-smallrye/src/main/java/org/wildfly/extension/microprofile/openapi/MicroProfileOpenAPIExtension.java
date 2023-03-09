@@ -38,6 +38,6 @@ public class MicroProfileOpenAPIExtension extends PersistentSubsystemExtension<M
     static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, MicroProfileOpenAPIExtension.class);
 
     public MicroProfileOpenAPIExtension() {
-        super(SUBSYSTEM_NAME, MicroProfileOpenAPIModel.CURRENT, MicroProfileOpenAPISubsystemDefinition::new, MicroProfileOpenAPISchema.CURRENT);
+        super(SUBSYSTEM_NAME, MicroProfileOpenAPISubsystemModel.CURRENT, MicroProfileOpenAPISubsystemDefinition::new, MicroProfileOpenAPISchema.CURRENT);
     }
 }
