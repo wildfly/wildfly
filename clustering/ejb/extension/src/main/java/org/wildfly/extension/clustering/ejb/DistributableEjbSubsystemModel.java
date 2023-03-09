@@ -29,15 +29,15 @@ import org.jboss.as.controller.SubsystemModel;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public enum DistributableEjbModel implements SubsystemModel {
+public enum DistributableEjbSubsystemModel implements SubsystemModel {
 
     VERSION_1_0_0(1, 0, 0), // WildFly 27
     ;
-    public static final DistributableEjbModel CURRENT = VERSION_1_0_0;
+    public static final DistributableEjbSubsystemModel CURRENT = VERSION_1_0_0;
 
     private final ModelVersion version;
 
-    DistributableEjbModel(int major, int minor, int micro) {
+    DistributableEjbSubsystemModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 
