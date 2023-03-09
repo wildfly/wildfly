@@ -36,14 +36,14 @@ import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
  * @author Paul Ferraro
  */
 @RunWith(Parameterized.class)
-public class SingletonSubsystemTestCase extends ClusteringSubsystemTest<SingletonSchema> {
+public class SingletonSubsystemTestCase extends ClusteringSubsystemTest<SingletonSubsystemSchema> {
 
     @Parameters
-    public static Iterable<SingletonSchema> parameters() {
-        return EnumSet.allOf(SingletonSchema.class);
+    public static Iterable<SingletonSubsystemSchema> parameters() {
+        return EnumSet.allOf(SingletonSubsystemSchema.class);
     }
 
-    public SingletonSubsystemTestCase(SingletonSchema schema) {
+    public SingletonSubsystemTestCase(SingletonSubsystemSchema schema) {
         super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), schema, "subsystem-singleton-%d_%d.xml", "schema/wildfly-singleton_%d_%d.xsd");
     }
 

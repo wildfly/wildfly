@@ -36,20 +36,20 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * Enumeration of supported subsystem schemas.
  * @author Paul Ferraro
  */
-public enum SingletonSchema implements SubsystemSchema<SingletonSchema> {
+public enum SingletonSubsystemSchema implements SubsystemSchema<SingletonSubsystemSchema> {
 
     VERSION_1_0(1, 0),
     ;
-    static final SingletonSchema CURRENT = VERSION_1_0;
+    static final SingletonSubsystemSchema CURRENT = VERSION_1_0;
 
-    private final VersionedNamespace<IntVersion, SingletonSchema> namespace;
+    private final VersionedNamespace<IntVersion, SingletonSubsystemSchema> namespace;
 
-    SingletonSchema(int major, int minor) {
+    SingletonSubsystemSchema(int major, int minor) {
         this.namespace = new LegacySubsystemURN<>(SingletonExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public VersionedNamespace<IntVersion, SingletonSchema> getNamespace() {
+    public VersionedNamespace<IntVersion, SingletonSubsystemSchema> getNamespace() {
         return this.namespace;
     }
 
