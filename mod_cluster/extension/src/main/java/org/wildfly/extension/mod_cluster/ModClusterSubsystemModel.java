@@ -29,7 +29,7 @@ import org.jboss.as.controller.SubsystemModel;
  *
  * @author Radoslav Husar
  */
-public enum ModClusterModel implements SubsystemModel {
+public enum ModClusterSubsystemModel implements SubsystemModel {
 /*  Unsupported model versions - for reference only:
 
     VERSION_1_5_0(1, 5, 0), // EAP 6.3-6.4
@@ -43,11 +43,11 @@ public enum ModClusterModel implements SubsystemModel {
     VERSION_8_0_0(8, 0, 0), // WildFly 27-present
     ;
 
-    public static final ModClusterModel CURRENT = VERSION_8_0_0;
+    public static final ModClusterSubsystemModel CURRENT = VERSION_8_0_0;
 
     private final ModelVersion version;
 
-    ModClusterModel(int major, int minor, int micro) {
+    ModClusterSubsystemModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 

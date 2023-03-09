@@ -63,10 +63,10 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         return String.format(pattern, version.getMavenGavVersion());
     }
 
-    private static ModClusterModel getModelVersion(ModelTestControllerVersion controllerVersion) {
+    private static ModClusterSubsystemModel getModelVersion(ModelTestControllerVersion controllerVersion) {
         switch (controllerVersion) {
             case EAP_7_4_0:
-                return ModClusterModel.VERSION_7_0_0;
+                return ModClusterSubsystemModel.VERSION_7_0_0;
         }
         throw new IllegalArgumentException();
     }
@@ -89,7 +89,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private void testTransformations(ModelTestControllerVersion controllerVersion) throws Exception {
-        ModClusterModel model = getModelVersion(controllerVersion);
+        ModClusterSubsystemModel model = getModelVersion(controllerVersion);
         ModelVersion modelVersion = model.getVersion();
         String[] dependencies = getDependencies(controllerVersion);
 
@@ -121,7 +121,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     private static ModelFixer createModelFixer(ModelVersion version) {
         return model -> {
-            if (ModClusterModel.VERSION_8_0_0.requiresTransformation(version)) {
+            if (ModClusterSubsystemModel.VERSION_8_0_0.requiresTransformation(version)) {
                 Set.of("default", "with-floating-decay-load-provider").forEach(
                         proxy -> model.get(ProxyConfigurationResourceDefinition.pathElement(proxy).getKeyValuePair()).get("connector").set(new ModelNode())
                 );
@@ -138,7 +138,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
     private void testRejections(ModelTestControllerVersion controllerVersion) throws Exception {
         String[] dependencies = getDependencies(controllerVersion);
         String subsystemXml = readResource("subsystem-reject.xml");
-        ModClusterModel model = getModelVersion(controllerVersion);
+        ModClusterSubsystemModel model = getModelVersion(controllerVersion);
         ModelVersion modelVersion = model.getVersion();
 
         KernelServicesBuilder builder = createKernelServicesBuilder(new ModClusterAdditionalInitialization());

@@ -49,6 +49,6 @@ public class ModClusterExtension extends SubsystemExtension<ModClusterSchema> {
             new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-proxies", false, false, false));
 
     public ModClusterExtension() {
-        super(SUBSYSTEM_NAME, ModClusterModel.CURRENT, ModClusterSubsystemResourceDefinition::new, ModClusterSchema.CURRENT, new ModClusterSubsystemXMLWriter());
+        super(SUBSYSTEM_NAME, ModClusterSubsystemModel.CURRENT, ModClusterSubsystemResourceDefinition::new, ModClusterSchema.CURRENT, new ModClusterSubsystemXMLWriter());
     }
 }
