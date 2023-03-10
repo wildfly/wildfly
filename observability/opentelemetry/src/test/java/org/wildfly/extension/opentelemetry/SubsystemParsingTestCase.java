@@ -7,8 +7,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
@@ -27,19 +29,28 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 
 /**
  * @author <a href="jasondlee@redhat.com">Jason Lee</a>
  */
+@RunWith(Parameterized.class)
 public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
+    @Parameters
+    public static Iterable<OpenTelemetrySubsystemSchema> parameters() {
+        return EnumSet.allOf(OpenTelemetrySubsystemSchema.class);
+    }
 
-    public static final String SUBSYSTEM_XML = "<subsystem xmlns=\"" + OpenTelemetrySchema.CURRENT.getNamespaceUri() +
-            "\"></subsystem>";
-    private String testXml;
+    private final OpenTelemetrySubsystemSchema schema;
+    private final String testXml;
 
-    public SubsystemParsingTestCase() {
+    public SubsystemParsingTestCase(OpenTelemetrySubsystemSchema schema) {
         super(OpenTelemetrySubsystemExtension.SUBSYSTEM_NAME, new OpenTelemetrySubsystemExtension());
+        this.schema = schema;
+        this.testXml = "<subsystem xmlns=\"" + this.schema.getNamespace() + "\"></subsystem>";
     }
 
     /**
@@ -48,7 +59,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testParseSubsystem() throws Exception {
         //Parse the subsystem xml into operations
-        List<ModelNode> operations = super.parse(SUBSYSTEM_XML);
+        List<ModelNode> operations = super.parse(this.testXml);
 
         ///Check that we have the expected number of operations
         Assert.assertEquals(1, operations.size());
@@ -70,7 +81,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     public void testInstallIntoController() throws Exception {
         //Parse the subsystem xml and install into the controller
         KernelServices services = super.createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(SUBSYSTEM_XML)
+                .setSubsystemXml(this.testXml)
                 .build();
         System.out.println(services.getBootError());
         Assert.assertTrue(services.isSuccessfulBoot());
@@ -88,7 +99,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     public void testParseAndMarshalModel() throws Exception {
         //Parse the subsystem xml and install into the first controller
         KernelServices servicesA = super.createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(SUBSYSTEM_XML)
+                .setSubsystemXml(this.testXml)
                 .build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
@@ -111,7 +122,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     public void testSubsystemRemoval() throws Exception {
         //Parse the subsystem xml and install into the first controller
         KernelServices services = super.createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(SUBSYSTEM_XML)
+                .setSubsystemXml(this.testXml)
                 .build();
         //Checks that the subsystem was removed from the model
         super.assertRemoveSubsystemResources(services);
@@ -121,26 +132,17 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testInvalidExporter() throws Exception {
-        Assert.assertThrows(AssertionError.class, () -> {
-            testXml = readResource("invalid-exporter.xml");
-            testSchema();
-        });
+        Assert.assertThrows(XMLStreamException.class, () -> this.parse(readResource("invalid-exporter.xml")));
     }
 
     @Test
     public void testInvalidSampler() throws Exception {
-        Assert.assertThrows(AssertionError.class, () -> {
-            testXml = readResource("invalid-sampler.xml");
-            testSchema();
-        });
+        Assert.assertThrows(XMLStreamException.class, () -> this.parse(readResource("invalid-sampler.xml")));
     }
 
     @Test
     public void testInvalidSpanProcessor() throws Exception {
-        Assert.assertThrows(AssertionError.class, () -> {
-            testXml = readResource("invalid-span-processor.xml");
-            testSchema();
-        });
+        Assert.assertThrows(XMLStreamException.class, () -> this.parse(readResource("invalid-span-processor.xml")));
     }
 
     @Test
@@ -178,18 +180,12 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-opentelemetry_1_0.xsd";
+        return String.format(Locale.ROOT, "schema/wildfly-opentelemetry_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        // An ugly hack to get around visibility in the base class. Changing the base class would be preferable, but...
-        if (testXml != null) {
-            String xml = testXml;
-            testXml = null;
-            return xml;
-        }
-        return SUBSYSTEM_XML;
+        return this.testXml;
     }
 
     @Override
