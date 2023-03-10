@@ -62,7 +62,7 @@ public class HealthSubsystemDefinition extends PersistentResourceDefinition {
 
     protected HealthSubsystemDefinition() {
         super(new SimpleResourceDefinition.Parameters(HealthExtension.SUBSYSTEM_PATH,
-                HealthExtension.getResourceDescriptionResolver(HealthExtension.SUBSYSTEM_NAME))
+                HealthExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(HealthSubsystemAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(HealthSubsystemAdd.INSTANCE))
                 .addCapabilities(HEALTH_HTTP_CONTEXT_CAPABILITY, SERVER_HEALTH_PROBES_CAPABILITY));
