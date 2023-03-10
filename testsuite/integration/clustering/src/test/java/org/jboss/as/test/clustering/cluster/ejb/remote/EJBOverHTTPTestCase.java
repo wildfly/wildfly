@@ -30,6 +30,7 @@ import java.util.PropertyPermission;
 
 import javax.naming.Context;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.UserTransaction;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -69,8 +70,11 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.transaction.client.AbstractTransaction;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 import org.wildfly.common.function.ExceptionSupplier;
 
@@ -240,6 +244,16 @@ public class EJBOverHTTPTestCase extends AbstractClusteringTestCase {
         testMultipleSFSBWithoutFailover(() -> new RemoteEJBDirectory(MODULE_NAME, getProperties(false)));
     }
 
+    @Ignore
+    @InSequence(6)
+    @Test
+    public void testSFSBInTransactionWithoutFailover() throws Exception {
+        waitForProxyRegistration();
+
+        // check SFSB failover for a single SFSB
+        testSFSBInTransactionWithoutFailover(() -> new RemoteEJBDirectory(MODULE_NAME, getProperties(false)));
+    }
+
     /*
      * A test which checks SLSB behaviour of EJB client with EJB/HTTP in the absence of failover.
      * The key behaviour to validate: load balancing.
@@ -349,6 +363,43 @@ public class EJBOverHTTPTestCase extends AbstractClusteringTestCase {
             }
         }
     }
+
+    /*
+     * A test which checks SFSB behaviour of EJB client with EJB/HTTP in the absence of failover.
+     * The key behaviour to validate: stickiness of EJB sessions to the nodes that own them.
+     * Proxies are obtained via JNDI/HTTP and invocations are made using EJB/HTTP.
+     */
+    public void testSFSBInTransactionWithoutFailover(ExceptionSupplier<EJBDirectory, Exception> directoryProvider) throws Exception {
+
+        log.infof(MODULE_NAME+ " : testSFSBInTransactionWithoutFailover: starting test");
+        try (EJBDirectory directory = directoryProvider.get()) {
+
+            UserTransaction tx = EJBClient.getUserTransaction("dummy");
+            tx.begin();
+            log.infof("begin txn: type = %s, status = %s, thread = %s", tx.getClass().getName(), tx.getStatus(), Thread.currentThread().toString());
+            ContextTransactionManager tm = ContextTransactionManager.getInstance();
+            AbstractTransaction txn = tm.getTransaction();
+            log.infof("check txn: type = %s, status = %s, thread = %s", txn.getClass().getName(), txn.getStatus(), Thread.currentThread().toString());
+
+
+
+            // this single statement creates a session on the server
+            Incrementor sfsb = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
+            logAffinityForBean(sfsb, "testSFSBInTransactionWithoutFailover");
+
+            Result<Integer> result = sfsb.increment();
+            log.infof("Called SFSBInTransactionWithoutFailover: SFSB value = %s, backend node = %s", result.getValue().intValue(), result.getNode());
+
+            int count = 1;
+            for (int i = 0; i < COUNT; ++i) {
+                result = sfsb.increment();
+                log.infof("Called SFSBInTransactionWithoutFailover: SFSB value = %s, backend node = %s", result.getValue().intValue(), result.getNode());
+            }
+
+            tx.commit();
+        }
+    }
+
 
     private void logAffinityForBean(Object bean, String message) {
         Affinity strongAffinity = EJBClient.getStrongAffinity(bean);
