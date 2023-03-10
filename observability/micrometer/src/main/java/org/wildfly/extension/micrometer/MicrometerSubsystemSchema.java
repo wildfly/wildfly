@@ -21,19 +21,30 @@ package org.wildfly.extension.micrometer;
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.PersistentResourceXMLParser;
-import org.wildfly.extension.micrometer.model.MicrometerSchema;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.staxmapper.IntVersion;
 
-class MicrometerParser extends PersistentResourceXMLParser {
-    private final MicrometerSchema schema;
+public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<MicrometerSubsystemSchema> {
+    VERSION_1_0(1, 0), // WildFly Preview 27
+    ;
+    public static final MicrometerSubsystemSchema CURRENT = VERSION_1_0;
 
-    MicrometerParser(MicrometerSchema schema) {
-        this.schema = schema;
+    private final VersionedNamespace<IntVersion, MicrometerSubsystemSchema> namespace;
+
+    MicrometerSubsystemSchema(int major, int minor) {
+        this.namespace = new SubsystemURN<>(MicrometerSubsystemExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public PersistentResourceXMLDescription getParserDescription() {
-        return  builder(org.wildfly.extension.micrometer.MicrometerSubsystemExtension.SUBSYSTEM_PATH, schema.getNamespaceUri())
+    public VersionedNamespace<IntVersion, MicrometerSubsystemSchema> getNamespace() {
+        return this.namespace;
+    }
+
+    @Override
+    public PersistentResourceXMLDescription getXMLDescription() {
+        return builder(org.wildfly.extension.micrometer.MicrometerSubsystemExtension.SUBSYSTEM_PATH, this.namespace)
                 .addAttributes(MicrometerSubsystemDefinition.ATTRIBUTES)
                 .build();
     }
