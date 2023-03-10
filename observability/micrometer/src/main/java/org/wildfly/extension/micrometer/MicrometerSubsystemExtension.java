@@ -26,8 +26,8 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -39,20 +39,7 @@ public class MicrometerSubsystemExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "micrometer";
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
-    private static final String RESOURCE_NAME =
-            MicrometerSubsystemExtension.class.getPackage().getName() + ".LocalDescriptions";
-
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder(MicrometerSubsystemExtension.SUBSYSTEM_NAME);
-        for (String kp : keyPrefix) {
-            if (prefix.length() > 0) {
-                prefix.append('.');
-            }
-            prefix.append(kp);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME,
-                MicrometerSubsystemExtension.class.getClassLoader(), true, true);
-    }
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, MicrometerSubsystemExtension.class);
 
     @Override
     public void initialize(ExtensionContext context) {

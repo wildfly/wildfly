@@ -84,7 +84,7 @@ class MicrometerSubsystemDefinition extends PersistentResourceDefinition {
 
     protected MicrometerSubsystemDefinition() {
         super(new SimpleResourceDefinition.Parameters(MicrometerSubsystemExtension.SUBSYSTEM_PATH,
-                MicrometerSubsystemExtension.getResourceDescriptionResolver())
+                MicrometerSubsystemExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(MicrometerSubsystemAdd.INSTANCE)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(MICROMETER_HTTP_CONTEXT_CAPABILITY, METRICS_CAPABILITY));
