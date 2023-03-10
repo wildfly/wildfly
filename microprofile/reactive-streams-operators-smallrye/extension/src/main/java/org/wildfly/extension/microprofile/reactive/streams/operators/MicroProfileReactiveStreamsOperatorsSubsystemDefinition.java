@@ -61,7 +61,7 @@ public class MicroProfileReactiveStreamsOperatorsSubsystemDefinition extends Per
         super(
                 new SimpleResourceDefinition.Parameters(
                         MicroProfileReactiveStreamsOperatorsExtension.SUBSYSTEM_PATH,
-                        MicroProfileReactiveStreamsOperatorsExtension.getResourceDescriptionResolver(MicroProfileReactiveStreamsOperatorsExtension.SUBSYSTEM_NAME))
+                        MicroProfileReactiveStreamsOperatorsExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(AddHandler.INSTANCE)
                 .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
                 .setCapabilities(REACTIVE_STREAMS_OPERATORS_CAPABILITY)
