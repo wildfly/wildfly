@@ -440,7 +440,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     }
 
     IIOPRootDefinition() {
-        super(new SimpleResourceDefinition.Parameters(IIOPExtension.PATH_SUBSYSTEM, IIOPExtension.getResourceDescriptionResolver())
+        super(new SimpleResourceDefinition.Parameters(IIOPExtension.PATH_SUBSYSTEM, IIOPExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(new IIOPSubsystemAdd(ALL_ATTRIBUTES))
                 .setRemoveHandler(new ReloadRequiredRemoveStepHandler() {
 
