@@ -36,7 +36,7 @@ public class PojoResource extends SimpleResourceDefinition {
 
     private PojoResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, PojoExtension.SUBSYSTEM_NAME),
-                PojoExtension.getResourceDescriptionResolver(PojoExtension.SUBSYSTEM_NAME),
+                PojoExtension.SUBSYSTEM_RESOLVER,
                 PojoSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
