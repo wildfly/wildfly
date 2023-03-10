@@ -102,6 +102,10 @@
                                     <groupId>org.jboss.ws.cxf</groupId>
                                     <artifactId>jbossws-cxf-client</artifactId>
                                 </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
+                                    <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
+                                </dependency>
                                 <!-- replaces org.jboss.spec.javax.annotation:jboss-annotations-api_1.3_spec -->
                                 <dependency>
                                     <groupId>jakarta.annotation</groupId>
