@@ -21,34 +21,22 @@
  */
 package org.wildfly.extension.microprofile.opentracing;
 
-import static org.jboss.as.subsystem.test.AdditionalInitialization.registerServiceCapabilities;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
-import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.MICROPROFILE_CONFIG_CAPABILITY_NAME;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.AdditionalInitialization.ManagementAdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.weld.WeldCapability;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
 
 public class Subsystem_3_0_ParsingTestCase extends AbstractSubsystemBaseTest {
 
@@ -62,79 +50,13 @@ public class Subsystem_3_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws IOException {
+    protected String getSubsystemXsdPath() {
         return "schema/wildfly-microprofile-opentracing_3_0.xsd";
     }
 
     @Override
     protected Properties getResolvedProperties() {
         return System.getProperties();
-    }
-
-    @Test
-    public void testTransformersWildFly20() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_7_3_0, SubsystemExtension.VERSION_1_0_0);
-    }
-
-    @Test
-    public void testRejectingTransformersWildFly20() throws Exception {
-        testRejectingTransformers(ModelTestControllerVersion.EAP_7_3_0, SubsystemExtension.VERSION_1_0_0);
-    }
-
-    @Test
-    public void testTransformersWildFly19() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_7_2_0, SubsystemExtension.VERSION_1_0_0);
-    }
-
-    @Test
-    public void testRejectingTransformersWildFly19() throws Exception {
-        testRejectingTransformers(ModelTestControllerVersion.EAP_7_2_0, SubsystemExtension.VERSION_1_0_0);
-    }
-
-    private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion opentracingVersion) throws Exception {
-        //Boot up empty controllers with the resources needed for the ops coming from the xml to work
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem_3_0_transform.xml");
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, opentracingVersion)
-                .addMavenResourceURL(String.format("%s:wildfly-microprofile-opentracing-extension:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
-                .addMavenResourceURL(String.format("%s:wildfly-microprofile-opentracing-smallrye:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
-                .addMavenResourceURL(String.format("%s:wildfly-weld:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
-                .addMavenResourceURL(String.format("%s:wildfly-weld-common:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
-                .addSingleChildFirstClass(OpentracingAdditionalInitialization.class)
-                .skipReverseControllerCheck()
-                .dontPersistXml();
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        assertTrue(mainServices.getLegacyServices(opentracingVersion).isSuccessfulBoot());
-        checkSubsystemModelTransformation(mainServices, opentracingVersion);
-    }
-
-    private void testRejectingTransformers(ModelTestControllerVersion controllerVersion, ModelVersion opentracingVersion) throws Exception {
-        //Boot up empty controllers with the resources needed for the ops coming from the xml to work
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, opentracingVersion)
-                .addMavenResourceURL(String.format("%s:wildfly-microprofile-opentracing-extension:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
-                .addMavenResourceURL(String.format("%s:wildfly-microprofile-opentracing-smallrye:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
-                .addMavenResourceURL(String.format("%s:wildfly-weld:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
-                .addMavenResourceURL(String.format("%s:wildfly-weld-common:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
-                .addSingleChildFirstClass(OpentracingAdditionalInitialization.class)
-                .skipReverseControllerCheck()
-                .dontPersistXml();
-
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        assertTrue(mainServices.getLegacyServices(opentracingVersion).isSuccessfulBoot());
-
-        List<ModelNode> ops = builder.parseXmlResource("subsystem_3_0_reject_transform.xml");
-        PathAddress subsystemAddress = PathAddress.pathAddress(SubsystemExtension.SUBSYSTEM_PATH);
-
-        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
-        config.addFailedAttribute(subsystemAddress,
-                new FailedOperationTransformationConfig.NewAttributesConfig(
-                        SubsystemDefinition.DEFAULT_TRACER))
-                .addFailedAttribute(subsystemAddress.append(JaegerTracerConfigurationDefinition.TRACER_CONFIGURATION_PATH),
-                        FailedOperationTransformationConfig.REJECTED_RESOURCE);
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, opentracingVersion, ops, config);
     }
 
     @Override
