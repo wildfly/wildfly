@@ -138,10 +138,6 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .Builder.of(CAPABILITY_APPLICATION_SECURITY_DOMAIN, true, BiFunction.class)
             .build();
 
-    static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS_CAPABILITY = RuntimeCapability
-            .Builder.of(CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS, true)
-            .build();
-
     static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENTICATION_FACTORY, ModelType.STRING, false)
             .setMinSize(1)
             .setRestartAllServices()
@@ -382,10 +378,11 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         private final Set<String> knownApplicationSecurityDomains;
 
         /**
-         * @param addOperation
+         * @param knownApplicationSecurityDomains set from which the name of the application security domain should be removed.
+         * @param addOperation  the add operation handler to use to rollback service removal. Cannot be @{code null}
          */
         protected RemoveHandler(Set<String> knownApplicationSecurityDomains, AbstractAddStepHandler addOperation) {
-            super(addOperation, APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY, APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS_CAPABILITY);
+            super(addOperation);
             this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         }
 
@@ -393,6 +390,14 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRemove(context, operation, model);
             this.knownApplicationSecurityDomains.remove(context.getCurrentAddressValue());
+        }
+
+        @Override
+        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+            super.recordCapabilitiesAndRequirements(context, operation, resource);
+            context.deregisterCapability(
+                    RuntimeCapability.buildDynamicCapabilityName(CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS, context.getCurrentAddressValue())
+            );
         }
 
         @Override

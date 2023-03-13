@@ -49,7 +49,6 @@ public class DataSourceRemove extends AbstractRemoveStepHandler {
 
 
     private DataSourceRemove(final boolean isXa) {
-        super(Capabilities.DATA_SOURCE_CAPABILITY);
         this.isXa = isXa;
     }
 
