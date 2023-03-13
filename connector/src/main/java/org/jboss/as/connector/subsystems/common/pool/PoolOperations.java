@@ -289,13 +289,17 @@ public abstract class PoolOperations implements OperationStepHandler {
                     .getDataSources().size());
             if (repository.getDataSources() != null) {
                 for (DataSource ds : repository.getDataSources()) {
-                    if (jndiName.equalsIgnoreCase(ds.getJndiName()) && ds.getPool() != null) {
+                    if (jndiName.equals("*")) {
+                        result.add(ds.getPool());
+                    }
+                    if ((jndiName.equalsIgnoreCase(ds.getJndiName()) && ds.getPool() != null)) {
                         result.add(ds.getPool());
                     }
 
                 }
             }
             result.trimToSize();
+            ConnectorLogger.ROOT_LOGGER.info(result.size() + ", " + result.get(0).getName());
             return result;
         }
     }
@@ -308,6 +312,9 @@ public abstract class PoolOperations implements OperationStepHandler {
                     if (c.getConnectionFactories() == null || c.getConnectionFactories().isEmpty())
                         continue;
                     for (ConnectionFactory cf : c.getConnectionFactories()) {
+                        if (jndiName.equals("*")) {
+                            result.add(cf.getPool());
+                        }
                         if (cf != null && cf.getPool() != null &&
                                 jndiName.equalsIgnoreCase(cf.getJndiName())) {
                             result.add(cf.getPool());
@@ -316,6 +323,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                     }
                 }
             }
+            ConnectorLogger.ROOT_LOGGER.info(result.size() + ", " + result.get(0).getName());
             return result;
         }
     }
