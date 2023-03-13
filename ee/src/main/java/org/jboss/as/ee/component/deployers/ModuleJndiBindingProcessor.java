@@ -58,6 +58,7 @@ import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -308,9 +309,33 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                 //if the reference count hits zero this service will wait till the binding is down to actually stop
                 //to prevent WFLY-9870 where the undeployment is complete but the binding services are still present
                 try {
-                    phaseContext.getServiceTarget().addService(phaseContext.getDeploymentUnit().getServiceName().append("sharedBindingReleaseService").append(bindInfo.getBinderServiceName()), new BinderReleaseService(controller, service))
-                            .install();
-                    service.acquire();
+                    final BinderService binderService = service;
+                    final ServiceController<ManagedReferenceFactory> binderServiceController = controller;
+                    final BinderReleaseService binderReleaseService = new BinderReleaseService(binderServiceController, binderService);
+                    final ServiceBuilder sharedBindingRemovalServiceBuilder = phaseContext.getServiceTarget().addService(phaseContext.getDeploymentUnit().getServiceName().append("sharedBindingReleaseService").append(bindInfo.getBinderServiceName()), binderReleaseService);
+                    sharedBindingRemovalServiceBuilder.addListener(new LifecycleListener() {
+
+                        @Override
+                        public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+                            switch (event) {
+                                case DOWN:
+                                    //this is normal for startup, lets optimize flow
+                                    break;
+                                case UP:
+                                    //we are up, remove listener Service will handle everything.
+                                    binderService.acquire();
+                                    controller.removeListener(this);
+                                    break;
+                                case REMOVED:
+                                    //If it ends up here, means UP did not happen, something failed.
+                                    binderServiceController.setMode(Mode.REMOVE); //WFLY-9870 - this is edge case of failure, should not matter.
+                                    break;
+                                default:
+                                    //FAILED - ?
+                                    break;
+                            }
+                        }
+                    }).install();
                 } catch (DuplicateServiceException ignore) {
                     //we ignore this, as it is already managed by this deployment
                 }
