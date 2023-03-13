@@ -64,7 +64,7 @@ public class JSFResourceDefinition extends PersistentResourceDefinition {
                     .build();
 
     JSFResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(JSFExtension.PATH_SUBSYSTEM, JSFExtension.getResourceDescriptionResolver())
+        super(new SimpleResourceDefinition.Parameters(JSFExtension.PATH_SUBSYSTEM, JSFExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(JSFSubsystemAdd.INSTANCE)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addCapabilities(FACES_CAPABILITY)
