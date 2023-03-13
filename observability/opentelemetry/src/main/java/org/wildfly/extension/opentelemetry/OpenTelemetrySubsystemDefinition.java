@@ -163,7 +163,7 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
 
     protected OpenTelemetrySubsystemDefinition() {
         super(new SimpleResourceDefinition.Parameters(OpenTelemetrySubsystemExtension.SUBSYSTEM_PATH,
-                OpenTelemetrySubsystemExtension.getResourceDescriptionResolver())
+                OpenTelemetrySubsystemExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(OpenTelemetrySubsystemAdd.INSTANCE)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(OPENTELEMETRY_CAPABILITY)
