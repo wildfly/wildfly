@@ -74,7 +74,7 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
         super(
                 new SimpleResourceDefinition.Parameters(
                         SUBSYSTEM_PATH,
-                        MicroProfileReactiveMessagingExtension.getResourceDescriptionResolver(SUBSYSTEM_NAME))
+                        MicroProfileReactiveMessagingExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(AddHandler.INSTANCE)
                 .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
                 .setCapabilities(REACTIVE_STREAMS_OPERATORS_CAPABILITY)
