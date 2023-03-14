@@ -30,7 +30,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 public class JdrReportSubsystemDefinition extends SimpleResourceDefinition {
 
     JdrReportSubsystemDefinition() {
-        super(JdrReportExtension.SUBSYSTEM_PATH, JdrReportExtension.getResourceDescriptionResolver(),
+        super(JdrReportExtension.SUBSYSTEM_PATH, JdrReportExtension.SUBSYSTEM_RESOLVER,
                 JdrReportSubsystemAdd.INSTANCE,
                 JdrReportSubsystemRemove.INSTANCE);
     }
