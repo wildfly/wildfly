@@ -57,7 +57,7 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
     @Parameters
     public static Collection<Object[]> parameters() {
         return List.<Object[]>of(
-                new Object[] { ModelTestControllerVersion.EAP_7_4_0, UndertowModel.VERSION_11_0_0 }
+                new Object[] { ModelTestControllerVersion.EAP_7_4_0, UndertowSubsystemModel.VERSION_11_0_0 }
         );
     }
 
@@ -83,7 +83,7 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
     private final ModelTestControllerVersion controllerVersion;
     private final ModelVersion modelVersion;
 
-    public UndertowSubsystemTransformerTestCase(ModelTestControllerVersion controllerVersion, UndertowModel subsystemModel) {
+    public UndertowSubsystemTransformerTestCase(ModelTestControllerVersion controllerVersion, UndertowSubsystemModel subsystemModel) {
         super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
         this.controllerVersion = controllerVersion;
         this.modelVersion = subsystemModel.getVersion();
@@ -146,7 +146,7 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
         PathAddress servletContainerAddress = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.PATH_ELEMENT.getKey(), "rejected-container"));
         PathAddress affinityCookiePath = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.PATH_ELEMENT.getKey(), "affinity-cookie-container")).append(AffinityCookieDefinition.PATH_ELEMENT);
 
-        if (UndertowModel.VERSION_13_0_0.requiresTransformation(this.modelVersion)) {
+        if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(this.modelVersion)) {
             config.addFailedAttribute(servletContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(ServletContainerDefinition.ORPHAN_SESSION_ALLOWED));
 
             config.addFailedAttribute(affinityCookiePath, FailedOperationTransformationConfig.REJECTED_RESOURCE);

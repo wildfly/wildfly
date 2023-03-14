@@ -42,7 +42,7 @@ public class HostSingleSignOnDefinition extends SingleSignOnDefinition {
 
     public HostSingleSignOnDefinition() {
         super();
-        setDeprecated(UndertowModel.VERSION_12_0_0.getVersion());
+        setDeprecated(UndertowSubsystemModel.VERSION_12_0_0.getVersion());
     }
 
     @Override

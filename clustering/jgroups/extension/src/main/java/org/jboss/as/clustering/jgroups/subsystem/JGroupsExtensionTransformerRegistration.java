@@ -45,7 +45,7 @@ public class JGroupsExtensionTransformerRegistration implements ExtensionTransfo
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         // Register transformers for all but the current model
-        for (JGroupsModel model : EnumSet.complementOf(EnumSet.of(JGroupsModel.CURRENT))) {
+        for (JGroupsSubsystemModel model : EnumSet.complementOf(EnumSet.of(JGroupsSubsystemModel.CURRENT))) {
             ModelVersion version = model.getVersion();
             TransformationDescription.Tools.register(new JGroupsSubsystemResourceTransformer().apply(version), registration, version);
         }

@@ -45,7 +45,7 @@ public class SingletonExtensionTransformerRegistration implements ExtensionTrans
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         // Register transformers for all but the current model
-        for (SingletonModel model : EnumSet.complementOf(EnumSet.of(SingletonModel.CURRENT))) {
+        for (SingletonSubsystemModel model : EnumSet.complementOf(EnumSet.of(SingletonSubsystemModel.CURRENT))) {
             ModelVersion version = model.getVersion();
             TransformationDescription.Tools.register(new SingletonResourceTransformer().apply(version), registration, version);
         }

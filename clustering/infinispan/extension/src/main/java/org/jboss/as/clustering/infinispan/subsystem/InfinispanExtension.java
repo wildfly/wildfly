@@ -43,7 +43,7 @@ public class InfinispanExtension extends SubsystemExtension<InfinispanSchema> {
     public static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, InfinispanExtension.class);
 
     public InfinispanExtension() {
-        super(SUBSYSTEM_NAME, InfinispanModel.CURRENT, InfinispanSubsystemResourceDefinition::new, InfinispanSchema.CURRENT, new InfinispanSubsystemXMLWriter());
+        super(SUBSYSTEM_NAME, InfinispanSubsystemModel.CURRENT, InfinispanSubsystemResourceDefinition::new, InfinispanSchema.CURRENT, new InfinispanSubsystemXMLWriter());
 
         // Initialize the Netty logger factory
         InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);

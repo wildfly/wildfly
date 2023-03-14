@@ -86,10 +86,10 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
         return String.format(pattern, this.controller.getMavenGavVersion());
     }
 
-    private DistributableWebModel getModelVersion() {
+    private DistributableWebSubsystemModel getModelVersion() {
         switch (this.controller) {
             case EAP_7_4_0:
-                return DistributableWebModel.VERSION_2_0_0;
+                return DistributableWebSubsystemModel.VERSION_2_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -173,7 +173,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(ModelDescriptionConstants.SUBSYSTEM, DistributableWebExtension.SUBSYSTEM_NAME);
 
-        if (DistributableWebModel.VERSION_3_0_0.requiresTransformation(this.version)) {
+        if (DistributableWebSubsystemModel.VERSION_3_0_0.requiresTransformation(this.version)) {
             config.addFailedAttribute(subsystemAddress.append(InfinispanSessionManagementResourceDefinition.pathElement("protostream")), new FailedOperationTransformationConfig.NewAttributesConfig(SessionManagementResourceDefinition.Attribute.MARSHALLER.getName()));
             config.addFailedAttribute(subsystemAddress.append(HotRodSessionManagementResourceDefinition.pathElement("remote-protostream")), new FailedOperationTransformationConfig.NewAttributesConfig(SessionManagementResourceDefinition.Attribute.MARSHALLER.getName()));
         }

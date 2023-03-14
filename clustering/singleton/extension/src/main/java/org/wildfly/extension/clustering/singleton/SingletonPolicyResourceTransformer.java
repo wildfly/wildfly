@@ -41,7 +41,7 @@ public class SingletonPolicyResourceTransformer implements Consumer<ModelVersion
 
     @Override
     public void accept(ModelVersion version) {
-        if (SingletonModel.VERSION_3_0_0.requiresTransformation(version)) {
+        if (SingletonSubsystemModel.VERSION_3_0_0.requiresTransformation(version)) {
             this.builder.discardChildResource(SingletonDeploymentResourceDefinition.WILDCARD_PATH);
             this.builder.discardChildResource(SingletonServiceResourceDefinition.WILDCARD_PATH);
         }

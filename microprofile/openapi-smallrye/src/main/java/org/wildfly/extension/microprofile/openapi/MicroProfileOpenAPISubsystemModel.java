@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,28 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.extension.microprofile.openapi;
 
-package org.wildfly.extension.clustering.singleton;
-
-import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SubsystemModel;
 
 /**
- * Enumeration of supported versions of management model.
+ * Enumeration of MicroProfile OpenAPI subsystem model versions.
  * @author Paul Ferraro
  */
-public enum SingletonModel implements Model {
-/*  Unsupported model versions - for reference purposes only
-    VERSION_1_0_0(1, 0, 0), // WildFly 10, EAP 7.0
-    VERSION_2_0_0(2, 0, 0), // WildFly 11-14, EAP 7.1-7.2
-*/
-    VERSION_3_0_0(3, 0, 0), // WildFly 15-present, EAP 7.3-present
+public enum MicroProfileOpenAPISubsystemModel implements SubsystemModel {
+
+    VERSION_1_0_0(1, 0, 0), // WildFly 19
     ;
-    static final SingletonModel CURRENT = VERSION_3_0_0;
+    static final MicroProfileOpenAPISubsystemModel CURRENT = VERSION_1_0_0;
 
     private final ModelVersion version;
 
-    SingletonModel(int major, int minor, int micro) {
+    MicroProfileOpenAPISubsystemModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 

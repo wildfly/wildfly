@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,31 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.extension.mod_cluster;
 
-package org.wildfly.extension.clustering.web;
-
-import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SubsystemModel;
 
 /**
- * Enumerates the model versions for the distributable-web subsystem.
- * @author Paul Ferraro
+ * Enumerates the supported mod_cluster model versions.
+ *
+ * @author Radoslav Husar
  */
-public enum DistributableWebModel implements Model {
+public enum ModClusterSubsystemModel implements SubsystemModel {
+/*  Unsupported model versions - for reference only:
 
-    /*
-    List of unsupported versions commented out for reference purposes:
-
-    VERSION_1_0_0(1, 0, 0), // WildFly 17
-     */
-    VERSION_2_0_0(2, 0, 0), // WildFly 18-26
-    VERSION_3_0_0(3, 0, 0), // WildFly 27
+    VERSION_1_5_0(1, 5, 0), // EAP 6.3-6.4
+    VERSION_2_0_0(2, 0, 0), // WildFly 8
+    VERSION_3_0_0(3, 0, 0), // WildFly 9
+    VERSION_4_0_0(4, 0, 0), // WildFly 10, EAP 7.0
+    VERSION_5_0_0(5, 0, 0), // WildFly 11-13, EAP 7.1
+    VERSION_6_0_0(6, 0, 0), // WildFly 14-15, EAP 7.2
+*/
+    VERSION_7_0_0(7, 0, 0), // WildFly 16-26, EAP 7.3-7.4
+    VERSION_8_0_0(8, 0, 0), // WildFly 27-present
     ;
-    public static final DistributableWebModel CURRENT = VERSION_3_0_0;
+
+    public static final ModClusterSubsystemModel CURRENT = VERSION_8_0_0;
 
     private final ModelVersion version;
 
-    DistributableWebModel(int major, int minor, int micro) {
+    ModClusterSubsystemModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 

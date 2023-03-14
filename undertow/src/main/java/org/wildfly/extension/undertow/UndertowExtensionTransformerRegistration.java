@@ -51,13 +51,13 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
 
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
-        for (UndertowModel model : EnumSet.complementOf(EnumSet.of(UndertowModel.CURRENT))) {
+        for (UndertowSubsystemModel model : EnumSet.complementOf(EnumSet.of(UndertowSubsystemModel.CURRENT))) {
             ModelVersion version = model.getVersion();
             ResourceTransformationDescriptionBuilder subsystem = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
             ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(ServerDefinition.PATH_ELEMENT);
             for (PathElement listenerPath : Set.of(HttpListenerResourceDefinition.PATH_ELEMENT, HttpsListenerResourceDefinition.PATH_ELEMENT, AjpListenerResourceDefinition.PATH_ELEMENT)) {
-                if (UndertowModel.VERSION_13_0_0.requiresTransformation(version)) {
+                if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
                     server.addChildResource(listenerPath).getAttributeBuilder()
                         .setValueConverter(AttributeConverter.DEFAULT_VALUE, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.READ_TIMEOUT)
                         .end();
@@ -65,7 +65,7 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
             }
 
             ResourceTransformationDescriptionBuilder servletContainer = subsystem.addChildResource(ServletContainerDefinition.PATH_ELEMENT);
-            if (UndertowModel.VERSION_13_0_0.requiresTransformation(version)) {
+            if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
                 servletContainer.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, ServletContainerDefinition.ORPHAN_SESSION_ALLOWED)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.ORPHAN_SESSION_ALLOWED)

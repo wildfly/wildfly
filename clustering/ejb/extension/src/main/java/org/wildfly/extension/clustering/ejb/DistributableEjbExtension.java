@@ -40,6 +40,6 @@ public class DistributableEjbExtension extends PersistentSubsystemExtension<Dist
     static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, DistributableEjbExtension.class);
 
     public DistributableEjbExtension() {
-        super(SUBSYSTEM_NAME, DistributableEjbModel.CURRENT, DistributableEjbResourceDefinition::new, DistributableEjbSchema.CURRENT);
+        super(SUBSYSTEM_NAME, DistributableEjbSubsystemModel.CURRENT, DistributableEjbResourceDefinition::new, DistributableEjbSchema.CURRENT);
     }
 }

@@ -42,7 +42,7 @@ public class AuthTokenResourceTransformer implements Consumer<ModelVersion> {
 
     @Override
     public void accept(ModelVersion version) {
-        if (JGroupsModel.VERSION_8_0_0.requiresTransformation(version)) {
+        if (JGroupsSubsystemModel.VERSION_8_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                     .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, AuthTokenResourceDefinition.Attribute.SHARED_SECRET.getName())
                     .end();

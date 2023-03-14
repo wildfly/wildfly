@@ -56,10 +56,10 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         return formatArtifact("org.jboss.eap:wildfly-clustering-singleton-extension:%s", version);
     }
 
-    private static SingletonModel getModelVersion(ModelTestControllerVersion controllerVersion) {
+    private static SingletonSubsystemModel getModelVersion(ModelTestControllerVersion controllerVersion) {
         switch (controllerVersion) {
             case EAP_7_4_0:
-                return SingletonModel.VERSION_3_0_0;
+                return SingletonSubsystemModel.VERSION_3_0_0;
             default:
                 throw new IllegalArgumentException();
         }

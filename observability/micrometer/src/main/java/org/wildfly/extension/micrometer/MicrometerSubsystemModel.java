@@ -16,21 +16,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.wildfly.extension.micrometer.model;
+package org.wildfly.extension.micrometer;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SubsystemModel;
 
-public enum MicrometerModel {
+public enum MicrometerSubsystemModel implements SubsystemModel {
     VERSION_1_0_0(1, 0, 0);
 
-    public static final MicrometerModel CURRENT = VERSION_1_0_0;
+    public static final MicrometerSubsystemModel CURRENT = VERSION_1_0_0;
 
     private final ModelVersion version;
 
-    MicrometerModel(int major, int minor, int micro) {
+    MicrometerSubsystemModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 
+    @Override
     public ModelVersion getVersion() {
         return version;
     }

@@ -20,27 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.wildfly.extension.clustering.singleton;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SubsystemModel;
 
 /**
- * Defines a management model version.
+ * Enumeration of supported versions of management model.
  * @author Paul Ferraro
  */
-public interface Model {
-    /**
-     * Returns the version of this model.
-     * @return a model version
-     */
-    ModelVersion getVersion();
+public enum SingletonSubsystemModel implements SubsystemModel {
+/*  Unsupported model versions - for reference purposes only
+    VERSION_1_0_0(1, 0, 0), // WildFly 10, EAP 7.0
+    VERSION_2_0_0(2, 0, 0), // WildFly 11-14, EAP 7.1-7.2
+*/
+    VERSION_3_0_0(3, 0, 0), // WildFly 15-present, EAP 7.3-present
+    ;
+    static final SingletonSubsystemModel CURRENT = VERSION_3_0_0;
 
-    /**
-     * Indicates whether this model is more recent than the specified version and thus requires transformation
-     * @param version a model version
-     * @return true if this model is more recent than the specified version, false otherwise
-     */
-    default boolean requiresTransformation(ModelVersion version) {
-        return ModelVersion.compare(this.getVersion(), version) < 0;
+    private final ModelVersion version;
+
+    SingletonSubsystemModel(int major, int minor, int micro) {
+        this.version = ModelVersion.create(major, minor, micro);
+    }
+
+    @Override
+    public ModelVersion getVersion() {
+        return this.version;
     }
 }

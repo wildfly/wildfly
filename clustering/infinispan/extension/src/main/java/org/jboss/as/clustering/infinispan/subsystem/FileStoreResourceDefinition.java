@@ -46,13 +46,13 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     static final PathElement PATH = pathElement("file");
 
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        RELATIVE_PATH("path", ModelType.STRING, InfinispanModel.VERSION_16_0_0) {
+        RELATIVE_PATH("path", ModelType.STRING, InfinispanSubsystemModel.VERSION_16_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(true);
             }
         },
-        RELATIVE_TO("relative-to", ModelType.STRING, InfinispanModel.VERSION_16_0_0) {
+        RELATIVE_TO("relative-to", ModelType.STRING, InfinispanSubsystemModel.VERSION_16_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.PATH));
@@ -61,7 +61,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
+        DeprecatedAttribute(String name, ModelType type, InfinispanSubsystemModel deprecation) {
             this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type).setRequired(false).setDeprecated(deprecation.getVersion()).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
         }
 

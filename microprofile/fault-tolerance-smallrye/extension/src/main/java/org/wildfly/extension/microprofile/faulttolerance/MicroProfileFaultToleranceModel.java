@@ -22,15 +22,15 @@
 
 package org.wildfly.extension.microprofile.faulttolerance;
 
-import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SubsystemModel;
 
 /**
  * Enumeration of supported versions of management model.
  *
  * @author Radoslav Husar
  */
-public enum MicroProfileFaultToleranceModel implements Model {
+public enum MicroProfileFaultToleranceModel implements SubsystemModel {
 
     VERSION_1_0_0(1, 0, 0), // WildFly 19-present
     ;

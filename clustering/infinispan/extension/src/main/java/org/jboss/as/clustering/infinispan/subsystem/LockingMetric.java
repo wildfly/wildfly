@@ -46,7 +46,7 @@ public enum LockingMetric implements Metric<DefaultLockManager>, UnaryOperator<S
 
         @Override
         public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-            return builder.setDeprecated(InfinispanModel.VERSION_17_0_0.getVersion());
+            return builder.setDeprecated(InfinispanSubsystemModel.VERSION_17_0_0.getVersion());
         }
     },
     NUMBER_OF_LOCKS_AVAILABLE("number-of-locks-available", ModelType.INT, AttributeAccess.Flag.GAUGE_METRIC) {

@@ -59,7 +59,7 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
         CONCURRENCY("concurrency-level", ModelType.INT, new ModelNode(1000)) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDeprecated(InfinispanModel.VERSION_17_0_0.getVersion());
+                return builder.setDeprecated(InfinispanSubsystemModel.VERSION_17_0_0.getVersion());
             }
         },
         ISOLATION("isolation", ModelType.STRING, new ModelNode(IsolationLevel.READ_COMMITTED.name())) {

@@ -39,6 +39,6 @@ public class SingletonExtension extends SubsystemExtension<SingletonSchema> {
     static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, SingletonExtension.class);
 
     public SingletonExtension() {
-        super(SUBSYSTEM_NAME, SingletonModel.CURRENT, SingletonResourceDefinition::new, SingletonSchema.CURRENT, new SingletonXMLWriter());
+        super(SUBSYSTEM_NAME, SingletonSubsystemModel.CURRENT, SingletonResourceDefinition::new, SingletonSchema.CURRENT, new SingletonXMLWriter());
     }
 }
