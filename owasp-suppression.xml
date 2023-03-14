@@ -1190,4 +1190,44 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.cxf/cxf\-rt\-bindings\-soap@.*$</packageUrl>
         <cve>CVE-2022-40705</cve>
     </suppress>
+    <!--    Red Hat evaluated this vulnerability as moderate https://access.redhat.com/security/cve/CVE-2022-3143 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-credential-1.19.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron\-credential@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-3143</vulnerabilityName>
+    </suppress>
+    <!--    Red Hat evaluated this vulnerability as moderate https://access.redhat.com/security/cve/CVE-2022-3143 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-password-impl-1.19.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron\-password\-impl@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-3143</vulnerabilityName>
+    </suppress>
+    <!--    Red Hat evaluated this vulnerability as moderate https://access.redhat.com/security/cve/CVE-2022-3143 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-realm-ldap-1.19.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron\-realm\-ldap@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-3143</vulnerabilityName>
+    </suppress>
+    <!--    Red Hat evaluated this vulnerability as moderate https://access.redhat.com/security/cve/CVE-2022-3143 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-x500-1.19.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron\-x500@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-3143</vulnerabilityName>
+    </suppress>
+    <!--    Red Hat evaluated this vulnerability as moderate https://access.redhat.com/security/cve/CVE-2022-3143 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-1.19.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-3143</vulnerabilityName>
+    </suppress>
 </suppressions>
