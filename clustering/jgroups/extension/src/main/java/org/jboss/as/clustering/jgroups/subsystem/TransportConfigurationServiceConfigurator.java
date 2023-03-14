@@ -152,7 +152,7 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
             }
         }
 
-        protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true).useFibers(protocol.useVirtualThreads()), JChannelFactory.class.getClassLoader()));
+        protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true).useVirtualThreads(protocol.useVirtualThreads()), JChannelFactory.class.getClassLoader()));
         protocol.setThreadPool(this.threadPoolFactory.get().apply(protocol.getThreadFactory()));
 
         SocketBinding diagnosticsBinding = this.diagnosticsSocketBinding.get();
