@@ -23,9 +23,11 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.JdkLoggerFactory;
+
 import org.jboss.as.clustering.controller.SubsystemExtension;
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -38,7 +40,7 @@ import org.kohsuke.MetaInfServices;
 public class InfinispanExtension extends SubsystemExtension<InfinispanSchema> {
 
     public static final String SUBSYSTEM_NAME = "infinispan";
-    public static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, InfinispanExtension.class);
+    public static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, InfinispanExtension.class);
 
     public InfinispanExtension() {
         super(SUBSYSTEM_NAME, InfinispanModel.CURRENT, InfinispanSubsystemResourceDefinition::new, InfinispanSchema.CURRENT, new InfinispanSubsystemXMLWriter());
