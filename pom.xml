@@ -323,7 +323,7 @@
         <version.com.fasterxml.jackson>2.14.2</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
         <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
-        <version.com.github.ben-manes.caffeine>3.1.2</version.com.github.ben-manes.caffeine>
+        <version.com.github.ben-manes.caffeine>3.1.5</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
@@ -477,8 +477,8 @@
         <version.org.hibernate>6.2.0.CR3</version.org.hibernate>
         <version.org.hibernate.validator>8.0.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
-        <version.org.infinispan>14.0.6.Final</version.org.infinispan>
-        <version.org.infinispan.protostream>4.6.0.Final</version.org.infinispan.protostream>
+        <version.org.infinispan>14.0.7.Final</version.org.infinispan>
+        <version.org.infinispan.protostream>4.6.1.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.29.1-GA</version.org.javassist>
         <version.org.jberet>2.1.1.Final</version.org.jberet>
