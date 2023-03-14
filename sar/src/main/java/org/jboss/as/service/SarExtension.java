@@ -42,8 +42,8 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -68,8 +68,7 @@ public class SarExtension implements Extension {
 
     private static final SarSubsystemParser parser = new SarSubsystemParser();
 
-    private static final String RESOURCE_NAME = SarExtension.class.getPackage().getName() + ".LocalDescriptions";
-    private static final ResourceDescriptionResolver RESOLVER = new StandardResourceDescriptionResolver("sar", RESOURCE_NAME, SarExtension.class.getClassLoader());
+    private static final ParentResourceDescriptionResolver RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, SarExtension.class);
     private static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SarExtension.SUBSYSTEM_NAME);
 
     static final String JMX_CAPABILITY = "org.wildfly.management.jmx";
