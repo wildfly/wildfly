@@ -22,8 +22,13 @@
 
 package org.jboss.as.jdr;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+
+import org.jboss.as.controller.LegacySubsystemURN;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.staxmapper.IntVersion;
 
 /**
  * The namespaces supported by the JDR extension.
@@ -31,43 +36,25 @@ import java.util.Map;
  * @author Brian Stansberry
  * @author Mike M. Clark
  */
-enum Namespace {
-    UNKNOWN(null), // must be first
-    JDR_1_0("urn:jboss:domain:jdr:1.0");
+enum JdrReportSubsystemSchema implements PersistentSubsystemSchema<JdrReportSubsystemSchema> {
 
-    /**
-     * The current namespace version.
-     */
-    public static final Namespace CURRENT = JDR_1_0;
+    VERSION_1_0(1),
+    ;
+    static final JdrReportSubsystemSchema CURRENT = VERSION_1_0;
 
-    private final String name;
+    private final VersionedNamespace<IntVersion, JdrReportSubsystemSchema> namespace;
 
-    Namespace(final String name) {
-        this.name = name;
+    JdrReportSubsystemSchema(int major) {
+        this.namespace = new LegacySubsystemURN<>(JdrReportExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
-    /**
-     * Get the URI of this namespace.
-     *
-     * @return the URI
-     */
-    public String getUriString() {
-        return name;
+    @Override
+    public VersionedNamespace<IntVersion, JdrReportSubsystemSchema> getNamespace() {
+        return this.namespace;
     }
 
-    private static final Map<String, Namespace> MAP;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null) { map.put(name, namespace); }
-        }
-        MAP = map;
-    }
-
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
+    @Override
+    public PersistentResourceXMLDescription getXMLDescription() {
+        return builder(JdrReportExtension.SUBSYSTEM_PATH, this.namespace).build();
     }
 }
