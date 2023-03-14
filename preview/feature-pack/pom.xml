@@ -454,6 +454,13 @@
 
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-feature-pack-common</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
             <type>pom</type>
             <scope>provided</scope>
@@ -572,6 +579,7 @@
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
                                                 <exclude>${full.maven.groupId}:wildfly-mp-feature-pack-galleon-common</exclude>
+                                                <exclude>${full.maven.groupId}:wildfly-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-ee-10-api</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-common</exclude>
