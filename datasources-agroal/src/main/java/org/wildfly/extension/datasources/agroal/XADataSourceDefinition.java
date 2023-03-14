@@ -24,7 +24,6 @@ package org.wildfly.extension.datasources.agroal;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static org.jboss.as.controller.PathElement.pathElement;
-import static org.wildfly.extension.datasources.agroal.AgroalExtension.getResolver;
 
 import java.util.Collection;
 
@@ -47,7 +46,7 @@ class XADataSourceDefinition extends AbstractDataSourceDefinition {
     // --- //
 
     XADataSourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH, getResolver("xa-datasource"))
+        super(new SimpleResourceDefinition.Parameters(PATH, AgroalExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH))
                 .setAddHandler(XADataSourceOperations.ADD_OPERATION)
                 .setRemoveHandler(XADataSourceOperations.REMOVE_OPERATION)
                 .setAccessConstraints(new ApplicationTypeAccessConstraintDefinition(

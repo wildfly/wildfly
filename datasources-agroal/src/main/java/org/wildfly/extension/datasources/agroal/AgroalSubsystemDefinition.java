@@ -42,7 +42,7 @@ class AgroalSubsystemDefinition extends PersistentResourceDefinition {
     static final PathElement PATH = pathElement(SUBSYSTEM, AgroalExtension.SUBSYSTEM_NAME);
 
     AgroalSubsystemDefinition() {
-        super(PATH, AgroalExtension.getResolver(), AgroalSubsystemOperations.ADD_OPERATION, ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH, AgroalExtension.SUBSYSTEM_RESOLVER, AgroalSubsystemOperations.ADD_OPERATION, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

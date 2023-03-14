@@ -36,7 +36,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
-import static org.wildfly.extension.datasources.agroal.AgroalExtension.getResolver;
 
 /**
  * Definition for the datasource resource
@@ -66,7 +65,7 @@ class DataSourceDefinition extends AbstractDataSourceDefinition {
     // --- //
 
     DataSourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH, getResolver("datasource"))
+        super(new SimpleResourceDefinition.Parameters(PATH, AgroalExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH))
                 .setAddHandler(DataSourceOperations.ADD_OPERATION)
                 .setRemoveHandler(DataSourceOperations.REMOVE_OPERATION)
                 .setAccessConstraints(new ApplicationTypeAccessConstraintDefinition(
