@@ -302,6 +302,10 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     service = (BinderService) controller.getService();
                     if (!equals(service.getSource(), bindingConfiguration.getSource())) {
                         throw EeLogger.ROOT_LOGGER.conflictingBinding(bindingName, bindingConfiguration.getSource());
+                    } else {
+                        //IF we are here, source is the same deployment, so single ref. Above service will be removed, so no need to create
+                        //binder release not incrementing/acquiring - it will be removed as well.
+                        return;
                     }
                 }
                 //as these bindings are not child services
