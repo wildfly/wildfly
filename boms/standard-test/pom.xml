@@ -49,22 +49,6 @@
                 <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
                 <scope>test</scope>
             </dependency>
-            <!--
-                smallrye-reactive-messaging-kafka-test-companion doesn't pull in the kafka server dependencies
-                so we need to add them here
-            -->
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.13</artifactId>
-                <version>${version.org.apache.kafka}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka-server-common</artifactId>
-                <version>${version.org.apache.kafka}</version>
-                <scope>test</scope>
-            </dependency>
 
             <dependency>
                 <groupId>org.apache.directory.server</groupId>
@@ -77,6 +61,28 @@
                 <groupId>org.apache.directory.server</groupId>
                 <artifactId>apacheds-test-framework</artifactId>
                 <version>${version.org.apache.ds}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!--
+                Needed by io.smallrye.reactive:smallrye-reactive-messaging-kafka-test-companion which doesn't pull
+                this in automatically
+            -->
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka_2.13</artifactId>
+                <version>${version.org.apache.kafka}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!--
+                Needed by io.smallrye.reactive:smallrye-reactive-messaging-kafka-test-companion which doesn't pull
+                this in automatically
+            -->
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-server-common</artifactId>
+                <version>${version.org.apache.kafka}</version>
                 <scope>test</scope>
             </dependency>
 
