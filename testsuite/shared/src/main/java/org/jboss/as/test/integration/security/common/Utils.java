@@ -134,7 +134,6 @@ public class Utils extends CoreUtils {
 
     public static final String UTF_8 = "UTF-8";
 
-    public static final boolean IBM_JDK = StringUtils.startsWith(SystemUtils.JAVA_VENDOR, "IBM");
     public static final boolean OPEN_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "OpenJDK");
     public static final boolean ORACLE_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "Java HotSpot");
 
@@ -1168,13 +1167,6 @@ public class Utils extends CoreUtils {
     public static LoginContext loginWithKerberos(final Krb5LoginConfiguration krb5Configuration, final String user,
             final String pass) throws LoginException {
         LoginContext lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordCBH(user, pass.toCharArray()));
-        if (IBM_JDK) {
-            // workaround for IBM JDK on RHEL5 issue described in https://bugzilla.redhat.com/show_bug.cgi?id=1206177
-            // The first negotiation always fail, so let's do a dummy login/logout round.
-            lc.login();
-            lc.logout();
-            lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordCBH(user, pass.toCharArray()));
-        }
         lc.login();
         return lc;
     }

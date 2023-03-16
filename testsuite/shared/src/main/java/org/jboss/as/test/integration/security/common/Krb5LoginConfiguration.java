@@ -82,24 +82,13 @@ public class Krb5LoginConfiguration extends Configuration {
     public static Map<String, String> getOptions(final String principal, final File keyTab, final boolean acceptor) {
         final Map<String, String> res = new HashMap<String, String>();
 
-        if (Utils.IBM_JDK) {
-            if (keyTab != null) {
-                res.put("useKeytab", keyTab.toURI().toString());
-            }
-            if (acceptor) {
-                res.put("credsType", "acceptor");
-            } else {
-                res.put("noAddress", "true");
-            }
-        } else {
-            if (keyTab != null) {
-                res.put("keyTab", keyTab.getAbsolutePath());
-                res.put("doNotPrompt", "true");
-                res.put("useKeyTab", "true");
-            }
-            if (acceptor) {
-                res.put("storeKey", "true");
-            }
+        if (keyTab != null) {
+            res.put("keyTab", keyTab.getAbsolutePath());
+            res.put("doNotPrompt", "true");
+            res.put("useKeyTab", "true");
+        }
+        if (acceptor) {
+            res.put("storeKey", "true");
         }
 
         res.put("refreshKrb5Config", "true");
@@ -118,11 +107,7 @@ public class Krb5LoginConfiguration extends Configuration {
      * @return class name
      */
     public static String getLoginModule() {
-        if (Utils.IBM_JDK) {
-            return "com.ibm.security.auth.module.Krb5LoginModule";
-        } else {
-            return "com.sun.security.auth.module.Krb5LoginModule";
-        }
+        return "com.sun.security.auth.module.Krb5LoginModule";
     }
 
     /**

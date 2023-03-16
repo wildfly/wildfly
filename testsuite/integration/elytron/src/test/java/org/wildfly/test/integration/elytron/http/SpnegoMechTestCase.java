@@ -87,9 +87,11 @@ import org.jboss.as.test.integration.security.common.KDCServerAnnotationProcesso
 import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -118,6 +120,11 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
     private static final String CHALLENGE_PREFIX = "Negotiate ";
     private static final File KRB5_CONF = new File(SpnegoMechTestCase.class.getResource(NAME + "-krb5.conf").getFile());
     private static final boolean DEBUG = false;
+
+    @BeforeClass
+    public static void beforeClass() {
+        Assume.assumeFalse("WFLY-17699 temporary skip test until IBM JDK fixes are incorporated in elytron and wfcore upgrade", TestSuiteEnvironment.isIbmJvm());
+    }
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
