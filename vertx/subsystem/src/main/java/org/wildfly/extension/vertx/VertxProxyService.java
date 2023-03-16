@@ -18,17 +18,11 @@ package org.wildfly.extension.vertx;
 import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
 
 import java.io.File;
-import java.nio.file.Paths;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.infinispan.configuration.global.TransportConfigurationBuilder;
-import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
-import org.infinispan.configuration.parsing.ParserRegistry;
-import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
+import io.vertx.core.Future;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -44,17 +38,12 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.VertxBuilder;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
 
 /**
  * The msc service to initialize a Vertx instance.
@@ -69,7 +58,6 @@ public class VertxProxyService implements Service, VertxConstants {
     private final Supplier<ServerEnvironment> serverEnvSupplier;
     private final String jgroupsStackFile;
     final Consumer<VertxProxy> vertxProxytConsumer;
-    private volatile DefaultCacheManager defaultCacheManager;
 
     static void installService(OperationContext context, VertxProxy vertxProxy) {
         final String optionName = vertxProxy.getOptionName();
@@ -184,30 +172,8 @@ public class VertxProxyService implements Service, VertxConstants {
         VertxFileResolver fileResolver = new VertxFileResolver(vertxOptions.getFileSystemOptions(), serverEnvSupplier.get());
         VertxBuilder vb = new VertxBuilder(vertxOptions).fileResolver(fileResolver);
         if (vertxProxy.isClustered()) {
-            ClassLoader classLoader = getClass().getClassLoader();
-            ConfigurationBuilderHolder builderHolder = new ParserRegistry(classLoader)
-              .parseFile(DEFAULT_INFINISPAN_FILE);
-            TransportConfigurationBuilder transport = builderHolder.getGlobalConfigurationBuilder()
-              .transport();
-            if (channelFactorySupplier != null) {
-                JChannel jChannel = channelFactorySupplier.get().createChannel(UUID.randomUUID().toString());
-                String clusterName = clusterSupplier.get() != null ? clusterSupplier.get() : vertxProxy.getJgroupChannelName();
-                transport.defaultTransport().removeProperty(JGroupsTransport.CHANNEL_CONFIGURATOR)
-                  .transport(new JGroupsTransport(jChannel))
-                  .clusterName(clusterName);
-            } else if (jgroupsStackFile != null) {
-                String jgroupsFile = Paths.get(jgroupsStackFile).isAbsolute() ? jgroupsStackFile :
-                  Paths.get(serverEnvSupplier.get().getServerConfigurationDir().getPath(), jgroupsStackFile).toString();
-                transport.defaultTransport().removeProperty(JGroupsTransport.CHANNEL_CONFIGURATOR)
-                  .addProperty(JGroupsTransport.CONFIGURATION_FILE, jgroupsFile);
-            }
-            defaultCacheManager = new DefaultCacheManager(builderHolder, true);
-            ClusterManager clusterManager = new InfinispanClusterManager(defaultCacheManager);
-            vertxOptions.setClusterManager(clusterManager);
-            vb.clusterManager(clusterManager);
-            Promise<Vertx> promise = Promise.promise();
-            vb.init().clusteredVertx(promise);
-            return promise.future().toCompletionStage().toCompletableFuture().get();
+            return ClusterVertxHolder.getInstance()
+              .clusterVertx(vb, channelFactorySupplier, clusterSupplier, jgroupsStackFile, vertxOptions, serverEnvSupplier, vertxProxy);
         } else {
             return vb.init().vertx();
         }
@@ -217,14 +183,10 @@ public class VertxProxyService implements Service, VertxConstants {
     public void stop(StopContext context) {
         CompletableFuture<Void> closeFuture = (CompletableFuture<Void>)this.vertxProxy.getVertx().close()
                 .flatMap(v -> {
-                    try {
-                        if (defaultCacheManager != null) {
-                            defaultCacheManager.stop();
-                        }
-                    } catch (Exception e) {
-                        return Future.failedFuture(e);
+                    if (vertxProxy.isClustered()) {
+                        return ClusterVertxHolder.getInstance().stopClusterVertx();
                     }
-                    return Future.<Void>succeededFuture();
+                    return Future.succeededFuture();
                 })
                 .toCompletionStage();
         try {
