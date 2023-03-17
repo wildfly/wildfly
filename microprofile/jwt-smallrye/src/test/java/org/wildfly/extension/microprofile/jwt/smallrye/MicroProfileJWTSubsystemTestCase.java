@@ -19,35 +19,46 @@
 package org.wildfly.extension.microprofile.jwt.smallrye;
 
 import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Subsystem parsing test case.
  *
  * <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
+@RunWith(Parameterized.class)
+public class MicroProfileJWTSubsystemTestCase extends AbstractSubsystemBaseTest {
+    @Parameters
+    public static Iterable<MicroProfileJWTSubsystemSchema> parameters() {
+        return EnumSet.allOf(MicroProfileJWTSubsystemSchema.class);
+    }
 
-    public Subsystem_1_0_ParsingTestCase() {
+    private final MicroProfileJWTSubsystemSchema schema;
+
+    public MicroProfileJWTSubsystemTestCase(MicroProfileJWTSubsystemSchema schema) {
         super(MicroProfileJWTExtension.SUBSYSTEM_NAME, new MicroProfileJWTExtension());
+        this.schema = schema;
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_0.xml");
+        return readResource(String.format(Locale.ROOT, "subsystem_%d_%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-microprofile-jwt-smallrye_1_0.xsd";
+        return String.format(Locale.ROOT, "schema/wildfly-microprofile-jwt-smallrye_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
     }
 
+    @Override
     protected Properties getResolvedProperties() {
         return System.getProperties();
     }
-
-
-
 }
