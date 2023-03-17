@@ -91,4 +91,4 @@ The MicroProfile OpenAPI implementation is provided by the SmallRye OpenAPI proj
 
 ****
 
-NOTE: References in this document to Java API for RESTful Web Services(JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.
+NOTE: References in this document to Java API for RESTful Web Services (JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.

@@ -113,7 +113,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 /**
  * Handle the installation of the Persistence Unit service
  *
- * NOTE: References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.
+ * NOTE: References in this document to Java Persistence API (JPA) refer to the Jakarta Persistence unless otherwise noted.
  *
  * @author Scott Marlow
  */

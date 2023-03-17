@@ -332,4 +332,4 @@ selected and the invocation will be forwarded to that node.
 As can be seen both remote standalone client and remote clients on
 another WildFly instance act similar in terms of failover.
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

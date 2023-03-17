@@ -185,4 +185,4 @@ This testcase in the WildFly codebase can be used for reference for
 implementing container interceptors in user applications
 https://github.com/wildfly/wildfly/blob/main/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration/ejb/container/interceptor/ContainerInterceptorsTestCase.java
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
