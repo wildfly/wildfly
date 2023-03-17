@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="remote-activemq">
     <dependencies>
-        <layer name="resource-adapters"/>
+        <layer name="messaging-activemq"/>
     </dependencies>
     <feature-group name="messaging-remote-activemq"/>
     <feature-group name="messaging-remote-sockets"/>
