@@ -54,8 +54,8 @@ import io.vertx.core.json.JsonObject;
  */
 public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcessor {
 
-    private static final String WEB_INF_VERTX_DEPLOYMENT = "WEB-INF/vertx-deployment.json";
-    private static final String META_INF_VERTX_DEPLOYMENT = "META-INF/vertx-deployment.json";
+    private static final String WEB_INF_VERTX_DEPLOYMENT = "WEB-INF/vertx.json";
+    private static final String META_INF_VERTX_DEPLOYMENT = "META-INF/vertx.json";
 
     public static final Phase PHASE = Phase.PARSE;
     public static final int PRIORITY = 0x4000;
@@ -90,7 +90,7 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
         if (vertxDeploymentExists) {
             attachVertxDeployments(deploymentUnit, vertxDeploymentFile);
         } else {
-            // check '@Injection Vertx' or '@Resource Vertx' in case of no vertx-deployment.json file found
+            // check '@Injection Vertx' or '@Resource Vertx' in case of no vertx.json file found
             final CompositeIndex index = deploymentUnit.getAttachment(COMPOSITE_ANNOTATION_INDEX);
             if (dotNames.stream().anyMatch(dotName -> annotated(index, dotName))) {
                 VertxDeploymentAttachment.attachVertxDeployments(deploymentUnit, new VerticleDeploymentsMetaData(new JsonObject()));

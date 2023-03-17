@@ -62,7 +62,7 @@ public class VerticleDeploymentProcessor implements DeploymentUnitProcessor {
         if (verticleDeploymentsMetaData == null) {
             return;
         }
-        // if vertx-deployment.json exists in both sub deployment and parent deployment, it goes through all files
+        // if vertx.json exists in both sub deployment and parent deployment, it goes through all files
         // to deploy. It may be possible to take one precedence or merge, but it can be done in the future if necessary.
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ModuleClassLoader moduleClassLoader = module.getClassLoader();
