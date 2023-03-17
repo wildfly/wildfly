@@ -399,6 +399,28 @@
     </dependency>
     <dependency>
       <groupId>io.smallrye.reactive</groupId>
+      <artifactId>mutiny-zero</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>mutiny-zero-flow-adapters</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
       <artifactId>smallrye-mutiny-vertx-core</artifactId>
       <licenses>
         <license>
