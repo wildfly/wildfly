@@ -22,13 +22,16 @@
 
 package org.wildfly.extension.eesecurity;
 
+import java.util.EnumSet;
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLDescriptionReader;
+import org.jboss.as.controller.PersistentResourceXMLDescriptionWriter;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -47,13 +50,10 @@ import org.jboss.staxmapper.XMLElementReader;
 public class EESecurityExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "ee-security";
-    public static final String NAMESPACE = "urn:jboss:domain:ee-security:1.0";
 
     public static final ModelVersion MODEL_VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
 
     private static final ModelVersion CURRENT_MODEL_VERSION = MODEL_VERSION_1_0_0;
-
-    private static final EESecuritySubsystemParser_1_0 parser = new EESecuritySubsystemParser_1_0();
 
     private static final String RESOURCE_NAME = EESecurityExtension.class.getPackage().getName() + ".LocalDescriptions";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
@@ -66,28 +66,21 @@ public class EESecurityExtension implements Extension {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, EESecurityExtension.class.getClassLoader(), true, false);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    private final PersistentResourceXMLDescription currentDescription = EESecuritySubsystemSchema.CURRENT.getXMLDescription();
+
     @Override
     public void initialize(final ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new EESecuritySubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(parser);
+        subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(this.currentDescription));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, EESecurityExtension.NAMESPACE, new Supplier<XMLElementReader<List<ModelNode>>>() {
-            @Override
-            public XMLElementReader<List<ModelNode>> get() {
-                return parser;
-            }
-        });
+        for (EESecuritySubsystemSchema schema : EnumSet.allOf(EESecuritySubsystemSchema.class)) {
+            XMLElementReader<List<ModelNode>> reader = (schema == EESecuritySubsystemSchema.CURRENT) ? new PersistentResourceXMLDescriptionReader(this.currentDescription) : schema;
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespace().getUri(), reader);
+        }
     }
-
 }
