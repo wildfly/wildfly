@@ -1,5 +1,5 @@
 [[YAML_Configuration_file]]
-= (YAML) Configuration file (Experimental))
+= (YAML) Configuration file
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -9,20 +9,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-In order to provide some way to separate customization from the configuration provisionned by Galleon we want to *experiment* with a new feature where this customization is provided by YAML files.
-Because this feature is *EXPERIMENTAL* we are disabling it by default and you can *NOT* rely on it being present or compatible in the future releases.
-
-[[activate_yaml_feature]]
-== Active the YAML support feature
-
-To enable that feature you need to add a ServiceLoader configuration in the `org.jboss.as.controller` module.
-You need to create the following file: `META-INF/services/org.jboss.as.controller.persistence.ConfigurationExtension` containing a single line *org.jboss.as.controller.persistence.yaml.YamlConfigurationExtension* in the dir folder of the `org.jboss.as.controller` module.
-
-[source,options="nowrap"]
-----
-mkdir -p $WILDFLY_HOME/modules/system/layers/base/org/jboss/as/controller/main/dir/META-INF/services/
-echo 'org.jboss.as.controller.persistence.yaml.YamlConfigurationExtension' > $WILDFLY_HOME/modules/system/layers/base/org/jboss/as/controller/main/dir/META-INF/services/org.jboss.as.controller.persistence.ConfigurationExtension
-----
+Provides a way to separate customization from the configuration provisioned by Galleon by using YAML configuration files.
 
 [[starting_with_yaml_files]]
 == Starting with YAML files
