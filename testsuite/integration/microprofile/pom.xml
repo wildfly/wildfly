@@ -244,47 +244,26 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka-test</artifactId>
+            <groupId>io.smallrye.reactive</groupId>
+            <artifactId>smallrye-reactive-messaging-kafka-test-companion</artifactId>
+            <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
             <scope>test</scope>
         </dependency>
         <!--
-            The org.springframework.kafka:spring-kafka-test dependency excludes all
-             org.apache.kafka:* dependencies in the dependency management.
-             Add them again here, so as not to pollute the parent pom with all these
-             test dependencies
-         -->
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <classifier>test</classifier>
-            <scope>test</scope>
-            <version>${version.org.apache.kafka}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-streams</artifactId>
-            <scope>test</scope>
-            <version>${version.org.apache.kafka}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-streams-test-utils</artifactId>
-            <scope>test</scope>
-            <version>${version.org.apache.kafka}</version>
-        </dependency>
+            smallrye-reactive-messaging-kafka-test-companion doesn't pull in the kafka server dependencies
+            so we need to add them here
+        -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.13</artifactId>
-            <scope>test</scope>
             <version>${version.org.apache.kafka}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.13</artifactId>
-            <classifier>test</classifier>
-            <scope>test</scope>
+            <artifactId>kafka-server-common</artifactId>
             <version>${version.org.apache.kafka}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
