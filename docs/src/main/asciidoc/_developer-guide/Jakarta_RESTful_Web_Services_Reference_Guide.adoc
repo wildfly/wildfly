@@ -198,4 +198,4 @@ The `microprofile-opentracing-smallrye` subsystem registers some Jakarta RESTful
 CDI. The `org.jboss.resteasy.resteasy-cdi` module adds CDI support for the RESTEasy implementation. Excluding these
 should allow Spring deployments to work.
 
-NOTE: References in this document to Java API for RESTful Web Services(JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.
+NOTE: References in this document to Java API for RESTful Web Services (JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.

@@ -31,7 +31,7 @@ import org.junit.Assert;
  * @author Richard Achmatowicz (c) 2015 Red Hat Inc.
  * @author Richard Achmatowicz (c) 2020 Red Hat Inc.
  *
- * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ * NOTE: References in this file to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
  */
 public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 

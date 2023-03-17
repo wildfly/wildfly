@@ -174,7 +174,7 @@ import io.undertow.server.handlers.PathHandler;
 /**
  * Add operation handler for the EJB3 subsystem.
  *
- * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ * NOTE: References in this file to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
  *
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
