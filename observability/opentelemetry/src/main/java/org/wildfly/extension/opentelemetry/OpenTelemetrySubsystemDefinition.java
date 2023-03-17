@@ -54,7 +54,9 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
     public static final String API_MODULE = "org.wildfly.extension.opentelemetry-api";
     public static final String[] EXPORTED_MODULES = {
             "io.opentelemetry.api",
-            "io.opentelemetry.context"
+            "io.opentelemetry.context",
+            "io.opentelemetry.exporter",
+            "io.opentelemetry.sdk"
     };
 
     static final RuntimeCapability<Void> OPENTELEMETRY_CAPABILITY =

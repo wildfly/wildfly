@@ -35,6 +35,7 @@
     <dependencies>
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.context"/>
+        <module name="io.opentelemetry.exporter"/>
         <module name="java.logging"/>
     </dependencies>
 </module>
