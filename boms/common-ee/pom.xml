@@ -1266,19 +1266,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <!--
-            <dependencypick>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-api-events</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            -->
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-api-logs</artifactId>
