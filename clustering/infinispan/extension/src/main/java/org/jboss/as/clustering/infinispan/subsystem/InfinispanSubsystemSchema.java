@@ -22,17 +22,21 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.List;
-import java.util.Locale;
 
-import org.jboss.as.clustering.controller.SubsystemSchema;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.LegacySubsystemURN;
+import org.jboss.as.controller.SubsystemSchema;
+import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.IntVersion;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Enumeration of the supported subsystem xml schemas.
  * @author Paul Ferraro
  */
-public enum InfinispanSchema implements SubsystemSchema<InfinispanSchema> {
+public enum InfinispanSubsystemSchema implements SubsystemSchema<InfinispanSubsystemSchema> {
 /*  Unsupported, for documentation purposes only.
     VERSION_1_0(1, 0), // AS 7.0
     VERSION_1_1(1, 1), // AS 7.1.0
@@ -56,33 +60,21 @@ public enum InfinispanSchema implements SubsystemSchema<InfinispanSchema> {
     VERSION_13_0(13, 0), // WildFly 24-26
     VERSION_14_0(14, 0), // WildFly 27-present
     ;
-    static final InfinispanSchema CURRENT = VERSION_14_0;
+    static final InfinispanSubsystemSchema CURRENT = VERSION_14_0;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, InfinispanSubsystemSchema> namespace;
 
-    InfinispanSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+    InfinispanSubsystemSchema(int major, int minor) {
+        this.namespace = new LegacySubsystemURN<>(InfinispanExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public int major() {
-        return this.major;
+    public VersionedNamespace<IntVersion, InfinispanSubsystemSchema> getNamespace() {
+        return this.namespace;
     }
 
     @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:jboss:domain:infinispan:%d.%d", this.major, this.minor);
-    }
-
-    @Override
-    public XMLElementReader<List<ModelNode>> get() {
-        return new InfinispanSubsystemXMLReader(this);
+    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        new InfinispanSubsystemXMLReader(this).readElement(reader, operations);
     }
 }

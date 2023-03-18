@@ -47,16 +47,16 @@ import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 @RunWith(value = Parameterized.class)
-public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<InfinispanSchema> {
+public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<InfinispanSubsystemSchema> {
 
     @Parameters
-    public static Iterable<InfinispanSchema> parameters() {
-        return EnumSet.allOf(InfinispanSchema.class);
+    public static Iterable<InfinispanSubsystemSchema> parameters() {
+        return EnumSet.allOf(InfinispanSubsystemSchema.class);
     }
 
-    private final InfinispanSchema schema;
+    private final InfinispanSubsystemSchema schema;
 
-    public InfinispanSubsystemTestCase(InfinispanSchema schema) {
+    public InfinispanSubsystemTestCase(InfinispanSubsystemSchema schema) {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema, "subsystem-infinispan-%d_%d.xml", "schema/jboss-as-infinispan_%d_%d.xsd");
         this.schema = schema;
     }
@@ -100,7 +100,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<Infinis
     protected KernelServices standardSubsystemTest(String configId, String configIdResolvedModel, boolean compareXml, AdditionalInitialization additionalInit) throws Exception {
         KernelServices services = super.standardSubsystemTest(configId, configIdResolvedModel, compareXml, additionalInit);
 
-        if (!this.schema.since(InfinispanSchema.VERSION_1_5)) {
+        if (!this.schema.since(InfinispanSubsystemSchema.VERSION_1_5)) {
             ModelNode model = services.readWholeModel();
 
             Assert.assertTrue(model.get(InfinispanSubsystemResourceDefinition.PATH.getKey()).hasDefined(InfinispanSubsystemResourceDefinition.PATH.getValue()));

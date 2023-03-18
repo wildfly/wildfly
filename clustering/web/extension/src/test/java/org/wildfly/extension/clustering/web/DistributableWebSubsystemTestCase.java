@@ -38,14 +38,14 @@ import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequireme
  * @author Paul Ferraro
  */
 @RunWith(value = Parameterized.class)
-public class DistributableWebSubsystemTestCase extends ClusteringSubsystemTest<DistributableWebSchema> {
+public class DistributableWebSubsystemTestCase extends ClusteringSubsystemTest<DistributableWebSubsystemSchema> {
 
     @Parameters
-    public static Iterable<DistributableWebSchema> parameters() {
-        return EnumSet.allOf(DistributableWebSchema.class);
+    public static Iterable<DistributableWebSubsystemSchema> parameters() {
+        return EnumSet.allOf(DistributableWebSubsystemSchema.class);
     }
 
-    public DistributableWebSubsystemTestCase(DistributableWebSchema schema) {
+    public DistributableWebSubsystemTestCase(DistributableWebSubsystemSchema schema) {
         super(DistributableWebExtension.SUBSYSTEM_NAME, new DistributableWebExtension(), schema, "wildfly-distributable-web-%d_%d.xml", "schema/wildfly-distributable-web_%d_%d.xsd");
     }
 

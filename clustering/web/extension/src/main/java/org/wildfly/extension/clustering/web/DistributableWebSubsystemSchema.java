@@ -22,42 +22,31 @@
 
 package org.wildfly.extension.clustering.web;
 
-import java.util.Locale;
-
-import org.jboss.as.clustering.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.staxmapper.IntVersion;
 
 /**
  * Enumerates the schema versions for the distributable-web subsystem.
  * @author Paul Ferraro
  */
-public enum DistributableWebSchema implements PersistentSubsystemSchema<DistributableWebSchema> {
+public enum DistributableWebSubsystemSchema implements PersistentSubsystemSchema<DistributableWebSubsystemSchema> {
 
     VERSION_1_0(1, 0), // WildFly 17
     VERSION_2_0(2, 0), // WildFly 18-26.1
     VERSION_3_0(3, 0), // WildFly 27
     ;
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, DistributableWebSubsystemSchema> namespace;
 
-    DistributableWebSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+    DistributableWebSubsystemSchema(int major, int minor) {
+        this.namespace = new LegacySubsystemURN<>(DistributableWebExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public int major() {
-        return this.major;
-    }
-
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:jboss:domain:distributable-web:%d.%d", this.major, this.minor);
+    public VersionedNamespace<IntVersion, DistributableWebSubsystemSchema> getNamespace() {
+        return this.namespace;
     }
 
     @Override

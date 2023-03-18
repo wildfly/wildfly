@@ -22,14 +22,17 @@
 
 package org.wildfly.extension.undertow;
 
-import org.jboss.as.clustering.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.staxmapper.IntVersion;
 
 /**
  * Enumerates the supported Undertow subsystem schemas.
  * @author Paul Ferraro
  */
-public enum UndertowSchema implements PersistentSubsystemSchema<UndertowSchema> {
+public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<UndertowSubsystemSchema> {
 /*  Unsupported, for documentation purposes only
     VERSION_1_0(1, 0),  // WildFly 8.0
     VERSION_1_1(1, 1),  // WildFly 8.1
@@ -50,33 +53,25 @@ public enum UndertowSchema implements PersistentSubsystemSchema<UndertowSchema> 
     VERSION_13_0(13),   // WildFly 27       N.B. There were no schema changes between 12.0 and 13.0!
     VERSION_14_0(14),   // WildFly 28-present
     ;
-    static final UndertowSchema CURRENT = VERSION_14_0;
+    static final UndertowSubsystemSchema CURRENT = VERSION_14_0;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, UndertowSubsystemSchema> namespace;
 
-    UndertowSchema(int major) {
-        this(major, 0);
+    UndertowSubsystemSchema(int major) {
+        this(new IntVersion(major));
     }
 
-    UndertowSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+    UndertowSubsystemSchema(int major, int minor) {
+        this(new IntVersion(major, minor));
     }
 
-    @Override
-    public int major() {
-        return this.major;
+    UndertowSubsystemSchema(IntVersion version) {
+        this.namespace = new LegacySubsystemURN<>(UndertowExtension.SUBSYSTEM_NAME, version);
     }
 
     @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format("urn:jboss:domain:undertow:%d.%d", this.major, this.minor);
+    public VersionedNamespace<IntVersion, UndertowSubsystemSchema> getNamespace() {
+        return this.namespace;
     }
 
     @Override

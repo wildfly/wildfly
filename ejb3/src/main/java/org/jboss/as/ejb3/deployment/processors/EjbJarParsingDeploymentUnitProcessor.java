@@ -307,7 +307,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
     static Map<String, AbstractMetaDataParser<?>> createJbossEjbJarParsers() {
         Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
         for (ClusteringSchema schema : EnumSet.allOf(ClusteringSchema.class)) {
-            parsers.put(schema.getUri(), new EJBBoundClusteringMetaDataParser(schema));
+            parsers.put(schema.getNamespace().getUri(), new EJBBoundClusteringMetaDataParser(schema));
         }
         parsers.put(EJBBoundSecurityMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundSecurityMetaDataParser.INSTANCE);
         parsers.put(EJBBoundSecurityMetaDataParser.NAMESPACE_URI_1_0, EJBBoundSecurityMetaDataParser.INSTANCE);
@@ -345,7 +345,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         parsers.put(ContainerInterceptorsParser.NAMESPACE_URI_2_0, ContainerInterceptorsParser.INSTANCE);
 
         for (TimerServiceMetaDataSchema schema : EnumSet.allOf(TimerServiceMetaDataSchema.class)) {
-            parsers.put(schema.getUri(), new TimerServiceMetaDataParser(schema));
+            parsers.put(schema.getNamespace().getUri(), new TimerServiceMetaDataParser(schema));
         }
         return parsers;
     }

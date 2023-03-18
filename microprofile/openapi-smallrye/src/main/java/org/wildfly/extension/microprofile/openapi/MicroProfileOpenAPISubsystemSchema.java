@@ -22,46 +22,37 @@
 
 package org.wildfly.extension.microprofile.openapi;
 
-import java.util.Locale;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import org.jboss.as.clustering.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.staxmapper.IntVersion;
 
 /**
  * Enumeration of MicroProfile OpenAPI subsystem schema versions.
  * @author Paul Ferraro
  */
-public enum MicroProfileOpenAPISchema implements PersistentSubsystemSchema<MicroProfileOpenAPISchema> {
+public enum MicroProfileOpenAPISubsystemSchema implements PersistentSubsystemSchema<MicroProfileOpenAPISubsystemSchema> {
 
     VERSION_1_0(1, 0), // WildFly 19
     ;
-    static final MicroProfileOpenAPISchema CURRENT = VERSION_1_0;
+    static final MicroProfileOpenAPISubsystemSchema CURRENT = VERSION_1_0;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, MicroProfileOpenAPISubsystemSchema> namespace;
 
-    MicroProfileOpenAPISchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+    MicroProfileOpenAPISubsystemSchema(int major, int minor) {
+        this.namespace = new SubsystemURN<>(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public int major() {
-        return this.major;
-    }
-
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:wildfly:%s:%d.%d", MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, this.major, this.minor);
+    public VersionedNamespace<IntVersion, MicroProfileOpenAPISubsystemSchema> getNamespace() {
+        return this.namespace;
     }
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return MicroProfileOpenAPIXMLDescriptionFactory.INSTANCE.apply(this);
+        return builder(MicroProfileOpenAPISubsystemDefinition.PATH, this.namespace).build();
     }
 }

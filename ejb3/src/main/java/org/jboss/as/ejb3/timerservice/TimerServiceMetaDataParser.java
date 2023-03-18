@@ -54,7 +54,7 @@ public class TimerServiceMetaDataParser extends AbstractEJBBoundMetaDataParser<T
 
     @Override
     protected void processElement(TimerServiceMetaData metaData, XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
-        if (this.schema.getUri().equals(reader.getNamespaceURI())) {
+        if (this.schema.getNamespace().getUri().equals(reader.getNamespaceURI())) {
             switch (reader.getLocalName()) {
                 case "persistence-store-name":
                     metaData.setDataStoreName(getElementText(reader, propertyReplacer));

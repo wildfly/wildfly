@@ -37,13 +37,13 @@ import org.kohsuke.MetaInfServices;
  * @author Richard Achmatowicz
  */
 @MetaInfServices(Extension.class)
-public class InfinispanExtension extends SubsystemExtension<InfinispanSchema> {
+public class InfinispanExtension extends SubsystemExtension<InfinispanSubsystemSchema> {
 
     public static final String SUBSYSTEM_NAME = "infinispan";
     public static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, InfinispanExtension.class);
 
     public InfinispanExtension() {
-        super(SUBSYSTEM_NAME, InfinispanSubsystemModel.CURRENT, InfinispanSubsystemResourceDefinition::new, InfinispanSchema.CURRENT, new InfinispanSubsystemXMLWriter());
+        super(SUBSYSTEM_NAME, InfinispanSubsystemModel.CURRENT, InfinispanSubsystemResourceDefinition::new, InfinispanSubsystemSchema.CURRENT, new InfinispanSubsystemXMLWriter());
 
         // Initialize the Netty logger factory
         InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);

@@ -25,8 +25,6 @@ package org.wildfly.extension.clustering.singleton.deployment;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParser;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -34,7 +32,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * Parses singleton deployment configuration from XML.
  * @author Paul Ferraro
  */
-public class SingletonDeploymentXMLReader implements XMLElementReader<MutableSingletonDeploymentConfiguration>, JBossAllXMLParser<SingletonDeploymentConfiguration> {
+public class SingletonDeploymentXMLReader implements XMLElementReader<MutableSingletonDeploymentConfiguration> {
 
     @SuppressWarnings("unused")
     private final SingletonDeploymentSchema schema;
@@ -60,12 +58,5 @@ public class SingletonDeploymentXMLReader implements XMLElementReader<MutableSin
         }
 
         ParseUtils.requireNoContent(reader);
-    }
-
-    @Override
-    public SingletonDeploymentConfiguration parse(XMLExtendedStreamReader reader, DeploymentUnit unit) throws XMLStreamException {
-        MutableSingletonDeploymentConfiguration configuration = new MutableSingletonDeploymentConfiguration(unit);
-        this.readElement(reader, configuration);
-        return configuration;
     }
 }

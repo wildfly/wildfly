@@ -36,11 +36,11 @@ import org.junit.runners.Parameterized.Parameters;
 public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase {
 
     @Parameters
-    public static Iterable<UndertowSchema> parameters() {
-        return EnumSet.allOf(UndertowSchema.class);
+    public static Iterable<UndertowSubsystemSchema> parameters() {
+        return EnumSet.allOf(UndertowSubsystemSchema.class);
     }
 
-    public UndertowSubsystemTestCase(UndertowSchema schema) {
+    public UndertowSubsystemTestCase(UndertowSubsystemSchema schema) {
         super(schema);
     }
 }

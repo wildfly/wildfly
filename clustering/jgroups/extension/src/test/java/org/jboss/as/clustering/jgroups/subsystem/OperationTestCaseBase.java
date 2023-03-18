@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelNode;
 */
 public class OperationTestCaseBase extends AbstractSubsystemTest {
 
-    static final String SUBSYSTEM_XML_FILE = String.format("subsystem-jgroups-%d_%d.xml", JGroupsSchema.CURRENT.major(), JGroupsSchema.CURRENT.minor());
+    static final String SUBSYSTEM_XML_FILE = String.format("subsystem-jgroups-%d_%d.xml", JGroupsSubsystemSchema.CURRENT.getVersion().major(), JGroupsSubsystemSchema.CURRENT.getVersion().minor());
 
     public OperationTestCaseBase() {
         super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension());

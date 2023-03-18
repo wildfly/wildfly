@@ -23,15 +23,20 @@
 package org.wildfly.extension.undertow;
 
 import java.util.EnumSet;
+import java.util.List;
 
-import org.jboss.as.clustering.controller.PersistentXMLDescriptionMarshaller;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLDescriptionReader;
+import org.jboss.as.controller.PersistentResourceXMLDescriptionWriter;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 
 
 /**
@@ -50,12 +55,13 @@ public class UndertowExtension implements Extension {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, UndertowExtension.class.getClassLoader(), true, false);
     }
 
-    private final PersistentXMLDescriptionMarshaller currentMarshaller = new PersistentXMLDescriptionMarshaller(UndertowSchema.CURRENT);
+    private final PersistentResourceXMLDescription currentDescription = UndertowSubsystemSchema.CURRENT.getXMLDescription();
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        for (UndertowSchema schema : EnumSet.allOf(UndertowSchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getUri(), (schema == UndertowSchema.CURRENT) ? this.currentMarshaller : schema);
+        for (UndertowSubsystemSchema schema : EnumSet.allOf(UndertowSubsystemSchema.class)) {
+            XMLElementReader<List<ModelNode>> reader = (schema == UndertowSubsystemSchema.CURRENT) ? new PersistentResourceXMLDescriptionReader(this.currentDescription) : schema;
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespace().getUri(), reader);
         }
     }
 
@@ -69,6 +75,6 @@ public class UndertowExtension implements Extension {
         deployments.registerSubModel(new DeploymentServletDefinition());
         deployments.registerSubModel(new DeploymentWebSocketDefinition());
 
-        subsystem.registerXMLElementWriter(this.currentMarshaller);
+        subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(this.currentDescription));
     }
 }

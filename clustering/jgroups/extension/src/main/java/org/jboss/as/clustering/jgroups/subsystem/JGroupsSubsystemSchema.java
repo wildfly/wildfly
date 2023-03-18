@@ -22,17 +22,21 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.List;
-import java.util.Locale;
 
-import org.jboss.as.clustering.controller.SubsystemSchema;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.LegacySubsystemURN;
+import org.jboss.as.controller.SubsystemSchema;
+import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.IntVersion;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Enumeration of the supported subsystem xml schemas.
  * @author Paul Ferraro
  */
-public enum JGroupsSchema implements SubsystemSchema<JGroupsSchema> {
+public enum JGroupsSubsystemSchema implements SubsystemSchema<JGroupsSubsystemSchema> {
 
     VERSION_1_0(1, 0), // AS 7.0
     VERSION_1_1(1, 1), // AS 7.1
@@ -45,33 +49,21 @@ public enum JGroupsSchema implements SubsystemSchema<JGroupsSchema> {
     VERSION_8_0(8, 0), // WildFly 20-26, EAP 7.4
     VERSION_9_0(9, 0), // WildFly 27-present
     ;
-    static final JGroupsSchema CURRENT = VERSION_9_0;
+    static final JGroupsSubsystemSchema CURRENT = VERSION_9_0;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, JGroupsSubsystemSchema> namespace;
 
-    JGroupsSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+    JGroupsSubsystemSchema(int major, int minor) {
+        this.namespace = new LegacySubsystemURN<>(JGroupsExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public int major() {
-        return this.major;
+    public VersionedNamespace<IntVersion, JGroupsSubsystemSchema> getNamespace() {
+        return this.namespace;
     }
 
     @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getUri() {
-        return String.format(Locale.ROOT, "urn:jboss:domain:jgroups:%d.%d", this.major, this.minor);
-    }
-
-    @Override
-    public XMLElementReader<List<ModelNode>> get() {
-        return new JGroupsSubsystemXMLReader(this);
+    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        new JGroupsSubsystemXMLReader(this).readElement(reader, operations);
     }
 }
