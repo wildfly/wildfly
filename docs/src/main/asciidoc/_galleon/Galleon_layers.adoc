@@ -211,7 +211,7 @@ link:#gal.ee[ee] +
 link:#gal.elytron[elytron] +
 link:#gal.naming[naming] +
 link:#gal.remoting[remoting] +
-link:#gal.resource-adapters[resource-adapters] +
+link:#gal.resource-adapters[messaging-activemq] +
 link:#gal.undertow[undertow] +
 
 |[[gal.git-history]]git-history
@@ -431,7 +431,7 @@ link:#gal.base-server[base-server] +
 |Support for connections to a remote Apache Activemq Artemis Jakarta Messaging broker. +
 _Alternative:_ link:#gal.embedded-activemq[embedded-activemq]
 |
-link:#gal.resource-adapters[resource-adapters] +
+link:#gal.resource-adapters[messaging-activemq] +
 
 |[[gal.remoting]]remoting
 |Support for inbound and outbound JBoss Remoting connections, secured using Elytron.
