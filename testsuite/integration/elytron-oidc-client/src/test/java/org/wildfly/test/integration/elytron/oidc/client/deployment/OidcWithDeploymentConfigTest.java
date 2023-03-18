@@ -41,9 +41,11 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
@@ -60,6 +62,11 @@ import io.restassured.RestAssured;
 @RunAsClient
 @ServerSetup({ OidcWithDeploymentConfigTest.KeycloakAndSystemPropertySetup.class })
 public class OidcWithDeploymentConfigTest extends OidcBaseTest {
+
+    @BeforeClass
+    public static void beforeClass() {
+        IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-17102 Intermittent failures in Oidc...");
+    }
 
     private static final String OIDC_PROVIDER_URL = "oidc.provider.url";
     private static final String OIDC_JSON_WITH_PROVIDER_URL_FILE = "OidcWithProviderUrl.json";
