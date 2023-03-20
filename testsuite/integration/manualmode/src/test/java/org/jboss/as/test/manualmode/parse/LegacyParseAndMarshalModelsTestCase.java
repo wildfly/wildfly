@@ -1,23 +1,23 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2006, Red Hat Middleware LLC, and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2023, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.as.test.manualmode.parse;
 
@@ -26,10 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Paths;
 
 import org.jboss.as.test.shared.FileUtils;
-import org.jboss.as.test.shared.ModelParserUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
@@ -46,7 +44,7 @@ import org.junit.Test;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 @Ignore("[WFLY-15178] Rework ParseAndMarshalModelsTestCase.")
-public class ParseAndMarshalModelsTestCase {
+public class LegacyParseAndMarshalModelsTestCase extends AbstractParseAndMarshalModelsTestCase {
 
     private enum Version {
         AS_7_1_3(false, "7-1-3"),
@@ -98,54 +96,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private static final Version[] AS_VERSIONS = {Version.AS_7_1_3, Version.AS_7_2_0};
 
-    private static final File JBOSS_HOME = Paths.get("target" ,"jbossas-parse-marshal").toFile();
-
     private static final boolean altDistTest = "ee-".equals(System.getProperty("testsuite.default.build.project.prefix"));
-
-    @Test
-    public void testStandaloneXml() throws Exception {
-        standaloneXmlTest(getOriginalStandaloneXml("standalone.xml"));
-    }
-
-    @Test
-    public void testStandaloneHAXml() throws Exception {
-        standaloneXmlTest(getOriginalStandaloneXml("standalone-ha.xml"));
-    }
-
-    @Test
-    public void testStandaloneFullXml() throws Exception {
-        standaloneXmlTest(getOriginalStandaloneXml("standalone-full.xml"));
-    }
-
-    @Test
-    public void testStandaloneFullHAXml() throws Exception {
-        standaloneXmlTest(getOriginalStandaloneXml("standalone-full-ha.xml"));
-    }
-
-    @Test
-    public void testStandaloneMinimalisticXml() throws Exception {
-        standaloneXmlTest(getDocsExampleConfigFile("standalone-minimalistic.xml"));
-    }
-
-    @Test
-    public void testStandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getDocsExampleConfigFile("standalone-xts.xml"));
-    }
-
-    @Test
-    public void testStandaloneJtsXml() throws Exception {
-        standaloneXmlTest(getDocsExampleConfigFile("standalone-jts.xml"));
-    }
-
-    @Test
-    public void testStandaloneGenericJMSXml() throws Exception {
-        standaloneXmlTest(getDocsExampleConfigFile("standalone-genericjms.xml"));
-    }
-
-    @Test
-    public void testStandaloneActiveMQColocatedXml() throws Exception {
-        standaloneXmlTest(getDocsExampleConfigFile("standalone-activemq-colocated.xml"));
-    }
 
     @Test
     public void testJBossASStandaloneXml() throws Exception {
@@ -414,15 +365,6 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
-    private ModelNode standaloneXmlTest(File original) throws Exception {
-        return ModelParserUtils.standaloneXmlTest(original, JBOSS_HOME);
-    }
-
-    @Test
-    public void testHostXml() throws Exception {
-        hostXmlTest(getOriginalHostXml("host.xml"));
-    }
-
     @Test
     public void testJBossASHostXml() throws Exception {
         for (Version version : AS_VERSIONS) {
@@ -435,15 +377,6 @@ public class ParseAndMarshalModelsTestCase {
         for (Version version : EAP_VERSIONS) {
             hostXmlTest(getLegacyConfigFile("host", version, null));
         }
-    }
-
-    private void hostXmlTest(final File original) throws Exception {
-        ModelParserUtils.hostXmlTest(original, JBOSS_HOME);
-    }
-
-    @Test
-    public void testDomainXml() throws Exception {
-        domainXmlTest(getOriginalDomainXml("domain.xml"));
     }
 
     @Test
@@ -463,10 +396,6 @@ public class ParseAndMarshalModelsTestCase {
             ModelNode model = domainXmlTest(getLegacyConfigFile("domain", version, null));
             validateProfiles(model, version);
         }
-    }
-
-    private ModelNode domainXmlTest(final File original) throws Exception {
-        return ModelParserUtils.domainXmlTest(original, JBOSS_HOME);
     }
 
     private static void validateProfiles(ModelNode model, Version version) {
@@ -536,33 +465,8 @@ public class ParseAndMarshalModelsTestCase {
 
     private static void validateSubsystem(ModelNode model, String subsystem, Version version) {
         Assert.assertTrue(model.hasDefined(SUBSYSTEM));
-        Assert.assertTrue("Missing " + subsystem + " subsystem for " + version.versionQualifier, model.get(SUBSYSTEM).hasDefined(subsystem));
-    }
-    //  Get-config methods
-
-    private File getOriginalStandaloneXml(String profile) throws FileNotFoundException {
-        return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jboss.dist"),
-                "standalone/configuration/" + profile
-        );
-    }
-
-    private File getOriginalHostXml(final String profile) throws FileNotFoundException {
-        //Get the standalone.xml from the build/src directory, since the one in the
-        //built server could have changed during running of tests
-        File f = getHostConfigDir();
-        f = new File(f, profile);
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        return f;
-    }
-
-    private File getOriginalDomainXml(final String profile) throws FileNotFoundException {
-        //Get the standalone.xml from the build/src directory, since the one in the
-        //built server could have changed during running of tests
-        File f = getDomainConfigDir();
-        f = new File(f, profile);
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        return f;
+        Assert.assertTrue("Missing " + subsystem + " subsystem for " + version.versionQualifier, model.get(SUBSYSTEM)
+                .hasDefined(subsystem));
     }
 
     private File getLegacyConfigFile(String type, Version version, String qualifier) throws FileNotFoundException {
@@ -580,29 +484,6 @@ public class ParseAndMarshalModelsTestCase {
         return FileUtils.getFileOrCheckParentsIfNotFound(
                 System.getProperty("jbossas.ts.submodule.dir"),
                 "src/test/resources/legacy-configs/" + type + File.separator + fileName
-        );
-    }
-
-    private File getDocsExampleConfigFile(String name) throws FileNotFoundException {
-        return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jboss.dist"),
-                "docs/examples/configs" + File.separator + name
-        );
-    }
-
-    private File getHostConfigDir() throws FileNotFoundException {
-        //Get the standalone.xml from the build/src directory, since the one in the
-        //built server could have changed during running of tests
-        return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jboss.dist"),
-                "domain/configuration"
-        );
-    }
-
-    private File getDomainConfigDir() throws FileNotFoundException {
-        return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jboss.dist"),
-                "domain/configuration"
         );
     }
 }
