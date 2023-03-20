@@ -31,6 +31,8 @@
 
     <dependencies>
         <module name="io.smallrye.reactive.mutiny"/>
+        <module name="io.smallrye.reactive.mutiny.zero"/>
+        <module name="io.smallrye.reactive.mutiny.zero-flow-adapters"/>
         <module name="org.eclipse.microprofile.reactive-streams-operators.api"/>
         <module name="org.eclipse.microprofile.reactive-streams-operators.core" services="import"/>
         <module name="org.jboss.logging"/>

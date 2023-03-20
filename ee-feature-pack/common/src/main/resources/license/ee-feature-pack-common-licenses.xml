@@ -808,6 +808,16 @@
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api-logs</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-context</artifactId>
       <licenses>
         <license>
@@ -818,7 +828,7 @@
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-jaeger</artifactId>
+      <artifactId>opentelemetry-exporter-common</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -828,7 +838,7 @@
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-common</artifactId>
+      <artifactId>opentelemetry-exporter-jaeger</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -909,6 +919,27 @@
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-semconv</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry.instrumentation</groupId>
+      <artifactId>opentelemetry-instrumentation-api</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry.instrumentation</groupId>
+      <artifactId>opentelemetry-instrumentation-api-semconv</artifactId>
+      <version>${version.io.opentelemetry.instrumentation}-alpha</version>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
