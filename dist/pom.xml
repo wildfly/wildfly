@@ -50,6 +50,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-galleon-pack</artifactId>
             <type>zip</type>
             <exclusions>
