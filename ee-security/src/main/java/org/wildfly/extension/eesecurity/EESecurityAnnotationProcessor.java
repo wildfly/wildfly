@@ -20,6 +20,8 @@
  */
 package org.wildfly.extension.eesecurity;
 
+import java.util.List;
+
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -27,7 +29,10 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.FieldInfo;
 
 class EESecurityAnnotationProcessor implements DeploymentUnitProcessor {
 
@@ -55,6 +60,10 @@ class EESecurityAnnotationProcessor implements DeploymentUnitProcessor {
             DotName.createSimple("jakarta.security.enterprise.identitystore.RememberMeIdentityStore")
     };
 
+    static final DotName INJECTION_TYPE = DotName.createSimple("jakarta.inject.Inject");
+
+    static final DotName SECURITY_CONTEXT = DotName.createSimple("jakarta.security.enterprise.SecurityContext");
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -72,6 +81,20 @@ class EESecurityAnnotationProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        // Get list of injected objects
+        List<AnnotationInstance> injectionAnnotations = index.getAnnotations(INJECTION_TYPE);
+        for (AnnotationInstance annotation : injectionAnnotations) {
+            final AnnotationTarget annotationTarget = annotation.target();
+            if (annotationTarget instanceof FieldInfo) {
+                // Enable if injected object is a SecurityContext field, WFLY-17541
+                final FieldInfo fieldInfo = (FieldInfo) annotationTarget;
+                DotName injectedFieldName = fieldInfo.type().name();
+                if (injectedFieldName.equals(SECURITY_CONTEXT)) {
+                    markAsEESecurity(deploymentUnit);
+                    return;
+                }
+            }
+        }
     }
 
     private void markAsEESecurity(DeploymentUnit deploymentUnit) {

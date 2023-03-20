@@ -20,27 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.elytron.jaspi;
+package org.wildfly.test.security.common.elytron;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.wildfly.test.security.common.elytron.AbstractConfigurableElement;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
 
 /**
  * A {@link ConfigurableElement} to add a custom module.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class Module extends AbstractConfigurableElement {
-
-    /*
-     * Reduced visibility until we decide to make this accessible for use elsewhere which would also mean moving this class into
-     * common.
-     */
+public class Module extends AbstractConfigurableElement {
 
     private final List<String> resources;
     private final List<String> dependencies;
@@ -137,7 +130,7 @@ class Module extends AbstractConfigurableElement {
 
         @Override
         protected Builder self() {
-            return Builder.this;
+            return this;
         }
 
     }

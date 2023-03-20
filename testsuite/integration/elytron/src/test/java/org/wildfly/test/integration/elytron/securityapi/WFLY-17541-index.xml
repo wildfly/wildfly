@@ -1,0 +1,9 @@
+<html>
+    <head>TestCustomPrincipal</head>
+    <body>
+        <h2>Test Custom Principal - Index</h2>
+        <ul>
+            <li><a href="./inject">Access injection Servlet</a></li>
+        </ul>
+    </body>
+</html>
