@@ -1,6 +1,14 @@
 [[Using_WildFly_Elytron_with_WildFly]]
 = Using Elytron within WildFly
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[using-the-out-of-the-box-elytron-components]]
 == Using the Out of the Box Elytron Components
 

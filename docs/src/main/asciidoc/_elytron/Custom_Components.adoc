@@ -1,6 +1,14 @@
 [[Custom_Components]]
 = Custom Components
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly Elytron subsystem allows adding custom implementation of different
 components in form of WildFly modules into the WildFly instance and use them
 by the same way as built-in Elytron subsystem components.

@@ -1,6 +1,14 @@
 [[General_Elytron_Architecture]]
 = General Elytron Architecture
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The overall architecture for WildFly Elytron is building up a full
 security policy from assembling smaller components together, by default
 we include various implementations of the components - in addition to
