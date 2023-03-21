@@ -12,6 +12,14 @@ WildFly clustering team;
 :wildflyVersion: 27
 :leveloffset: +1
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 ifndef::ebook-format[:leveloffset: 1]
 
 (C) 2017–2022 The original authors.

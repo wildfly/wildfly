@@ -1,3 +1,11 @@
 = Messaging
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 This section is under development intending to describe high availability features and configuration pertaining to Jakarta Messaging (JMS).
