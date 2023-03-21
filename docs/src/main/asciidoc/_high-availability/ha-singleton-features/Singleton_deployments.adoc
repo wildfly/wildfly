@@ -1,6 +1,14 @@
 [[Singleton_deployments]]
 = Singleton deployments
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly 10 resurrected the ability to start a given deployment on a
 single node in the cluster at any given time. If that node shuts down,
 or fails, the application will automatically start on another node on
