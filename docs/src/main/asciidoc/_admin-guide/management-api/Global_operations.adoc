@@ -1,6 +1,14 @@
 [[Global_operations]]
 = Global operations
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The WildFly management API includes a number of operations that apply to
 every resource.
 
