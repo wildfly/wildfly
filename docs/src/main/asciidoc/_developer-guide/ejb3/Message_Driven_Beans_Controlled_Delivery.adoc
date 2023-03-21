@@ -1,6 +1,14 @@
 [[Message_Driven_Beans_Controlled_Delivery]]
 = Message Driven Beans Controlled Delivery
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 There are three mechanisms in WildFly that allow controlling if a
 specific MDB is actively receiving or not messages:
 

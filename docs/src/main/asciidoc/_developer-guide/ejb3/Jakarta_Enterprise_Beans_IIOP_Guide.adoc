@@ -1,6 +1,14 @@
 [[Jakarta_Enterprise_Beans_IIOP_Guide]]
 = Jakarta Enterprise Beans IIOP Guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[enabling-iiop]]
 == Enabling IIOP
 
