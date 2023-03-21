@@ -1,6 +1,14 @@
 [[Jakarta_XML_Web_Services_Tools]]
 = Jakarta XML Web Services Tools
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The Jakarta XML Web Services tools provided by JBossWS can be used in a variety of ways.
 First we will look at server-side development strategies, and then
 proceed to the client.

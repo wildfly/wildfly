@@ -5,6 +5,13 @@
 :idprefix:
 :idseparator:       -
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 The H2 database library provided by WildFly's `com.h2database.h2` module includes an implementation of the Jakarta Servlet `HttpServlet` interface (`org.h2.server.web.JakartaWebServlet`) that can be used to expose the H2 project's web console tool. WildFly users could utilize this servlet in their own application by adding a dependency on the `com.h2database.h2` module to their application's deployment and then adding the servlet to the application's `web.xml`. This is certainly not recommended for production use -- no use of H2 is recommended in production applications -- but developers may find use of the H2 console useful.
 

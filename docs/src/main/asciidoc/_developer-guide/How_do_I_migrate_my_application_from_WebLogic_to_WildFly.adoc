@@ -1,6 +1,14 @@
 [[How_do_I_migrate_my_application_from_WebLogic_to_WildFly]]
 = How do I migrate my application from WebLogic to WildFly
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The purpose of this guide is to document the application changes that
 are needed to successfully run and deploy WebLogic applications on
 WildFly.

@@ -5,6 +5,14 @@
 :idprefix:
 :idseparator:       -
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The embedded API can be used to launch {appservername} within a currently running process.
 
 The embedded server can be reinitialized with a different JBoss Home. However the module directory, `module.path`

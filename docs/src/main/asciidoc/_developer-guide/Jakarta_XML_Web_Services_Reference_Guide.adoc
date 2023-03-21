@@ -1,6 +1,14 @@
 [[Jakarta_XML_Web_Services_Reference_guide]]
 = Webservices reference guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The Web Services functionalities of WildFly are provided by the JBossWS
 project integration.
 
