@@ -1,6 +1,14 @@
 [[Configuration_file_git_history]]
 = Git Configuration file history
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 To enhance the initial <<Configuration_file_history,configuration file history>> we have now a native Git support to manage the configuration history. This feature goes a little farther than the initial configuration file history in that it also manages content repository content and all the configuration files (such as properties). This feature only work for **standalone servers** using the default directory layout.
 
 As mentioned in <<Command_line_parameters,Command line parameters>> we support the usage of a remote Git repository to pull the configuration from or create or use a local Git repository.
