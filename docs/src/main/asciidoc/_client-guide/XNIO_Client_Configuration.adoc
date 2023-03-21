@@ -1,6 +1,14 @@
 [[XNIO_Client_Configuration]]
 = XNIO Client Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 == <worker /> - XNIO Client
 
 You can use the `worker` element, which is in the `urn:xnio:3.5` namespace, to configure a default XNIO worker using the `wildfly-config.xml` file. This section describes how to do this.
