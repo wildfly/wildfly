@@ -7,6 +7,14 @@ Subsystem configuration reference
 :toc: macro
 :toclevels: 2
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 ifdef::basebackend-html[toc::[]]
 
 The following chapters will focus on the high level management use cases
