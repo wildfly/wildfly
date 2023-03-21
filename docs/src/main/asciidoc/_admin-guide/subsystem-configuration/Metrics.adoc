@@ -1,6 +1,14 @@
 [[MicroProfile_Metrics_SmallRye]]
 = Metrics Subsystem Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [NOTE]
 ====
 This subsystem exposes only base metrics from the WildFly Management Model and JVM MBeans.

@@ -1,6 +1,14 @@
 [[Web_services]]
 = Web services configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 JBossWS components are provided to the application server through the
 webservices subsystem. JBossWS components handle the processing of WS
 endpoints. The subsystem supports the configuration of published

@@ -1,6 +1,14 @@
 [[MicroProfile-Fault-Tolerance-SmallRye]]
 = MicroProfile Fault Tolerance Subsystem
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 == Specification
 
 WildFly's MicroProfile Fault Tolerance subsystem implements MicroProfile Fault Tolerance 4.0.

@@ -1,6 +1,14 @@
 [[Messaging_Connect_a_pooled-connection-factory_to_a_Remote_Artemis_Server]]
 = Connect a pooled-connection-factory to a Remote Artemis Server
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The `messaging-activemq` subsystem allows to configure a
 `pooled-connection-factory` resource to let a local client deployed in
 WildFly connect to a remote Artemis server.

@@ -6,6 +6,13 @@
 :eclipse-mp-reactive-messaging-api-version: 2.0
 ----
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 Support for https://microprofile.io/project/eclipse/microprofile-reactive-messaging[MicroProfile Reactive Messaging] is
 provided as a Tech Preview feature by the _microprofile-reactive-messaging-smallrye_ subsystem.

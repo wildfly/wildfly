@@ -4,6 +4,14 @@
 :idprefix:
 :idseparator:       -
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Formatters are used to format a log message. A formatter can be assigned to a logging handler.
 
 The logging subsystem includes 4 types of handlers:

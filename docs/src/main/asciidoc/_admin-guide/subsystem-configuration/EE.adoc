@@ -1,6 +1,15 @@
 [[EE]]
 = EE Subsystem Configuration
 :leveloffset: +1
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The EE subsystem provides common functionality in the Jakarta EE platform,
 such as the EE Concurrency Utilities (JSR 236) and `@Resource`
 injection. The subsystem is also responsible for managing the lifecycle

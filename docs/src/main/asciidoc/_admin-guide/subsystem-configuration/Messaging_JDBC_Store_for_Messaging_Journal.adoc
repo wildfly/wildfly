@@ -1,6 +1,14 @@
 [[Messaging_JDBC_Store_for_Messaging_Journal]]
 = JDBC Store for Messaging Journal
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The Artemis server that are integrated to WildFly can be configured to
 use a JDBC store for its messaging journal instead of its file-based
 journal. +

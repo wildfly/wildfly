@@ -1,6 +1,14 @@
 [[EE_Concurrency_Utilities_Configuration]]
 = EE Concurrency Utilities
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 EE Concurrency Utilities (JSR 236) were introduced to
 ease the task of writing multithreaded applications. Instances
 of these utilities are managed by WildFly, and the related configuration.

@@ -1,6 +1,14 @@
 [[Jakarta_Batch]]
 = Jakarta Batch Subsystem Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [abstract]
 
 The batch subsystem is used to configure an environment for running
