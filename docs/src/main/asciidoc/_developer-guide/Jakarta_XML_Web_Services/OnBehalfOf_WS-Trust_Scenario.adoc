@@ -1,6 +1,14 @@
 [[OnBehalfOf_WS-Trust_Scenario]]
 = OnBehalfOf WS-Trust Scenario
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The OnBehalfOf feature is used in scenarios that use the proxy pattern.
 In such scenarios, the client cannot access the STS directly, instead it
 communicates through a proxy gateway. The proxy gateway authenticates

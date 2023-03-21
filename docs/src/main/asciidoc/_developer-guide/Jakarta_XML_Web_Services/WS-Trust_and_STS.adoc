@@ -1,6 +1,14 @@
 [[WS-Trust_and_STS]]
 = WS-Trust and STS
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[ws-trust-overview]]
 == WS-Trust overview
 
