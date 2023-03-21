@@ -38,7 +38,6 @@ import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.internal.PrivateGlobalConfiguration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
@@ -49,6 +48,7 @@ import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.infinispan.marshall.EncoderRegistry;
 import org.wildfly.clustering.infinispan.marshalling.ByteBufferMarshallerFactory;
 import org.wildfly.clustering.infinispan.marshalling.MarshalledValueTranscoder;
+import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledKeyFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
@@ -119,8 +119,8 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         Configuration configuration = cache.getCacheConfiguration();
         CacheMode mode = configuration.clustering().cacheMode();
         boolean hasStore = configuration.persistence().usingStores();
-        // Bypass deployment-specific media types for local cache w/out a store or for hibernate 2LC
-        if ((!mode.isClustered() && !hasStore) || !this.cm.getCacheManagerConfiguration().module(PrivateGlobalConfiguration.class).isServerMode()) {
+        // Bypass deployment-specific media types for local cache w/out a store or if using a non-ProtoStream marshaller
+        if ((!mode.isClustered() && !hasStore) || !this.cm.getCacheManagerConfiguration().serialization().marshaller().mediaType().equals(ProtoStreamMarshaller.MEDIA_TYPE)) {
             return new DefaultCache<>(this, cache);
         }
         ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
