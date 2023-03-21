@@ -36,6 +36,7 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -133,7 +134,14 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
             boolean registerKeyMediaType = !registry.isConversionSupported(keyType, MediaType.APPLICATION_OBJECT);
             boolean registerValueMediaType = !registry.isConversionSupported(valueType, MediaType.APPLICATION_OBJECT);
             if (registerKeyMediaType || registerValueMediaType) {
-                ByteBufferMarshaller marshaller = this.marshallerFactory.apply(loader);
+                ClassLoader managerLoader = this.cm.getCacheManagerConfiguration().classLoader();
+                PrivilegedAction<ClassLoader> action = new PrivilegedAction<>() {
+                    @Override
+                    public ClassLoader run() {
+                        return new AggregatedClassLoader(List.of(loader, managerLoader));
+                    }
+                };
+                ByteBufferMarshaller marshaller = this.marshallerFactory.apply(WildFlySecurityManager.doUnchecked(action));
                 if (registerKeyMediaType) {
                     MarshalledValueFactory<ByteBufferMarshaller> keyFactory = new ByteBufferMarshalledKeyFactory(marshaller);
                     registry.registerTranscoder(new MarshalledValueTranscoder<>(keyType, keyFactory));
