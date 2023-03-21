@@ -1,6 +1,14 @@
 [[Composite_Stores_Migration]]
 = Composite Stores Migration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 When using either PicketBox or the legacy security realms it is possible to define a configuration where authentication is performed against one identity store whilst the information used for authorization is loaded from a different store, when using WildFly Elytron this can be achieved by using an aggregate security realm.
 
 The example here makes use of a properties file for authentication and then searches LDAP to load group / role information. Both of these are based on the previous examples within this document so the environmental information is not repeated here.

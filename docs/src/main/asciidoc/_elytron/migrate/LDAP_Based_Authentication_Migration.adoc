@@ -1,6 +1,14 @@
 [[LDAP_Based_Authentication_Migration]]
 = LDAP Authentication Migration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The section describing how to migrate from properties based
 authentication using either PicketBox or legacy security realms to
 Elytron also contained a lot of additional information regarding
