@@ -1,6 +1,14 @@
 [[Working_with_WildFly_Capabilities]]
 = Working with WildFly Capabilities
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 An extension to WildFly will likely want to make use of services
 provided by the WildFly kernel, may want to make use of services
 provided by other subsystems, and may wish to make functionality
