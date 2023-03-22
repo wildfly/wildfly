@@ -41,6 +41,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.security.SecurityMetaData;
 import org.jboss.as.server.security.VirtualDomainMarkerUtility;
 import org.jboss.as.server.security.VirtualDomainMetaData;
+import org.jboss.as.server.security.VirtualDomainUtil;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -107,6 +108,9 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         }
 
         ApplicationSecurityDomainConfig selectedElytronDomainConfig = null;
+        VirtualDomainMetaData virtualDomainMetaData = null;
+        boolean isDefinedSecurityDomainVirtual = false;
+
         if (elytronDomainServiceName == null) {
             String selectedElytronDomainName = null;
             boolean legacyDomainDefined  = false;
@@ -131,8 +135,10 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                             throw EjbLogger.ROOT_LOGGER.multipleSecurityDomainsDetected();
                         }
                     } else if (definedSecurityDomain != null) {
-                        if (isVirtualDomain(definedSecurityDomain, phaseContext)) {
+                        virtualDomainMetaData = getVirtualDomainMetaData(definedSecurityDomain, phaseContext);
+                        if (virtualDomainMetaData != null) {
                             elytronDomainServiceName = VirtualDomainMarkerUtility.virtualDomainName(definedSecurityDomain);
+                            isDefinedSecurityDomainVirtual = true;
                         }
                         if (elytronDomainServiceName != null) {
                             selectedElytronDomainName = definedSecurityDomain;
@@ -222,9 +228,11 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                 // virtual domain
                 final EJBSecurityDomainService ejbSecurityDomainService = new EJBSecurityDomainService(deploymentUnit);
 
+                if (isDefinedSecurityDomainVirtual && ! VirtualDomainUtil.isVirtualDomainCreated(deploymentUnit)) {
+                    VirtualDomainUtil.createVirtualDomain(phaseContext.getServiceRegistry(), virtualDomainMetaData, elytronDomainServiceName, phaseContext.getServiceTarget());
+                }
                 final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(ejbSecurityDomainServiceName, ejbSecurityDomainService)
                         .addDependency(elytronDomainServiceName, SecurityDomain.class, ejbSecurityDomainService.getSecurityDomainInjector());
-
                 builder.install();
 
                 for (final ComponentDescription componentDescription : componentDescriptions) {
@@ -282,18 +290,18 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         return (ServiceController<T>) controller;
     }
 
-    private boolean isVirtualDomain(String definedSecurityDomain, DeploymentPhaseContext phaseContext) {
+    private VirtualDomainMetaData getVirtualDomainMetaData(String definedSecurityDomain, DeploymentPhaseContext phaseContext) {
         if (definedSecurityDomain != null && ! definedSecurityDomain.isEmpty()) {
             ServiceName virtualDomainMetaDataName = VirtualDomainMarkerUtility.virtualDomainMetaDataName(phaseContext, definedSecurityDomain);
             ServiceController<VirtualDomainMetaData> serviceContainer = getService(phaseContext.getServiceRegistry(), virtualDomainMetaDataName, VirtualDomainMetaData.class);
             if (serviceContainer != null) {
                 ServiceController.State serviceState = serviceContainer.getState();
                 if (serviceState == ServiceController.State.UP) {
-                    return true;
+                    return serviceContainer.getValue();
                 }
             }
         }
-        return false;
+        return null;
     }
 
     private static DeploymentUnit toRoot(final DeploymentUnit deploymentUnit) {

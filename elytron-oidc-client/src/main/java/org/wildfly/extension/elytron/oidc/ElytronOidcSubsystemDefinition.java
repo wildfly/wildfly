@@ -18,15 +18,26 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.jboss.as.server.security.VirtualDomainUtil.OIDC_VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE;
+import static org.jboss.as.server.security.VirtualDomainUtil.VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE;
+
 import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.server.security.VirtualSecurityDomainCreationService;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Root subsystem definition for the Elytron OpenID Connect subsystem.
@@ -47,7 +58,7 @@ class ElytronOidcSubsystemDefinition extends PersistentResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(ElytronOidcExtension.SUBSYSTEM_PATH,
                 ElytronOidcExtension.getResourceDescriptionResolver())
                 .setAddHandler(new ElytronOidcSubsystemAdd())
-                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setRemoveHandler(ElytronOidcSubsystemRemove.INSTANCE)
                 .setCapabilities(CONFIG_CAPABILITY)
         );
     }
@@ -66,5 +77,35 @@ class ElytronOidcSubsystemDefinition extends PersistentResourceDefinition {
         resourceRegistration.registerSubModel(new RealmDefinition());
         resourceRegistration.registerSubModel(new ProviderDefinition());
         resourceRegistration.registerSubModel(new SecureDeploymentDefinition());
+    }
+
+    private static class ElytronOidcSubsystemRemove extends ReloadRequiredRemoveStepHandler {
+
+        static final ElytronOidcSubsystemRemove INSTANCE = new ElytronOidcSubsystemRemove();
+
+        private ElytronOidcSubsystemRemove() {
+        }
+
+        @Override
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+            if (context.isResourceServiceRestartAllowed()) {
+                context.removeService(OIDC_VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE);
+            } else {
+                context.reloadRequired();
+            }
+        }
+
+        @Override
+        protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model)
+                throws OperationFailedException {
+            ServiceTarget target = context.getServiceTarget();
+            installService(VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE, new VirtualSecurityDomainCreationService(), target);
+        }
+    }
+
+    static void installService(ServiceName serviceName, Service<?> service, ServiceTarget serviceTarget) {
+        serviceTarget.addService(serviceName, service)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 }
