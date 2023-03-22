@@ -89,6 +89,7 @@
         <module>fault-tolerance</module>
         <module>health</module>
         <module>jwt</module>
+        <module>lra</module>
         <module>metrics</module>
         <module>openapi</module>
         <module>opentracing</module>

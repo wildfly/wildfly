@@ -53,6 +53,7 @@
         <module>opentracing-smallrye</module>
         <module>reactive-messaging-smallrye</module>
         <module>reactive-streams-operators-smallrye</module>
+        <module>lra</module>
     </modules>
 
     <dependencyManagement>

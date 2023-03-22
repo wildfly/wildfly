@@ -167,6 +167,12 @@ public class LayersTestCase {
             "org.eclipse.microprofile.health.api",
             "io.smallrye.health",
             // Extension not included in the default config
+            "org.wildfly.extension.microprofile.lra-coordinator",
+            "org.wildfly.extension.microprofile.lra-participant",
+            "org.jboss.narayana.rts.lra-coordinator",
+            "org.jboss.narayana.rts.lra-participant",
+            "org.eclipse.microprofile.lra.api",
+            // Extension not included in the default config
             "org.wildfly.extension.microprofile.openapi-smallrye",
             "org.eclipse.microprofile.openapi.api",
             "io.smallrye.openapi",
