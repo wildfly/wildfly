@@ -297,3 +297,8 @@ where `DEPLOYMENT_NAME.ear` is a reference to the `virtual-security-domain` defi
 This configuration indicates that the virtual security domain associated with `DEPLOYMENT_NAME.ear`
 should be used to secure the EJB.
 
+[IMPORTANT]
+
+For now, a deployment containing a servlet secured with OpenID Connect (e.g., `DEPLOYMENT_NAME.ear`)
+MUST be deployed before a deployment that contains the `@SecurityDomain(DEPLOYMENT_NAME.ear)`
+annotation.
