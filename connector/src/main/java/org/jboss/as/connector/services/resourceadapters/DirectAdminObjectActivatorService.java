@@ -122,18 +122,15 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
                 throw ConnectorLogger.ROOT_LOGGER.invalidAdminObject(aoClass, resourceAdapter, jndiName);
             }
 
-            Map<String, String> raConfigProperties = new HashMap<String, String>();
             Map<String, String> aoConfigProperties = new HashMap<String, String>();
 
             if (properties != null) {
                 for (Map.Entry<String,String> prop : properties.entrySet()) {
                     String key = prop.getKey();
                     String value = prop.getValue();
-                    if (key.startsWith("ra.")) {
-                        raConfigProperties.put(key.substring(3), value);
-                    } else if (key.startsWith("ao.")) {
+                    if (key.startsWith("ao.")) {
                         aoConfigProperties.put(key.substring(3), value);
-                    } else {
+                    } else if (!key.startsWith("ra.")) {
                         aoConfigProperties.put(key, value);
                     }
                 }
