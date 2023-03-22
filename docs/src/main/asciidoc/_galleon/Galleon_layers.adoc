@@ -169,6 +169,17 @@ link:#gal.base-server[base-server] +
 link:#gal.base-server[base-server] +
 
 |[[gal.ee]]ee
+|Support for common functionality in the Jakarta EE platform and for Jakarta Concurrency.
+|
+link:#gal.ee-concurrency[ee-concurrency] (optional) +
+link:#gal.ee-integration[ee-integration] +
+
+|[[gal.ee-concurrency]]ee-concurrency
+|Support for Jakarta Concurrency.
+|
+link:#gal.naming[naming] +
+
+|[[gal.ee-integration]]ee-integration
 |Support for common functionality in the Jakarta EE platform.
 |
 link:#gal.jsonb[jsonb] (optional) +

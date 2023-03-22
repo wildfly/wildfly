@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ /*
+  ~  * JBoss, Home of Professional Open Source.
+  ~  * Copyright $year Red Hat, Inc., and individual contributors
+  ~  * as indicated by the @author tags.
+  ~  *
+  ~  * Licensed under the Apache License, Version 2.0 (the "License");
+  ~  * you may not use this file except in compliance with the License.
+  ~  * You may obtain a copy of the License at
+  ~  *
+  ~  *     http://www.apache.org/licenses/LICENSE-2.0
+  ~  *
+  ~  * Unless required by applicable law or agreed to in writing, software
+  ~  * distributed under the License is distributed on an "AS IS" BASIS,
+  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  * See the License for the specific language governing permissions and
+  ~  * limitations under the License.
+  ~  */
+  -->
+
+<feature-group-spec name="ee-concurrency" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.ee">
+        <feature spec="subsystem.ee.context-service">
+            <param name="context-service" value="default"/>
+            <param name="jndi-name" value="java:jboss/ee/concurrency/context/default"/>
+            <param name="use-transaction-setup-provider" value="false"/>
+        </feature>
+        <feature spec="subsystem.ee.managed-executor-service">
+            <param name="managed-executor-service" value="default"/>
+            <param name="context-service" value="default"/>
+            <param name="jndi-name" value="java:jboss/ee/concurrency/executor/default"/>
+            <param name="hung-task-termination-period" value="0"/>
+            <param name="hung-task-threshold" value="60000"/>
+            <param name="keepalive-time" value="5000"/>
+        </feature>
+        <feature spec="subsystem.ee.managed-scheduled-executor-service">
+            <param name="managed-scheduled-executor-service" value="default"/>
+            <param name="context-service" value="default"/>
+            <param name="jndi-name" value="java:jboss/ee/concurrency/scheduler/default"/>
+            <param name="hung-task-termination-period" value="0"/>
+            <param name="hung-task-threshold" value="60000"/>
+            <param name="keepalive-time" value="3000"/>
+        </feature>
+        <feature spec="subsystem.ee.managed-thread-factory">
+            <param name="managed-thread-factory" value="default"/>
+            <param name="context-service" value="default"/>
+            <param name="jndi-name" value="java:jboss/ee/concurrency/factory/default"/>
+        </feature>
+        <feature spec="subsystem.ee.service.default-bindings">
+            <param name="context-service" value="java:jboss/ee/concurrency/context/default"/>
+            <param name="managed-executor-service" value="java:jboss/ee/concurrency/executor/default"/>
+            <param name="managed-scheduled-executor-service" value="java:jboss/ee/concurrency/scheduler/default"/>
+            <param name="managed-thread-factory" value="java:jboss/ee/concurrency/factory/default"/>
+        </feature>
+    </feature>
+</feature-group-spec>

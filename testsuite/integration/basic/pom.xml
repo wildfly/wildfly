@@ -2182,7 +2182,45 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-
+                            <!-- Provision a server with ee-concurrency -->
+                            <execution>
+                                <id>ee-concurrency-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-ee-concurrency</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>${galleon.offline}</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>core-server</layer>
+                                                <layer>ejb-lite</layer>
+                                                <layer>ee-concurrency</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
                             <!-- Provision a cloud-profile server with ejb-lite -->
                             <execution>
                                 <id>ejb-lite-provisioning</id>
@@ -2933,6 +2971,36 @@
                                         <!-- SarResourceInjectionTestCase needs mail -->
                                         <include>org/jboss/as/test/integration/sar/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/deployment/classloading/sar/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with ejb-lite -->
+                            <execution>
+                                <id>ee-concurrency-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-ee-concurrency</jboss.install.dir>
+                                        <jboss.inst>${basedir}/target/wildfly-ee-concurrency</jboss.inst>
+                                        <jboss.home>${project.build.directory}/wildfly-ee-concurrency</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-ee-concurrency</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-ee-concurrency</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-ee-concurrency</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-ee-concurrency/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-ee-concurrency</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/ee/concurrent/**/*TestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>
