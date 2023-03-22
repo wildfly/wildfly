@@ -22,30 +22,43 @@
 package org.wildfly.extension.health;
 
 import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2019 Red Hat inc.
  */
-public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
-
-    public Subsystem_1_0_ParsingTestCase() {
-        super(HealthExtension.SUBSYSTEM_NAME, new HealthExtension());
+@RunWith(Parameterized.class)
+public class HealthSubsystemTestCase extends AbstractSubsystemBaseTest {
+    @Parameters
+    public static Iterable<HealthSubsystemSchema> parameters() {
+        return EnumSet.allOf(HealthSubsystemSchema.class);
     }
 
+    private final HealthSubsystemSchema schema;
+
+    public HealthSubsystemTestCase(HealthSubsystemSchema schema) {
+        super(HealthExtension.SUBSYSTEM_NAME, new HealthExtension());
+        this.schema = schema;
+    }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_0.xml");
+        return readResource(String.format(Locale.ROOT, "subsystem_%d_%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
     }
 
     @Override
     protected String getSubsystemXsdPath() {
-        return "schema/wildfly-health_1_0.xsd";
+        return String.format(Locale.ROOT, "schema/wildfly-health_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
     }
 
+    @Override
     protected Properties getResolvedProperties() {
         return System.getProperties();
     }
