@@ -25,7 +25,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 
 public class MetricID implements Comparable<MetricID> {
-    private String metricName;
+    private final String metricName;
     // keep a map of tags to ensure that the identity of the metrics does not differ if the
     // tags are not in the same order in the array
     private final Map<String, String> tags = new TreeMap<>();

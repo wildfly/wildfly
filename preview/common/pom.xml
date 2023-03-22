@@ -48,16 +48,6 @@
             <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
         </dependency>
 
-        <!-- Micrometer -->
-        <dependency><groupId>${project.groupId}</groupId><artifactId>wildfly-micrometer-api</artifactId></dependency>
-        <dependency><groupId>${project.groupId}</groupId><artifactId>wildfly-micrometer</artifactId></dependency>
-        <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-core</artifactId></dependency>
-        <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId></dependency>
-        <dependency><groupId>io.prometheus</groupId><artifactId>simpleclient</artifactId></dependency>
-        <dependency><groupId>io.prometheus</groupId><artifactId>simpleclient_common</artifactId></dependency>
-        <dependency><groupId>org.latencyutils</groupId><artifactId>LatencyUtils</artifactId></dependency>
-        <!-- Micrometer -->
-
         <dependency>
             <groupId>org.wildfly.deployment</groupId>
             <artifactId>wildfly-ee-9-deployment-transformer</artifactId>

@@ -37,25 +37,20 @@ public class MetricRegistration {
     public void register() {
         // synchronized to avoid registering same thing twice. Shouldn't really be possible; just being cautious
         synchronized (registry) {
-            for (Runnable task : registrationTasks) {
-                task.run();
-            }
+            registrationTasks.forEach(t -> t.run());
             registrationTasks.clear();
         }
     }
 
     public void unregister() {
         synchronized (registry) {
-            for (Meter.Id id : unregistrationTasks) {
-                registry.remove(id);
-            }
+            unregistrationTasks.forEach(id -> registry.remove(id));
             unregistrationTasks.clear();
         }
     }
 
     public void registerMetric(WildFlyMetric metric, WildFlyMetricMetadata metadata) {
-        // TODO
-        unregistrationTasks.add(registry.addMeter(metric, metadata).getId());
+        unregistrationTasks.add(registry.addMeter(metric, metadata));
     }
 
     public synchronized void addRegistrationTask(Runnable task) {

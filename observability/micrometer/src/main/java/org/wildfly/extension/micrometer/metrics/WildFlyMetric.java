@@ -21,9 +21,11 @@ package org.wildfly.extension.micrometer.metrics;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLES;
 import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROMETER_LOGGER;
 
 import java.util.OptionalDouble;
@@ -74,6 +76,8 @@ public class WildFlyMetric implements Metric {
         readAttributeOp.get(OP_ADDR).set(address.toModelNode());
         readAttributeOp.get(ModelDescriptionConstants.INCLUDE_UNDEFINED_METRIC_VALUES).set(false);
         readAttributeOp.get(NAME).set(attributeName);
+        readAttributeOp.get(OPERATION_HEADERS).get(ROLES).add("Monitor");
+
         ModelNode response = modelControllerClient.execute(readAttributeOp);
         String error = getFailureDescription(response);
         if (error != null) {
