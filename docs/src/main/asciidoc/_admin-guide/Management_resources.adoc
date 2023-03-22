@@ -1,6 +1,14 @@
 [[management-resources]]
 = Management resources
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 When WildFly parses your configuration files at boot, or when you use
 one of the AS's <<Management_Clients,Management Clients>> you are
 adding, removing or modifying _management resources_ in the AS's

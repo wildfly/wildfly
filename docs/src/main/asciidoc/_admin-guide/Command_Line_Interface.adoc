@@ -1,6 +1,14 @@
 [[Command_Line_Interface]]
 = Command Line Interface
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The Command Line Interface (CLI) is a management tool for a managed
 domain or standalone server. It allows a user to connect to the domain
 controller or a standalone server and execute management operations

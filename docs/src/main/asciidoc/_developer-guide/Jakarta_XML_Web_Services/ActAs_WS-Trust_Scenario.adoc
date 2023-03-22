@@ -1,6 +1,14 @@
 [[ActAs_WS-Trust_Scenario]]
 = ActAs WS-Trust Scenario
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The ActAs feature is used in scenarios that require composite
 delegation. It is commonly used in multi-tiered systems where an
 application calls a service on behalf of a logged in user or a service

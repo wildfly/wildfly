@@ -1,6 +1,14 @@
 [[Jakarta-XML-Web-Services-Authentication]]
 = Authentication
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[Jakarta-XML-Web-Services-authentication]]
 == Authentication
 

@@ -1,5 +1,14 @@
 [[Contributing]]
 = Development environment
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 * Latest Maven build tool https://maven.apache.org/
 * OpenJDK 11 (eleven!) You can use any distribution in example Eclipse https://adoptium.net/
 * Eclipse https://www.eclipse.org/downloads/packages/[Eclipse Download] or any other IDE allowing correct source formatting (IntelliJ)

@@ -1,6 +1,14 @@
 [[Predefined_client_and_endpoint_configurations]]
 = Predefined client and endpoint configurations
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [abstract]
 
 JBossWS permits extra setup configuration data to be predefined and

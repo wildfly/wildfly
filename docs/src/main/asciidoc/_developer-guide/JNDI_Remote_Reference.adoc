@@ -1,6 +1,14 @@
 [[JNDI_Remote_Reference]]
 = Remote JNDI Access
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly supports two different types of remote JNDI.
 
 [[http-remoting]]

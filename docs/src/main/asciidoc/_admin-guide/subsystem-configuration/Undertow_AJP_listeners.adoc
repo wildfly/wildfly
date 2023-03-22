@@ -1,6 +1,14 @@
 [[Undertow_AJP_listeners]]
 = AJP listeners
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The AJP listeners are child resources of the subsystem undertow. They
 are used with mod_jk, mod_proxy and mod_cluster of the Apache httpd
 front-end. Each listener does reference a particular socket binding:

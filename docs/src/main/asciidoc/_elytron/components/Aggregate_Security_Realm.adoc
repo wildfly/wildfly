@@ -1,6 +1,14 @@
 [[aggregate-security-realm]]
 = Aggregate Security Realm
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The aggregate security realm allows for two or more security realms to be aggregated into a single security realm allowing one to be used during the authentication steps and one or more to be used to assemble the identity used for authorization decisions and aggregating any associated attributes.
 
 The `aggregate-realm` resource contains the following attributes: -

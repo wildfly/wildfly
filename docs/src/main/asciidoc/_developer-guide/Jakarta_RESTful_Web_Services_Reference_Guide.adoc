@@ -1,6 +1,14 @@
 [[Jakarta_RESTful_Web_Services_Reference_Guide]]
 = Jakarta RESTful Web Services Reference Guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 RESTEasy is the Jakarta RESTful Web Services implementation used in {appservername}. For detailed documentation see the
 https://resteasy.dev/docs[RESTEasy {resteasyversion} documentation].
 

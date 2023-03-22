@@ -1,6 +1,14 @@
 [[Command_line_parameters]]
 = Command line parameters
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 To start up a WildFly managed domain, execute the
 `$JBOSS_HOME/bin/domain.sh` script. To start up a standalone server,
 execute the `$JBOSS_HOME/bin/standalone.sh`. With no arguments, the

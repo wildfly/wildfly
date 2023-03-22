@@ -1,6 +1,14 @@
 [[Management_Clients]]
 = Management Clients
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly offers three different approaches to configure and manage
 servers: a web interface, a command line client and a set of XML
 configuration files. Regardless of the approach you choose, the

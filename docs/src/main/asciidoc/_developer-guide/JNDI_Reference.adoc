@@ -1,6 +1,14 @@
 [[JNDI_Reference]]
 = JNDI Reference
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [abstract]
 
 WildFly offers several mechanisms to retrieve components by name. Every

@@ -1,6 +1,14 @@
 [[Pre-requisites_-_test_quality_standards]]
 = Before you add a test
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Every added test, whether ported or new should follow the same
 guidelines:
 

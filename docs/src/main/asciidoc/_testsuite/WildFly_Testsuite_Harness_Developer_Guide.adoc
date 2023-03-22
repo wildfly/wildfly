@@ -1,6 +1,14 @@
 [[WildFly_Testsuite_Harness_Developer_Guide]]
 = WildFly Testsuite Harness Developer Guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 *Audience:* Whoever wants to change the testsuite harness
 
 *JIRA*: https://issues.redhat.com/browse/WFLY-576[WFLY-576]

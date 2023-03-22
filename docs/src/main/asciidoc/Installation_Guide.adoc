@@ -11,6 +11,14 @@ WildFly team;
 :source-highlighter: coderay
 :wildflyVersion: 14
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 :leveloffset: +1
 
 ifndef::ebook-format[:leveloffset: 1]

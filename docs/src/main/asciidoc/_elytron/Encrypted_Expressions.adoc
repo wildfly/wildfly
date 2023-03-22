@@ -1,6 +1,14 @@
 [[EncryptedExpressions]]
 = Encrypted Expressions
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly Elytron provides support for handling encrypted expressions in the management model using a `SecretKey` from a `CredentialStore` to decrypt the expression at runtime.
 
 For information regarding how to create, configure, and populate credential stores including the manipulation of secret keys please refer to the <<CredentialStore, Credential Store>> chapter.

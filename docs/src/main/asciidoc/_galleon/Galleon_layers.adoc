@@ -1,6 +1,14 @@
 [[wildfly_layers]]
 === WildFly Layers
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 A Galleon layer is a name that identifies a server capability (e.g.: jaxrs, 
 ejb, microprofile-config, jpa) or an aggregation of such capabilities. A layer captures a server capability in the form of:
 

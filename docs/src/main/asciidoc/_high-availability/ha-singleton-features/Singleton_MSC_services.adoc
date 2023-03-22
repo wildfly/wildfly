@@ -1,6 +1,14 @@
 [[Singleton_MSC_services]]
 = Singleton MSC services
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The singleton service facility exposes a mechanism for installing an MSC service such that the service only starts on a single member of a cluster at a time.
 If the member providing the singleton service is shutdown or crashes, the facility automatically elects a new primary provider and starts the service on that node.
 In general, a singleton election happens in response to any change of membership, where the membership is defined as the set of cluster nodes on which the given service was installed.

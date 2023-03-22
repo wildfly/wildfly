@@ -1,6 +1,14 @@
 [[Security_Property_Migration]]
 = Security Properties
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Lets suppose security properties "a" and "c" defined in legacy security:
 
 [source,xml,options="nowrap"]

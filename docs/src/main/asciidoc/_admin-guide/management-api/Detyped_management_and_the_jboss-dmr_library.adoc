@@ -1,6 +1,14 @@
 [[Detyped_management_and_the_jboss-dmr_library]]
 = Detyped management and the jboss-dmr library
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The management model exposed by WildFly is very large and complex. There
 are dozens, probably hundreds of logical concepts involved – hosts,
 server groups, servers, subsystems, datasources, web connectors, and on

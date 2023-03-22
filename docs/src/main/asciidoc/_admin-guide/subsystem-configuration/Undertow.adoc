@@ -1,6 +1,14 @@
 [[Undertow]]
 = Undertow subsystem configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 ****
 
 *Web subsystem was replaced in WildFly 8 with Undertow.*

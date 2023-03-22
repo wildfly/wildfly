@@ -1,6 +1,14 @@
 [[SAML_Bearer_Assertion_Scenario]]
 = SAML Bearer Assertion Scenario
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WS-Trust deals with managing software security tokens. A SAML assertion
 is a type of security token. In the SAML Bearer scenario, the service
 provider automatically trusts that the incoming SOAP request came from

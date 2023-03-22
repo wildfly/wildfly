@@ -1,6 +1,14 @@
 
 = Component Documentation
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 == Security Realms
 
 The primary responsibility of a security realm is the ability to load identities with associated attributes, these identities are then used within the authentication process for credential validation and subsequently wrapped to represent the `SecurityIdentity` instances using within applications for authorization.

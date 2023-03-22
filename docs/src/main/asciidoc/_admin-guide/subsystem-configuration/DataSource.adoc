@@ -1,6 +1,14 @@
 [[DataSource]]
 = DataSource configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Datasources are configured through the _datasource_ subsystem. Declaring
 a new datasource consists of two separate steps: You would need to
 provide a JDBC driver and define a datasource that references the driver

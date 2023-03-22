@@ -1,6 +1,14 @@
 [[Security_Vault_Migration]]
 = Security Vault Migration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Security Vault is primarily used in legacy configurations, a vault is
 used to store sensitive strings outside of the configuration files.
 WildFly server may only contain a single security vault.

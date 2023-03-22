@@ -1,6 +1,14 @@
 [[Elytron_Java_Security_Manager]]
 = Elytron WildFly Java Security Manager
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 == Overview
 
 === General introduction

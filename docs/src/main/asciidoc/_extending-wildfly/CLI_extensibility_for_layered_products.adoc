@@ -1,6 +1,14 @@
 [[CLI_extensibility_for_layered_products]]
 = CLI extensibility for layered products
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 In addition to supporting the ServiceLoader extension mechanism to load
 command handlers coming from outside of the CLI codebase, starting from
 the wildfly-core-1.0.0.Beta1 release the CLI running in a modular

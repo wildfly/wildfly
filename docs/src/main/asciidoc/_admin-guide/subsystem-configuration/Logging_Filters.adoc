@@ -4,6 +4,14 @@
 :idprefix:
 :idseparator:       -
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Filters are used to add fine grained control over a log message. A filter can be assigned to a logger or log handler.
 See the {oracle-javadoc}/java.logging/java/util/logging/Filter.html[Filter] documentation for details on filters.
 

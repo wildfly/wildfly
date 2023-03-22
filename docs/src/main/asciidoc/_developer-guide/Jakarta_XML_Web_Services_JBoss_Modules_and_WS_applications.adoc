@@ -1,6 +1,14 @@
 [[JAX_WS_JBoss_Modules_and_WS_applications]]
 = JBoss Modules and WS applications
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The JBoss Web Services functionalities are provided by a given set of
 modules / libraries installed on WildFly, which are organized into JBoss
 Modules modules. In particular the _org.jboss.as.webservices.*_ and

@@ -1,6 +1,14 @@
 [[Application_Client_Reference]]
 = Application Client Reference
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 As a Jakarta EE compliant server, WildFly {wildflyVersion} contains an application
 client. An application client is essentially a cut down server instance,
 that allows you to use EE features such as injection in a client side

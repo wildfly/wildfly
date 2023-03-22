@@ -1,5 +1,13 @@
 === Discovery for AWS EC2
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The `org.jgroups.protocols.aws.S3_PING` is a discovery protocol for AWS EC2.
 
 For provisioning using Galleon, use the `jgroups-aws` layer.

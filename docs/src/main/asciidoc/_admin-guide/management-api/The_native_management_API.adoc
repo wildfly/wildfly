@@ -1,6 +1,14 @@
 [[The_native_management_API]]
 = The native management API
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 A standalone WildFly process, or a managed domain Domain Controller or
 secondary Host Controller process can be configured to listen for remote
 management requests using its "native management interface":

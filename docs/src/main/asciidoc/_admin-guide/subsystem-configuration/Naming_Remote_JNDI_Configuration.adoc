@@ -1,6 +1,14 @@
 [[Naming_Remote_JNDI_Configuration]]
 = Remote JNDI Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The Naming subsystem configuration may be used to (de)activate the
 remote JNDI interface, which allows clients to lookup entries present in
 a remote WildFly instance.

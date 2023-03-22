@@ -1,6 +1,14 @@
 [[Messaging]]
 = Messaging configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The Jakarta Messaging server configuration is done through the _messaging-activemq_
 subsystem. In this chapter we are going outline the frequently used
 configuration options. For a more detailed explanation please consult

@@ -15,6 +15,12 @@ WildFly developer team;
 :include-depth: 2
 
 ifdef::env-github[:outfilesuffix: .adoc]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 
 ifndef::ebook-format[:leveloffset: 1]

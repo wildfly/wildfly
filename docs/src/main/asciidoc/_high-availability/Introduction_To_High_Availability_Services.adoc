@@ -1,6 +1,14 @@
 [[Introduction_To_High_Availability_Services]]
 = Introduction To High Availability Services
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[what-are-high-availability-services]]
 == What are High Availability services?
 

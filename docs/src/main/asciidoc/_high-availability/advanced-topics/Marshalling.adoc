@@ -1,6 +1,14 @@
 [[marshalling]]
 = Marshalling
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 In general, the most effective way to improve the scalability of a system with persistent or distributed state is to reduce the number of bytes needed to be sent over the network or persisted to storage.
 Marshalling is the process by which Java objects in heap space are converted to a byte buffer for replication to other JVMs or for persistence to local or shared storage.
 

@@ -9,7 +9,14 @@ WildFly team;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
+
 ifdef::env-github[:imagesdir: images/]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 // ifndef::ebook-format[:leveloffset: 1]
 

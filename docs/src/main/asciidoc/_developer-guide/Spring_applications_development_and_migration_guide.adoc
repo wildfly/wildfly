@@ -1,6 +1,14 @@
 [[Spring_applications_development_and_migration_guide]]
 = Spring applications development and migration guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 This document details the main points that need to be considered by
 Spring developers that wish to develop new applications or to migrate
 existing applications to be run into WildFly {wildflyVersion}.

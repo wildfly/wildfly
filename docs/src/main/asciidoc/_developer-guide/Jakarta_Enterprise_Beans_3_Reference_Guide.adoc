@@ -1,6 +1,14 @@
 [[Jakarta_Enterprise_Beans_3_Reference_Guide]]
 = Jakarta Enterprise Beans 3 Reference Guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 This chapter details the extensions that are available when developing
 Enterprise Java Beans ^tm^ on WildFly {wildflyVersion}.
 

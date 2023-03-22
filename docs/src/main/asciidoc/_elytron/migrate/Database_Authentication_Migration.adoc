@@ -1,6 +1,14 @@
 [[Database_Authentication_Migration]]
 = Database Authentication
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The section describing how to migrate from database accessible via JDBC
 datasource based authentication using PicketBox to Elytron. This section
 will illustrate some equivalent configuration using PicketBox security

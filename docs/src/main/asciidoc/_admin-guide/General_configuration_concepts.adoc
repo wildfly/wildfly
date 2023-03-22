@@ -1,6 +1,14 @@
 [[General_configuration_concepts]]
 = General configuration concepts
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 For both a managed domain or a standalone server, a number of common
 configuration concepts apply:
 

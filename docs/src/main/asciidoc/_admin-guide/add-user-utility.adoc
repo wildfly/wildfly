@@ -1,6 +1,13 @@
 [[add-user-utility]]
 = add-user utility
+
 ifdef::env-github[:imagesdir: ../images/]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 For use with the default configuration we supply a utility `add-user`
 which can be used to manage the properties files for the default realms

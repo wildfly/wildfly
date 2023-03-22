@@ -1,6 +1,14 @@
 [[Micrometer_Metrics]]
 = Micrometer Metrics Subsystem (Preview) Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [IMPORTANT]
 ====
 This subsystem is currently enabled only for WildFly Preview. It replaces the existing metrics subsystem in WildFly, and administrators should not attempt to enable both subsystems concurrently. Attempts to do so will result in a configuration that prevents the server from starting.
