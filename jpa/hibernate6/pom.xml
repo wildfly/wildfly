@@ -65,6 +65,10 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-spi</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
+        </dependency>
 
         <!-- External -->
 
@@ -122,6 +126,11 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan.protostream</groupId>
+            <artifactId>protostream</artifactId>
             <scope>provided</scope>
         </dependency>
 
