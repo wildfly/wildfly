@@ -368,16 +368,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons-jakarta</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core-jakarta</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.jberet</groupId>
             <artifactId>jberet-core</artifactId>
             <scope>test</scope>
