@@ -41,25 +41,25 @@ import org.jboss.msc.service.ServiceName;
  */
 public class CheckOperations extends AbstractRuntimeOnlyHandler {
 
-    private static final OperationDefinition CHECK_DEFINITION = new SimpleOperationDefinitionBuilder("check", MicroProfileHealthExtension.getResourceDescriptionResolver(MicroProfileHealthExtension.SUBSYSTEM_NAME))
+    private static final OperationDefinition CHECK_DEFINITION = new SimpleOperationDefinitionBuilder("check", MicroProfileHealthExtension.SUBSYSTEM_RESOLVER)
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
             .setReplyValueType(ModelType.OBJECT)
             .setRuntimeOnly()
             .build();
-    private static final OperationDefinition CHECK_LIVE_DEFINITION = new SimpleOperationDefinitionBuilder("check-live", MicroProfileHealthExtension.getResourceDescriptionResolver(MicroProfileHealthExtension.SUBSYSTEM_NAME))
+    private static final OperationDefinition CHECK_LIVE_DEFINITION = new SimpleOperationDefinitionBuilder("check-live", MicroProfileHealthExtension.SUBSYSTEM_RESOLVER)
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
             .setReplyValueType(ModelType.OBJECT)
             .setRuntimeOnly()
             .build();
-    private static final OperationDefinition CHECK_READY_DEFINITION = new SimpleOperationDefinitionBuilder("check-ready", MicroProfileHealthExtension.getResourceDescriptionResolver(MicroProfileHealthExtension.SUBSYSTEM_NAME))
+    private static final OperationDefinition CHECK_READY_DEFINITION = new SimpleOperationDefinitionBuilder("check-ready", MicroProfileHealthExtension.SUBSYSTEM_RESOLVER)
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
             .setReplyValueType(ModelType.OBJECT)
             .setRuntimeOnly()
             .build();
-    private static final OperationDefinition CHECK_STARTED_DEFINITION = new SimpleOperationDefinitionBuilder("check-started", MicroProfileHealthExtension.getResourceDescriptionResolver(MicroProfileHealthExtension.SUBSYSTEM_NAME))
+    private static final OperationDefinition CHECK_STARTED_DEFINITION = new SimpleOperationDefinitionBuilder("check-started", MicroProfileHealthExtension.SUBSYSTEM_RESOLVER)
         .setRuntimeOnly()
         .setReplyType(ModelType.OBJECT)
         .setReplyValueType(ModelType.OBJECT)
