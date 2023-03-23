@@ -2242,6 +2242,62 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>microprofile-lra-coordinator-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/microprofile-lra-coordinator</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
+                                            <version>${full.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>microprofile-lra-coordinator</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>microprofile-lra-participant</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/microprofile-lra-participant</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
+                                            <version>${full.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>microprofile-lra-participant</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>microprofile-standalone-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -2440,6 +2496,8 @@
                                                 <layer>microprofile-fault-tolerance</layer>
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
+                                                <layer>microprofile-lra-coordinator</layer>
+                                                <layer>microprofile-lra-participant</layer>
                                                 <layer>microprofile-metrics</layer>
                                                 <layer>microprofile-openapi</layer>
                                                 <layer>microprofile-opentracing</layer>
@@ -2675,6 +2733,8 @@
                                                 <layer>microprofile-config</layer>
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
+                                                <layer>microprofile-lra-coordinator</layer>
+                                                <layer>microprofile-lra-participant</layer>
                                                 <layer>microprofile-openapi</layer>
                                                 <layer>microprofile-opentracing</layer>
                                                 <layer>microprofile-reactive-streams-operators</layer>

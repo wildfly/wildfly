@@ -74,6 +74,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.microprofile.lra</groupId>
+            <artifactId>microprofile-lra-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics-api</artifactId>
             <scope>test</scope>
@@ -388,6 +393,9 @@
                                 <!-- Dependencies for reactive specs -->
                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                 <layer>h2-default-datasource</layer>
+                                <!--Dependencies for lra specs -->
+                                <layer>microprofile-lra-coordinator</layer>
+                                <layer>microprofile-lra-participant</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -555,6 +563,9 @@
                                                 <!-- Dependencies for reactive specs -->
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>h2-default-datasource</layer>
+                                                <!--Dependencies for lra specs -->
+                                                <layer>microprofile-lra-coordinator</layer>
+                                                <layer>microprofile-lra-participant</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -697,6 +708,9 @@
                                                 <!-- Dependencies for reactive specs -->
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>h2-default-datasource</layer>
+                                                <!--Dependencies for lra specs -->
+                                                <layer>microprofile-lra-coordinator</layer>
+                                                <layer>microprofile-lra-participant</layer>
                                             </layers>
                                         </config>
                                     </configurations>

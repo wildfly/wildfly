@@ -412,6 +412,19 @@ link:#gal.microprofile-reactive-messaging[reactive-messaging] +
 |
 link:#gal.cdi[cdi] +
 
+|[[gal.microprofile-lra-coordinator]]microprofile-lra-coordinator
+|Support for MicroProfile LRA Coordinator
+|
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+link:#gal.transactions[transactions] +
+
+|[[gal.microprofile-lra-participant]]microprofile-lra-participant
+|Support for MicroProfile LRA Participant
+|
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+
 |[[gal.mod_cluster]]mod_cluster
 |Support for mod_cluster subsystem.
 |

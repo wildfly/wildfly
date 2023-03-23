@@ -127,6 +127,29 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-lra-participant</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-lra-coordinator</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -409,7 +432,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.microprofile.config</groupId>
                 <artifactId>microprofile-config-api</artifactId>
@@ -490,6 +512,25 @@
                 <artifactId>microprofile-jwt-auth-tck</artifactId>
                 <version>${version.org.eclipse.microprofile.jwt.api}</version>
                 <type>test-jar</type>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.lra</groupId>
+                <artifactId>microprofile-lra-api</artifactId>
+                <version>${version.org.eclipse.microprofile.lra.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.lra</groupId>
+                <artifactId>microprofile-lra-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.lra.api}</version>
                 <scope>test</scope>
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
@@ -636,6 +677,66 @@
                 <version>${version.org.eclipse.microprofile.rest.client.api}</version>
                 <scope>test</scope>
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-service-base</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-client</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-coordinator-jar</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-proxy-api</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>narayana-lra</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

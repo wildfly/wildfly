@@ -1,0 +1,104 @@
+[[MicroProfile_LRA]]
+= MicroProfile LRA Subsystems Configuration
+----
+:narayana-version: 6.0.0.Final
+:eclipse-mp-lra-api-version: 2.0
+----
+
+Support for https://github.com/eclipse/microprofile-lra[MicroProfile LRA (Long Running Actions)] is
+provided by the _microprofile-lra-coordinator_ and _microprofile-lra-participant_ subsystems.
+
+The _microprofile-lra-coordinator_ subsystem provides the LRA Coordinator capabilities required for the coordination of the distributed transactions.
+
+The _microprofile-lra-participant_ subsystem provides capabilities required to define services that participate in the LRAs by executing transactional actions and compensations. They communicate with the LRA Coordinator in order to process distributed transactions.
+
+[[required-extension-microprofile-lra]]
+== Required Extension
+
+These extensions are *not* included in the standard configurations included in the WildFly distribution.
+
+You can add the extensions to a configuration either by adding
+a relevant extensions elements to the xml or by using CLI operations.
+
+=== LRA Coordinator
+
+You can add the extension to a configuration either by adding
+an `<extension module="org.wildfly.extension.microprofile.lra-coordinator"/>`
+element to the xml or by using the following CLI operation:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.lra-coordinator:add()
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=microprofile-lra-coordinator:add
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+----
+
+If you provision your own server and include the `microprofile-lra-coordinator` Galleon layer, you will get the required modules, and the extension and subsystem will be added to your configuration.
+
+=== LRA Participant
+
+You can add the extension to a configuration either by adding
+an `<extension module="org.wildfly.extension.microprofile.lra-participant"/>`
+element to the xml or by using the following CLI operation:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.lra-participant:add()
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=microprofile-lra-participant:add
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+----
+
+If you provision your own server and include the `microprofile-lra-participant` Galleon layer, you will get the required modules, and the extension and subsystem will be added to your configuration.
+
+== Specification
+
+WildFly's MicroProfile LRA Participant subsystem implements MicroProfile
+LRA {eclipse-mp-lra-api-version}, which adds support for Long Running Actions based on the saga pattern. The MicroProfile LRA Coordinator subsystem is used to provide coordination of such transactions which LRA Participants contact in order to enlist into the LRAs.
+
+Tha LRA Coordinator can also run independently in the distributed system and can be started with for instance Docker like this:
+
+[source,options="nowrap"]
+----
+$ docker run -p 8080:8080 quay.io/jbosstm/lra-coordinator
+----
+
+== Management model
+
+The `/subsystem=microprofile-lra-coordinator` resource defines two attributes:
+
+* `host` - Represents the name of the Undertow subsystem 'host' resource that the LRA Coordinator is deployed to.
+
+* `server` - Represents the name of the Undertow subsystem 'server' resource that the LRA Coordinator is deployed to.
+
+The `/subsystem=microprofile-lra-participant` resource defines one attribute:
+
+* `lra-coordinator-url` - The configuration of the LRA Coordinator URL required in order for this participant to connect to the coordinator.
+
+* `proxy-host` - Represents the name of the Undertow subsystem 'host' resource that the LRA Participant proxy deploys to.
+
+* `proxy-server` - Represents the name of the Undertow subsystem 'server' resource that the LRA Participant proxy deploys to.
+
+== Component Reference
+
+The MicroProfile LRA implementation is provided by the Narayana project - https://www.narayana.io/.
+
+****
+* https://github.com/eclipse/microprofile-lra[MicroProfile LRA]
+* https://github.com/jbosstm/narayana/tree/main/rts/lra[Narayana LRA implementation]
+****
