@@ -21,8 +21,7 @@ This `org.wildfly.extension.micrometer` extension is available to all the standa
 [source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /extension=org.wildfly.extension.micrometer:add
-[standalone@localhost:9990 /] /subsystem=micrometer:write-attribute(name=endpoint,value=http://localhost:4318/v1/metrics)
-[standalone@localhost:9990 /] /subsystem=micrometer:add
+[standalone@localhost:9990 /] /subsystem=micrometer:add(endpoint="http://localhost:4318/v1/metrics")
 [standalone@localhost:9990 /] reload
 ----
 
@@ -42,15 +41,16 @@ Note that this an alternative to the existing WildFly Metrics extension. While t
 
 == Management Model
 
-The `/subsystem=micrometer` resource defines two attributes:
+The `/subsystem=micrometer` resource defines three attributes:
 
 * `endpoint` - the URL of the metrics collector endpoint (default: http://localhost:4318/v1/metrics)
 * `exposed-subsystems` - a list of strings corresponding to the names of subsystems that exposes their metrics in the
-HTTP metrics endpoints. By default, it is not defined (there will be no metrics exposed by subsystem. The special wildcard "{asterisk}" can be used to expose metrics from _all_ subsystems. The standalone configuration sets this attribute to "{asterisk}".
+HTTP metrics endpoints. By default, it is not defined (there will be no metrics exposed by subsystem). The special wildcard "{asterisk}" can be used to expose metrics from _all_ subsystems. The standalone configuration sets this attribute to "{asterisk}".
+* `step` - the step size, or reporting frequency, to use (in seconds).
 
 == Exposed Metrics
 
-The HTTP endpoint exposes the following metrics:
+The following types of metrics are gathered and published by Micrometer:
 
 * Metrics from JVM MBeans (read directly from the JMX MBeans)
 * WildFly metrics from the management model subsystem and deployment subtrees.
@@ -72,7 +72,7 @@ Some subsystems (such as `undertow` or `messaging-activemq`) do not enable their
 
 == Use in Applications
 
-Unlike the previous metrics system, this new extension exposes an API (that of https://micrometer.io[Micrometer]) to applications in order to allow developers to record and export metrics out of the box. To do so, application developers will need to inject a `MeterRegistry` instance:
+Unlike the previous metrics systems, this new extension exposes an API (that of https://micrometer.io[Micrometer]) to applications in order to allow developers to record and export metrics out of the box. To do so, application developers will need to inject a `MeterRegistry` instance:
 
 [source,java]
 -----
