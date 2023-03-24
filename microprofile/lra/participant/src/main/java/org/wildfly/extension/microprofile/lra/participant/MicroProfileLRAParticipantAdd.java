@@ -31,10 +31,6 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.ServiceSupplierDependency;
-import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.extension.microprofile.lra.participant._private.MicroProfileLRAParticipantLogger;
 import org.wildfly.extension.microprofile.lra.participant.deployment.LRAParticipantDeploymentDependencyProcessor;
 import org.wildfly.extension.microprofile.lra.participant.deployment.LRAParticipantDeploymentSetupProcessor;
@@ -45,6 +41,7 @@ import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowService;
 
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 import static org.jboss.as.controller.OperationContext.Stage.RUNTIME;
 import static org.wildfly.extension.microprofile.lra.participant.MicroProfileLRAParticipantExtension.SUBSYSTEM_NAME;
@@ -87,10 +84,7 @@ class MicroProfileLRAParticipantAdd extends AbstractBoottimeAddStepHandler {
         builder.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
         String serverModelValue = MicroProfileLRAParticipantSubsystemDefinition.PROXY_SERVER.resolveModelAttribute(context, model).asString();
         String hostModelValue = MicroProfileLRAParticipantSubsystemDefinition.PROXY_HOST.resolveModelAttribute(context, model).asString();
-        builder.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverModelValue, hostModelValue);
-        ServiceName hostService = UndertowService.virtualHostName(serverModelValue, hostModelValue);
-        SupplierDependency<Host> hostSupplier = new ServiceSupplierDependency<>(hostService);
-        new CompositeDependency(hostSupplier).register(builder);
+        Supplier<Host> hostSupplier = builder.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverModelValue, hostModelValue);
 
         final LRAParticipantService lraParticipantProxyService = new LRAParticipantService(hostSupplier);
 
