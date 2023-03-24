@@ -28,11 +28,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.tm.XAResourceRecoveryRegistry;
-import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.ServiceSupplierDependency;
-import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.extension.microprofile.lra.coordinator._private.MicroProfileLRACoordinatorLogger;
 import org.wildfly.extension.microprofile.lra.coordinator.service.LRACoordinatorService;
 import org.wildfly.extension.microprofile.lra.coordinator.service.LRARecoveryService;
@@ -41,6 +37,7 @@ import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowService;
 
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 import static org.wildfly.extension.microprofile.lra.coordinator.MicroProfileLRACoordinatorSubsystemDefinition.ATTRIBUTES;
 
@@ -67,10 +64,7 @@ class MicroProfileLRACoordinatorAdd extends AbstractBoottimeAddStepHandler {
         builder.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
         String serverModelValue = MicroProfileLRACoordinatorSubsystemDefinition.SERVER.resolveModelAttribute(context, model).asString();
         String hostModelValue = MicroProfileLRACoordinatorSubsystemDefinition.HOST.resolveModelAttribute(context, model).asString();
-        builder.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverModelValue, hostModelValue);
-        ServiceName hostService = UndertowService.virtualHostName(serverModelValue, hostModelValue);
-        SupplierDependency<Host> hostSupplier = new ServiceSupplierDependency<>(hostService);
-        new CompositeDependency(hostSupplier).register(builder);
+        Supplier<Host> hostSupplier = builder.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverModelValue, hostModelValue);
 
         final LRACoordinatorService lraCoordinatorService = new LRACoordinatorService(hostSupplier);
 
