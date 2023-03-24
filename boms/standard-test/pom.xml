@@ -62,6 +62,12 @@
                 <artifactId>apacheds-test-framework</artifactId>
                 <version>${version.org.apache.ds}</version>
                 <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15on</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!--
