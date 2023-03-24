@@ -583,10 +583,11 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <excluded-packages>
                                                 <name>product.conf</name>
-                                                <name>docs</name>
-                                                <name>docs.licenses.merge</name>
                                             </excluded-packages>
                                             <inherit-configs>false</inherit-configs>
+                                            <!-- We must provision all packages, the test executes a CLI script
+                                                 that adds the embedded broker that requires some modules -->
+                                            <inherit-packages>true</inherit-packages>
                                             <included-configs>
                                                 <config>
                                                     <model>standalone</model>
@@ -602,6 +603,7 @@
                                     <plugin-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
                                     </plugin-options>
                                 </configuration>
                             </execution>

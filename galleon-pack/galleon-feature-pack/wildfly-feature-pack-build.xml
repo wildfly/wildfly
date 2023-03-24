@@ -38,6 +38,10 @@
                 <include name="host-primary.xml" model="host"/>
                 <include name="host-secondary.xml" model="host"/>
                 <include name="standalone-load-balancer.xml" model="standalone"/>
+                <include name="standalone.xml" model="standalone"/>
+                <include name="standalone-ha.xml" model="standalone"/>
+                <include name="standalone-full.xml" model="standalone"/>
+                <include name="standalone-full-ha.xml" model="standalone"/>
             </default-configs>
         </dependency>
     </dependencies>
