@@ -122,6 +122,7 @@ public class LayersTestCase {
             "com.amazon.ion",
             "com.fasterxml.jackson.dataformat.jackson-dataformat-cbor",
             "org.jgroups.aws",
+            "org.wildfly.extension.microprofile.metrics-smallrye",
     };
     private static final String[] NOT_USED;
     // Packages that are not referenced from the module graph but needed.
@@ -213,7 +214,6 @@ public class LayersTestCase {
                     // WFP standard config uses Micrometer instead of WF Metrics
                     "io.smallrye.metrics",
                     "org.wildfly.extension.metrics",
-                    "org.wildfly.extension.microprofile.metrics-smallrye",
                     // MP Fault Tolerance has a dependency on MP Metrics
                     "io.smallrye.fault-tolerance",
                     "org.eclipse.microprofile.fault-tolerance.api",
@@ -252,7 +252,6 @@ public class LayersTestCase {
                     NOT_REFERENCED_COMMON,
                     // Standard configs don't include various MP subsystems
                     "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
-                    "org.wildfly.extension.microprofile.metrics-smallrye",
                     "io.jaegertracing",
                     "io.netty.netty-codec-dns",
                     "io.netty.netty-codec-http2",

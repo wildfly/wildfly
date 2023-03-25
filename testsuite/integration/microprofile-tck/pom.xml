@@ -69,7 +69,6 @@
         <version.fault-tolerance>${version.org.eclipse.microprofile.fault-tolerance.api}</version.fault-tolerance>
         <version.health>${version.org.eclipse.microprofile.health.api}</version.health>
         <version.jwt>${version.org.eclipse.microprofile.jwt.api}</version.jwt>
-        <version.metrics>${version.org.eclipse.microprofile.metrics.api}</version.metrics>
         <version.openapi>${version.org.eclipse.microprofile.openapi}</version.openapi>
         <version.opentracing>${version.org.eclipse.microprofile.opentracing}</version.opentracing>
         <version.rest-client>${version.org.eclipse.microprofile.rest.client.api}</version.rest-client>
@@ -90,7 +89,6 @@
         <module>health</module>
         <module>jwt</module>
         <module>lra</module>
-        <module>metrics</module>
         <module>openapi</module>
         <module>opentracing</module>
         <module>rest-client</module>

@@ -51,7 +51,6 @@
         <module name="javax.annotation.api" />
         <module name="javax.enterprise.api" />
         <module name="org.eclipse.microprofile.config.api"/>
-        <module name="org.eclipse.microprofile.metrics.api"/>
         <module name="org.eclipse.microprofile.reactive-messaging.api"/>
         <module name="org.eclipse.microprofile.reactive-streams-operators.api"/>
         <module name="org.eclipse.microprofile.reactive-streams-operators.core" services="import"/>
