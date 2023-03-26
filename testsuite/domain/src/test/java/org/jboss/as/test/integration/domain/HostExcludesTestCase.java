@@ -209,6 +209,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
         // of wildfly preview. In such a case, add them to previewExtensions set defined below.
         CURRENT(MAJOR, WILDFLY_27_0, Arrays.asList(
+            "org.wildfly.extension.micrometer",
             "org.wildfly.extension.microprofile.lra-coordinator",
             "org.wildfly.extension.microprofile.lra-participant"
         ), getCurrentRemovedExtensions(), true);
@@ -240,6 +241,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
         // List of extensions added by the wildfly-galleon-pack
         private final Set<String> mpExtensions = new HashSet<>(Arrays.asList(
+                "org.wildfly.extension.micrometer",
                 "org.wildfly.extension.microprofile.config-smallrye",
                 "org.wildfly.extension.microprofile.health-smallrye",
                 "org.wildfly.extension.microprofile.metrics-smallrye",
@@ -260,7 +262,6 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // to compute on which WildFly Preview was added such a new extension and track the Host Exclusions between
         // different WildFly Preview releases.
         private final Set<String> previewExtensions = new HashSet<>(Arrays.asList(
-                "org.wildfly.extension.micrometer"
         ));
 
         ExtensionConf(String name, ExtensionConf parent, boolean supported) {

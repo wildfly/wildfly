@@ -22,7 +22,6 @@ package org.wildfly.extension.micrometer.api;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
-import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
 import jakarta.inject.Singleton;
 
@@ -33,7 +32,7 @@ public class MicrometerCdiExtension implements Extension {
         this.registry = registry;
     }
 
-    public void registerMicrometerBeans(@Observes AfterBeanDiscovery abd, BeanManager beanManager) {
+    public void registerMicrometerBeans(@Observes AfterBeanDiscovery abd) {
         abd.addBean()
                 .scope(Singleton.class)
                 .addTransitiveTypeClosure(MeterRegistry.class)

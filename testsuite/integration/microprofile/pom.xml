@@ -275,6 +275,18 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Micrometer -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Other test dependencies -->
         <dependency>
             <groupId>io.rest-assured</groupId>
@@ -385,6 +397,7 @@
                                 <layer>microprofile-jwt</layer>
                                 <layer>microprofile-fault-tolerance</layer>
                                 <layer>microprofile-opentracing</layer>
+                                <layer>micrometer</layer>
                                 <!-- Dependencies for reactive specs -->
                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                 <layer>h2-default-datasource</layer>
@@ -555,6 +568,7 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>microprofile-platform</layer>
                                                 <layer>ejb</layer>
+                                                <layer>micrometer</layer>
                                                 <!-- Dependencies for reactive specs -->
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>h2-default-datasource</layer>
