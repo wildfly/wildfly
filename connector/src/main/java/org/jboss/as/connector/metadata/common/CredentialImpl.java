@@ -42,7 +42,7 @@ public class CredentialImpl implements Credential {
     private final String securityDomain;
 
     /**
-     * Indicates if the Credential data belongs to Elytron or PicketBox.
+     * Deprecated. Elytron is enabled by default and this field is ignored.
      */
     private boolean elytronEnabled;
 
@@ -54,8 +54,7 @@ public class CredentialImpl implements Credential {
      * @param userName        user name
      * @param password        user password
      * @param securityContext specific information that helps implementation define which context this Credential belongs to
-     * @param elytronEnabled  is the authentication performed by Elytron. If {@code true},  {@param securityContext}, defined as
-     *                        securityDomain in super class, refers to an Elytron authentication context
+     * @param elytronEnabled  Deprecated. Elytron is enabled by default and this field is ignored.
      * @throws ValidateException ValidateException in case of validation error
      */
     public CredentialImpl(final String userName, final String password, final String securityContext, final boolean elytronEnabled,
@@ -103,9 +102,7 @@ public class CredentialImpl implements Credential {
 
 
     /**
-     * Indicates if Elytron is enabled. In this case, {@link #getSecurityDomain()}, refers to an Elytron authentication context
-     *
-     * @return {@code true} if is Elytron enabled
+     * Deprecated. Elytron is enabled by default and this field is ignored.
      */
     @Override
     public final boolean isElytronEnabled() {

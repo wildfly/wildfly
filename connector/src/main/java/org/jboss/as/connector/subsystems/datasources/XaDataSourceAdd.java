@@ -20,13 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.subsystems.datasources;
+    package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
+    import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
 
 import org.jboss.as.controller.OperationContext;
@@ -51,14 +47,6 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        // add extra security validation: authentication contexts should only be defined when Elytron Enabled is false
-        // domains should only be defined when Elytron enabled is undefined or false (default value)
-        if (model.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName()) && !RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
-            throw SUBSYSTEM_DATASOURCES_LOGGER.attributeRequiresTrueAttribute(RECOVERY_AUTHENTICATION_CONTEXT.getName(), RECOVERY_ELYTRON_ENABLED.getName());
-        } else if (RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean() && model.hasDefined(RECOVERY_SECURITY_DOMAIN.getName())) {
-            throw SUBSYSTEM_DATASOURCES_LOGGER
-                    .attributeRequiresFalseOrUndefinedAttribute(RECOVERY_SECURITY_DOMAIN.getName(), RECOVERY_ELYTRON_ENABLED.getName());
-        }
         super.performRuntime(context, operation, model);
     }
 

@@ -129,14 +129,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        // add extra security validation: authentication contexts should only be defined when Elytron Enabled is true
-        // domains should only be defined when Elytron enabled is undefined or false (default value)
-        if (model.hasDefined(AUTHENTICATION_CONTEXT.getName()) && !ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
-            throw SUBSYSTEM_DATASOURCES_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT.getName(), ELYTRON_ENABLED.getName());
-        }
-        else if (ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean() && model.hasDefined(SECURITY_DOMAIN.getName())){
-            throw SUBSYSTEM_DATASOURCES_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN.getName(), ELYTRON_ENABLED.getName());
-        }
 
         final boolean enabled = ENABLED.resolveModelAttribute(context, model).asBoolean();
         if (enabled) {
