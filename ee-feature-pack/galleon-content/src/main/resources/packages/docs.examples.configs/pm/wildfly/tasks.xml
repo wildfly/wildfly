@@ -2,6 +2,11 @@
 
 <tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
     <example-configs>
+        <config model="standalone" name="standalone-core.xml" >
+            <layers>
+                <include name="ee-core-profile-server"/>
+            </layers>
+        </config>
         <config model="standalone" name="standalone-genericjms.xml">
             <layers>
                 <include name="internal-standalone-profile"/>

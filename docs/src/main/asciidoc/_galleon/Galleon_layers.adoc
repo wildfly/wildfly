@@ -88,6 +88,15 @@ link:#gal.management[management] (optional) +
 link:#gal.request-controller[request-controller] (optional) +
 link:#gal.security-manager[security-manager] (optional) +
 
+|[[gal.ee-core-profile-server]]ee-core-profile-server
+| A Jakarta EE Core Profile server.
+|
+link:#gal.core-server[core-server] +
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+link:#gal.jsonp[jsonp] +
+link:#gal.jsonb[jsonb] +
+
 |===
 
 [[wildfly_basic_galleon_layers]]
