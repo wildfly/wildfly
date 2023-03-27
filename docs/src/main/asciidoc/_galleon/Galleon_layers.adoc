@@ -88,6 +88,15 @@ link:#gal.management[management] (optional) +
 link:#gal.request-controller[request-controller] (optional) +
 link:#gal.security-manager[security-manager] (optional) +
 
+|[[gal.ee-core-profile-server]]ee-core-profile-server
+| A Jakarta EE Core Profile server.
+|
+link:#gal.core-server[core-server] +
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+link:#gal.jsonp[jsonp] +
+link:#gal.jsonb[jsonb] +
+
 |===
 
 [[wildfly_basic_galleon_layers]]
@@ -346,7 +355,6 @@ link:#gal.cdi[cdi] +
 |
 link:#gal.cdi[cdi] +
 link:#gal.microprofile-config[microprofile-config] +
-link:#gal.microprofile-metrics[microprofile-metrics] (optional) +
 
 |[[gal.microprofile-health]]microprofile-health
 |Support for MicroProfile Health.
@@ -361,22 +369,10 @@ link:#gal.ee-security[ee-security] +
 link:#gal.elytron[elytron] +
 link:#gal.microprofile-config[microprofile-config] +
 
-|[[gal.microprofile-metrics]]microprofile-metrics
-|Support for MicroProfile Metrics.
-|
-link:#gal.management[management] +
-link:#gal.microprofile-config[microprofile-config] +
-
 |[[gal.microprofile-openapi]]microprofile-openapi
 |Support for MicroProfile OpenAPI.
 |
 link:#gal.jaxrs[jaxrs] +
-link:#gal.microprofile-config[microprofile-config] +
-
-|[[gal.microprofile-opentracing]]microprofile-opentracing
-|Support for MicroProfile OpenTracing.
-|
-link:#gal.cdi[cdi] +
 link:#gal.microprofile-config[microprofile-config] +
 
 |[[gal.microprofile-platform]]microprofile-platform
@@ -386,9 +382,7 @@ link:#gal.microprofile-config[microprofile-config] (optional) +
 link:#gal.microprofile-fault-tolerance[microprofile-fault-tolerance] (optional) +
 link:#gal.microprofile-health[microprofile-health] (optional) +
 link:#gal.microprofile-jwt[microprofile-jwt] (optional) +
-link:#gal.microprofile-metrics[microprofile-metrics] (optional) +
 link:#gal.microprofile-openapi[microprofile-openapi] (optional) +
-link:#gal.microprofile-opentracing[microprofile-opentracing] (optional) +
 link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
 
 |[[gal.microprofile-rest-client]]microprofile-rest-client
@@ -412,6 +406,19 @@ link:#gal.microprofile-reactive-messaging[reactive-messaging] +
 |
 link:#gal.cdi[cdi] +
 
+|[[gal.microprofile-lra-coordinator]]microprofile-lra-coordinator
+|Support for MicroProfile LRA Coordinator
+|
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+link:#gal.transactions[transactions] +
+
+|[[gal.microprofile-lra-participant]]microprofile-lra-participant
+|Support for MicroProfile LRA Participant
+|
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+
 |[[gal.mod_cluster]]mod_cluster
 |Support for mod_cluster subsystem.
 |
@@ -427,8 +434,6 @@ link:#gal.base-server[base-server] +
 |
 link:#gal.microprofile-config[microprofile-config] (optional) +
 link:#gal.microprofile-health[microprofile-health] (optional) +
-link:#gal.microprofile-metrics[microprofile-metrics] (optional) +
-link:#gal.microprofile-opentracing[microprofile-opentracing] (optional) +
 
 |[[gal.pojo]]pojo
 | Support for legacy JBoss Microcontainer applications.

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jaxrs.subresource;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -34,14 +36,14 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * Tests Jakarta RESTful Web Services subresources.
- *
+ * <p>
  * AS7-1349
  *
  * @author Jozef Hartinger
@@ -50,9 +52,18 @@ import static org.junit.Assert.assertEquals;
 @RunAsClient
 public class SubResourceTestCase {
 
+    @BeforeClass
+    public static void before() {
+        System.err.println("System.getProperty(\"ts.layers\") = '" +
+                System.getProperty("ts.layers") + "'");
+        Assume.assumeTrue("Currently disabled to ts.layers and ts.bootable due to SR OpenTelemetry bug" +
+                        "https://github.com/smallrye/smallrye-opentelemetry/issues/224",
+                System.getProperty("ts.layers") == null && System.getProperty("ts.bootable") == null);
+    }
+
     @Deployment(testable = false)
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class,"subresource.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "subresource.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
         war.addClasses(SubResourceTestCase.class, PeopleResource.class, PersonResource.class);
@@ -60,7 +71,7 @@ public class SubResourceTestCase {
                 "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/api/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
-                "\n"),"web.xml");
+                "\n"), "web.xml");
         return war;
     }
 

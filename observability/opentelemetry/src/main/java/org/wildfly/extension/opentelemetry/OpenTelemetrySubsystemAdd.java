@@ -19,7 +19,7 @@
 
 package org.wildfly.extension.opentelemetry;
 
-import static org.wildfly.extension.opentelemetry.OpenTelemetryConfig.OpenTelemetryConfigBuilder;
+import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemDefinition.CONFIG_SUPPLIER;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -28,21 +28,18 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.opentelemetry.deployment.OpenTelemetryDependencyProcessor;
-import org.wildfly.extension.opentelemetry.deployment.OpenTelemetrySubsystemDeploymentProcessor;
+import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
  *
  * @author <a href="jasondlee@redhat.com">Jason Lee</a>
  */
-public class OpenTelemetrySubsystemAdd extends AbstractBoottimeAddStepHandler {
+class OpenTelemetrySubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    private OpenTelemetrySubsystemAdd() {
+    OpenTelemetrySubsystemAdd() {
         super(OpenTelemetrySubsystemDefinition.ATTRIBUTES);
     }
-
-    public static final OpenTelemetrySubsystemAdd INSTANCE = new OpenTelemetrySubsystemAdd();
 
     /**
      * {@inheritDoc}
@@ -51,19 +48,21 @@ public class OpenTelemetrySubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         super.performBoottime(context, operation, model);
 
-        final OpenTelemetryConfig config = OpenTelemetryConfigBuilder.config()
-                .withServiceName(OpenTelemetrySubsystemDefinition.SERVICE_NAME.resolveModelAttribute(context, model).asStringOrNull())
-                .withExporter(OpenTelemetrySubsystemDefinition.EXPORTER.resolveModelAttribute(context, model).asString())
-                .withEndpoint(OpenTelemetrySubsystemDefinition.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull())
-                .withSpanProcessor(OpenTelemetrySubsystemDefinition.SPAN_PROCESSOR_TYPE.resolveModelAttribute(context, model).asString())
-                .withBatchDelay(OpenTelemetrySubsystemDefinition.BATCH_DELAY.resolveModelAttribute(context, model).asLong())
-                .withMaxQueueSize(OpenTelemetrySubsystemDefinition.MAX_QUEUE_SIZE.resolveModelAttribute(context, model).asInt())
-                .withMaxExportBatchSize(OpenTelemetrySubsystemDefinition.MAX_EXPORT_BATCH_SIZE.resolveModelAttribute(context, model).asInt())
-                .withExportTimeout(OpenTelemetrySubsystemDefinition.EXPORT_TIMEOUT.resolveModelAttribute(context, model).asLong())
-                .withSampler(OpenTelemetrySubsystemDefinition.SAMPLER.resolveModelAttribute(context, model).asStringOrNull())
-                .withRatio(OpenTelemetrySubsystemDefinition.RATIO.resolveModelAttribute(context, model).asDoubleOrNull())
-                .build();
-        final OpenTelemetryHolder holder = new OpenTelemetryHolder(config);
+        final WildFlyOpenTelemetryConfig config = new WildFlyOpenTelemetryConfig(
+                OpenTelemetrySubsystemDefinition.SERVICE_NAME.resolveModelAttribute(context, model).asStringOrNull(),
+                OpenTelemetrySubsystemDefinition.EXPORTER.resolveModelAttribute(context, model).asString(),
+                OpenTelemetrySubsystemDefinition.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull(),
+                OpenTelemetrySubsystemDefinition.BATCH_DELAY.resolveModelAttribute(context, model).asLongOrNull(),
+                OpenTelemetrySubsystemDefinition.MAX_QUEUE_SIZE.resolveModelAttribute(context, model).asLongOrNull(),
+                OpenTelemetrySubsystemDefinition.MAX_EXPORT_BATCH_SIZE.resolveModelAttribute(context, model).asLongOrNull(),
+                OpenTelemetrySubsystemDefinition.EXPORT_TIMEOUT.resolveModelAttribute(context, model).asLongOrNull(),
+                OpenTelemetrySubsystemDefinition.SAMPLER.resolveModelAttribute(context, model).asStringOrNull(),
+                OpenTelemetrySubsystemDefinition.RATIO.resolveModelAttribute(context, model).asDoubleOrNull()
+        );
+
+        CONFIG_SUPPLIER.accept(config);
+
+        boolean mpTelemetryInstalled = context.getCapabilityServiceSupport().hasCapability("org.wildfly.extension.microprofile.telemetry");
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
@@ -78,7 +77,7 @@ public class OpenTelemetrySubsystemAdd extends AbstractBoottimeAddStepHandler {
                         OpenTelemetrySubsystemExtension.SUBSYSTEM_NAME,
                         Phase.POST_MODULE,
                         0x3810,
-                        new OpenTelemetrySubsystemDeploymentProcessor(holder));
+                        new OpenTelemetryDeploymentProcessor(!mpTelemetryInstalled, config));
             }
         }, OperationContext.Stage.RUNTIME);
     }

@@ -26,6 +26,8 @@
 
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-sdk}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-sdk-extension-autoconfigure}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi}"/>
         <artifact name="${io.opentelemetry:opentelemetry-sdk-logs}"/>
         <artifact name="${io.opentelemetry:opentelemetry-sdk-metrics}"/>
         <artifact name="${io.opentelemetry:opentelemetry-sdk-trace}"/>
@@ -36,6 +38,7 @@
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.context"/>
         <module name="io.opentelemetry.exporter"/>
+        <module name="io.smallrye.opentelemetry"/>
         <module name="java.logging"/>
     </dependencies>
 </module>
