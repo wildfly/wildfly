@@ -66,12 +66,6 @@ public class MPConfigSubsystemParsingTestCase extends AbstractSubsystemBaseTest 
         return System.getProperties();
     }
 
-
-    @Test
-    public void testRejectingTransformersEAP_7_3_0() throws Exception {
-        testRejectingTransformers(ModelTestControllerVersion.EAP_7_3_0, VERSION_1_0_0);
-    }
-
     @Test
     public void testRejectingTransformersEAP_XP4() throws Exception {
         testRejectingTransformers(ModelTestControllerVersion.EAP_XP_4, VERSION_1_1_0);
@@ -103,19 +97,6 @@ public class MPConfigSubsystemParsingTestCase extends AbstractSubsystemBaseTest 
         assertTrue(mainServices.getLegacyServices(microprofileConfigVersion).isSuccessfulBoot());
 
         List<ModelNode> ops = builder.parseXmlResource("subsystem_reject_transformers.xml");
-        if (controllerVersion == ModelTestControllerVersion.EAP_7_3_0) {
-            // For 7.3.0 the ConfigSource 'add' operation installs services despite being in admin-only mode,
-            // which causes errors.
-            // Since the transformers are chained the rejection of the 'root' nested attribute installed
-            // by the 'my-config-source-with-root' config source is tested in later legacy controller versions.
-            int remove = -1;
-            for (int i = 0 ; i < ops.size() ; i++) {
-                if (ops.get(i).get("address").asString().contains("my-config-source-with-root")) {
-                    remove = i;
-                }
-            }
-            ops.remove(remove);
-        }
 
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
