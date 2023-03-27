@@ -245,7 +245,6 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.config-smallrye",
                 "org.wildfly.extension.microprofile.health-smallrye",
                 "org.wildfly.extension.microprofile.metrics-smallrye",
-                "org.wildfly.extension.microprofile.opentracing-smallrye",
                 "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
                 "org.wildfly.extension.microprofile.jwt-smallrye",
                 "org.wildfly.extension.microprofile.openapi-smallrye",

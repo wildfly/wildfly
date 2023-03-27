@@ -26,11 +26,8 @@
 
         <layer name="microprofile-config" optional="true"/>
         <layer name="microprofile-jwt" optional="true"/>
-        <layer name="microprofile-opentracing" /> <!-- can't be optional, we are adding the jaeger content, would need a jaeger layer -->
-        <layer name="micrometer" optional="true"/>        
+        <layer name="micrometer" optional="true"/>
         <layer name="hibernate-search" optional="true"/>
         <layer name="web-console" optional="true"/>
     </dependencies>
-    <!-- The jaeger module is referenced from opentracing extension, using the feature-group is ok -->
-    <feature-group name="microprofile-opentracing-jaeger"/>
 </layer-spec>

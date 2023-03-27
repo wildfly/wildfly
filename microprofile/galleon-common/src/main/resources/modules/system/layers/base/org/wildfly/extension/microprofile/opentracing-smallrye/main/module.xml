@@ -42,11 +42,5 @@
 
         <module name="javax.enterprise.api" />
         <module name="org.eclipse.microprofile.config.api"/>
-        <module name="io.opentracing.opentracing-api"/>
-        <module name="io.opentracing.opentracing-noop"/>
-        <module name="io.opentracing.opentracing-util"/>
-        <module name="org.wildfly.microprofile.opentracing-smallrye"/>
-        <!-- Not optional because it is required by JaegerEnvTracerConfiguration for retro-compatibility but other tracer implementations should be optional-->
-        <module name="io.jaegertracing.jaeger"/>
     </dependencies>
 </module>

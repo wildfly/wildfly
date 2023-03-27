@@ -1351,11 +1351,6 @@
                                 <exclude>org/jboss/as/test/integration/weld/services/WeldResourceInjectionServicesTestCase.java</exclude>
                                 <!-- microprofile exclusions -->
                                 <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
-                                <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
-                                <exclude>org/wildfly/test/integration/microprofile/opentracing/SimpleRestClientTestCase</exclude>
-                                <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
-                                <exclude>org/wildfly/test/integration/microprofile/opentracing/WildCardTestCase</exclude>
-                                <exclude>org/wildfly/test/integration/microprofile/opentracing/jaxrs/ResteasyProvidersTestCase</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -2867,10 +2862,6 @@
                                         <!-- Requires EJB -->
                                         <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
                                         <!-- Requires extra modules -->
-                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/WildCardTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/jaxrs/ResteasyProvidersTestCase</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -3746,7 +3737,6 @@
                                         <exclude>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
-                                        <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
                                         <exclude>org/jboss/as/test/integration/management/cli/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>

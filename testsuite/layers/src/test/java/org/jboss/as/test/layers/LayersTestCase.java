@@ -113,6 +113,8 @@ public class LayersTestCase {
             "io.micrometer",
             "org.wildfly.extension.micrometer",
             "org.wildfly.micrometer.deployment",
+            "com.squareup.okhttp3",
+            "org.jetbrains.kotlin.kotlin-stdlib",
             // Unreferenced Infinispan modules
             "org.infinispan.cdi.common",
             "org.infinispan.cdi.embedded",
@@ -130,6 +132,7 @@ public class LayersTestCase {
             "com.fasterxml.jackson.dataformat.jackson-dataformat-cbor",
             "org.jgroups.aws",
             "org.wildfly.extension.microprofile.metrics-smallrye",
+            "org.wildfly.extension.microprofile.opentracing-smallrye"
     };
     private static final String[] NOT_USED;
     // Packages that are not referenced from the module graph but needed.

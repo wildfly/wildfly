@@ -84,11 +84,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.microprofile.opentracing</groupId>
-            <artifactId>microprofile-opentracing-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
             <artifactId>microprofile-reactive-messaging-api</artifactId>
             <scope>test</scope>
@@ -205,27 +200,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- MicroProfile Opentracing Test Dependencies -->
-        <dependency>
-            <groupId>io.jaegertracing</groupId>
-            <artifactId>jaeger-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-mock</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-opentracing</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-opentracing-contrib</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.wildfly.galleon-plugins</groupId>
             <artifactId>transformer</artifactId>
@@ -396,7 +370,6 @@
                                 <layer>microprofile-openapi</layer>
                                 <layer>microprofile-jwt</layer>
                                 <layer>microprofile-fault-tolerance</layer>
-                                <layer>microprofile-opentracing</layer>
                                 <layer>micrometer</layer>
                                 <!-- Dependencies for reactive specs -->
                                 <layer>microprofile-reactive-messaging-kafka</layer>
@@ -634,18 +607,6 @@
                      in this module takes precedence. -->
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>io.smallrye</groupId>
-                    <artifactId>smallrye-opentracing</artifactId>
-                    <version>${version.io.smallrye.smallrye-opentracing}</version>
-                </dependency>
-                <dependency>
-                    <groupId>io.smallrye</groupId>
-                    <artifactId>smallrye-opentracing-contrib</artifactId>
-                    <version>${version.io.smallrye.smallrye-opentracing}</version>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <!-- Disable the standard copy-based provisioning -->

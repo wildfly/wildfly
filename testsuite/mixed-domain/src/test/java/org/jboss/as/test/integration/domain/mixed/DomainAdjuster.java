@@ -119,7 +119,6 @@ public class DomainAdjuster {
         // those extensions.
         // We remove here these extensions and subsystems configured by default if they are in the current configuration, this makes this code capable to work for wildfly and EAP
         final PathAddress profileAddress = PathAddress.pathAddress(PROFILE, profile);
-        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.opentracing-smallrye"));
         removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye"));
         removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye"));
         removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "opentelemetry"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.opentelemetry"));

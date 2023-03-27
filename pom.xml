@@ -92,6 +92,7 @@
         <module>legacy/jsr77</module>
         <module>legacy/keycloak</module>
         <module>legacy/messaging</module>
+        <module>legacy/opentracing-extension</module>
         <module>legacy/web</module>
         <module>metrics</module>
         <module>messaging-activemq</module>
