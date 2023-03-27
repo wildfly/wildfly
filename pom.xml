@@ -283,8 +283,8 @@
         <version.antlr>2.7.7</version.antlr>
         <version.com.beust>1.78</version.com.beust>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.14.1</version.com.fasterxml.jackson>
-        <version.com.fasterxml.jackson.databind>2.14.1</version.com.fasterxml.jackson.databind>
+        <version.com.fasterxml.jackson>2.14.2</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson.databind>2.14.2</version.com.fasterxml.jackson.databind>
         <version.com.github.ben-manes.caffeine>2.9.3</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
