@@ -7,6 +7,7 @@
         <include name="microprofile-fault-tolerance"/>
         <include name="microprofile-jwt"/>
         <include name="microprofile-openapi"/>
+        <include name="microprofile-telemetry"/>
         <exclude name="jpa"/>
         <include name="jpa-distributed"/>
         <include name="web-clustering"/>

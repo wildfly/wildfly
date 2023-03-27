@@ -808,6 +808,15 @@
         </dependency>
 
         <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-telemetry</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-telemetry-cdi-provider</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.security.mp</groupId>
             <artifactId>wildfly-elytron-jwt</artifactId>
             <exclusions>

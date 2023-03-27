@@ -5,30 +5,30 @@
         <param name="host-exclude" value="WildFly23.0"/>
         <param name="host-release" value="WildFly23.0"/>
         <param name="excluded-extensions"
-               value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.elytron-oidc-client&quot;,&quot;org.wildfly.extension.opentelemetry&quot;,&quot;org.wildfly.extension.micrometer&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;]"/>
+               value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.elytron-oidc-client&quot;,&quot;org.wildfly.extension.opentelemetry&quot;,&quot;org.wildfly.extension.micrometer&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;,&quot;org.wildfly.extension.microprofile.telemetry&quot;]"/>
     </feature>
     <feature spec="domain.host-exclude">
         <param name="host-exclude" value="WildFly24.0"/>
         <param name="host-release" value="WildFly24.0"/>
         <param name="excluded-extensions"
-               value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.elytron-oidc-client&quot;,&quot;org.wildfly.extension.opentelemetry&quot;,&quot;org.wildfly.extension.micrometer&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;]"/>
+               value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.elytron-oidc-client&quot;,&quot;org.wildfly.extension.opentelemetry&quot;,&quot;org.wildfly.extension.micrometer&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;,&quot;org.wildfly.extension.microprofile.telemetry&quot;]"/>
     </feature>
     <feature spec="domain.host-exclude">
         <param name="host-exclude" value="WildFly25.0"/>
         <param name="host-release" value="WildFly25.0"/>
         <param name="excluded-extensions"
-               value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.micrometer&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;]"/>
+               value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.micrometer&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;,&quot;org.wildfly.extension.microprofile.telemetry&quot;]"/>
     </feature>
     <feature spec="domain.host-exclude">
         <param name="host-exclude" value="WildFly26.0"/>
         <param name="host-release" value="WildFly26.0"/>
         <param name="excluded-extensions"
-               value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.micrometer&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;]"/>
+               value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.micrometer&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;,&quot;org.wildfly.extension.microprofile.telemetry&quot;]"/>
     </feature>
     <feature spec="domain.host-exclude">
         <param name="host-exclude" value="WildFly27.0"/>
         <param name="host-release" value="WildFly27.0"/>
         <param name="excluded-extensions"
-               value="[&quot;org.wildfly.extension.micrometer&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;]"/>
+               value="[&quot;org.wildfly.extension.micrometer&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;,&quot;org.wildfly.extension.microprofile.telemetry&quot;]"/>
     </feature>
 </feature-group-spec>

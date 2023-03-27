@@ -211,7 +211,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         CURRENT(MAJOR, WILDFLY_27_0, Arrays.asList(
             "org.wildfly.extension.micrometer",
             "org.wildfly.extension.microprofile.lra-coordinator",
-            "org.wildfly.extension.microprofile.lra-participant"
+            "org.wildfly.extension.microprofile.lra-participant",
+            "org.wildfly.extension.microprofile.telemetry"
         ), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentRemovedExtensions() {
@@ -251,7 +252,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
                 "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
                 "org.wildfly.extension.microprofile.lra-coordinator",
-                "org.wildfly.extension.microprofile.lra-participant"
+                "org.wildfly.extension.microprofile.lra-participant",
+                "org.wildfly.extension.microprofile.telemetry"
         ));
 
         // List of extensions added only by the WildFly Preview

@@ -2450,6 +2450,7 @@
                                                 <layer>microprofile-reactive-messaging</layer>
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>microprofile-rest-client</layer>
+                                                <layer>microprofile-telemetry</layer>
                                                 <layer>microprofile-platform</layer>
                                             </layers>
                                         </config>
@@ -2548,6 +2549,7 @@
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-openapi</layer>
+                                                <layer>microprofile-telemetry</layer>
                                                 <layer>microprofile-platform</layer>
                                             </layers>
                                             <excluded-layers>
@@ -2683,6 +2685,7 @@
                                                 <layer>microprofile-reactive-messaging</layer>
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>microprofile-rest-client</layer>
+                                                <layer>microprofile-telemetry</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -2777,6 +2780,7 @@
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-openapi</layer>
+                                                <layer>microprofile-telemetry</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>

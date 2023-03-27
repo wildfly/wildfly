@@ -68,6 +68,20 @@ else
   echo INFO: microprofile-openapi-smallrye already in configuration, subsystem not added.
 end-if
 
+if (outcome != success) of /subsystem=opentelemetry:read-resource
+  /extension=org.wildfly.extension.opentelemetry:add
+  /subsystem=opentelemetry:add
+else
+  echo INFO: opentelemetry already in configuration, subsystem not added.
+end-if
+
+if (outcome != success) of /subsystem=microprofile-telemetry:read-resource
+  /extension=org.wildfly.extension.microprofile.telemetry:add
+  /subsystem=microprofile-telemetry:add
+else
+  echo INFO: microprofile-telemetry already in configuration, subsystem not added.
+end-if
+
 echo INFO: Configuration done.
 
 stop-embedded-server
