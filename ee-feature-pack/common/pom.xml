@@ -3888,13 +3888,6 @@
         <!-- -->
         <!-- Jaeger -->
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-jaeger</artifactId><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
-        <dependency><groupId>io.grpc</groupId><artifactId>grpc-okhttp</artifactId><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
-        <dependency><groupId>io.grpc</groupId><artifactId>grpc-core</artifactId><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
-        <dependency><groupId>io.grpc</groupId><artifactId>grpc-api</artifactId><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
-        <dependency><groupId>io.grpc</groupId><artifactId>grpc-context</artifactId><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
-        <dependency><groupId>io.grpc</groupId><artifactId>grpc-protobuf</artifactId><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
-        <dependency><groupId>io.grpc</groupId><artifactId>grpc-protobuf-lite</artifactId><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
-        <dependency><groupId>io.grpc</groupId><artifactId>grpc-stub</artifactId><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
         <dependency><groupId>io.perfmark</groupId><artifactId>perfmark-api</artifactId><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
         <dependency><groupId>com.google.api.grpc</groupId><artifactId>proto-google-common-protos</artifactId><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
         <dependency><groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>

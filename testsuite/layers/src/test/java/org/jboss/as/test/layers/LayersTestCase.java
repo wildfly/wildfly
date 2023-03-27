@@ -75,10 +75,6 @@ public class LayersTestCase {
             // This is added in the jaxrs subsystem to deployments if the MP config capability is met. The package is
             // added in the microprofile-rest-client as well.
             "org.jboss.resteasy.microprofile.config",
-            // Temporarily provided to not break the wildfly-extras gRPC feature pack
-            // until it provides it itself.
-            "io.grpc",
-            "com.google.protobuf",
             // Alternative messaging protocols besides the std Artemis core protocol
             // Use of these depends on an attribute value setting
             "org.apache.activemq.artemis.protocol.amqp",
@@ -115,6 +111,7 @@ public class LayersTestCase {
             "org.wildfly.micrometer.deployment",
             "com.squareup.okhttp3",
             "org.jetbrains.kotlin.kotlin-stdlib",
+            "com.google.protobuf",
             // Unreferenced Infinispan modules
             "org.infinispan.cdi.common",
             "org.infinispan.cdi.embedded",
