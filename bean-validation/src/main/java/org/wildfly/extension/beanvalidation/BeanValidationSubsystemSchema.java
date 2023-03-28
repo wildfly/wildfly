@@ -23,54 +23,38 @@
 
 package org.wildfly.extension.beanvalidation;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+
+import org.jboss.as.controller.LegacySubsystemURN;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.staxmapper.IntVersion;
 
 /**
  * Enum representing the namespaces defined for the Jakarta Bean Validation subsystem.
  *
  * @author Eduardo Martins
  */
-enum Namespace {
+enum BeanValidationSubsystemSchema implements PersistentSubsystemSchema<BeanValidationSubsystemSchema> {
 
-    UNKNOWN(null),
+    VERSION_1_0(1),
+    ;
+    static final BeanValidationSubsystemSchema CURRENT = VERSION_1_0;
 
-    BEAN_VALIDATION_1_0("urn:jboss:domain:bean-validation:1.0");
+    private final VersionedNamespace<IntVersion, BeanValidationSubsystemSchema> namespace;
 
-    /**
-     * The current namespace version.
-     */
-    public static final Namespace CURRENT = BEAN_VALIDATION_1_0;
-
-    private final String name;
-
-    Namespace(final String name) {
-        this.name = name;
+    BeanValidationSubsystemSchema(int major) {
+        this.namespace = new LegacySubsystemURN<>(BeanValidationExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
-    /**
-     * Get the URI of this namespace.
-     *
-     * @return the URI
-     */
-    public String getUriString() {
-        return name;
+    @Override
+    public VersionedNamespace<IntVersion, BeanValidationSubsystemSchema> getNamespace() {
+        return this.namespace;
     }
 
-    private static final Map<String, Namespace> MAP;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null) { map.put(name, namespace); }
-        }
-        MAP = map;
+    @Override
+    public PersistentResourceXMLDescription getXMLDescription() {
+        return builder(BeanValidationExtension.SUBSYSTEM_PATH, this.namespace).build();
     }
-
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
-    }
-
 }
