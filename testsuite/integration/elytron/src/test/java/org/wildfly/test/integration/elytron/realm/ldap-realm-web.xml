@@ -25,5 +25,8 @@
     <security-role>
         <role-name>TheDuke</role-name>
     </security-role>
+    <security-role>
+        <role-name>ReferralRole</role-name>
+    </security-role>
 
 </web-app>

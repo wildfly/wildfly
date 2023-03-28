@@ -32,6 +32,8 @@ import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import org.apache.commons.io.FileUtils;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
+import org.apache.directory.api.ldap.model.entry.Entry;
+import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.api.ldap.model.ldif.LdifEntry;
 import org.apache.directory.api.ldap.model.ldif.LdifReader;
 import org.apache.directory.api.ldap.model.schema.SchemaManager;
@@ -53,10 +55,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.plexus.util.StringUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
@@ -73,21 +72,15 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
- * Smoke test for Elytron Ldap Realm. It tests only basic functionality of Ldap Realm. <br>
- *
+ * Abstract base test for Elytron Ldap Realm. It tests only basic functionality of Ldap Realm. <br>
  * Given: Deployed secured application deployment for printing roles<br>
  * and using BASIC authentication<br>
- * and using ldap-realm with default configuration.
  *
  * @author olukas
  */
-@RunWith(Arquillian.class)
-@RunAsClient
-@ServerSetup({LdapRealmTestCase.LDAPServerSetupTask.class, LdapRealmTestCase.SetupTask.class})
-public class LdapRealmTestCase {
+public abstract class AbstractLdapRealmTest {
     @BeforeClass
     public static void beforeClass() {
         // https://issues.redhat.com/browse/WFLY-17383
@@ -106,8 +99,9 @@ public class LdapRealmTestCase {
     private static final String USER_NOT_EXIST = "notExistUser";
     private static final String USER_WITH_CHARSET = "ssha512UserCharset";
     private static final String USER_HEX_CHARSET = "cryptUserCharsetHex";
+    protected static final String USER_REFERRAL = "referralUser";
     private static final String EMPTY_USER = "";
-    private static final String CORRECT_PASSWORD = "Password1";
+    protected static final String CORRECT_PASSWORD = "Password1";
     private static final String WRONG_PASSWORD = "WrongPassword";
     private static final String EMPTY_PASSWORD = "";
     private static final String CHARSET_PASSWORD = "password密码";
@@ -128,7 +122,7 @@ public class LdapRealmTestCase {
     public static WebArchive deployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT + ".war");
         war.addClasses(RolePrintingServlet.class);
-        war.addAsWebInfResource(LdapRealmTestCase.class.getPackage(), "ldap-realm-web.xml", "web.xml");
+        war.addAsWebInfResource(AbstractLdapRealmTest.class.getPackage(), "ldap-realm-web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(DEPLOYMENT), "jboss-web.xml");
         return war;
     }
@@ -138,7 +132,7 @@ public class LdapRealmTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_WITH_CHARSET + ".war");
         war.addClasses(SimpleServlet.class);
         war.addClasses(SimpleSecuredServlet.class);
-        war.addAsWebInfResource(LdapRealmTestCase.class.getPackage(), "ldap-realm-web.xml", "web.xml");
+        war.addAsWebInfResource(AbstractLdapRealmTest.class.getPackage(), "ldap-realm-web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(DEPLOYMENT_WITH_CHARSET), "jboss-web.xml");
         return war;
     }
@@ -148,7 +142,7 @@ public class LdapRealmTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_HEX_CHARSET + ".war");
         war.addClasses(SimpleServlet.class);
         war.addClasses(SimpleSecuredServlet.class);
-        war.addAsWebInfResource(LdapRealmTestCase.class.getPackage(), "ldap-realm-web.xml", "web.xml");
+        war.addAsWebInfResource(AbstractLdapRealmTest.class.getPackage(), "ldap-realm-web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(DEPLOYMENT_HEX_CHARSET), "jboss-web.xml");
         return war;
     }
@@ -252,11 +246,15 @@ public class LdapRealmTestCase {
         assertAuthenticationFailed(webAppURL, EMPTY_USER, CORRECT_PASSWORD);
     }
 
+    @Test
+    @OperateOnDeployment(DEPLOYMENT)
+    public abstract void testReferralUser(@ArquillianResource URL webAppURL) throws Exception;
+
     private URL prepareURL(URL url) throws MalformedURLException {
         return new URL(url.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
     }
 
-    private void testAssignedRoles(URL webAppURL, String username, String password, String... assignedRoles) throws Exception {
+    protected void testAssignedRoles(URL webAppURL, String username, String password, String... assignedRoles) throws Exception {
         final URL rolesPrintingURL = prepareRolesPrintingURL(webAppURL);
         final String rolesResponse = Utils.makeCallWithBasicAuthn(rolesPrintingURL, username, password, SC_OK);
 
@@ -276,7 +274,7 @@ public class LdapRealmTestCase {
         Utils.makeCallWithBasicAuthn(rolesPrintingURL, username, password, SC_FORBIDDEN);
     }
 
-    private void assertAuthenticationFailed(URL webAppURL, String username, String password) throws Exception {
+    protected void assertAuthenticationFailed(URL webAppURL, String username, String password) throws Exception {
         final URL rolesPrintingURL = prepareRolesPrintingURL(webAppURL);
         Utils.makeCallWithBasicAuthn(rolesPrintingURL, username, password, SC_UNAUTHORIZED);
     }
@@ -297,7 +295,7 @@ public class LdapRealmTestCase {
         }
     }
 
-    static class SetupTask implements ServerSetupTask {
+    protected abstract static class SetupTask implements ServerSetupTask {
 
         private static final String LDAP_REALM_RELATED_CONFIGURATION_NAME = "elytronLdapRealmRelatedConfiguration";
         private static final String LDAP_REALM_CHARSET_CONFIGURATION_NAME = "elytronLdapRealmCharsetConfiguration";
@@ -308,13 +306,16 @@ public class LdapRealmTestCase {
         private static final String LDAP_REALM_CHARSET_NAME = "ldapRealmCharset";
         private static final String LDAP_REALM_ENCODED_CHARSET_NAME = "ldapRealmCharsetEncoded";
 
+        public abstract String getReferralMode();
+
         @Override
         public void setup(ManagementClient mc, String string) throws Exception {
             String hostname = "ldap://" + TestSuiteEnvironment.getServerAddress() + ":" + LDAP_PORT;
             try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine(String.format(
-                        "/subsystem=elytron/dir-context=%s:add(url=\"%s\",principal=\"uid=admin,ou=system\",credential-reference={clear-text=secret})",
-                        DIR_CONTEXT_NAME, hostname));
+                        "/subsystem=elytron/dir-context=%s:add(url=\"%s\",principal=\"uid=admin,ou=system\",credential-reference={clear-text=secret},referral-mode=\"%s\")",
+                        DIR_CONTEXT_NAME, hostname, getReferralMode()));
+                cli.sendLine("/subsystem=elytron/simple-role-decoder=from-roles-attribute:add(attribute=Roles)\n");
             }
             setUpTestDomain(LDAP_REALM_NAME, LDAP_REALM_RELATED_CONFIGURATION_NAME, DEPLOYMENT);
             setUpTestDomain(LDAP_REALM_CHARSET_NAME, LDAP_REALM_CHARSET_CONFIGURATION_NAME, DEPLOYMENT_WITH_CHARSET, "GB2312", "base64", false);
@@ -333,7 +334,7 @@ public class LdapRealmTestCase {
                 if (testingRoles) {
                     cli.sendLine(String.format(
                             "/subsystem=elytron/ldap-realm=%s:add(dir-context=%s, hash-charset=%s, hash-encoding=%s, identity-mapping={rdn-identifier=uid,search-base-dn=\"ou=People,dc=jboss,dc=org\",user-password-mapper={from=userPassword}," +
-                                    "attribute-mapping=[{filter-base-dn=\"ou=Roles,dc=jboss,dc=org\",filter=\"(member={1})\",from=cn,to=groups}]})",
+                                    "use-recursive-search=true,attribute-mapping=[{filter-base-dn=\"ou=Roles,dc=jboss,dc=org\",filter=\"(member={1})\",from=cn,to=groups,search-recursive=true}]})",
                             realmName, DIR_CONTEXT_NAME, hashCharset, hashEncoding));
                     cli.sendLine(String.format(
                             "/subsystem=elytron/security-domain=%1$s:add(realms=[{realm=%2$s,role-decoder=groups-to-roles}],default-realm=%2$s,permission-mapper=default-permission-mapper)",
@@ -341,10 +342,9 @@ public class LdapRealmTestCase {
                 } else {
                     cli.sendLine(String.format(
                             "/subsystem=elytron/ldap-realm=%s:add(dir-context=%s, hash-charset=%s, hash-encoding=%s, identity-mapping={rdn-identifier=uid,search-base-dn=\"ou=People,dc=jboss,dc=org\",user-password-mapper={from=userPassword}," +
-                                    "attribute-mapping=[{filter-base-dn=\"ou=Roles,dc=jboss,dc=org\",filter=\"(&(objectClass=groupOfNames)(member={1}))\",from=cn,to=Roles}]})",
+                                    "use-recursive-search=true,attribute-mapping=[{filter-base-dn=\"ou=Roles,dc=jboss,dc=org\",filter=\"(&(objectClass=groupOfNames)(member={1}))\",from=cn,to=Roles,search-recursive=true}]})",
                             realmName, DIR_CONTEXT_NAME, hashCharset, hashEncoding));
 
-                    cli.sendLine("/subsystem=elytron/simple-role-decoder=from-roles-attribute:add(attribute=Roles)\n");
                     cli.sendLine(String.format(
                             "/subsystem=elytron/security-domain=%1$s:add(realms=[{realm=%2$s,role-decoder=from-roles-attribute}],default-realm=%2$s,permission-mapper=default-permission-mapper)",
                             domainName, realmName));
@@ -423,14 +423,25 @@ public class LdapRealmTestCase {
         private DirectoryService directoryService;
         private LdapServer ldapServer;
 
+        private Entry createReferralEntry(SchemaManager schemaManager, String branch) throws LdapException {
+            Entry referral = new DefaultEntry(schemaManager, "ou=Referral,ou=" + branch + ",dc=jboss,dc=org");
+            referral.add("objectClass", "referral", "extensibleObject");
+            referral.add("ou", "Referral");
+            referral.add("ref", "ldap://" + TestSuiteEnvironment.getServerAddress() + ":" + LDAP_PORT + "/ou=" + branch + "2,dc=jboss,dc=org");
+            return referral;
+        }
+
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             directoryService = DSAnnotationProcessor.getDirectoryService();
             final SchemaManager schemaManager = directoryService.getSchemaManager();
             try {
                 for (LdifEntry ldifEntry : new LdifReader(
-                        LdapRealmTestCase.class.getResourceAsStream(LdapRealmTestCase.class.getSimpleName() + ".ldif"))) {
+                        AbstractLdapRealmTest.class.getResourceAsStream("LdapRealmTestCase.ldif"))) {
                     directoryService.getAdminSession().add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
                 }
+                // create the referrals pointing to the second branch using directory hostname and port
+                directoryService.getAdminSession().add(createReferralEntry(schemaManager, "People"));
+                directoryService.getAdminSession().add(createReferralEntry(schemaManager, "Roles"));
             } catch (Exception e) {
                 e.printStackTrace();
                 throw e;
