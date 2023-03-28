@@ -22,7 +22,8 @@
     <dependencies>
         <layer name="core-server"/>
         <layer name="cdi"/>
-        <layer name="jaxrs"/>
+        <layer name="ee-integration"/>
+        <layer name="jaxrs-core"/>
         <layer name="jsonp"/>
         <layer name="jsonb"/>
     </dependencies>

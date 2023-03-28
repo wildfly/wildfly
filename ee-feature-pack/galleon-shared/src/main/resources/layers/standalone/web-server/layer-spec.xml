@@ -3,7 +3,6 @@
     <dependencies>
         <layer name="naming"/>
         <layer name="ee"/>
-        <layer name="ee-concurrency" optional="true"/>
         <layer name="deployment-scanner" optional="true"/>
         <layer name="servlet"/>
     </dependencies>
