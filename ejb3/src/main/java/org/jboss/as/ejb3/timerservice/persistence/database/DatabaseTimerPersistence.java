@@ -398,14 +398,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
                 try {
                     String createTable = sql.getProperty(CREATE_TABLE);
                     String[] statements = createTable.split(";");
+                    statement = connection.createStatement();
                     for (final String sql : statements) {
-                        try {
-                            statement = connection.createStatement();
-                            statement.executeUpdate(sql);
-                        } finally {
-                            safeClose(statement);
-                        }
+                        statement.addBatch(sql);
                     }
+                    statement.executeBatch();
                 } catch (SQLException e1) {
                     EjbLogger.EJB3_TIMER_LOGGER.couldNotCreateTable(e1);
                 }
