@@ -47,6 +47,7 @@ class MicrometerSubsystemDefinition extends PersistentResourceDefinition {
     static final String MANAGEMENT_EXECUTOR = "org.wildfly.management.executor";
     static final String PROCESS_STATE_NOTIFIER = "org.wildfly.management.process-state-notifier";
 
+
     static final RuntimeCapability<Void> MICROMETER_COLLECTOR_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(MICROMETER_MODULE + ".wildfly-collector", MicrometerCollector.class)
                     .addRequirements(CLIENT_FACTORY_CAPABILITY, MANAGEMENT_EXECUTOR, PROCESS_STATE_NOTIFIER)
@@ -65,7 +66,8 @@ class MicrometerSubsystemDefinition extends PersistentResourceDefinition {
     };
 
     public static final SimpleAttributeDefinition ENDPOINT = SimpleAttributeDefinitionBuilder
-            .create(MicrometerConfigurationConstants.ENDPOINT, ModelType.STRING, true)
+            .create(MicrometerConfigurationConstants.ENDPOINT, ModelType.STRING)
+            .setAttributeGroup(MicrometerConfigurationConstants.OTLP_REGISTRY)
             .setRequired(true)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -73,6 +75,7 @@ class MicrometerSubsystemDefinition extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition STEP = SimpleAttributeDefinitionBuilder
             .create(MicrometerConfigurationConstants.STEP, ModelType.LONG, true)
+            .setAttributeGroup(MicrometerConfigurationConstants.OTLP_REGISTRY)
             .setDefaultValue(new ModelNode(TimeUnit.MINUTES.toSeconds(1)))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setAllowExpression(true)
