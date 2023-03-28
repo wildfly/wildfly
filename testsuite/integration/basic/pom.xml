@@ -2216,6 +2216,7 @@
                                                 <layer>core-server</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>ee-concurrency</layer>
+                                                <layer>servlet</layer>
                                             </layers>
                                         </config>
                                     </configurations>

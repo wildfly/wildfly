@@ -484,6 +484,13 @@ link:#gal.jmx[jmx] +
 |
 link:#gal.base-server[base-server] +
 
+|[[gal.servlet]]servlet
+|A servlet container.
+|
+link:#gal.ee[ee-integration] +
+link:#gal.naming[naming] +
+link:#gal.undertow[undertow] +
+
 |[[gal.transactions]]transactions
 | Support for transactions.
 |
@@ -534,8 +541,9 @@ link:#gal.web-server[web-server] +
 |
 link:#gal.deployment-scanner[deployment-scanner] (optional) +
 link:#gal.ee[ee] +
+link:#gal.ee[ee-concurrency] (optional) +
 link:#gal.naming[naming] +
-link:#gal.undertow[undertow] +
+link:#gal.servlet[servlet] +
 
 |[[gal.webservices]]webservices
 |Support for Jakarta XML Web Services

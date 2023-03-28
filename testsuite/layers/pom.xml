@@ -1096,6 +1096,7 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>ee-concurrency</layer>
+                                                <layer>servlet</layer>
                                             </layers>
                                         </config>
                                     </configurations>
