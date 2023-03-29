@@ -45,7 +45,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
         super(MicrometerExtension.SUBSYSTEM_NAME, new MicrometerExtension());
         this.schema = schema;
         this.testXml = "<subsystem xmlns=\"" + this.schema.getNamespace() +
-                "\" endpoint=\"http://localhost:4318/v1/metrics\"></subsystem>";
+                "\"><otlp-registry endpoint=\"http://localhost:4318/v1/metrics\"/></subsystem>";
     }
 
     /**
