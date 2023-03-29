@@ -118,6 +118,11 @@
                               managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ejb3:5.0"/>
+        <subsystem xmlns="urn:wildfly:elytron:17.0" final-providers="elytron" disallowed-providers="OracleUcrypto">
+            <providers>
+                <provider-loader name="elytron" module="org.wildfly.security.elytron"/>
+            </providers>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:iiop-openjdk:2.1">
             <orb socket-binding="iiop"/>
         </subsystem>
