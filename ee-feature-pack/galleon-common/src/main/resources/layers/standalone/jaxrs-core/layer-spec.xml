@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jaxrs-core">
+    <dependencies>
+        <layer name="ee-integration"/>
+        <layer name="servlet"/>
+    </dependencies>
+    <feature-group name="jaxrs"/>
+</layer-spec>

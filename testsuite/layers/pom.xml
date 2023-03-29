@@ -1074,6 +1074,63 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>ee-concurrency-provisioning-full</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/ee-concurrency</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>ee-concurrency</layer>
+                                                <layer>servlet</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ee-integration-provisioning-full</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/ee-integration</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>ee-integration</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>ee-security-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>

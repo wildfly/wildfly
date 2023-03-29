@@ -67,6 +67,7 @@ link:#gal.cdi[cdi] (optional) +
 link:#gal.datasources-web-server[datasources-web-server] +
 link:#gal.jaxrs[jaxrs] (optional) +
 link:#gal.jpa[jpa] (optional) +
+link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
 
 |[[gal.cloud-server]]cloud-server
 | An extension of _jaxrs-server_ to address common cloud requirements.
@@ -93,7 +94,8 @@ link:#gal.security-manager[security-manager] (optional) +
 |
 link:#gal.core-server[core-server] +
 link:#gal.cdi[cdi] +
-link:#gal.jaxrs[jaxrs] +
+link:#gal.ee-integration[ee-integration] +
+link:#gal.jaxrs[jaxrs-core] +
 link:#gal.jsonp[jsonp] +
 link:#gal.jsonb[jsonb] +
 
@@ -169,6 +171,17 @@ link:#gal.base-server[base-server] +
 link:#gal.base-server[base-server] +
 
 |[[gal.ee]]ee
+|Support for common functionality in the Jakarta EE platform and for Jakarta Concurrency.
+|
+link:#gal.ee-concurrency[ee-concurrency] (optional) +
+link:#gal.ee-integration[ee-integration] +
+
+|[[gal.ee-concurrency]]ee-concurrency
+|Support for Jakarta Concurrency.
+|
+link:#gal.naming[naming] +
+
+|[[gal.ee-integration]]ee-integration
 |Support for common functionality in the Jakarta EE platform.
 |
 link:#gal.jsonb[jsonb] (optional) +
@@ -265,11 +278,18 @@ link:#gal.naming[naming] +
 |
 link:#gal.base-server[base-server] +
 
-|[[gal.jaxrs]]jaxrs
-|Support for JAXRS.
+|[[gal.jaxrs-core]]jaxrs-core
+|Support for Jakarta RESTful Web Services.
 |
-link:#gal.web-server[web-server] +
-link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
+link:#gal.ee-integration[ee-integration] +
+link:#gal.servlet[servlet] +
+
+|[[gal.jaxrs]]jaxrs
+|Support for Jakarta RESTful Web Services with optional ee-concurrency and deployment scanner layers.
+|
+link:#gal.deployment-scanner[deployment-scanner] (optional) +
+link:#gal.ee-concurrency[ee-concurrency] (optional) +
+link:#gal.jaxrs-core[jaxrs-core] +
 
 |[[gal.jdr]]jdr
 |Support for the JBoss Diagnostic Reporting (JDR) subsystem.
@@ -473,6 +493,13 @@ link:#gal.jmx[jmx] +
 |
 link:#gal.base-server[base-server] +
 
+|[[gal.servlet]]servlet
+|A servlet container.
+|
+link:#gal.ee[ee-integration] +
+link:#gal.naming[naming] +
+link:#gal.undertow[undertow] +
+
 |[[gal.transactions]]transactions
 | Support for transactions.
 |
@@ -523,8 +550,9 @@ link:#gal.web-server[web-server] +
 |
 link:#gal.deployment-scanner[deployment-scanner] (optional) +
 link:#gal.ee[ee] +
+link:#gal.ee[ee-concurrency] (optional) +
 link:#gal.naming[naming] +
-link:#gal.undertow[undertow] +
+link:#gal.servlet[servlet] +
 
 |[[gal.webservices]]webservices
 |Support for Jakarta XML Web Services

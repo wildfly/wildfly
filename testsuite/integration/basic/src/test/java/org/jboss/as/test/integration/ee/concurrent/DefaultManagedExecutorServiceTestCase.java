@@ -45,7 +45,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 public class DefaultManagedExecutorServiceTestCase {
 
     @Deployment
-    public static WebArchive getDeployment() {
+    public static WebArchive getDeployment() { // TODO why a war for a pure EJB app?
         return ShrinkWrap.create(WebArchive.class, DefaultManagedExecutorServiceTestCase.class.getSimpleName() + ".war")
                 .addClasses(DefaultManagedExecutorServiceTestCase.class, DefaultManagedExecutorServiceTestEJB.class, TestEJBRunnable.class, Util.class)
                 .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
