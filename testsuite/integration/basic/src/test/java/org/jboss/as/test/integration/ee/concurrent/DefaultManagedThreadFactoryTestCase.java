@@ -48,7 +48,7 @@ import org.wildfly.security.permission.ElytronPermission;
 public class DefaultManagedThreadFactoryTestCase {
 
     @Deployment
-    public static WebArchive getDeployment() {
+    public static WebArchive getDeployment() {  // TODO why a war for a pure EJB app?
         return ShrinkWrap.create(WebArchive.class, DefaultManagedThreadFactoryTestCase.class.getSimpleName() + ".war")
                 .addClasses(DefaultManagedThreadFactoryTestCase.class, DefaultManagedThreadFactoryTestEJB.class, TestEJBRunnable.class, Util.class, TimeoutUtil.class)
                 .addAsManifestResource(createPermissionsXmlAsset(

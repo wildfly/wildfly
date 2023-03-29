@@ -1796,6 +1796,25 @@
                             </execution>
                             <!-- Copy users and roles config from shared resources. -->
                             <execution>
+                                <id>ee-concurrency.ts.config-as.copy-mgmt-users</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-ee-concurrency/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <!-- Copy users and roles config from shared resources. -->
+                            <execution>
                                 <id>ejb-lite.ts.config-as.copy-mgmt-users</id>
                                 <phase>generate-test-resources</phase>
                                 <goals>
@@ -2216,6 +2235,7 @@
                                                 <layer>core-server</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>ee-concurrency</layer>
+                                                <!-- TODO stop using unnecessarily using wars for test apps and drop this -->
                                                 <layer>servlet</layer>
                                             </layers>
                                         </config>

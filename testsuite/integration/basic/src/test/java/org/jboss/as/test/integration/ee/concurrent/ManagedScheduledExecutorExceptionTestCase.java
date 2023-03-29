@@ -41,7 +41,7 @@ import org.junit.runner.RunWith;
 public class ManagedScheduledExecutorExceptionTestCase {
 
     @Deployment
-    public static WebArchive getDeployment() {
+    public static WebArchive getDeployment() {  // TODO why a war?
         return ShrinkWrap.create(WebArchive.class, ManagedScheduledExecutorExceptionTestCase.class.getSimpleName() + ".war")
                 .addClasses(ManagedScheduledExecutorExceptionTestCase.class);
     }
