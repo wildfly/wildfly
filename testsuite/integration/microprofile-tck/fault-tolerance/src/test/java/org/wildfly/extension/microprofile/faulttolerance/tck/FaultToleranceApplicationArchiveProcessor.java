@@ -50,8 +50,6 @@ public class FaultToleranceApplicationArchiveProcessor implements ApplicationArc
         }
         ClassContainer<?> classContainer = (ClassContainer<?>) applicationArchive;
 
-        classContainer.addClass(CleanupMetricRegistries.class);
-
         if (applicationArchive instanceof LibraryContainer) {
             JavaArchive additionalBeanArchive = ShrinkWrap.create(JavaArchive.class);
             additionalBeanArchive.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");

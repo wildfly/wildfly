@@ -382,7 +382,6 @@
         <version.io.smallrye.smallrye-fault-tolerance>6.2.1</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.0.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>4.2.0</version.io.smallrye.smallrye-jwt>
-        <version.io.smallrye.smallrye-metrics>4.0.0</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.smallrye-mutiny>2.1.0</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>2.26.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-mutiny-zero>1.0.0</version.io.smallrye.smallrye-mutiny-zero>
