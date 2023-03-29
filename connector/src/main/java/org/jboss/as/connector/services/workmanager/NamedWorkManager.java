@@ -40,16 +40,13 @@ public class NamedWorkManager extends WorkManagerImpl {
     /** Default WorkManager name */
     public static final String DEFAULT_NAME = "default";
 
-    private final boolean elytronEnabled;
-
     /**
      * Constructor
      * @param name The name of the WorkManager
      */
-    public NamedWorkManager(String name, final boolean elytronEnabled) {
+    public NamedWorkManager(String name) {
         super();
         setName(name);
-        this.elytronEnabled = elytronEnabled;
     }
 
     @Override
@@ -58,9 +55,5 @@ public class NamedWorkManager extends WorkManagerImpl {
                                             CountDownLatch completedLatch) {
         return new WildflyWorkWrapper(this, securityIntegration, work, executionContext, workListener,
                 startedLatch, completedLatch, System.currentTimeMillis());
-    }
-
-    public boolean isElytronEnabled() {
-        return elytronEnabled;
     }
 }
