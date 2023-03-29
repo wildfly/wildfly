@@ -35,6 +35,7 @@ import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterDeploymentService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
+import org.jboss.as.connector.subsystems.jca.Constants;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -225,6 +226,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             } else {
                 builder.addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
             }
+            builder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(Constants.DEFAULT_NAME));
 
             return builder;
         } catch (Throwable t) {
