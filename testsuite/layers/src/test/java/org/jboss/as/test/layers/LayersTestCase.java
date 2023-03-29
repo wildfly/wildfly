@@ -132,7 +132,8 @@ public class LayersTestCase {
             "com.fasterxml.jackson.dataformat.jackson-dataformat-cbor",
             "org.jgroups.aws",
             "org.wildfly.extension.microprofile.metrics-smallrye",
-            "org.wildfly.extension.microprofile.opentracing-smallrye"
+            "org.wildfly.extension.microprofile.opentracing-smallrye",
+            "io.smallrye.metrics",
     };
     private static final String[] NOT_USED;
     // Packages that are not referenced from the module graph but needed.
@@ -230,7 +231,7 @@ public class LayersTestCase {
                     "io.smallrye.fault-tolerance",
                     "org.eclipse.microprofile.fault-tolerance.api",
                     "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
-                    "org.wildfly.microprofile.fault-tolerance-smallrye.executor",
+                    "org.wildfly.microprofile.fault-tolerance-smallrye.deployment",
                     // Used by Hibernate Search but only in preview TODO this doesn't seem right; NOT_REFERENCED should suffice
                     "org.hibernate.search.mapper.orm.coordination.outboxpolling"
             );

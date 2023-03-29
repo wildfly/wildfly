@@ -52,7 +52,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
+            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-deployment</artifactId>
         </dependency>
         <dependency>
             <groupId>io.smallrye</groupId>

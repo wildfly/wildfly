@@ -24,12 +24,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.util.JacksonFeature;
+import jakarta.inject.Inject;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -50,9 +48,9 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
 public class BasicMicrometerTestCase {
+
     @ArquillianResource
     private URL url;
-    private Client client = ClientBuilder.newClient().register(JacksonFeature.class);
 
     private static final String WEB_XML =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

@@ -26,9 +26,8 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 
 public class MicrometerSetupTask implements ServerSetupTask {
-    private final ModelNode metricsExtension = Operations.createAddress("extension", "org.wildfly.extension.metrics");
+
     private final ModelNode micrometerExtension = Operations.createAddress("extension", "org.wildfly.extension.micrometer");
-    private final ModelNode metricsSubsystem = Operations.createAddress("subsystem", "metrics");
     private final ModelNode micrometerSubsystem = Operations.createAddress("subsystem", "micrometer");
 
     @Override

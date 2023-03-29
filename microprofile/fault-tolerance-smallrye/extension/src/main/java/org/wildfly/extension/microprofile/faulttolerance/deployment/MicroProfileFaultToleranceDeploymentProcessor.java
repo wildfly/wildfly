@@ -39,7 +39,7 @@ import org.jboss.as.weld.WeldCapability;
 /**
  * This {@link DeploymentUnitProcessor} registers required CDI portable extension that adds support
  * for MP Fault Tolerance interceptor bindings. Moreover, it specifies which metrics provider to use according to
- * metrics integrations available at runtime.
+ * metrics integrations available at runtime (MP Metrics, Micrometer, or no metrics).
  *
  * @author Radoslav Husar
  */
@@ -66,14 +66,7 @@ public class MicroProfileFaultToleranceDeploymentProcessor implements Deployment
         // Configure which metrics provider to use
         Set<String> registeredSubsystems = deploymentUnit.getAttachment(Attachments.REGISTERED_SUBSYSTEMS);
 
-        MetricsIntegration metricsIntegration;
-
-        if (registeredSubsystems.contains("microprofile-metrics-smallrye")) {
-            metricsIntegration = MetricsIntegration.MICROPROFILE_METRICS;
-        } else {
-            metricsIntegration = MetricsIntegration.NOOP;
-        }
-
+        MetricsIntegration metricsIntegration = registeredSubsystems.contains("micrometer") ? MetricsIntegration.MICROMETER : MetricsIntegration.NOOP;
         ROOT_LOGGER.metricsProvider(metricsIntegration.name());
 
         weldCapability.registerExtensionInstance(new FaultToleranceExtension(metricsIntegration), deploymentUnit);
