@@ -73,7 +73,7 @@ import org.wildfly.clustering.service.ChildTargetService;
 /**
  * Deployment processor that sets up the timer service for singletons and stateless session beans
  *
- * NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ * NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
  *
  * @author Stuart Douglas
  */

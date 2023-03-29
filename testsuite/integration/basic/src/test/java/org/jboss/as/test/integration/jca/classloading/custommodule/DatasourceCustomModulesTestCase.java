@@ -245,7 +245,7 @@ public class DatasourceCustomModulesTestCase {
         @Override
         public void setup(ManagementClient managementClient, String s) throws Exception {
             TestModule customModule = new TestModule("org.jboss.test.customModule",
-                    new String[] {"javax.sql.api", "sun.jdk", "javax.orb.api", "java.logging", "org.jboss.ironjacamar.jdbcadapters"});
+                    new String[] {"java.sql", "sun.jdk", "javax.orb.api", "java.logging", "org.jboss.ironjacamar.jdbcadapters"});
             customModule.addResource("customModule.jar")
                     .addClasses(TestValidConnectionChecker.class, TestExceptionSorter.class, TestStaleConnectionChecker.class);
 

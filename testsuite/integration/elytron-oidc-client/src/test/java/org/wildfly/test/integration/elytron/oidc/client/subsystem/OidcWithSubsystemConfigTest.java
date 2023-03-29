@@ -40,10 +40,12 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.extension.elytron.oidc.ElytronOidcExtension;
@@ -61,6 +63,11 @@ import io.restassured.RestAssured;
 @RunAsClient
 @ServerSetup({ OidcWithSubsystemConfigTest.KeycloakAndSubsystemSetup.class })
 public class OidcWithSubsystemConfigTest extends OidcBaseTest {
+
+    @BeforeClass
+    public static void beforeClass() {
+        IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-17102 Intermittent failures in OidcWithSubsystemConfigTest");
+    }
 
     private static final String SUBSYSTEM_OVERRIDE_APP = "SubsystemOverrideOidcApp";
     private static final String OIDC_JSON_WITH_SUBSYSTEM_OVERRIDE_FILE = "OidcWithSubsystemOverride.json";

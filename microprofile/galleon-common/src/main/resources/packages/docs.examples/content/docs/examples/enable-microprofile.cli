@@ -61,13 +61,6 @@ else
   echo INFO: microprofile-jwt-smallrye already in configuration, subsystem not added.
 end-if
 
-if (outcome != success) of /subsystem=microprofile-metrics-smallrye:read-resource
-  /extension=org.wildfly.extension.microprofile.metrics-smallrye:add
-  /subsystem=microprofile-metrics-smallrye:add(exposed-subsystems=["*"], prefix="${wildfly.metrics.prefix:wildfly}", security-enabled=false)
-else
-  echo INFO: microprofile-metrics-smallrye already in configuration, subsystem not added.
-end-if
-
 if (outcome != success) of /subsystem=microprofile-openapi-smallrye:read-resource
   /extension=org.wildfly.extension.microprofile.openapi-smallrye:add
   /subsystem=microprofile-openapi-smallrye:add
@@ -75,11 +68,18 @@ else
   echo INFO: microprofile-openapi-smallrye already in configuration, subsystem not added.
 end-if
 
-if (outcome != success) of /subsystem=microprofile-opentracing-smallrye:read-resource
-  /extension=org.wildfly.extension.microprofile.opentracing-smallrye:add
-  /subsystem=microprofile-opentracing-smallrye:add
+if (outcome != success) of /subsystem=opentelemetry:read-resource
+  /extension=org.wildfly.extension.opentelemetry:add
+  /subsystem=opentelemetry:add
 else
-  echo INFO: microprofile-opentracing-smallrye already in configuration, subsystem not added.
+  echo INFO: opentelemetry already in configuration, subsystem not added.
+end-if
+
+if (outcome != success) of /subsystem=microprofile-telemetry:read-resource
+  /extension=org.wildfly.extension.microprofile.telemetry:add
+  /subsystem=microprofile-telemetry:add
+else
+  echo INFO: microprofile-telemetry already in configuration, subsystem not added.
 end-if
 
 echo INFO: Configuration done.

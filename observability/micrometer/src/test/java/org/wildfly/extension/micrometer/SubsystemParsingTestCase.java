@@ -42,9 +42,10 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     private final String testXml;
 
     public SubsystemParsingTestCase(MicrometerSubsystemSchema schema) {
-        super(MicrometerSubsystemExtension.SUBSYSTEM_NAME, new MicrometerSubsystemExtension());
+        super(MicrometerExtension.SUBSYSTEM_NAME, new MicrometerExtension());
         this.schema = schema;
-        this.testXml = "<subsystem xmlns=\"" + this.schema.getNamespace() + "\"></subsystem>";
+        this.testXml = "<subsystem xmlns=\"" + this.schema.getNamespace() +
+                "\"><otlp-registry endpoint=\"http://localhost:4318/v1/metrics\"/></subsystem>";
     }
 
     /**
@@ -65,7 +66,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(1, addr.size());
         PathElement element = addr.getElement(0);
         Assert.assertEquals(SUBSYSTEM, element.getKey());
-        Assert.assertEquals(MicrometerSubsystemExtension.SUBSYSTEM_NAME, element.getValue());
+        Assert.assertEquals(MicrometerExtension.SUBSYSTEM_NAME, element.getValue());
     }
 
     /**
@@ -82,7 +83,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
-        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(MicrometerSubsystemExtension.SUBSYSTEM_NAME));
+        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(MicrometerExtension.SUBSYSTEM_NAME));
     }
 
     /**

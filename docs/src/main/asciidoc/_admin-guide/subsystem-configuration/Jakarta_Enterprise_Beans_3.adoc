@@ -1,6 +1,14 @@
 [[EJB3]]
 = EJB3 subsystem configuration guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 This page lists the options that are available for configuring the EJB
 subsystem.
 
@@ -432,4 +440,4 @@ public class FooInterceptor implements EJBClientInterceptor {
 }
 ----
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

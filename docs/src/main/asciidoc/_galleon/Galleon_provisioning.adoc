@@ -1,6 +1,14 @@
 [[Galleon_Provisioning]]
 = Provisioning WildFly with Galleon
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 As opposed to a using traditional WildFly zip installation that installs it all (all default
 server configurations and all JBoss modules), using https://github.com/wildfly/galleon[Galleon] tooling
 you can choose to install a complete or customized WildFly server.
@@ -191,4 +199,4 @@ galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,u
 galleon.sh install wildfly:current --dir=my-wildfly-server --layers=core-server
 ----
 
-NOTE: References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.
+NOTE: References in this document to Java Persistence API (JPA) refer to the Jakarta Persistence unless otherwise noted.

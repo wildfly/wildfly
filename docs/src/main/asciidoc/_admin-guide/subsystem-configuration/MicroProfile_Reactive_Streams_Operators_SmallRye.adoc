@@ -1,6 +1,14 @@
 [[MicroProfile_Reactive_Streams_Operators_SmallRye]]
 = MicroProfile Reactive Streams Operators Subsystem Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Support for https://microprofile.io/project/eclipse/microprofile-reactive-streams[MicroProfile Reactive Streams Operators] is
 provided as a Tech Preview feature by the _microprofile-reactive-streams-operators-smallrye_ subsystem.
 

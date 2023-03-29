@@ -1,5 +1,14 @@
 [[wildfly-config-jboss-ejb-client]]
 = jboss-ejb-client
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 <jboss-ejb-client /> - EJB Client
 
 The _<jboss-ejb-client />_ element in a wildfly-config.xml file can be used to specify EJB Client configuration. This element is from the “urn:jboss:wildfly-client-ejb:3.0” namespace, e.g.
@@ -69,4 +78,4 @@ This element is used to specify an EJB client connection. It has one required at
 
 This element is used to specify EJB client interceptors and can contain any number of _<interceptor />_ elements.
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

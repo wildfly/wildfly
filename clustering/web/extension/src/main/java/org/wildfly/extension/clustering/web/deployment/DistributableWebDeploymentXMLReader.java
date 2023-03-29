@@ -32,7 +32,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParser;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
@@ -49,7 +48,7 @@ import org.wildfly.extension.clustering.web.session.infinispan.InfinispanSession
  * Parser for both jboss-all.xml distributable-web namespace parsing its standalone deployment descriptor counterpart.
  * @author Paul Ferraro
  */
-public class DistributableWebDeploymentXMLReader implements XMLElementReader<MutableDistributableDeploymentConfiguration>, JBossAllXMLParser<DistributableWebDeploymentConfiguration> {
+public class DistributableWebDeploymentXMLReader implements XMLElementReader<MutableDistributableWebDeploymentConfiguration> {
 
     private static final String SESSION_MANAGEMENT = "session-management";
     private static final String NAME = "name";
@@ -76,14 +75,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
     }
 
     @Override
-    public DistributableWebDeploymentConfiguration parse(XMLExtendedStreamReader reader, DeploymentUnit unit) throws XMLStreamException {
-        MutableDistributableDeploymentConfiguration configuration = new MutableDistributableDeploymentConfiguration(unit);
-        this.readElement(reader, configuration);
-        return configuration;
-    }
-
-    @Override
-    public void readElement(XMLExtendedStreamReader reader, MutableDistributableDeploymentConfiguration configuration) throws XMLStreamException {
+    public void readElement(XMLExtendedStreamReader reader, MutableDistributableWebDeploymentConfiguration configuration) throws XMLStreamException {
         ParseUtils.requireNoAttributes(reader);
 
         Set<String> names = new TreeSet<>();
@@ -122,7 +114,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
         }
     }
 
-    private void readSessionManagement(XMLExtendedStreamReader reader, MutableDistributableDeploymentConfiguration configuration) throws XMLStreamException {
+    private void readSessionManagement(XMLExtendedStreamReader reader, MutableDistributableWebDeploymentConfiguration configuration) throws XMLStreamException {
 
         for (int i = 0; i < reader.getAttributeCount(); ++i) {
             String name = reader.getAttributeLocalName(i);

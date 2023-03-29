@@ -21,11 +21,15 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
+import org.jboss.as.controller.ModelVersion;
+
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class Constants {
+
+    static final ModelVersion ELYTRON_BY_DEFAULT_VERSION = ModelVersion.create(6, 0, 0);
     static final String JCA = "jca";
 
     static final String ARCHIVE_VALIDATION = "archive-validation";

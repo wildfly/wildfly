@@ -1,6 +1,14 @@
 [[agroal]]
 = Agroal configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The Agroal subsystem allows the definition of datasources. Declaring a new datasource consists of two separate steps: provide a JDBC driver and define a datasource that references the driver you installed.
 
 The Agroal subsystem is provided by the https://agroal.github.io/[Agroal] project. For a detailed description of the available configuration properties, please consult the project documentation.

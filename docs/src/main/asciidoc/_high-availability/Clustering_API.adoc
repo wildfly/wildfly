@@ -1,6 +1,14 @@
 [[Clustering_API]]
 = Clustering API
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly exposes a public API to deployments for performing common clustering operations, such as:
 
 * <<group,Cluster membership introspection>>

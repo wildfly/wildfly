@@ -38,7 +38,7 @@ import org.kohsuke.MetaInfServices;
  * @author Radoslav Husar
  */
 @MetaInfServices(Extension.class)
-public class ModClusterExtension extends SubsystemExtension<ModClusterSchema> {
+public class ModClusterExtension extends SubsystemExtension<ModClusterSubsystemSchema> {
 
     public static final String SUBSYSTEM_NAME = "modcluster";
 
@@ -50,6 +50,6 @@ public class ModClusterExtension extends SubsystemExtension<ModClusterSchema> {
             new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-proxies", false, false, false));
 
     public ModClusterExtension() {
-        super(SUBSYSTEM_NAME, ModClusterSubsystemModel.CURRENT, ModClusterSubsystemResourceDefinition::new, ModClusterSchema.CURRENT, new ModClusterSubsystemXMLWriter());
+        super(SUBSYSTEM_NAME, ModClusterSubsystemModel.CURRENT, ModClusterSubsystemResourceDefinition::new, ModClusterSubsystemSchema.CURRENT, new ModClusterSubsystemXMLWriter());
     }
 }

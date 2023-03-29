@@ -1,6 +1,14 @@
 [[load-balancer-affinity-cookie]]
 = Support for load-balancers relying on affinity cookie
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 While the Apache family of load-balancers relies on attaching session affinity (routing) information by default to a `JSESSIONID` cookie or a `jsessionid` path parameter,
 there are other load-balancers that rely on a cookie to drive session affinity.
 

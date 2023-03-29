@@ -538,11 +538,8 @@
                                     <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                     <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                     <version>${testsuite.ee.galleon.pack.version}</version>
-                                    <excluded-packages>
-                                        <name>docs</name>
-                                        <name>docs.licenses.merge</name>
-                                    </excluded-packages>
                                     <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
                                     <included-configs>
                                         <config>
                                             <model>standalone</model>
@@ -562,6 +559,7 @@
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
                             </plugin-options>
                         </configuration>
                     </execution>

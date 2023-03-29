@@ -1,6 +1,14 @@
 [[YAML_Configuration_file]]
 = (YAML) Configuration file (Experimental))
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 In order to provide some way to separate customization from the configuration provisionned by Galleon we want to *experiment* with a new feature where this customization is provided by YAML files.
 Because this feature is *EXPERIMENTAL* we are disabling it by default and you can *NOT* rely on it being present or compatible in the future releases.
 

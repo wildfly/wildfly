@@ -1,6 +1,14 @@
 [[Undertow_using_as_a_Load_Balancer]]
 = Using WildFly as a Load Balancer
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly 10 added support for using the Undertow subsystem as a load
 balancer. WildFly supports two different approaches, you can either
 define a static load balancer, and specify the back end hosts in your

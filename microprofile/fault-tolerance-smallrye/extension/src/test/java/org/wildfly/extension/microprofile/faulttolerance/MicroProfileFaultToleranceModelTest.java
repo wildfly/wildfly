@@ -52,11 +52,11 @@ public class MicroProfileFaultToleranceModelTest extends AbstractSubsystemBaseTe
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource(String.format(Locale.ROOT, "subsystem_%d_%d.xml", this.testSchema.major(), this.testSchema.minor()));
+        return readResource(String.format(Locale.ROOT, "subsystem_%d_%d.xml", this.testSchema.getVersion().major(), this.testSchema.getVersion().minor()));
     }
 
     @Override
     protected String getSubsystemXsdPath() {
-        return String.format(Locale.ROOT, "schema/wildfly-microprofile-fault-tolerance-smallrye_%d_%d.xsd", this.testSchema.major(), this.testSchema.minor());
+        return String.format(Locale.ROOT, "schema/wildfly-microprofile-fault-tolerance-smallrye_%d_%d.xsd", this.testSchema.getVersion().major(), this.testSchema.getVersion().minor());
     }
 }

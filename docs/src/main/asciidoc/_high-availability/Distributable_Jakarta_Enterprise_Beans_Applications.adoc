@@ -1,6 +1,14 @@
 [[Distributable_Jakarta_Enterprise_Beans_Applications]]
 = Distributable Jakarta Enterprise Beans Applications
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Just as with standard web applications, session state of stateful session beans (SFSB) contained in a standard EJB application
 is not guaranteed to survive beyond the lifespan of the Jakarta Enterprise Beans container. And, as with standard web applications, there *is* a way to
 allow session state of SFSBs to survive beyond the lifespan of a single server, either through persistence or by replicating state to
@@ -332,4 +340,4 @@ selected and the invocation will be forwarded to that node.
 As can be seen both remote standalone client and remote clients on
 another WildFly instance act similar in terms of failover.
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

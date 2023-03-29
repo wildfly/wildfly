@@ -1,6 +1,14 @@
 [[Shared_Test_Classes_and_Resources]]
 = Shared Test Classes and Resources
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[among-testsuite-modules]]
 == Among Testsuite Modules
 

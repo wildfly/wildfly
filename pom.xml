@@ -92,6 +92,7 @@
         <module>legacy/jsr77</module>
         <module>legacy/keycloak</module>
         <module>legacy/messaging</module>
+        <module>legacy/opentracing-extension</module>
         <module>legacy/web</module>
         <module>metrics</module>
         <module>messaging-activemq</module>
@@ -362,7 +363,8 @@
         <version.io.micrometer>1.9.3</version.io.micrometer>
         <legacy.version.io.netty>4.0.13.Final</legacy.version.io.netty>
         <version.io.netty>4.1.87.Final</version.io.netty>
-        <version.io.opentelemetry.opentelemetry>1.23.1</version.io.opentelemetry.opentelemetry>
+        <version.io.opentelemetry.opentelemetry>1.20.0</version.io.opentelemetry.opentelemetry>
+        <version.io.opentelemetry.proto>0.19.0-alpha</version.io.opentelemetry.proto>
         <version.io.opentracing>0.33.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.4.0</version.io.opentracing.concurrent>
         <version.io.opentracing.interceptors>0.1.3</version.io.opentracing.interceptors>
@@ -376,15 +378,17 @@
         <version.io.smallrye.open-api>3.2.0</version.io.smallrye.open-api>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
         <version.io.smallrye.smallrye-common>2.0.0</version.io.smallrye.smallrye-common>
-        <version.io.smallrye.smallrye-config>3.1.0</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-config>3.1.3</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>6.2.1</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.0.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>4.2.0</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>4.0.0</version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.smallrye-mutiny>1.7.0</version.io.smallrye.smallrye-mutiny>
+        <version.io.smallrye.smallrye-mutiny>2.1.0</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>2.26.0</version.io.smallrye.smallrye-mutiny-vertx>
+        <version.io.smallrye.smallrye-mutiny-zero>1.0.0</version.io.smallrye.smallrye-mutiny-zero>
+        <version.io.smallrye.smallrye-opentelemetry>2.3.0</version.io.smallrye.smallrye-opentelemetry>
         <version.io.smallrye.smallrye-opentracing>3.0.0</version.io.smallrye.smallrye-opentracing>
-        <version.io.smallrye.smallrye-reactive-messaging>4.1.0</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.smallrye.smallrye-reactive-messaging>4.3.0</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.undertow.jastow>2.2.6.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.3.4</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
@@ -426,7 +430,7 @@
         <version.org.apache.ds>2.0.0.AM26</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.9</version.org.apache.james.apache-mime4j>
-        <version.org.apache.kafka>3.2.2</version.org.apache.kafka>
+        <version.org.apache.kafka>3.4.0</version.org.apache.kafka>
         <version.org.apache.lucene>8.11.1</version.org.apache.lucene>
         <version.org.apache.myfaces.core>3.0.2</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
@@ -454,12 +458,14 @@
         <version.org.eclipse.microprofile.fault-tolerance.api>4.0.2</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.health.api>4.0</version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.jwt.api>2.0</version.org.eclipse.microprofile.jwt.api>
+        <version.org.eclipse.microprofile.lra.api>2.0</version.org.eclipse.microprofile.lra.api>
         <version.org.eclipse.microprofile.metrics.api>4.0</version.org.eclipse.microprofile.metrics.api>
         <version.org.eclipse.microprofile.openapi>3.1</version.org.eclipse.microprofile.openapi>
         <version.org.eclipse.microprofile.opentracing>3.0</version.org.eclipse.microprofile.opentracing>
         <version.org.eclipse.microprofile.reactive-messaging.api>3.0</version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
+        <version.org.eclipse.microprofile.telemetry>1.0</version.org.eclipse.microprofile.telemetry>
         <version.org.eclipse.yasson>3.0.1</version.org.eclipse.yasson>
         <version.org.eclipse.persistence.eclipselink>4.0.0</version.org.eclipse.persistence.eclipselink>
         <version.org.glassfish.expressly>5.0.0</version.org.glassfish.expressly>
@@ -474,7 +480,7 @@
         <version.org.hamcrest.legacy>1.3</version.org.hamcrest.legacy>
         <version.org.hibernate.commons.annotations>6.0.6.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>6.1.8.Final</version.org.hibernate.search>
-        <version.org.hibernate>6.2.0.CR3</version.org.hibernate>
+        <version.org.hibernate>6.2.0.CR4</version.org.hibernate>
         <version.org.hibernate.validator>8.0.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
         <version.org.infinispan>14.0.7.Final</version.org.infinispan>
@@ -501,7 +507,7 @@
         <version.org.jboss.openjdk-orb>9.0.1.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>6.2.3.Final</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.extensions>2.0.0.Final</version.org.jboss.resteasy.extensions>
-        <version.org.jboss.resteasy.microprofile>2.1.0.Final</version.org.jboss.resteasy.microprofile>
+        <version.org.jboss.resteasy.microprofile>2.1.1.Final</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.0.1.Final</version.org.jboss.resteasy.spring>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
@@ -525,7 +531,7 @@
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.9.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>2.1.2</version.org.jctools.jctools-core>
         <version.org.jetbrains.kotlin>1.7.10</version.org.jetbrains.kotlin>
-        <version.org.jgroups>5.2.12.Final</version.org.jgroups>
+        <version.org.jgroups>5.2.13.Final</version.org.jgroups>
         <version.org.jgroups.aws>2.0.1.Final</version.org.jgroups.aws>
         <version.org.jgroups.azure>2.0.2.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>2.0.1.Final</version.org.jgroups.kubernetes>
@@ -538,12 +544,11 @@
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.4</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.springframework.kafka>2.9.1</version.org.springframework.kafka>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>
         <version.org.wildfly.arquillian>5.0.0.Alpha6</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>20.0.0.Beta7</version.org.wildfly.core>
+        <version.org.wildfly.core>20.0.0.Beta8</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>2.0.2.Final</version.org.wildfly.http-client>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
@@ -868,6 +873,13 @@
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-dist</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-feature-pack-common</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>

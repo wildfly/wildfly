@@ -1,6 +1,14 @@
 [[SOAP_over_Jakarta_Messaging]]
 = SOAP over Jakarta Messaging
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 JBoss Web Services allows communication over the _Jakarta Messaging_ transport. The
 functionality comes from Apache CXF support for the
 http://www.w3.org/TR/soapjms/[SOAP over Java Message Service 1.0]

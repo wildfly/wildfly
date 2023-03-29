@@ -38,6 +38,7 @@
         <module name="io.opentelemetry.sdk" />
         <module name="io.opentelemetry.context" />
         <module name="io.opentelemetry.exporter" />
+        <module name="io.smallrye.opentelemetry" />
 
         <module name="java.logging"/>
         <module name="javax.enterprise.api" />
@@ -53,6 +54,8 @@
         <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.weld.api"/>
+        <module name="org.jboss.weld.spi"/>
 
         <module name="org.wildfly.security.manager"/>
     </dependencies>

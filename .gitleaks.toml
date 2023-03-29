@@ -9,6 +9,7 @@
         '''testsuite\/integration\/basic\/src\/test\/java\/org\/jboss\/as\/test\/integration\/management\/api\/web''',
         '''testsuite\/integration\/basic\/src\/test\/resources\/org\/wildfly\/test\/integration\/microprofile\/jwt''',
         '''testsuite\/integration\/elytron\/src\/test\/resources''',
+        '''testsuite\/integration\/elytron-oidc-client\/src\/test\/java\/org\/wildfly\/test\/integration\/elytron\/oidc\/client''',
         '''testsuite\/integration\/manualmode\/src\/test\/java\/org\/jboss\/as\/test\/manualmode\/ejb\/ssl''',
         '''testsuite\/integration\/manualmode\/src\/test\/java\/org\/jboss\/as\/test\/manualmode\/ejb\/client\/outbound\/connection\/security''',
         '''testsuite\/integration\/microprofile\/src\/test\/resources\/jwt''',

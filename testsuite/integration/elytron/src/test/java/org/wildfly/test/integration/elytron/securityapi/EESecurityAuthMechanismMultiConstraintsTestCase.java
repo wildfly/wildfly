@@ -161,7 +161,7 @@ public class EESecurityAuthMechanismMultiConstraintsTestCase {
 
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
-            ConfigurableElement[] elements = new ConfigurableElement[3];
+            ConfigurableElement[] elements = new ConfigurableElement[2];
             // 1 - Add empty JACC Policy
             elements[0] = Policy.builder()
                     .withName("jacc")

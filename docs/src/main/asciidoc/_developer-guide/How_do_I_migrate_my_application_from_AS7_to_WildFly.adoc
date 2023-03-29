@@ -6,6 +6,14 @@
 [[How_do_I_migrate_my_application_from_AS7_to_WildFly]]
 = How do I migrate my application from {PrevProductName} {PrevProductVersion}  to {ProductName} {ProductVersion}
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[about-this-document]]
 == About this Document
 
@@ -976,4 +984,4 @@ A JSR-88 deployment plan is identified by a XML descriptor named `deployment-pla
 
 Applications defining dependencies to {ProductName} modules, through the application's package `MANIFEST.MF` or `jboss-deployment-structure.xml`, may be referencing missing modules. When migrating an application, relying on such functionality, the presence of the referenced modules should be validated in advance.
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

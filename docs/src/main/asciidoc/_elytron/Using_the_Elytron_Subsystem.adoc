@@ -1,6 +1,14 @@
 [[Using_the_Elytron_Subsystem]]
 = Using the Elytron Subsystem
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[set-up-and-configure-authentication-for-applications]]
 == Set Up and Configure Authentication for Applications
 

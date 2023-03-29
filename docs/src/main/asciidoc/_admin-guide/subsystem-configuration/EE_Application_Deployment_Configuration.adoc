@@ -1,6 +1,14 @@
 [[EE_Application_Deployment_Configuration]]
 = Jakarta EE Application Deployment
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The EE subsystem configuration allows the customisation of the
 deployment behaviour for Jakarta EE Applications.
 

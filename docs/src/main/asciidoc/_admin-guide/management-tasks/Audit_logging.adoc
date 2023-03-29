@@ -1,6 +1,14 @@
 [[Audit_logging]]
 = Audit logging
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly comes with audit logging built in for management operations
 affecting the management model. By default it is turned off. The
 information is output as JSON records.

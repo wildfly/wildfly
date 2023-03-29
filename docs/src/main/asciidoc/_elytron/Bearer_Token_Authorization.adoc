@@ -1,6 +1,14 @@
 [[Bearer_Token_Authorization]]
 = Bearer Token Authorization
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Bearer Token Authorization is the process of authorizing HTTP requests based on the existence and validity of a bearer
 token representing a subject and his access context, where the token provides valuable information to determine the subject of the call as well whether or not a HTTP resource
 can be accessed.

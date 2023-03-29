@@ -46,7 +46,7 @@ public class EESecuritySubsystemDefinition extends PersistentResourceDefinition 
                     .build();
 
     EESecuritySubsystemDefinition() {
-        super(new SimpleResourceDefinition.Parameters(EESecurityExtension.SUBSYSTEM_PATH, EESecurityExtension.getResolver())
+        super(new SimpleResourceDefinition.Parameters(EESecurityExtension.SUBSYSTEM_PATH, EESecurityExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(EESecuritySubsystemAdd.INSTANCE)
                 .addCapabilities(EE_SECURITY_CAPABILITY)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)

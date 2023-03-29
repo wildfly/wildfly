@@ -1,6 +1,14 @@
 [[EJB_invocations_from_a_remote_client_using_JNDI]]
 = EJB invocations from a remote client using JNDI
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 This chapter explains how to invoke EJBs from a remote client by using
 the JNDI API to first lookup the bean proxy and then invoke on that
 proxy.
@@ -669,4 +677,4 @@ mentioned above. You'll also need to have your application's bean
 interface jars and other jars that are required by your application, in
 the client classpath
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

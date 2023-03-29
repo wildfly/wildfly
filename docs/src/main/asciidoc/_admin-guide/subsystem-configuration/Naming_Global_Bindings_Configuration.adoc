@@ -1,6 +1,14 @@
 [[Naming_Global_Bindings_Configuration]]
 = Global Bindings Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The Naming subsystem configuration allows binding entries into the
 following global JNDI namespaces:
 

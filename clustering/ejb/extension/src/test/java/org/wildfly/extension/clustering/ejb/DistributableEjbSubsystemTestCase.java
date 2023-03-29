@@ -47,14 +47,14 @@ import static org.junit.Assert.assertTrue;
  * @author Richard Achmatowicz
  */
 @RunWith(value = Parameterized.class)
-public class DistributableEjbSubsystemTestCase extends ClusteringSubsystemTest<DistributableEjbSchema> {
+public class DistributableEjbSubsystemTestCase extends ClusteringSubsystemTest<DistributableEjbSubsystemSchema> {
 
     @Parameters
-    public static Iterable<DistributableEjbSchema> parameters() {
-        return EnumSet.allOf(DistributableEjbSchema.class);
+    public static Iterable<DistributableEjbSubsystemSchema> parameters() {
+        return EnumSet.allOf(DistributableEjbSubsystemSchema.class);
     }
 
-    public DistributableEjbSubsystemTestCase(DistributableEjbSchema schema) {
+    public DistributableEjbSubsystemTestCase(DistributableEjbSubsystemSchema schema) {
         super(DistributableEjbExtension.SUBSYSTEM_NAME, new DistributableEjbExtension(), schema, "wildfly-distributable-ejb-%d_%d.xml", "schema/wildfly-distributable-ejb_%d_%d.xsd");
     }
 

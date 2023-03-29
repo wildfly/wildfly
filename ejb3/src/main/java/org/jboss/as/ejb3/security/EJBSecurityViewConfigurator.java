@@ -59,7 +59,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * {@link ViewConfigurator} responsible for setting up necessary security interceptors on an EJB view.
  *
- * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ * NOTE: References in this file to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
  *
  * <p/>
  * User: Jaikiran Pai

@@ -1,6 +1,14 @@
 [[Deployment_Descriptors_used_In_WildFly]]
 = Deployment Descriptors used In WildFly
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 This page gives a list and a description of all the valid deployment
 descriptors that a WildFly deployment can use. This document is a work
 in progress.

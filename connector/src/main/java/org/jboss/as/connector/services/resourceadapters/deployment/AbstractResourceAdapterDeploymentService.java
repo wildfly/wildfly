@@ -55,7 +55,6 @@ import org.jboss.as.connector.services.resourceadapters.AdminObjectService;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
-import org.jboss.as.connector.services.workmanager.NamedWorkManager;
 import org.jboss.as.connector.subsystems.common.jndi.Util;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
@@ -687,7 +686,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     String[] defaultGroups = wms.getDefaultGroups() != null ?
                             wms.getDefaultGroups().toArray(new String[workManagerSecurity.getDefaultGroups().size()]) : null;
 
-                    return new CallbackImpl(wms.isMappingRequired(), wms.getDomain(), wms.isElytronEnabled(),
+                    return new CallbackImpl(wms.isMappingRequired(), wms.getDomain(),
                             wms.getDefaultPrincipal(), defaultGroups, wms.getUserMappings(), wms.getGroupMappings());
                 } else {
                     return super.createCallback(workManagerSecurity);
@@ -700,8 +699,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
         @Override
         protected void setCallbackSecurity(org.jboss.jca.core.api.workmanager.WorkManager workManager, Callback cb) {
             if (cb instanceof  CallbackImpl) {
-                if (((CallbackImpl) cb).isElytronEnabled() != ((NamedWorkManager) workManager).isElytronEnabled())
-                    throw ConnectorLogger.ROOT_LOGGER.invalidElytronWorkManagerSetting();
                 workManager.setCallbackSecurity(cb);
 
             } else {

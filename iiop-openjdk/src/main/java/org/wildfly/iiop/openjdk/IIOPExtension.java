@@ -29,8 +29,8 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -49,22 +49,12 @@ public class IIOPExtension implements Extension {
 
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
-    private static final String RESOURCE_NAME = IIOPExtension.class.getPackage().getName() + ".LocalDescriptions";
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, IIOPExtension.class);
 
     static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3);
     static final ModelVersion VERSION_2_1 = ModelVersion.create(2, 1);
     static final ModelVersion VERSION_2 = ModelVersion.create(2,0,0);
     static final ModelVersion VERSION_1 = ModelVersion.create(1);
-
-
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder(IIOPExtension.SUBSYSTEM_NAME);
-        for (String kp : keyPrefix) {
-            prefix.append(".").append(kp);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME,
-                IIOPExtension.class.getClassLoader(), true, false);
-    }
 
     @Override
     public void initialize(ExtensionContext context) {

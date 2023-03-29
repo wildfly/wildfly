@@ -1,6 +1,14 @@
 [[Remoting_Client_Configuration]]
 = Remoting Client Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 == <endpoint /> - Remoting Client
 
 You can use the `endpoint` element, which is in the `urn:jboss-remoting:5.0` namespace, to configure a JBoss Remoting client endpoint using the `wildfly-config.xml` file. This section describes how to configure a JBoss Remoting client using this element.

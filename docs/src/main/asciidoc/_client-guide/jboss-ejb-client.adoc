@@ -1,6 +1,14 @@
 [[jboss-ejb-client]]
 = jboss-ejb-client
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The jboss-ejb-client.xml can be used to conifure EJB client from within a deployment. The file
 should be located in jar's `META-INF` directory.
 
@@ -72,5 +80,5 @@ References a remoting profile configured in the remoting subsystem.
 
 * `name` The name of the profile.
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
 

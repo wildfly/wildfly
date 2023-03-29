@@ -1,2 +1,0 @@
-org.wildfly.extension.opentelemetry.api.OpenTelemetryContainerFilter
-org.wildfly.extension.opentelemetry.api.OpenTelemetryClientRequestFilter

@@ -1,6 +1,14 @@
 [[Getting_Started_Developing_Applications_Presentation_Demo]]
 = Getting Started Developing Applications Presentation & Demo
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 This document is a "script" for use with the quickstarts associated with
 the link:Getting_Started_Developing_Applications_Guide.html[Getting
 Started Developing Applications Guide]. It can be used as the basis for

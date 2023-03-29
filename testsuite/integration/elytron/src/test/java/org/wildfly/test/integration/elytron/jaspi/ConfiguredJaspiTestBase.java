@@ -57,6 +57,7 @@ import org.junit.Test;
 import org.wildfly.security.auth.jaspi.Flag;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
+import org.wildfly.test.security.common.elytron.Module;
 import org.wildfly.test.undertow.common.UndertowApplicationSecurityDomain;
 
 /**

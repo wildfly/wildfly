@@ -1,6 +1,14 @@
 [[filesystem-security-realm]]
 = Filesystem Security Realm
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The filesystem security realm is a security realm developed to support storing of identities in a filesystem with the option of associating multiple credentials and multiple attributes with each identity. Both credentials and attributes can contain multiple values.
 
 == Create and Populate Filesystem Security Realm

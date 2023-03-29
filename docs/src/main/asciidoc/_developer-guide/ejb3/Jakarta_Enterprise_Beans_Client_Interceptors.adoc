@@ -1,5 +1,13 @@
 = Jakarta Enterprise Beans Client Interceptors
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 == Implementing Client Interceptors
 
 The Jakarta Enterprise Beans client supports the notion of client side interceptors. These are interceptors

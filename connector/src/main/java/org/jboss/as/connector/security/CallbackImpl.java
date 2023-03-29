@@ -26,13 +26,8 @@ public class CallbackImpl extends org.jboss.jca.core.security.CallbackImpl {
 
     private boolean elytronEnabled;
 
-    public CallbackImpl(boolean mappingRequired, String domain, boolean elytronEnabled, String defaultPrincipal, String[] defaultGroups,
+    public CallbackImpl(boolean mappingRequired, String domain, String defaultPrincipal, String[] defaultGroups,
             Map<String, String> principals, Map<String, String> groups) {
         super(mappingRequired, domain, defaultPrincipal, defaultGroups, principals, groups);
-        this.elytronEnabled = elytronEnabled;
-    }
-
-    public boolean isElytronEnabled() {
-        return elytronEnabled;
     }
 }

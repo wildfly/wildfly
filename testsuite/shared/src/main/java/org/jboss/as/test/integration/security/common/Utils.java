@@ -22,39 +22,25 @@
 package org.jboss.as.test.integration.security.common;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import static org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils.OID_KERBEROS_V5;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -66,10 +52,7 @@ import javax.security.auth.login.LoginException;
 import javax.security.auth.x500.X500Principal;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -82,7 +65,6 @@ import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.config.AuthSchemes;
@@ -100,26 +82,18 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
-import org.ietf.jgss.GSSContext;
-import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.GSSName;
-import org.ietf.jgss.Oid;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.network.NetworkUtils;
-import org.jboss.as.test.integration.security.common.negotiation.JBossNegotiateSchemeFactory;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
 
 /**
@@ -133,10 +107,6 @@ public class Utils extends CoreUtils {
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
 
     public static final String UTF_8 = "UTF-8";
-
-    public static final boolean IBM_JDK = StringUtils.startsWith(SystemUtils.JAVA_VENDOR, "IBM");
-    public static final boolean OPEN_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "OpenJDK");
-    public static final boolean ORACLE_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "Java HotSpot");
 
     private static final char[] KEYSTORE_CREATION_PASSWORD = "123456".toCharArray();
 
@@ -223,18 +193,6 @@ public class Utils extends CoreUtils {
         }
     };
 
-    /**
-     * Return MD5 hash of the given string value, encoded with given {@link Coding}. If the value or coding is <code>null</code>
-     * then original value is returned.
-     *
-     * @param value
-     * @param coding
-     * @return encoded MD5 hash of the string or original value if some of parameters is null
-     */
-    public static String hashMD5(String value, Coding coding) {
-        return (coding == null || value == null) ? value : hash(value, "MD5", coding);
-    }
-
     public static String hash(String target, String algorithm, Coding coding) {
         MessageDigest md = null;
         try {
@@ -242,10 +200,11 @@ public class Utils extends CoreUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        assert md != null;
         byte[] bytes = target.getBytes(StandardCharsets.UTF_8);
         byte[] byteHash = md.digest(bytes);
 
-        String encodedHash = null;
+        String encodedHash;
 
         switch (coding) {
             case BASE_64:
@@ -262,7 +221,8 @@ public class Utils extends CoreUtils {
     }
 
     public static String toHex(byte[] bytes) {
-        StringBuffer sb = new StringBuffer(bytes.length * 2);
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < bytes.length; i++) {
             byte b = bytes[i];
             // top 4 bits
@@ -310,7 +270,6 @@ public class Utils extends CoreUtils {
                 Thread.sleep(remainingTime);
             } catch (InterruptedException ex) {
                 remainingTime = currentTime + delay - System.currentTimeMillis();
-                continue;
             }
         }
     }
@@ -374,7 +333,7 @@ public class Utils extends CoreUtils {
             // We should now login with the user name and password
             HttpPost httpost = new HttpPost(URL + "/j_security_check");
 
-            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            List<NameValuePair> nvps = new ArrayList<>();
             nvps.add(new BasicNameValuePair("j_username", user));
             nvps.add(new BasicNameValuePair("j_password", pass));
 
@@ -401,28 +360,6 @@ public class Utils extends CoreUtils {
             statusLine = response.getStatusLine();
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
         }
-    }
-
-    /**
-     * Exports given archive to the given file path.
-     *
-     * @param archive
-     * @param filePath
-     */
-    public static void saveArchive(Archive<?> archive, String filePath) {
-        archive.as(ZipExporter.class).exportTo(new File(filePath), true);
-    }
-
-    /**
-     * Exports given archive to the given folder.
-     *
-     * @param archive archive to export (not-<code>null</code>)
-     * @param folderPath
-     */
-    public static void saveArchiveToFolder(Archive<?> archive, String folderPath) {
-        final File exportFile = new File(folderPath, archive.getName());
-        LOGGER.trace("Exporting archive: " + exportFile.getAbsolutePath());
-        archive.as(ZipExporter.class).exportTo(exportFile, true);
     }
 
     /**
@@ -575,234 +512,6 @@ public class Utils extends CoreUtils {
     }
 
     /**
-     * Returns response body for the given URL request as a String. It also checks if the returned HTTP status code is the
-     * expected one. If the server returns {@link HttpServletResponse#SC_UNAUTHORIZED} and an username is provided, then the
-     * given user is authenticated against Kerberos and a new request is executed under the new subject.
-     *
-     * @param uri URI to which the request should be made
-     * @param user Username
-     * @param pass Password
-     * @param expectedStatusCode expected status code returned from the requested server
-     * @return HTTP response body
-     * @throws IOException
-     * @throws URISyntaxException
-     * @throws PrivilegedActionException
-     * @throws LoginException
-     */
-    public static String makeCallWithKerberosAuthn(final URI uri, final String user, final String pass,
-            final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException, LoginException {
-        LOGGER.trace("Requesting URI: " + uri);
-        Registry<AuthSchemeProvider> authSchemeRegistry = RegistryBuilder.<AuthSchemeProvider> create()
-                .register(AuthSchemes.SPNEGO, new JBossNegotiateSchemeFactory(true))
-                .build();
-
-        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
-
-        final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(getLoginConfiguration());
-
-        try (CloseableHttpClient httpClient = HttpClientBuilder.create()
-                        .setDefaultAuthSchemeRegistry(authSchemeRegistry)
-                        .setDefaultCredentialsProvider(credentialsProvider)
-                        .build()){
-
-            final HttpGet httpGet = new HttpGet(uri);
-            final HttpResponse response = httpClient.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode || StringUtils.isEmpty(user)) {
-                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
-                return EntityUtils.toString(response.getEntity());
-            }
-            final HttpEntity entity = response.getEntity();
-            final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
-            assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
-            final Set<String> authnHeaderValues = new HashSet<String>();
-            for (final Header header : authnHeaders) {
-                authnHeaderValues.add(header.getValue());
-            }
-            assertTrue("WWW-Authenticate: Negotiate header is missing", authnHeaderValues.contains("Negotiate"));
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
-            }
-            if (entity != null)
-                EntityUtils.consume(entity);
-
-            // Use our custom configuration to avoid reliance on external config
-            Configuration.setConfiguration(krb5Configuration);
-            // 1. Authenticate to Kerberos.
-            final LoginContext lc = loginWithKerberos(krb5Configuration, user, pass);
-
-            // 2. Perform the work as authenticated Subject.
-            final String responseBody = Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<String>() {
-                public String run() throws Exception {
-                    final HttpResponse response = httpClient.execute(httpGet);
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
-                    return EntityUtils.toString(response.getEntity());
-                }
-            });
-            lc.logout();
-            return responseBody;
-        } finally {
-            krb5Configuration.resetConfiguration();
-        }
-    }
-
-    /**
-     * Creates request against SPNEGO protected web-app with FORM fallback. It tries to login using SPNEGO first - if it fails,
-     * FORM is used.
-     *
-     * @param contextUrl
-     * @param page
-     * @param user
-     * @param pass
-     * @param expectedStatusCode
-     * @return
-     * @throws IOException
-     * @throws URISyntaxException
-     * @throws PrivilegedActionException
-     * @throws LoginException
-     */
-    public static String makeHttpCallWithFallback(final String contextUrl, final String page, final String user,
-            final String pass, final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException,
-            LoginException {
-        final String strippedContextUrl = StringUtils.stripEnd(contextUrl, "/");
-        final String url = strippedContextUrl + page;
-        LOGGER.trace("Requesting URL: " + url);
-        String unauthorizedPageBody = null;
-        final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(getLoginConfiguration());
-
-        Registry<AuthSchemeProvider> authSchemeRegistry = RegistryBuilder.<AuthSchemeProvider>create()
-                .register(AuthSchemes.SPNEGO, new JBossNegotiateSchemeFactory(true))
-                .build();
-
-        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
-
-        final CloseableHttpClient httpClient = HttpClientBuilder.create()
-                .setDefaultAuthSchemeRegistry(authSchemeRegistry)
-                .setDefaultCredentialsProvider(credentialsProvider)
-                .setRedirectStrategy(REDIRECT_STRATEGY)
-                .setConnectionManager(new BasicHttpClientConnectionManager())
-                .build();
-
-        try {
-            final HttpGet httpGet = new HttpGet(url);
-            final HttpResponse response = httpClient.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode || StringUtils.isEmpty(user)) {
-                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
-                return EntityUtils.toString(response.getEntity());
-            }
-            final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
-            assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
-            final Set<String> authnHeaderValues = new HashSet<String>();
-            for (final Header header : authnHeaders) {
-                authnHeaderValues.add(header.getValue());
-            }
-            assertTrue("WWW-Authenticate: Negotiate header is missing", authnHeaderValues.contains("Negotiate"));
-
-            LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
-            unauthorizedPageBody = EntityUtils.toString(response.getEntity());
-
-            // Use our custom configuration to avoid reliance on external config
-            Configuration.setConfiguration(krb5Configuration);
-            // 1. Authenticate to Kerberos.
-            final LoginContext lc = loginWithKerberos(krb5Configuration, user, pass);
-
-            // 2. Perform the work as authenticated Subject.
-            final String responseBody = Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<String>() {
-                public String run() throws Exception {
-                    final HttpResponse response = httpClient.execute(httpGet);
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
-                    return EntityUtils.toString(response.getEntity());
-                }
-            });
-            lc.logout();
-            return responseBody;
-        } catch (LoginException e) {
-            assertNotNull(unauthorizedPageBody);
-            assertTrue(unauthorizedPageBody.contains("j_security_check"));
-
-            HttpPost httpPost = new HttpPost(strippedContextUrl + "/j_security_check");
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-            nameValuePairs.add(new BasicNameValuePair("j_username", user));
-            nameValuePairs.add(new BasicNameValuePair("j_password", pass));
-            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-            final HttpResponse response = httpClient.execute(httpPost);
-            int statusCode = response.getStatusLine().getStatusCode();
-            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
-            return EntityUtils.toString(response.getEntity());
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpClient.close();
-            // reset login configuration
-            krb5Configuration.resetConfiguration();
-        }
-    }
-
-    /**
-     * Creates request against SPNEGO protected web-app with FORM fallback. It doesn't try to login using SPNEGO - it uses FORM
-     * authn directly.
-     *
-     * @param contextUrl
-     * @param page
-     * @param user
-     * @param pass
-     * @param expectedStatusCode
-     * @return
-     * @throws IOException
-     * @throws URISyntaxException
-     * @throws PrivilegedActionException
-     * @throws LoginException
-     */
-    public static String makeHttpCallWoSPNEGO(final String contextUrl, final String page, final String user, final String pass,
-                                              final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException, LoginException {
-        final String strippedContextUrl = StringUtils.stripEnd(contextUrl, "/");
-        final String url = strippedContextUrl + page;
-        LOGGER.trace("Requesting URL: " + url);
-
-        String unauthorizedPageBody = null;
-        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
-            final HttpGet httpGet = new HttpGet(url);
-            HttpResponse response = httpClient.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode || StringUtils.isEmpty(user)) {
-                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
-                return EntityUtils.toString(response.getEntity());
-            }
-            final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
-            assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
-            final Set<String> authnHeaderValues = new HashSet<String>();
-            for (final Header header : authnHeaders) {
-                authnHeaderValues.add(header.getValue());
-            }
-            assertTrue("WWW-Authenticate: Negotiate header is missing", authnHeaderValues.contains("Negotiate"));
-
-            LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
-            unauthorizedPageBody = EntityUtils.toString(response.getEntity());
-
-            assertNotNull(unauthorizedPageBody);
-            LOGGER.trace(unauthorizedPageBody);
-            assertTrue(unauthorizedPageBody.contains("j_security_check"));
-
-            HttpPost httpPost = new HttpPost(strippedContextUrl + "/j_security_check");
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-            nameValuePairs.add(new BasicNameValuePair("j_username", user));
-            nameValuePairs.add(new BasicNameValuePair("j_password", pass));
-            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-            response = httpClient.execute(httpPost);
-            statusCode = response.getStatusLine().getStatusCode();
-            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
-            return EntityUtils.toString(response.getEntity());
-        }
-    }
-
-    /**
      * Do HTTP request using given client with BEARER_TOKEN authentication.The implementation makes 2 calls - the first without
      * Authorization header provided (just to check response code and WWW-Authenticate header value), the second with
      * Authorization header.
@@ -816,7 +525,7 @@ public class Utils extends CoreUtils {
      * @throws ClientProtocolException
      */
     public static String makeCallWithTokenAuthn(final URL url, String token, int expectedStatusCode)
-            throws URISyntaxException, IOException, ClientProtocolException, UnsupportedEncodingException {
+            throws URISyntaxException, IOException, ClientProtocolException {
 
         LOGGER.trace("Requesting URL: " + url);
 
@@ -855,37 +564,23 @@ public class Utils extends CoreUtils {
     }
 
     /**
-     * Sets or removes (in case value==null) a system property. It's only a helper method, which avoids
-     * {@link NullPointerException} thrown from {@link System#setProperty(String, String)} method, when the value is
-     * <code>null</code>.
-     *
-     * @param key property name
-     * @param value property value
-     * @return the previous string value of the system property
-     */
-    public static String setSystemProperty(final String key, final String value) {
-        return value == null ? System.clearProperty(key) : System.setProperty(key, value);
-    }
-
-    /**
      * Generates content of jboss-ejb3.xml file as a ShrinkWrap asset with the given security domain name.
      *
      * @param securityDomain security domain name
      * @return Asset instance
      */
     public static Asset getJBossEjb3XmlAsset(final String securityDomain) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("<jboss:ejb-jar xmlns:jboss='http://www.jboss.com/xml/ns/javaee'");
-        sb.append("\n\txmlns='http://java.sun.com/xml/ns/javaee'");
-        sb.append("\n\txmlns:s='urn:security'");
-        sb.append("\n\tversion='3.1'");
-        sb.append("\n\timpl-version='2.0'>");
-        sb.append("\n\t<assembly-descriptor><s:security>");
-        sb.append("\n\t\t<ejb-name>*</ejb-name>");
-        sb.append("\n\t\t<s:security-domain>").append(securityDomain).append("</s:security-domain>");
-        sb.append("\n\t</s:security></assembly-descriptor>");
-        sb.append("\n</jboss:ejb-jar>");
-        return new StringAsset(sb.toString());
+        String sb = "<jboss:ejb-jar xmlns:jboss='http://www.jboss.com/xml/ns/javaee'" +
+                "\n\txmlns='http://java.sun.com/xml/ns/javaee'" +
+                "\n\txmlns:s='urn:security'" +
+                "\n\tversion='3.1'" +
+                "\n\timpl-version='2.0'>" +
+                "\n\t<assembly-descriptor><s:security>" +
+                "\n\t\t<ejb-name>*</ejb-name>" +
+                "\n\t\t<s:security-domain>" + securityDomain + "</s:security-domain>" +
+                "\n\t</s:security></assembly-descriptor>" +
+                "\n</jboss:ejb-jar>";
+        return new StringAsset(sb);
     }
 
     /**
@@ -1004,52 +699,6 @@ public class Utils extends CoreUtils {
         LOGGER.trace("Key material created in " + workingFolder.getAbsolutePath());
     }
 
-    public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword) {
-        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(),
-                keystorePassword, null);
-    }
-
-    /**
-     * Replace keystore paths and passwords variables in original configuration file with given values and set ${hostname}
-     * variable from system property: node0
-     *
-     * @param originalFile String
-     * @param keystoreFile File
-     * @param trustStoreFile File
-     * @param keystorePassword String
-     * @return String content
-     */
-    public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile,
-            String keystorePassword) {
-        String hostname = getDefaultHost(false);
-
-        // expand possible IPv6 address
-        try {
-            hostname = NetworkUtils.formatPossibleIpv6Address(InetAddress.getByName(hostname).getHostAddress());
-        } catch (UnknownHostException ex) {
-            String message = "Cannot resolve host address: " + hostname + " , error : " + ex.getMessage();
-            LOGGER.error(message);
-            throw new RuntimeException(ex);
-        }
-
-        final Map<String, String> map = new HashMap<String, String>();
-        String content = "";
-        map.put("hostname", hostname);
-        map.put("keystore", keystoreFile);
-        map.put("truststore", trustStoreFile);
-        map.put("password", keystorePassword);
-
-        try {
-            content = StrSubstitutor.replace(IOUtils.toString(CoreUtils.class.getResourceAsStream(originalFile), StandardCharsets.UTF_8), map);
-        } catch (IOException ex) {
-            String message = "Cannot find or modify configuration file " + originalFile + " , error : " + ex.getMessage();
-            LOGGER.error(message);
-            throw new RuntimeException(ex);
-        }
-
-        return content;
-    }
-
     /**
      * Makes HTTP call without authentication. Returns response body as a String.
      *
@@ -1076,14 +725,8 @@ public class Utils extends CoreUtils {
      * @return "[urlEncodedName]=[urlEncodedValue]" string
      */
     public static String encodeQueryParam(final String paramName, final String paramValue) {
-        String response = null;
-        try {
-            response = StringUtils.isEmpty(paramValue) ? null : (URLEncoder.encode(paramName, UTF_8) + "=" + URLEncoder.encode(
-                    StringUtils.defaultString(paramValue, StringUtils.EMPTY), UTF_8));
-        } catch (UnsupportedEncodingException e) {
-            // should never happen - everybody likes the "UTF-8" :)
-        }
-        return response;
+        return StringUtils.isEmpty(paramValue) ? null : (URLEncoder.encode(paramName, StandardCharsets.UTF_8) + "=" + URLEncoder.encode(
+                StringUtils.defaultString(paramValue, StringUtils.EMPTY), StandardCharsets.UTF_8));
     }
 
     /**
@@ -1093,38 +736,8 @@ public class Utils extends CoreUtils {
      * @param managementClient
      * @return
      */
-    public static final String getHost(final ManagementClient managementClient) {
+    public static String getHost(final ManagementClient managementClient) {
         return CoreUtils.stripSquareBrackets(managementClient.getMgmtAddress());
-    }
-
-    /**
-     * Returns canonical hostname retrieved from management address of the givem
-     * {@link ManagementClient}.
-     *
-     * @param managementClient
-     * @return
-     */
-    public static final String getCannonicalHost(final ManagementClient managementClient) {
-        return getCannonicalHost(managementClient.getMgmtAddress());
-    }
-
-    /**
-     * Returns servlet URL, as concatenation of webapp URL and servlet path.
-     *
-     * @param webAppURL web application context URL (e.g. injected by Arquillian)
-     * @param servletPath Servlet path starting with slash (must be not-<code>null</code>)
-     * @param mgmtClient Management Client (may be null)
-     * @param useCanonicalHost flag which says if host in URI should be replaced by the canonical host.
-     * @return
-     * @throws URISyntaxException
-     */
-    public static final URI getServletURI(final URL webAppURL, final String servletPath, final ManagementClient mgmtClient,
-            boolean useCanonicalHost) throws URISyntaxException {
-        URI resultURI = new URI(webAppURL.toExternalForm() + servletPath.substring(1));
-        if (useCanonicalHost) {
-            resultURI = replaceHost(resultURI, getCannonicalHost(mgmtClient));
-        }
-        return resultURI;
     }
 
     /**
@@ -1168,68 +781,8 @@ public class Utils extends CoreUtils {
     public static LoginContext loginWithKerberos(final Krb5LoginConfiguration krb5Configuration, final String user,
             final String pass) throws LoginException {
         LoginContext lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordCBH(user, pass.toCharArray()));
-        if (IBM_JDK) {
-            // workaround for IBM JDK on RHEL5 issue described in https://bugzilla.redhat.com/show_bug.cgi?id=1206177
-            // The first negotiation always fail, so let's do a dummy login/logout round.
-            lc.login();
-            lc.logout();
-            lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordCBH(user, pass.toCharArray()));
-        }
         lc.login();
         return lc;
-    }
-
-    /**
-     * Creates Kerberos TGS ticket for given user to access given server.
-     *
-     * @param user
-     * @param pass
-     * @param serverName
-     * @return
-     */
-    public static byte[] createKerberosTicketForServer(final String user, final String pass, final GSSName serverName)
-            throws MalformedURLException, LoginException, PrivilegedActionException {
-        Objects.requireNonNull(serverName);
-        final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(getLoginConfiguration());
-        try {
-            Configuration.setConfiguration(krb5Configuration);
-            final LoginContext lc = loginWithKerberos(krb5Configuration, user, pass);
-            try {
-                return Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<byte[]>() {
-                    public byte[] run() throws Exception {
-                        final GSSManager manager = GSSManager.getInstance();
-                        final Oid oid = new Oid(OID_KERBEROS_V5);
-                        final GSSContext gssContext = manager.createContext(serverName.canonicalize(oid), oid, null, 60);
-                        gssContext.requestMutualAuth(true);
-                        gssContext.requestCredDeleg(true);
-                        return gssContext.initSecContext(new byte[0], 0, 0);
-                    }
-                });
-            } finally {
-                lc.logout();
-            }
-        } finally {
-            krb5Configuration.resetConfiguration();
-        }
-    }
-
-    /**
-     * Asserts that the given HttpResponse contains header with given name and value.
-     *
-     * @param resp HttpResponse (from Apache HttpClient)
-     * @param headerName name of HTTP header
-     * @param expectedVal expected HTTP header value
-     */
-    public static void assertHttpHeader(HttpResponse resp, String headerName, String expectedVal) {
-        final Header[] authnHeaders = resp.getHeaders(headerName);
-        assertTrue("Header " + headerName + " should be present in the HTTP response",
-                authnHeaders != null && authnHeaders.length > 0);
-        for (final Header header : authnHeaders) {
-            if (expectedVal.equals(header.getValue())) {
-                return;
-            }
-        }
-        fail("HTTP Header not found '" + headerName + ": " + expectedVal + "'");
     }
 
 
@@ -1239,6 +792,7 @@ public class Utils extends CoreUtils {
      * @param prefix folder name prefix
      * @return created folder
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static File createTemporaryFolder(String prefix) throws IOException {
         File file = File.createTempFile(prefix, "", null);
         LOGGER.debugv("Creating temporary folder {0}", file);

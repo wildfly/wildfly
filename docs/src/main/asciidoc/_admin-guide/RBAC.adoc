@@ -1,6 +1,13 @@
 [[RBAC]]
 = Authorizing management actions with Role Based Access Control
+
 ifdef::env-github[:imagesdir: ../images/]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 WildFly introduces a Role Based Access Control scheme that allows
 different administrative users to have different sets of permissions to

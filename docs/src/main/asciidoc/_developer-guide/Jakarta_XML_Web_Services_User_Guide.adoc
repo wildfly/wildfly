@@ -1,6 +1,14 @@
 [[Jakarta_XML_Web_Services_User_Guide]]
 = Jakarta XML Web Services User Guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The http://www.jcp.org/en/jsr/detail?id=224[Java API for XML-Based Web
 Services (JAX-WS / JSR-224)] defines the mapping between WSDL and Java
 as well as the classes to be used for accessing webservices and
@@ -849,4 +857,4 @@ and service implementation bean. The service implementation bean's
 The `@HandlerChain` annotation MAY be specified on the type only. The
 annotation target includes `METHOD` and `FIELD` for use by Jakarta XML Web Services Specification-2.x.
 
-NOTE: References in this document to Java API for XML-Based Web Services(JAX-WS) refer to the Jakarta XML Web Services unless otherwise noted
+NOTE: References in this document to Java API for XML-Based Web Services (JAX-WS) refer to the Jakarta XML Web Services unless otherwise noted

@@ -1,6 +1,14 @@
 [[Default_Native_Interface_Security]]
 = Default Native Interface Security
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The native interface shares the same security configuration as the http
 interface, however we also support a local authentication mechanism
 which means that the CLI can authenticate against the local WildFly

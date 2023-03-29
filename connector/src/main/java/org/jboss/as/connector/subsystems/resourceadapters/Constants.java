@@ -66,6 +66,8 @@ public class Constants {
 
     private static final Boolean ELYTRON_MANAGED_SECURITY = Boolean.FALSE;
 
+    private static final ModelVersion ELYTRON_BY_DEFAULT_VERSION = ModelVersion.create(6, 1, 0);
+
     public static final String RESOURCEADAPTER_NAME = "resource-adapter";
 
     public static final String WORKMANAGER_NAME = "workmanager";
@@ -318,6 +320,7 @@ public class Constants {
             .setXmlName(WorkManagerSecurity.Tag.DOMAIN.getLocalName())
             .setAlternatives(WM_ELYTRON_SECURITY_DOMAIN_NAME)
             .setRestartAllServices()
+            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .build();
 
     static final SimpleAttributeDefinition WM_ELYTRON_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(WM_ELYTRON_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
@@ -413,6 +416,7 @@ public class Constants {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .setRestartAllServices()
+            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .build();
     static final SimpleAttributeDefinition SECURITY_DOMAIN_AND_APPLICATION = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_AND_APPLICATION_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.SECURITY_DOMAIN_AND_APPLICATION.getLocalName())
@@ -431,11 +435,11 @@ public class Constants {
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .setNullSignificant(false)
             .setRestartAllServices()
+            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .build();
     static SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
             .setAllowExpression(false)
-            .setRequires(ELYTRON_ENABLED_NAME)
             .setAlternatives(SECURITY_DOMAIN_NAME, SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME,
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
@@ -445,7 +449,6 @@ public class Constants {
     static final SimpleAttributeDefinition AUTHENTICATION_CONTEXT_AND_APPLICATION = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT_AND_APPLICATION.getLocalName())
             .setAllowExpression(false)
-            .setRequires(ELYTRON_ENABLED_NAME)
             .setAlternatives(SECURITY_DOMAIN_NAME, SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME,
                     AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
@@ -598,6 +601,7 @@ public class Constants {
             .setAlternatives(RECOVERY_AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .setRestartAllServices()
             .build();
 
@@ -608,13 +612,13 @@ public class Constants {
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .setNullSignificant(false)
+            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition RECOVERY_AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(RECOVERY_AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Credential.Tag.AUTHENTICATION_CONTEXT.getLocalName())
             .setAllowExpression(false)
-            .setRequires(RECOVERY_ELYTRON_ENABLED_NAME)
             .setAlternatives(RECOVERY_SECURITY_DOMAIN_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)

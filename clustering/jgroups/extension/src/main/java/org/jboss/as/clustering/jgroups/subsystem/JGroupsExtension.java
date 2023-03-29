@@ -35,13 +35,13 @@ import org.kohsuke.MetaInfServices;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 @MetaInfServices(Extension.class)
-public class JGroupsExtension extends SubsystemExtension<JGroupsSchema> {
+public class JGroupsExtension extends SubsystemExtension<JGroupsSubsystemSchema> {
 
     static final String SUBSYSTEM_NAME = "jgroups";
     static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, JGroupsExtension.class);
 
     public JGroupsExtension() {
-        super(SUBSYSTEM_NAME, JGroupsSubsystemModel.CURRENT, JGroupsSubsystemResourceDefinition::new, JGroupsSchema.CURRENT, new JGroupsSubsystemXMLWriter());
+        super(SUBSYSTEM_NAME, JGroupsSubsystemModel.CURRENT, JGroupsSubsystemResourceDefinition::new, JGroupsSubsystemSchema.CURRENT, new JGroupsSubsystemXMLWriter());
 
         // Workaround for JGRP-1475
         // Configure JGroups to use jboss-logging.

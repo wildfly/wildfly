@@ -1,6 +1,13 @@
 [[Default_HTTP_Interface_Security]]
 = Default HTTP Interface Security
+
 ifdef::env-github[:imagesdir: ../images/]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 WildFly is distributed secured by default. The default security
 mechanism is username / password based making use of HTTP Digest for the

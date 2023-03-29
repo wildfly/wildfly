@@ -53,7 +53,7 @@ class MicroProfileSubsystemDefinition extends PersistentResourceDefinition {
                     .build();
 
     protected MicroProfileSubsystemDefinition() {
-        super(new SimpleResourceDefinition.Parameters(MicroProfileJWTExtension.SUBSYSTEM_PATH, MicroProfileJWTExtension.getResourceDescriptionResolver(MicroProfileJWTExtension.SUBSYSTEM_NAME))
+        super(new SimpleResourceDefinition.Parameters(MicroProfileJWTExtension.SUBSYSTEM_PATH, MicroProfileJWTExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(new MicroProfileJWTSubsystemAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(CONFIG_CAPABILITY)

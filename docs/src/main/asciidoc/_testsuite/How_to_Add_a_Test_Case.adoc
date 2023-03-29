@@ -1,6 +1,14 @@
 [[How_to_Add_a_Test_Case]]
 = How to Add a Test Case
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 _(Please don't (re)move - this is a landing page from a Jira link.)_
 
 *Thank you for finding time to contribute to WildFly {wildflyVersion} quality.* +

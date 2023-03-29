@@ -1,6 +1,14 @@
 [[Kerberos_Based_Authentication_Migration]]
 = Kerberos Authentication Migration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 When working with Kerberos configuration it is possible for the
 application server to rely on configuration from the environment or the
 key configuration can be specified using system properties, for the

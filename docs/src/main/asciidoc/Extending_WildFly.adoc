@@ -12,6 +12,14 @@ WildFly code development team;
 :wildflyVersion: 14
 :leveloffset: +1
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 ifndef::ebook-format[:leveloffset: 1]
 
 In this document we provide an example of how to extend the kernel

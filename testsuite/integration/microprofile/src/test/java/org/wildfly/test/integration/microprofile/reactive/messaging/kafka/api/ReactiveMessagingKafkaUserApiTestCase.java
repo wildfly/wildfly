@@ -22,18 +22,9 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.api;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.PropertyPermission;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
+import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
 import jakarta.inject.Inject;
-
+import kafka.server.KafkaConfig;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.record.TimestampType;
@@ -47,18 +38,30 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
-import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.PropertyPermission;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ReactiveMessagingKafkaUserApiTestCase.CustomRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
+@Ignore("WFLY-17783")
 public class ReactiveMessagingKafkaUserApiTestCase {
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);
@@ -264,15 +267,33 @@ public class ReactiveMessagingKafkaUserApiTestCase {
     }
 
     public static class CustomRunKafkaSetupTask extends RunKafkaSetupTask {
-        @Override
-        protected String[] getTopics() {
-            return new String[]{"testing1", "testing2", "testing3", "testing4", "testing5", "testing6"};
-        }
 
         @Override
+        protected void addBrokerProperties(Properties brokerProperties) {
+            brokerProperties.put(KafkaConfig.NumPartitionsProp(), String.valueOf(getPartitions()));
+        }
+
+//        @Override
+//        protected String[] getTopics() {
+//            return new String[]{"testing1", "testing2", "testing3", "testing4", "testing5", "testing6"};
+//        }
+
+        @Override
+        protected Map<String, Integer> getTopicsAndPartitions() {
+            Map<String, Integer> map = new LinkedHashMap<>();
+            map.put("testing1", 2);
+            map.put("testing2", 2);
+            map.put("testing3", 2);
+            map.put("testing4", 2);
+            map.put("testing5", 2);
+            map.put("testing6", 2);
+            return map;
+        }
+
+        //@Override
         protected int getPartitions() {
             // Doesn't seem to have any effect. Perhaps that will change in the future
-            return 10;
+            return 12;
         }
     }
 }

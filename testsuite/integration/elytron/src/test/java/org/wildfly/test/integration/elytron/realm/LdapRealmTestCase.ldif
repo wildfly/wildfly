@@ -38,7 +38,7 @@ objectClass: inetOrgPerson
 cn: cryptUserCharsetHex
 sn: cryptUserCharsetHex
 uid: cryptUserCharsetHex
-userPassword: {crypt}XQ8317569289fa78a2
+userPassword: {crypt}yJ6bYS7DdX.NI
 # Password password密码 using a the GB2312 character set
 
 dn: uid=userWithoutRole,ou=People,dc=jboss,dc=org
@@ -71,3 +71,29 @@ objectClass: top
 cn: TheDuke
 description: the duke role
 member: uid=userWithMoreRoles,ou=People,dc=jboss,dc=org
+
+dn: ou=People2,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: People2
+
+dn: uid=referralUser,ou=People2,dc=jboss,dc=org
+objectclass: top
+objectclass: person
+objectClass: inetOrgPerson
+uid: referralUser
+cn: Referral User
+sn: Referral User
+userPassword: Password1
+
+dn: ou=Roles2,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: Roles2
+
+dn: cn=ReferralRole,ou=Roles2,dc=jboss,dc=org
+objectClass: top
+objectClass: groupOfNames
+cn: ReferralRole
+description: the ReferralRole group
+member: uid=referralUser,ou=People2,dc=jboss,dc=org

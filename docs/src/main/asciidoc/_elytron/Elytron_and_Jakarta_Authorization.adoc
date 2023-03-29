@@ -1,6 +1,14 @@
 [[Elytron_and_Java_Authorization_Contract_for_Containers-JACC]]
 = Elytron and Java Authorization Contract for Containers (JACC)
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [abstract]
 
 This document will guide you on how to enable JACC using Elytron
@@ -68,4 +76,4 @@ to enable JACC you can execute a command as follows:
 ----
 
 NOTE: References in this document to Java Authorization Contract for Containers (JACC) refer to Jakarta Authorization unless otherwise noted.
-      References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+      References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

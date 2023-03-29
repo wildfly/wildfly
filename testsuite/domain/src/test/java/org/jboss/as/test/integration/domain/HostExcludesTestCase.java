@@ -99,7 +99,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
      * This must be corrected on each new host-exclude id added on the current release.
      */
     private enum ExtensionConf {
-        WILDFLY_10_0("WildFly10.0", Arrays.asList(
+        WILDFLY_10_0("WildFly10.0", null, Arrays.asList(
                 "org.jboss.as.appclient",
                 "org.jboss.as.clustering.infinispan",
                 "org.jboss.as.clustering.jgroups",
@@ -145,70 +145,75 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.security.manager",
                 "org.wildfly.extension.undertow",
                 "org.wildfly.iiop-openjdk"
-        )),
-        WILDFLY_10_1("WildFly10.1", WILDFLY_10_0),
+        ), false),
+        WILDFLY_10_1("WildFly10.1", WILDFLY_10_0, false),
         WILDFLY_11_0("WildFly11.0", WILDFLY_10_1, Arrays.asList(
                 "org.wildfly.extension.core-management",
                 "org.wildfly.extension.discovery",
                 "org.wildfly.extension.elytron"
-        )),
-        WILDFLY_12_0("WildFly12.0", WILDFLY_11_0),
-        WILDFLY_13_0("WildFly13.0", WILDFLY_12_0, Arrays.asList(
+        ), false),
+        WILDFLY_12_0("WildFly12.0", WILDFLY_11_0, false),
+        WILDFLY_13_0("WildFly13.0", WILDFLY_12_0, List.of(
                 "org.wildfly.extension.ee-security"
-        )),
+        ), false),
         WILDFLY_14_0("WildFly14.0", WILDFLY_13_0, Arrays.asList(
                 "org.wildfly.extension.datasources-agroal",
                 "org.wildfly.extension.microprofile.config-smallrye",
                 "org.wildfly.extension.microprofile.health-smallrye",
                 "org.wildfly.extension.microprofile.opentracing-smallrye"
-        )),
-        WILDFLY_15_0("WildFly15.0", WILDFLY_14_0, Arrays.asList(
+        ), false),
+        WILDFLY_15_0("WildFly15.0", WILDFLY_14_0, List.of(
                 "org.wildfly.extension.microprofile.metrics-smallrye"
-        )),
-        WILDFLY_16_0("WildFly16.0", WILDFLY_15_0, Arrays.asList(
+        ), false),
+        WILDFLY_16_0("WildFly16.0", WILDFLY_15_0, List.of(
                 // This extension was added in WF17, however we add it here because WF16/WF17/WF18 use the same management
                 // kernel API, which is 10.0.0. Adding a host-exclusion for this extension on WF16 could affect to WF17/WF18
                 // We decided to add the host-exclusion only for WF15 and below. It means potentially a DC running on WF17
                 // with an WF16 as secondary will not exclude this extension. It is not a problem at all since mixed domains in
                 // WildFly is not supported.
                 "org.wildfly.extension.clustering.web"
-        )),
-        WILDFLY_17_0("WildFly17.0", WILDFLY_16_0),
-        WILDFLY_18_0("WildFly18.0", WILDFLY_17_0),
+        ), false),
+        WILDFLY_17_0("WildFly17.0", WILDFLY_16_0, false),
+        WILDFLY_18_0("WildFly18.0", WILDFLY_17_0, false),
         WILDFLY_19_0("WildFly19.0", WILDFLY_18_0, Arrays.asList(
                 "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
                 "org.wildfly.extension.microprofile.jwt-smallrye",
                 "org.wildfly.extension.microprofile.openapi-smallrye"
-        )),
-        WILDFLY_20_0("WildFly20.0", WILDFLY_19_0),
-        WILDFLY_21_0("WildFly21.0", WILDFLY_20_0),
+        ), false),
+        WILDFLY_20_0("WildFly20.0", WILDFLY_19_0, false),
+        WILDFLY_21_0("WildFly21.0", WILDFLY_20_0, false),
         WILDFLY_22_0("WildFly22.0", WILDFLY_21_0, Arrays.asList(
                 "org.wildfly.extension.health",
                 "org.wildfly.extension.metrics"
-        )),
+        ), false),
         WILDFLY_23_0("WildFly23.0", WILDFLY_22_0, Arrays.asList(
                 "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
                 "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"
-        )),
-        WILDFLY_24_0("WildFly24.0", WILDFLY_23_0),
+        ), false),
+        WILDFLY_24_0("WildFly24.0", WILDFLY_23_0, true),
         WILDFLY_25_0("WildFly25.0", WILDFLY_24_0, Arrays.asList(
                 "org.wildfly.extension.elytron-oidc-client",
                 "org.wildfly.extension.opentelemetry"
-        )),
+        ), true),
         WILDFLY_26_0("WildFly26.0", WILDFLY_25_0, null, Arrays.asList(
                 "org.jboss.as.cmp",
                 "org.jboss.as.jaxr",
                 "org.jboss.as.configadmin"
-        )),
+        ), true),
         WILDFLY_27_0("WildFly27.0", WILDFLY_26_0, Arrays.asList(
                 "org.wildfly.extension.clustering.ejb",
                 "org.wildfly.extension.datasources-agroal"
-        )),
+        ), true),
         // If an extension is added to this enum, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
         // to the internal mpExtensions Set defined on this class.
         // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
         // of wildfly preview. In such a case, add them to previewExtensions set defined below.
-        CURRENT(MAJOR, WILDFLY_27_0, null, getCurrentRemovedExtensions());
+        CURRENT(MAJOR, WILDFLY_27_0, Arrays.asList(
+            "org.wildfly.extension.micrometer",
+            "org.wildfly.extension.microprofile.lra-coordinator",
+            "org.wildfly.extension.microprofile.lra-participant",
+            "org.wildfly.extension.microprofile.telemetry"
+        ), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentRemovedExtensions() {
             // TODO If we decide to remove these modules from WFP, uncomment this.
@@ -233,18 +238,22 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         private final Set<String> removed = new HashSet<>();
         private static final Map<String, ExtensionConf> MAP;
         private final boolean modified;
+        private final boolean supported;
 
         // List of extensions added by the wildfly-galleon-pack
-        private Set<String> mpExtensions = new HashSet<>(Arrays.asList(
+        private final Set<String> mpExtensions = new HashSet<>(Arrays.asList(
+                "org.wildfly.extension.micrometer",
                 "org.wildfly.extension.microprofile.config-smallrye",
                 "org.wildfly.extension.microprofile.health-smallrye",
                 "org.wildfly.extension.microprofile.metrics-smallrye",
-                "org.wildfly.extension.microprofile.opentracing-smallrye",
                 "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
                 "org.wildfly.extension.microprofile.jwt-smallrye",
                 "org.wildfly.extension.microprofile.openapi-smallrye",
                 "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
-                "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"
+                "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
+                "org.wildfly.extension.microprofile.lra-coordinator",
+                "org.wildfly.extension.microprofile.lra-participant",
+                "org.wildfly.extension.microprofile.telemetry"
         ));
 
         // List of extensions added only by the WildFly Preview
@@ -253,48 +262,40 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // added in the latest release of WildFly Preview. It is out of the scope of Host Exclusion test
         // to compute on which WildFly Preview was added such a new extension and track the Host Exclusions between
         // different WildFly Preview releases.
-        private Set<String> previewExtensions = new HashSet<>(Arrays.asList(
-                "org.wildfly.extension.micrometer"
+        private final Set<String> previewExtensions = new HashSet<>(Arrays.asList(
         ));
 
-        ExtensionConf(String name, List<String> addedExtensions) {
-            this(name, null, addedExtensions, null);
+        ExtensionConf(String name, ExtensionConf parent, boolean supported) {
+            this(name, parent, null, null, supported);
         }
 
-        ExtensionConf(String name, ExtensionConf parent) {
-            this(name, parent, null, null);
-        }
-
-        ExtensionConf(String name, ExtensionConf parent, List<String> addedExtensions) {
-            this(name, parent, addedExtensions, null);
+        ExtensionConf(String name, ExtensionConf parent, List<String> addedExtensions, boolean supported) {
+            this(name, parent, addedExtensions, null, supported);
         }
 
         /**
          * Main constructor
-         *
-         * @param name Host exclude name to define
+         *  @param name Host exclude name to define
          * @param parent A parent extension definition
          * @param addedExtensions Extensions added on the server release referred by this host exclude name
          * @param removedExtensions Extensions removed on the server release referred by this host exclude name
+         * @param supported whether the given release is supported as a secondary host in a mixed domain
          */
-        ExtensionConf(String name, ExtensionConf parent, List<String> addedExtensions, List<String> removedExtensions) {
+        ExtensionConf(String name, ExtensionConf parent, List<String> addedExtensions, List<String> removedExtensions, boolean supported) {
             this.name = name;
             this.modified = (addedExtensions != null && !addedExtensions.isEmpty()) || (removedExtensions != null && !removedExtensions.isEmpty());
             if (addedExtensions != null) {
                 this.extensions.addAll(addedExtensions);
             }
             if (parent != null) {
-                if (parent.extensions != null) {
-                    this.extensions.addAll(parent.extensions);
-                }
-                if (parent.removed != null) {
-                    this.removed.addAll(parent.removed);
-                }
+                this.extensions.addAll(parent.extensions);
+                this.removed.addAll(parent.removed);
             }
             if (removedExtensions != null) {
                 this.extensions.removeAll(removedExtensions);
                 this.removed.addAll(removedExtensions);
             }
+            this.supported = supported;
         }
 
         static {
@@ -326,6 +327,10 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
         public boolean isModified() {
             return modified;
+        }
+
+        public boolean isSupported() {
+            return supported;
         }
 
         public String getName() {
@@ -440,7 +445,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
         // Verifies all the exclusions Id added as configurations for this test are defined as host exclusions in the current server release
         for(ExtensionConf extensionConf : ExtensionConf.values()) {
-            if (extensionConf != ExtensionConf.CURRENT && !processedExclusionsIds.contains(extensionConf.getName())) {
+            if (extensionConf != ExtensionConf.CURRENT && extensionConf.isSupported() && !processedExclusionsIds.contains(extensionConf.getName())) {
                 Set<String> extensions = extensionConf.getExtensions(isFullDistribution, isPreviewGalleonPack);
                 extensions.removeAll(ExtensionConf.forName(MAJOR).getRemovedExtensions());
                 if (!extensions.equals(availableExtensions)) {

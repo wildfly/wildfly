@@ -44,6 +44,13 @@
             </dependency>
 
             <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-reactive-messaging-kafka-test-companion</artifactId>
+                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.directory.server</groupId>
                 <artifactId>apacheds-interceptor-kerberos</artifactId>
                 <version>${version.org.apache.ds}</version>
@@ -54,6 +61,34 @@
                 <groupId>org.apache.directory.server</groupId>
                 <artifactId>apacheds-test-framework</artifactId>
                 <version>${version.org.apache.ds}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15on</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!--
+                Needed by io.smallrye.reactive:smallrye-reactive-messaging-kafka-test-companion which doesn't pull
+                this in automatically
+            -->
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka_2.13</artifactId>
+                <version>${version.org.apache.kafka}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!--
+                Needed by io.smallrye.reactive:smallrye-reactive-messaging-kafka-test-companion which doesn't pull
+                this in automatically
+            -->
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-server-common</artifactId>
+                <version>${version.org.apache.kafka}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -189,24 +224,6 @@
                 <version>${version.org.reactivestreams}</version>
                 <scope>test</scope>
             </dependency>
-
-            <dependency>
-                <groupId>org.springframework.kafka</groupId>
-                <artifactId>spring-kafka-test</artifactId>
-                <version>${version.org.springframework.kafka}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!--
-                        This version pulls in a different version of Kafka from
-                        our version of Kafka Clients
-                    -->
-                    <exclusion>
-                        <groupId>org.apache.kafka</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
 
             <dependency>
                 <groupId>org.codehaus.plexus</groupId>

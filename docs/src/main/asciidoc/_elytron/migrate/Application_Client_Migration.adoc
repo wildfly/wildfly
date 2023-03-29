@@ -1,6 +1,14 @@
 [[Application_Client_Migration]]
 = Application Client Migration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[naming-client]]
 == Naming Client
 
@@ -242,4 +250,4 @@ Callable<Void> callable = () -> {
 context.runCallable(callable);
 ----
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

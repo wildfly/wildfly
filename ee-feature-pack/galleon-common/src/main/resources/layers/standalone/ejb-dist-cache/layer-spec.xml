@@ -7,16 +7,7 @@
         <layer name="transactions"/>
     </dependencies>
 
-    <feature spec="subsystem.ejb3">
-        <param name="default-stateful-bean-access-timeout" value="5000"/>
-        <param name="default-sfsb-cache" value="distributable"/>
-        <feature spec="subsystem.ejb3.service.timer-service">
-            <unset param="thread-pool-name"/>
-            <param name="default-transient-timer-management" value="transient"/>
-            <unset param="default-data-store"/>
-            <param name="default-persistent-timer-management" value="persistent"/>
-        </feature>
-    </feature>
+    <feature-group name="ejb3-sfsb"/>
 
     <feature-group name="private-interface"/>
 

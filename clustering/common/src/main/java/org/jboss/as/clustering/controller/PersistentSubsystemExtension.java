@@ -25,6 +25,9 @@ package org.jboss.as.clustering.controller;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLDescriptionReader;
+import org.jboss.as.controller.PersistentResourceXMLDescriptionWriter;
+import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemModel;
 
 /**
@@ -43,12 +46,11 @@ public class PersistentSubsystemExtension<S extends Enum<S> & PersistentSubsyste
      */
     protected PersistentSubsystemExtension(String name, SubsystemModel currentModel, Supplier<ManagementRegistrar<SubsystemRegistration>> registrarFactory, S currentSchema) {
         // Build xml description for current schema only once
-        this(name, currentModel, registrarFactory, currentSchema, new PersistentXMLDescriptionMarshaller(currentSchema));
+        this(name, currentModel, registrarFactory, currentSchema, currentSchema.getXMLDescription());
     }
 
-    private PersistentSubsystemExtension(String name, SubsystemModel currentModel, Supplier<ManagementRegistrar<SubsystemRegistration>> registrarFactory, S currentSchema, PersistentXMLDescriptionMarshaller marshaller) {
+    private PersistentSubsystemExtension(String name, SubsystemModel currentModel, Supplier<ManagementRegistrar<SubsystemRegistration>> registrarFactory, S currentSchema, PersistentResourceXMLDescription currentDescription) {
         // Reuse current xml description between reader and writer
-        // Supply reader for current schema eagerly, since we already created its xml description
-        super(name, currentModel, registrarFactory, currentSchema, marshaller, marshaller);
+        super(name, currentModel, registrarFactory, currentSchema, new PersistentResourceXMLDescriptionWriter(currentDescription), new PersistentResourceXMLDescriptionReader(currentDescription));
     }
 }

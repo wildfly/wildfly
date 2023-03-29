@@ -1,6 +1,14 @@
 [[WildFly_Testsuite_Overview]]
 = WildFly Testsuite Overview
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WARNING: This section has not been updated for a long time and some sections are out of date. Contributions are welcome.
 
 This document will detail the implementation of the testsuite

@@ -51,7 +51,7 @@ public class ServerServiceTestCase extends AbstractUndertowSubsystemTestCase {
     private static final String UNDERTOW_SERVER = "undertow-server";
 
     public ServerServiceTestCase() {
-        super(UndertowSchema.VERSION_12_0);
+        super(UndertowSubsystemSchema.VERSION_12_0);
     }
 
     @Override

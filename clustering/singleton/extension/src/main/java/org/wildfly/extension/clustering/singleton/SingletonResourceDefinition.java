@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import java.util.EnumSet;
 import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.CapabilityProvider;
@@ -41,7 +42,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
+import org.jboss.as.server.deployment.jbossallxml.JBossAllSchema;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
@@ -115,11 +116,7 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition imp
 
     @Override
     public void accept(DeploymentProcessorTarget target) {
-        JBossAllXmlParserRegisteringProcessor.Builder builder = JBossAllXmlParserRegisteringProcessor.builder();
-        for (SingletonDeploymentSchema schema : SingletonDeploymentSchema.values()) {
-            builder.addParser(schema.getName(), SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY, schema.get());
-        }
-        target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_SINGLETON_DEPLOYMENT, builder.build());
+        target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_SINGLETON_DEPLOYMENT, JBossAllSchema.createDeploymentUnitProcessor(EnumSet.allOf(SingletonDeploymentSchema.class), SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY));
         target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_SINGLETON_DEPLOYMENT, new SingletonDeploymentParsingProcessor());
         target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SINGLETON_DEPLOYMENT, new SingletonDeploymentDependencyProcessor());
         target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_SINGLETON_DEPLOYMENT, new SingletonDeploymentProcessor());

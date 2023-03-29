@@ -1,6 +1,14 @@
 [[WildFly_PR_Standard]]
 = WildFly Pull Request Standards and Guidelines
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 == Describe the pull request adequately
 The PR title should include a JIRA number directly from the project in question, whose corresponding JIRA issue will in turn have been linked to the pull request you are just now creating. The description should include a link to the JIRA. The description should also include a decent, human-readable summary of what is changing. Proper spelling and grammar is a plus!
 

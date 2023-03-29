@@ -33,12 +33,12 @@ import org.kohsuke.MetaInfServices;
  * @author Paul Ferraro
  */
 @MetaInfServices(Extension.class)
-public class SingletonExtension extends SubsystemExtension<SingletonSchema> {
+public class SingletonExtension extends SubsystemExtension<SingletonSubsystemSchema> {
 
     static final String SUBSYSTEM_NAME = "singleton";
     static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, SingletonExtension.class);
 
     public SingletonExtension() {
-        super(SUBSYSTEM_NAME, SingletonSubsystemModel.CURRENT, SingletonResourceDefinition::new, SingletonSchema.CURRENT, new SingletonXMLWriter());
+        super(SUBSYSTEM_NAME, SingletonSubsystemModel.CURRENT, SingletonResourceDefinition::new, SingletonSubsystemSchema.CURRENT, new SingletonXMLWriter());
     }
 }

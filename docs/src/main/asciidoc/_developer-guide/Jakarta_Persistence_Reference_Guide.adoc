@@ -1,6 +1,14 @@
 [[JPA_Reference_Guide]]
 = JPA Reference Guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[introduction]]
 == Introduction
 
@@ -887,5 +895,5 @@ public class ExampleSFSB {
 }
 ----
 
-NOTE: References in this document to Java Transaction API(JTA) refer to Jakarta Transactions unless otherwise noted.
-      References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.
+NOTE: References in this document to Java Transaction API (JTA) refer to Jakarta Transactions unless otherwise noted.
+      References in this document to Java Persistence API (JPA) refer to the Jakarta Persistence unless otherwise noted.

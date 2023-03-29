@@ -4,6 +4,14 @@
 :icons: font
 :source-highlighter: coderay
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 == Overview
 
 The `docs` module is not in the module listing of the parent POM by default. Therefore to build you must either activate

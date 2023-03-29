@@ -74,18 +74,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.microprofile.metrics</groupId>
-            <artifactId>microprofile-metrics-api</artifactId>
+            <groupId>org.eclipse.microprofile.lra</groupId>
+            <artifactId>microprofile-lra-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.openapi</groupId>
             <artifactId>microprofile-openapi-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.microprofile.opentracing</groupId>
-            <artifactId>microprofile-opentracing-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -96,6 +91,11 @@
         <dependency>
             <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
             <artifactId>microprofile-reactive-streams-operators-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.rest.client</groupId>
+            <artifactId>microprofile-rest-client-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -200,27 +200,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- MicroProfile Opentracing Test Dependencies -->
-        <dependency>
-            <groupId>io.jaegertracing</groupId>
-            <artifactId>jaeger-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-mock</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-opentracing</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-opentracing-contrib</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.wildfly.galleon-plugins</groupId>
             <artifactId>transformer</artifactId>
@@ -239,47 +218,26 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka-test</artifactId>
+            <groupId>io.smallrye.reactive</groupId>
+            <artifactId>smallrye-reactive-messaging-kafka-test-companion</artifactId>
+            <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
             <scope>test</scope>
         </dependency>
         <!--
-            The org.springframework.kafka:spring-kafka-test dependency excludes all
-             org.apache.kafka:* dependencies in the dependency management.
-             Add them again here, so as not to pollute the parent pom with all these
-             test dependencies
-         -->
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <classifier>test</classifier>
-            <scope>test</scope>
-            <version>${version.org.apache.kafka}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-streams</artifactId>
-            <scope>test</scope>
-            <version>${version.org.apache.kafka}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-streams-test-utils</artifactId>
-            <scope>test</scope>
-            <version>${version.org.apache.kafka}</version>
-        </dependency>
+            smallrye-reactive-messaging-kafka-test-companion doesn't pull in the kafka server dependencies
+            so we need to add them here
+        -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.13</artifactId>
-            <scope>test</scope>
             <version>${version.org.apache.kafka}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.13</artifactId>
-            <classifier>test</classifier>
-            <scope>test</scope>
+            <artifactId>kafka-server-common</artifactId>
             <version>${version.org.apache.kafka}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -288,6 +246,18 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Micrometer -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -309,7 +279,17 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-core-spi</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-json-p-provider</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -390,10 +370,13 @@
                                 <layer>microprofile-openapi</layer>
                                 <layer>microprofile-jwt</layer>
                                 <layer>microprofile-fault-tolerance</layer>
-                                <layer>microprofile-opentracing</layer>
+                                <layer>micrometer</layer>
                                 <!-- Dependencies for reactive specs -->
                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                 <layer>h2-default-datasource</layer>
+                                <!--Dependencies for lra specs -->
+                                <layer>microprofile-lra-coordinator</layer>
+                                <layer>microprofile-lra-participant</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -445,6 +428,7 @@
                                 <!-- The enable-microprofile.cli script does not enable the reactive extensions/subsystems -->
                                 <exclude>org/wildfly/test/integration/microprofile/reactive/**</exclude>
                             </excludes>
+                            <reportNameSuffix>standalone-enabled-microprofile-test</reportNameSuffix>
                         </configuration>
                     </execution>
                 </executions>
@@ -557,9 +541,13 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>microprofile-platform</layer>
                                                 <layer>ejb</layer>
+                                                <layer>micrometer</layer>
                                                 <!-- Dependencies for reactive specs -->
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>h2-default-datasource</layer>
+                                                <!--Dependencies for lra specs -->
+                                                <layer>microprofile-lra-coordinator</layer>
+                                                <layer>microprofile-lra-participant</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -575,6 +563,9 @@
                             <execution>
                                 <id>layers-test</id>
                                 <phase>test</phase>
+                                <configuration>
+                                    <reportNameSuffix>layers-test</reportNameSuffix>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>default-test</id>
@@ -616,18 +607,6 @@
                      in this module takes precedence. -->
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>io.smallrye</groupId>
-                    <artifactId>smallrye-opentracing</artifactId>
-                    <version>${version.io.smallrye.smallrye-opentracing}</version>
-                </dependency>
-                <dependency>
-                    <groupId>io.smallrye</groupId>
-                    <artifactId>smallrye-opentracing-contrib</artifactId>
-                    <version>${version.io.smallrye.smallrye-opentracing}</version>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <!-- Disable the standard copy-based provisioning -->
@@ -699,6 +678,9 @@
                                                 <!-- Dependencies for reactive specs -->
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>h2-default-datasource</layer>
+                                                <!--Dependencies for lra specs -->
+                                                <layer>microprofile-lra-coordinator</layer>
+                                                <layer>microprofile-lra-participant</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -714,6 +696,9 @@
                             <execution>
                                 <id>layers-test</id>
                                 <phase>test</phase>
+                                <configuration>
+                                    <reportNameSuffix>layers-test</reportNameSuffix>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>default-test</id>

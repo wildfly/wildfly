@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.jca;
 
 import static org.jboss.as.connector.subsystems.jca.Constants.DISTRIBUTED_WORKMANAGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_BY_DEFAULT_VERSION;
 import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_ENABLED_NAME;
 import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_MANAGED_SECURITY;
 import static org.jboss.as.connector.subsystems.jca.JcaWorkManagerDefinition.registerSubModels;
@@ -130,6 +131,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                 .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
                 .setAllowExpression(true)
                 .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+                .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
                 .build());
 
         public static AttributeDefinition[] getAttributeDefinitions() {

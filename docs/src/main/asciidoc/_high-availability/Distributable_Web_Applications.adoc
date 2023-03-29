@@ -1,6 +1,14 @@
 [[Distributable_Web_Applications]]
 = Distributable Web Applications
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 In a standard web application, session state does not survive beyond the lifespan of the servlet container.
 A distributable web application allows session state to survive beyond the lifespan of a single server, either via persistence or by replicating state to other nodes in the cluster.
 A web application indicates its intention to be distributable via the `<distributable/>` element within the web application's deployment descriptor.

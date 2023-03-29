@@ -1,6 +1,14 @@
 [[Domain_Mode_Subsystem_Transformers]]
 = Domain Mode Subsystem Transformers
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [abstract]
 
 A WildFly domain may consist of a new Domain Controller (DC) controlling
@@ -2703,4 +2711,4 @@ And then finally we do the conversion:
     }
 ----
 
-NOTE: References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.
+NOTE: References in this document to Java Persistence API (JPA) refer to the Jakarta Persistence unless otherwise noted.

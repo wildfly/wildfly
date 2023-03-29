@@ -1,6 +1,14 @@
 [[WildFly_Testsuite_Test_Developer_Guide]]
 = WildFly Testsuite Test Developer Guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 *See also:* <<WildFly_Integration_Testsuite_User_Guide,WildFly
 Integration Testsuite User Guide>>
 

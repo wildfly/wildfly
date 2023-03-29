@@ -1,6 +1,14 @@
 [[Observability_Tracing]]
 = OpenTelemetry Subsystem Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[required-extension-opentelemetry]]
 == Extension
 
@@ -99,21 +107,6 @@ public class MyEndpoint {
         return Response.ok().build();
 }
 -----
-
-== Interaction with MicroProfile OpenTracing
-
-If you have the MicroProfile OpenTracing subsystem enabled (e.g., via the MicroProfile configuration), you may see duplicate traces exported for JAX-RS calls, for example.
-This is because both OpenTracing and OpenTelemetry have instrumented the endpoints to enable tracing, and both subsystems are configured to export traces to a collector such as Jaeger.
-Likely, this is not desirable, so if you would like to use OpenTelemetry for tracing, it is advisable to remove the OpenTracing subsystem:
-
-[source]
------
- $ jboss-cli.sh -c "/subsystem=microprofile-opentracing-smallrye:remove()"
- $ jboss-cli.sh -c "/extension=org.wildfly.extension.microprofile.opentracing-smallrye:remove()"
------
-
-If you leave both subsystems enabled, though, WildFly will continue to function normally.
-The only difference you will see is the duplicate trace export mentioned above.
 
 == Component Reference
 

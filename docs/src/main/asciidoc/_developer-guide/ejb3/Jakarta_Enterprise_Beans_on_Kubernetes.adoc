@@ -1,6 +1,14 @@
 [[Jakarta_Enterprise_Beans_on_Kubernetes]]
 = Jakarta Enterprise Beans on Kubernetes
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 If the WildFly server is deployed on Kubernetes then there are several
 points that you need to bear in mind when you use EJBs.
 
@@ -105,4 +113,4 @@ on your application.
 </configuration>
 ----
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

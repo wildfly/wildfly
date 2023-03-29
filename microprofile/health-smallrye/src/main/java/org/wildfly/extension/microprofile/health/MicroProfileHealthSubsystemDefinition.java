@@ -101,7 +101,7 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
 
     protected MicroProfileHealthSubsystemDefinition(boolean registerRuntimeOperations) {
         super(new Parameters(MicroProfileHealthExtension.SUBSYSTEM_PATH,
-                MicroProfileHealthExtension.getResourceDescriptionResolver(MicroProfileHealthExtension.SUBSYSTEM_NAME))
+                MicroProfileHealthExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(MicroProfileHealthSubsystemAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileHealthSubsystemAdd.INSTANCE))
                 .setCapabilities(HEALTH_REPORTER_RUNTIME_CAPABILITY, MICROPROFILE_HEALTH_HTTP_CONTEXT_CAPABILITY, MICROPROFILE_HEALTH_HTTP_SECURITY_CAPABILITY));

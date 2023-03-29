@@ -1,6 +1,14 @@
 [[failover-security-realm]]
 = Failover Security Realm
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The failover security realm allows for a realm to fail-over to another realm in case the first is unavailable.
 
 The `failover-realm` resource contains the following attributes: -
