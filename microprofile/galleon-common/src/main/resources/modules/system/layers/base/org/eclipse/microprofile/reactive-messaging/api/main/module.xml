@@ -23,11 +23,6 @@
 <module xmlns="urn:jboss:module:1.9" name="org.eclipse.microprofile.reactive-messaging.api">
 
     <resources>
-        <!--
-        As the SmallRye jar duplicates classes (and adds some new ones) from the Eclipse RM API
-        jar, we disable the Eclipse jar and use just the SmallRye one
-        <artifact name="${org.eclipse.microprofile.reactive.messaging:microprofile-reactive-messaging-api}"/>
-        -->
         <!-- Here temporarily, it should be in the io.smallrye.reactive.messaging module, or its own -->
         <artifact name="${io.smallrye.reactive:smallrye-reactive-messaging-api}"/>
     </resources>

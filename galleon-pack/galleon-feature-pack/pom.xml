@@ -135,10 +135,12 @@
                         </goals>
                         <phase>process-resources</phase>
                         <configuration>
+                            <generateVersionProperty>true</generateVersionProperty>
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFile>${feature-pack.license.directory}/microprofile-feature-pack-licenses.xml</licensesConfigFile>
                             <licensesOutputFile>${license.directory}/microprofile-feature-pack-licenses.xml</licensesOutputFile>
-                            <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-feature-pack-galleon-common|wildfly-feature-pack-galleon-content</excludedArtifacts>
+                            <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
+                            <excludedArtifacts>microprofile-reactive-messaging-api|wildfly-standard-expansion-bom|wildfly-standard-ee-bom|wildfly-mp-feature-pack-galleon-common|wildfly-legacy-expansion-bom|wildfly-legacy-ee-bom|wildfly-feature-pack-common|wildfly-common-expansion-dependency-management|wildfly-common-ee-dependency-management|wildfly-ee-galleon-pack|wildfly-feature-pack-galleon-common|wildfly-feature-pack-galleon-content</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
