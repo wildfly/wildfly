@@ -35,6 +35,17 @@
     <artifactId>wildfly-preview-dist</artifactId>
     <name>WildFly: EE 9 Preview Distribution</name>
     <packaging>jar</packaging>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
