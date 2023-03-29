@@ -30,15 +30,14 @@ import jakarta.interceptor.Interceptors;
 @Interceptors(EjbInterceptor.class)
 public class TestSLSB implements TestRemote {
 
-    private static final String MESSAGE = "bean context data";
-
     @Resource
     SessionContext sessionContext;
 
+    @Override
+    public UseCaseValidator invoke(UseCaseValidator useCaseValidator) throws TestException {
 
-    public String invoke() {
-        sessionContext.getContextData().put("data2", MESSAGE);
-        return "ignore this";
+        // test when the ejb is invoked
+        useCaseValidator.test(UseCaseValidator.InvocationPhase.SERVER_EJB_INVOKE, sessionContext.getContextData());
+        return useCaseValidator;
     }
-
 }
