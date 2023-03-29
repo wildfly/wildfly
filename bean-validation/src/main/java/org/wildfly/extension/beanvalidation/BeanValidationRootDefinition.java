@@ -23,15 +23,13 @@
 
 package org.wildfly.extension.beanvalidation;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
 
@@ -46,7 +44,7 @@ class BeanValidationRootDefinition extends PersistentResourceDefinition {
             RuntimeCapability.Builder.of("org.wildfly.bean-validation").build();
 
     BeanValidationRootDefinition() {
-        super (new SimpleResourceDefinition.Parameters(BeanValidationExtension.SUBSYSTEM_PATH, BeanValidationExtension.getResolver())
+        super (new Parameters(BeanValidationExtension.SUBSYSTEM_PATH, BeanValidationExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(BeanValidationSubsystemAdd.INSTANCE)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(BEAN_VALIDATION_CAPABILITY)
@@ -56,11 +54,6 @@ class BeanValidationRootDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Collections.emptySet();
-    }
-
-    @Override
-    public List<? extends PersistentResourceDefinition> getChildren() {
-        return Collections.emptyList();
     }
 
     @Override
