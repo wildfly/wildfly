@@ -33,7 +33,17 @@
 
   <artifactId>wildfly-microprofile-lra-coordinator</artifactId>
   <name>WildFly: MicroProfile LRA Coordinator extension</name>
-
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-standard-test-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
