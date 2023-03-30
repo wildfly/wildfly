@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,34 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling;
+package org.jboss.as.jpa.hibernate.cache;
 
 import java.io.IOException;
-import java.util.function.BiConsumer;
+import java.util.UUID;
 
-import org.junit.Assert;
+import org.hibernate.cache.internal.CacheKeyImplementation;
+import org.junit.Test;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Generic interface for various marshalling testers.
+ * Unit test for {@link CacheKeyImplementationMarshaller}.
  * @author Paul Ferraro
  */
-public interface Tester<T> {
+public class CacheKeyImplementationMarshallerTestCase {
 
-    default void test(T subject) throws IOException {
-        this.test(subject, Assert::assertEquals);
+    @Test
+    public void test() throws IOException {
+        Tester<CacheKeyImplementation> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+        UUID id = UUID.randomUUID();
+        String entity = "foo";
+        String tenant = "bar";
+        tester.testKey(new CacheKeyImplementation(id, entity, tenant, id.hashCode()));
+        tester.testKey(new CacheKeyImplementation(id, entity, tenant, 1));
     }
-
-    /**
-     * Same as {@link #test(Object)}, but additionally validates equality of hash code.
-     * @param subject a test subject
-     * @throws IOException if marshalling of the test subject fails
-     */
-    default void testKey(T subject) throws IOException {
-        this.test(subject, (value1, value2) -> {
-            Assert.assertEquals(value1, value2);
-            Assert.assertEquals(value1.hashCode(), value2.hashCode());
-        });
-    }
-
-    void test(T subject, BiConsumer<T, T> assertion) throws IOException;
 }

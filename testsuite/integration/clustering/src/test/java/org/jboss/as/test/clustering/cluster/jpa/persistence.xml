@@ -2,7 +2,7 @@
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
     <persistence-unit name="MainPU">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <jta-data-source>java:jboss/datasources/H2</jta-data-source>
         <shared-cache-mode>ALL</shared-cache-mode>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
@@ -11,7 +11,7 @@
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="hibernate.cache.use_second_level_cache" value="true"/>
             <property name="hibernate.cache.use_query_cache" value="true"/>
-            <property name="hibernate.cache.infinispan.entity.cfg" value="entity-replicated"/>
+            <!--property name="hibernate.cache.infinispan.entity.cfg" value="entity-replicated"/-->
         </properties>
     </persistence-unit>
 </persistence>

@@ -35,14 +35,17 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.clustering.ClusterDatabaseTestUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -76,6 +79,16 @@ public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
         return war;
     }
 
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        ClusterDatabaseTestUtil.startH2();
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        ClusterDatabaseTestUtil.stopH2();
+    }
+
     // REST client to control entity creation, caching, eviction,... on the servers
     private Client restClient;
 
@@ -89,15 +102,8 @@ public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
         this.restClient.close();
     }
 
-    /**
-     * We have a replicated entity cache between two nodes. Cache an entity on node0 and then verify that
-     * node1 sees the cached entity as well. Then try evicting it (synchronously inside a JTA transaction)
-     * on one node and see if it's been evicted on the other node as well. Finally, try caching it again.
-     *
-     * The two nodes don't actually have a shared database instance, but that doesn't matter for this test.
-     */
     @Test
-    public void testEntityCacheReplication(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
+    public void testEntityCacheInvalidation(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
                                            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL url1)
             throws Exception {
         final WebTarget node0 = getWebTarget(url0);
@@ -107,14 +113,11 @@ public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
         createEntity(node0, entityId);
         Assert.assertTrue(isInCache(node0, entityId));
         Thread.sleep(GRACE_TIME_TO_REPLICATE);
+        addToCache(node1, entityId);
         Assert.assertTrue(isInCache(node1, entityId));
         evictFromCache(node1, entityId);
         Assert.assertFalse(isInCache(node0, entityId));
         Assert.assertFalse(isInCache(node1, entityId));
-        addToCache(node0, entityId);
-        Assert.assertTrue(isInCache(node0, entityId));
-        Thread.sleep(GRACE_TIME_TO_REPLICATE);
-        Assert.assertTrue(isInCache(node1, entityId));
     }
 
     private boolean isInCache(WebTarget node, String entityId) {
@@ -141,12 +144,19 @@ public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
         return restClient.target(url.toURI());
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node(TWO_NODES)
-                    .setup("/subsystem=infinispan/cache-container=hibernate/replicated-cache=entity-replicated:add()")
-                    .teardown("/subsystem=infinispan/cache-container=hibernate/replicated-cache=entity-replicated:remove()")
-                    ;
+            super(NODE_1_2, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .add("/subsystem=datasources/data-source=h2:add(jndi-name=java:jboss/datasources/H2, enabled=true, use-java-context=true, connection-url=\"jdbc:h2:tcp://localhost:%s/MainPU;VARIABLE_BINARY=TRUE\", driver-name=h2)", DB_PORT)
+                            .add("/subsystem=infinispan/cache-container=hibernate:write-attribute(name=marshaller, value=PROTOSTREAM)")
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .add("/subsystem=infinispan/cache-container=hibernate:write-attribute(name=marshaller, value=JBOSS)")
+                            .add("/subsystem=datasources/data-source=h2:remove")
+                            .build())
+                    .build()
+                    );
         }
     }
 }
