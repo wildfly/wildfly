@@ -342,29 +342,6 @@
 
             <dependency>
                 <groupId>io.smallrye</groupId>
-                <artifactId>smallrye-metrics</artifactId>
-                <version>${version.io.smallrye.smallrye-metrics}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye</groupId>
-                <artifactId>smallrye-metrics-api</artifactId>
-                <version>${version.io.smallrye.smallrye-metrics}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-open-api-core</artifactId>
                 <version>${version.io.smallrye.open-api}</version>
             </dependency>

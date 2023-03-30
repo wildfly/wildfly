@@ -130,7 +130,6 @@ public class LayersTestCase {
             "org.jgroups.aws",
             "org.wildfly.extension.microprofile.metrics-smallrye",
             "org.wildfly.extension.microprofile.opentracing-smallrye",
-            "io.smallrye.metrics",
     };
     private static final String[] NOT_USED;
     // Packages that are not referenced from the module graph but needed.
@@ -222,7 +221,6 @@ public class LayersTestCase {
             NOT_USED = ArrayUtils.addAll(
                     NOT_USED_COMMON,
                     // WFP standard config uses Micrometer instead of WF Metrics
-                    "io.smallrye.metrics",
                     "org.wildfly.extension.metrics",
                     // MP Fault Tolerance has a dependency on MP Metrics
                     "io.smallrye.fault-tolerance",
