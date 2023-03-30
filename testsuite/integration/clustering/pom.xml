@@ -1457,27 +1457,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
-                            <execution>
-                                <id>ts.config-as.configure-wildfly</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>execute-commands</goal>
-                                </goals>
-                                <configuration>
-                                    <!-- Only standalone-ha.xml and standalone-full-ha.xml configurations 
-                                         have been provisioned, execute only the CLI script that updates the ha configurations -->
-                                    <scripts combine.self="override">
-                                        <script>clustering-ha.cli</script>
-                                    </scripts>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <!-- Instead provision slimmed installations -->
                     <plugin>
                         <groupId>org.jboss.galleon</groupId>
@@ -1990,6 +1969,20 @@
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <version>${version.org.wildfly.plugin}</version>
                         <executions>
+                            <execution>
+                                <id>ts.config-as.configure-wildfly</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Only standalone-ha.xml and standalone-full-ha.xml configurations
+                                         have been provisioned, execute only the CLI script that updates the ha configurations -->
+                                    <scripts combine.self="override">
+                                        <script>clustering-ha.cli</script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-mod_cluster</id>
                                 <phase>process-test-resources</phase>
