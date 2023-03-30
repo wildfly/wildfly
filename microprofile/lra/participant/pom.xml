@@ -34,6 +34,17 @@
   <artifactId>wildfly-microprofile-lra-participant</artifactId>
   <name>WildFly: MicroProfile LRA Participant extension</name>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-standard-test-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
