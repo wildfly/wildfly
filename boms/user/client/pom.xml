@@ -40,11 +40,7 @@
 
     <modules>
         <module>ejb-client</module>
-		<!-- Temporarily disabled pending resolution of discussion of 
-		     the target use case for this bom (javax.* client apps vs jakarta.*)
-        <module>ejb-legacy-client</module>
-		-->
-        <module>jaxws-client</module>
+		<module>jaxws-client</module>
         <module>jms-client</module>
     </modules>
 
