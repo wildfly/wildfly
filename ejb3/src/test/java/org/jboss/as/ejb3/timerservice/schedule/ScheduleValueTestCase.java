@@ -21,17 +21,12 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule;
 
+import org.jboss.as.ejb3.timerservice.schedule.value.IncrementValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * RangeValueTestCase
- *
- * @author Jaikiran Pai
- * @version $Revision: $
- */
-public class RangeValueTestCase {
+public class ScheduleValueTestCase {
 
     @Test
     public void testInvalidRange() {
@@ -59,6 +54,22 @@ public class RangeValueTestCase {
             boolean accepts = RangeValue.accepts(validRange);
             Assert.assertTrue("Valid range value wasn't accepted: " + validRange, accepts);
             RangeValue validRangeValue = new RangeValue(validRange);
+        }
+    }
+
+    @Test
+    public void testInvalidIncrement() {
+        String[] invalidValues = {
+                "0/0", "1/0", "1/-1", "1/10.0", "10/*", "10/?", "10/", "10/-",
+                "/10", "?/10", "-/10", "**/10", "10.0/10"
+        };
+        for (String v : invalidValues) {
+            try {
+                new IncrementValue(v);
+                Assert.fail("Failed to get IllegalArgumentException for invalid increment value: " + v);
+            } catch (IllegalArgumentException e) {
+                // expected
+            }
         }
     }
 }
