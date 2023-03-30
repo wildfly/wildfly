@@ -212,7 +212,7 @@
                                     <groupId>org.jboss.arquillian</groupId>
                                     <artifactId>arquillian-bom</artifactId>
                                     <type>pom</type>
-                                    <version>org.jboss.arquillian.junit:arquillian-junit-container:jar</version>
+                                    <version>org.jboss.arquillian.container:arquillian-container-test-spi:jar</version>
                                 </dependency>
                             </versionRefDependencies>
                             <includePlugins>
