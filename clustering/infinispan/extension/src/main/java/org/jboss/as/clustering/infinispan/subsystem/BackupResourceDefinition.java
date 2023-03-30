@@ -35,11 +35,11 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistrar;
-import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -61,13 +61,13 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         FAILURE_POLICY("failure-policy", ModelType.STRING, new ModelNode(BackupFailurePolicy.WARN.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(BackupFailurePolicy.class));
+                return builder.setValidator(EnumValidator.create(BackupFailurePolicy.class));
             }
         },
         STRATEGY("strategy", ModelType.STRING, new ModelNode(BackupStrategy.ASYNC.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(BackupStrategy.class));
+                return builder.setValidator(EnumValidator.create(BackupStrategy.class));
             }
         },
         TIMEOUT("timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(10))) {

@@ -33,11 +33,11 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
-import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelNode;
@@ -77,13 +77,13 @@ public class SessionManagementResourceDefinition extends ChildResourceDefinition
         GRANULARITY("granularity", ModelType.STRING, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(SessionGranularity.class));
+                return builder.setValidator(EnumValidator.create(SessionGranularity.class));
             }
         },
         MARSHALLER("marshaller", ModelType.STRING, new ModelNode(SessionMarshallerFactory.JBOSS.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(SessionMarshallerFactory.class));
+                return builder.setValidator(EnumValidator.create(SessionMarshallerFactory.class));
             }
         }
         ;

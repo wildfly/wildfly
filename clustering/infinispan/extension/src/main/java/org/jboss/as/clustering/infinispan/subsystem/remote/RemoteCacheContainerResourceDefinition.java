@@ -39,7 +39,6 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
-import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
@@ -52,6 +51,8 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -100,10 +101,12 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         MARSHALLER("marshaller", ModelType.STRING, new ModelNode(HotRodMarshallerFactory.LEGACY.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(HotRodMarshallerFactory.class) {
+                return builder.setValidator(new ParameterValidator() {
+                    private final ParameterValidator validator = EnumValidator.create(HotRodMarshallerFactory.class);
+
                     @Override
                     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                        super.validateParameter(parameterName, value);
+                        this.validator.validateParameter(parameterName, value);
                         if (!value.isDefined() || value.equals(MARSHALLER.getDefinition().getDefaultValue())) {
                             InfinispanLogger.ROOT_LOGGER.marshallerEnumValueDeprecated(parameterName, HotRodMarshallerFactory.LEGACY, EnumSet.complementOf(EnumSet.of(HotRodMarshallerFactory.LEGACY)));
                         }
