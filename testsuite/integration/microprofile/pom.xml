@@ -104,7 +104,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!--Jakarta specification dependencies -->
+        <!-- Jakarta specification dependencies -->
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
@@ -253,11 +253,6 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
             <scope>test</scope>
         </dependency>
 
