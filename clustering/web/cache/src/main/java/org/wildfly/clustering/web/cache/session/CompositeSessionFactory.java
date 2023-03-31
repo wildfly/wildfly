@@ -51,10 +51,10 @@ public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionF
     }
 
     @Override
-    public Map.Entry<CompositeSessionMetaDataEntry<L>, V> createValue(String id, Void context) {
-        CompositeSessionMetaDataEntry<L> metaDataValue = this.metaDataFactory.createValue(id, context);
+    public Map.Entry<CompositeSessionMetaDataEntry<L>, V> createValue(String id, SessionCreationMetaData creationMetaData) {
+        CompositeSessionMetaDataEntry<L> metaDataValue = this.metaDataFactory.createValue(id, creationMetaData);
         if (metaDataValue == null) return null;
-        V attributesValue = this.attributesFactory.createValue(id, context);
+        V attributesValue = this.attributesFactory.createValue(id, null);
         return new SimpleImmutableEntry<>(metaDataValue, attributesValue);
     }
 

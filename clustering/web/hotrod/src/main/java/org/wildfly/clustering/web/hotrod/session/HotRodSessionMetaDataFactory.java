@@ -45,7 +45,6 @@ import org.wildfly.clustering.web.cache.session.SessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.SessionCreationMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.cache.session.SimpleSessionAccessMetaData;
-import org.wildfly.clustering.web.cache.session.SimpleSessionCreationMetaData;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
@@ -75,8 +74,8 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
     }
 
     @Override
-    public CompositeSessionMetaDataEntry<L> createValue(String id, Void context) {
-        SessionCreationMetaDataEntry<L> creationMetaDataEntry = new SessionCreationMetaDataEntry<>(new SimpleSessionCreationMetaData());
+    public CompositeSessionMetaDataEntry<L> createValue(String id, SessionCreationMetaData creationMetaData) {
+        SessionCreationMetaDataEntry<L> creationMetaDataEntry = new SessionCreationMetaDataEntry<>(creationMetaData);
         SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
         this.creationMetaDataMutatorFactory.createMutator(new SessionCreationMetaDataKey(id), creationMetaDataEntry).mutate();
         this.accessMetaDataMutatorFactory.createMutator(new SessionAccessMetaDataKey(id), accessMetaData).mutate();
