@@ -113,16 +113,6 @@ public class ConcurrentSessionManager<L, B extends Batch> implements SessionMana
     }
 
     @Override
-    public Duration getDefaultMaxInactiveInterval() {
-        return this.manager.getDefaultMaxInactiveInterval();
-    }
-
-    @Override
-    public void setDefaultMaxInactiveInterval(Duration duration) {
-        this.manager.setDefaultMaxInactiveInterval(duration);
-    }
-
-    @Override
     public Batcher<B> getBatcher() {
         return this.manager.getBatcher();
     }

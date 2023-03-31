@@ -113,13 +113,6 @@ public class DistributableSessionManagerTestCase {
     }
 
     @Test
-    public void setDefaultSessionTimeout() {
-        this.adapter.setDefaultSessionTimeout(10);
-
-        verify(this.manager).setDefaultMaxInactiveInterval(Duration.ofSeconds(10L));
-    }
-
-    @Test
     public void createSessionResponseCommitted() {
         // Ugh - all this, just to get HttpServerExchange.isResponseStarted() to return true
         Configurable configurable = mock(Configurable.class);
@@ -130,6 +123,9 @@ public class DistributableSessionManagerTestCase {
         StreamConnection stream = mock(StreamConnection.class);
         String id = "foo";
         Supplier<String> identifierFactory = Functions.constantSupplier(id);
+        int expectedTimeout = 10;
+
+        this.adapter.setDefaultSessionTimeout(expectedTimeout);
 
         when(this.manager.getIdentifierFactory()).thenReturn(identifierFactory);
         when(stream.getSourceChannel()).thenReturn(sourceChannel);
@@ -150,6 +146,7 @@ public class DistributableSessionManagerTestCase {
         verify(this.manager, never()).createSession(id);
 
         Assert.assertEquals(id, session.getId());
+        Assert.assertEquals(expectedTimeout, session.getMaxInactiveInterval());
     }
 
     @Test

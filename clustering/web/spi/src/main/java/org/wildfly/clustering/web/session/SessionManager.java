@@ -56,18 +56,6 @@ public interface SessionManager<L, B extends Batch> extends Restartable, ActiveS
     Session<L> createSession(String id);
 
     /**
-     * Returns the default maximum inactive interval, as a duration, for all sessions created by this session manager.
-     * @return a duration
-     */
-    Duration getDefaultMaxInactiveInterval();
-
-    /**
-     * Set the default maximum inactive interval, using the specified time duration, for all sessions created by this session manager.
-     * @param duration a time duration
-     */
-    void setDefaultMaxInactiveInterval(Duration duration);
-
-    /**
      * Exposes the batching mechanism used by this session manager.
      * @return a batcher.
      */

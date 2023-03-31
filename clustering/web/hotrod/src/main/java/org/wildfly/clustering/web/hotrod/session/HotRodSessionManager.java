@@ -32,6 +32,7 @@ import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.expiration.Expiration;
 import org.wildfly.clustering.web.cache.session.SessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
@@ -60,8 +61,8 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
     private final Batcher<TransactionBatch> batcher;
     private final Duration stopTimeout;
     private final Consumer<ImmutableSession> closeTask = Functions.discardingConsumer();
+    private final Expiration expiration;
 
-    private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationListenerRegistration;
 
     public HotRodSessionManager(SessionFactory<SC, MV, AV, LC> factory, HotRodSessionManagerConfiguration<SC> configuration) {
@@ -72,6 +73,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
         this.identifierFactory = configuration.getIdentifierFactory();
         this.batcher = configuration.getBatcher();
         this.stopTimeout = configuration.getStopTimeout();
+        this.expiration = configuration;
     }
 
     @Override
@@ -94,16 +96,6 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
     @Override
     public Batcher<TransactionBatch> getBatcher() {
         return this.batcher;
-    }
-
-    @Override
-    public Duration getDefaultMaxInactiveInterval() {
-        return this.defaultMaxInactiveInterval;
-    }
-
-    @Override
-    public void setDefaultMaxInactiveInterval(Duration duration) {
-        this.defaultMaxInactiveInterval = duration;
     }
 
     @Override
@@ -131,7 +123,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
     @Override
     public Session<LC> createSession(String id) {
         SessionCreationMetaData creationMetaData = new SimpleSessionCreationMetaData();
-        creationMetaData.setTimeout(this.defaultMaxInactiveInterval);
+        creationMetaData.setTimeout(this.expiration.getTimeout());
         Map.Entry<MV, AV> entry = this.factory.createValue(id, creationMetaData);
         if (entry == null) return null;
         Session<LC> session = this.factory.createSession(id, entry, this.context);
