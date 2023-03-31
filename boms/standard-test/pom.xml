@@ -187,13 +187,6 @@
                 <version>${version.org.eclipse.jetty}</version>
                 <scope>test</scope>
             </dependency>
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-http</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
 
             <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
             <dependency>
@@ -273,11 +266,6 @@
                 <artifactId>byteman-bmunit</artifactId>
                 <version>${version.org.jboss.byteman}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.plexus</groupId>
-                <artifactId>plexus-utils</artifactId>
-                <version>${version.org.codehaus.plexus.plexus-utils}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.byteman</groupId>
