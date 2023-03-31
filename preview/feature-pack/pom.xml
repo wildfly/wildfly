@@ -422,10 +422,6 @@
                 <!-- Exclude deps that have been replaced with different artifacts in this FP.
                      TODO perhaps put these in a different maven module that we don't pull in -->
                 <exclusion>
-                    <groupId>org.jboss.invocation</groupId>
-                    <artifactId>jboss-invocation</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.wildfly.security</groupId>
                     <artifactId>wildfly-elytron-jacc</artifactId>
                 </exclusion>
