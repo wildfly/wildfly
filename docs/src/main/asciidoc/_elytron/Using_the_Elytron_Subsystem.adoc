@@ -580,7 +580,7 @@ Example configuration:
 To make use of a custom `org.wildfly.security.auth.server.EvidenceDecoder` implementation, a
 `custom-evidence-decoder` can be configured. The custom implementation class needs to first be
 packaged in a JAR. A module can then be added to WildFly that contains this JAR. See
-<<Custom_Components,Custom Components>> for more information on how to add a custom Elytron
+xref:WildFly_Elytron_Security.adoc#Custom_Components[Custom Components] for more information on how to add a custom Elytron
 component to WildFly.
 
 Example configuration:
