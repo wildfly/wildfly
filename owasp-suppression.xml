@@ -978,4 +978,12 @@
         <packageUrl regex="true">^pkg:maven/net\.minidev/json\-smart@.*$</packageUrl>
         <vulnerabilityName>CVE-2023-1370</vulnerabilityName>
     </suppress>
+    <!--    [PJFCB-3757] False positive. We do not have this version in distribution.-->
+    <suppress>
+        <notes><![CDATA[
+   file name: jakarta.el-4.0.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.glassfish/jakarta\.el@.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-28170</vulnerabilityName>
+    </suppress>
 </suppressions>
