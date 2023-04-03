@@ -47,10 +47,10 @@
 
     <xs:complexType name="moduleType">
         <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="slot" type="xs:string"/>
-        <xs:attribute name="annotations" type="xs:boolean" use="optional" default="false"/>
-        <xs:attribute name="meta-inf" type="xs:boolean" use="optional" default="false"/>
-        <xs:attribute name="services" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="slot" type="xs:string" default="main"/>
+        <xs:attribute name="annotations" type="xs:boolean" default="false"/>
+        <xs:attribute name="meta-inf" type="xs:boolean" default="true"/>
+        <xs:attribute name="services" type="xs:boolean" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="directoriesType">
