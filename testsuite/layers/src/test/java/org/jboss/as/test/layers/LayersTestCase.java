@@ -38,6 +38,8 @@ public class LayersTestCase {
     // but not used in the test-all-layers installation.
     // This is the expected set of not provisioned modules when all layers are provisioned.
     private static final String[] NOT_USED_COMMON = {
+            // not used
+            "ibm.jdk",
             // test-all-layers installation is non-ha and does not include layers that provide jgroups
             "org.jboss.as.clustering.jgroups",
             // TODO we need to add an agroal layer
@@ -136,8 +138,6 @@ public class LayersTestCase {
     // This is the expected set of un-referenced modules found when scanning
     // the default configuration.
     private static final String[] NOT_REFERENCED_COMMON = {
-            // May be needed by deployments if running on IBM JDK.
-            "ibm.jdk",
             // injected by ee
             "org.eclipse.yasson",
             // injected by ee
