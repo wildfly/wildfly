@@ -283,12 +283,14 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
     }
 
     private boolean isVirtualDomain(String definedSecurityDomain, DeploymentPhaseContext phaseContext) {
-        ServiceName virtualDomainMetaDataName = VirtualDomainMarkerUtility.virtualDomainMetaDataName(phaseContext, definedSecurityDomain);
-        ServiceController<VirtualDomainMetaData> serviceContainer = getService(phaseContext.getServiceRegistry(), virtualDomainMetaDataName, VirtualDomainMetaData.class);
-        if (serviceContainer != null) {
-            ServiceController.State serviceState = serviceContainer.getState();
-            if (serviceState == ServiceController.State.UP) {
-                return true;
+        if (definedSecurityDomain != null && ! definedSecurityDomain.isEmpty()) {
+            ServiceName virtualDomainMetaDataName = VirtualDomainMarkerUtility.virtualDomainMetaDataName(phaseContext, definedSecurityDomain);
+            ServiceController<VirtualDomainMetaData> serviceContainer = getService(phaseContext.getServiceRegistry(), virtualDomainMetaDataName, VirtualDomainMetaData.class);
+            if (serviceContainer != null) {
+                ServiceController.State serviceState = serviceContainer.getState();
+                if (serviceState == ServiceController.State.UP) {
+                    return true;
+                }
             }
         }
         return false;
