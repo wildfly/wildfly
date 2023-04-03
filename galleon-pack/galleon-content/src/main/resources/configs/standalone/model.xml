@@ -4,5 +4,7 @@
     <packages>
         <package name="product.conf" optional="true"/>
         <package name="misc.standalone"/>
+        <package name="docs.licenses" optional="true"/>
+        <package name="docs.licenses.merge" optional="true"/>
     </packages>
 </config>

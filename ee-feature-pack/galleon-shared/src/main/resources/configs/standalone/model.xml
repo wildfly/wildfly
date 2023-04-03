@@ -26,5 +26,7 @@
         <!-- Servlet works properly without it (in nominal) making it optional in case
             it needs to be excluded -->
         <package name="org.jboss.common-beans" optional="true"/>
+        <package name="docs.licenses" optional="true"/>
+        <package name="docs.licenses.merge" optional="true"/>
     </packages>
 </config>
