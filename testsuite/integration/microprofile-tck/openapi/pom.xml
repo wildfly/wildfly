@@ -120,10 +120,10 @@
                     <dependenciesToScan>
                         <dependency>org.eclipse.microprofile.openapi:microprofile-openapi-tck</dependency>
                     </dependenciesToScan>
-                    <systemProperties>
+                    <systemPropertyVariables>
                         <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
                         <test.url>http://localhost:8080</test.url>
-                    </systemProperties>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
