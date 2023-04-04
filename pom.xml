@@ -1178,17 +1178,9 @@
                             <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
                             <org.jboss.model.test.cache.strict>true</org.jboss.model.test.cache.strict>
                             <!--<org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>-->
+                            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                            <jdk.xml.enableTemplatesImplDeserialization>true</jdk.xml.enableTemplatesImplDeserialization>
                         </systemPropertyVariables>
-                        <systemProperties>
-                            <property>
-                                <name>java.util.logging.manager</name>
-                                <value>org.jboss.logmanager.LogManager</value>
-                            </property>
-                            <property>
-                                <name>jdk.xml.enableTemplatesImplDeserialization</name>
-                                <value>true</value>
-                            </property>
-                        </systemProperties>
                         <argLine>${surefire.system.args}</argLine>
                     </configuration>
                 </plugin>
