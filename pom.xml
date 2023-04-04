@@ -284,13 +284,13 @@
         <version.ant.junit>1.10.12</version.ant.junit>
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.7</version.org.jacoco>
-        <version.org.jboss.galleon>5.0.8.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>5.0.9.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>6.3.2.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>6.3.3.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>8.1.0.Final</version.org.wildfly.jar.plugin>
-        <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
+        <version.org.wildfly.maven.plugins>2.3.1.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>3.0.2.Final</version.org.wildfly.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.1</version.xml.plugin>
@@ -516,7 +516,6 @@
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>2.0.1.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>
         <legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
-        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>2.0.0.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>
         <version.org.jboss.weld.weld>5.1.0.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>5.0.SP3</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>2.0.0.Final</version.org.jboss.ws.api>
@@ -982,11 +981,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.spec.javax.transaction</groupId>
-                <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec}</version>
             </dependency>
 
             <!--

@@ -622,7 +622,11 @@
         </license>
       </licenses>
     </dependency>
-    <dependency>
+    <!--
+    As the SmallRye jar duplicates classes (and adds some new ones) from the Eclipse RM API
+    jar, we don't provision the Eclipse jar and use just the SmallRye one
+    -->
+    <!--<dependency>
       <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
       <artifactId>microprofile-reactive-messaging-api</artifactId>
       <licenses>
@@ -632,7 +636,7 @@
           <distribution>repo</distribution>
         </license>
       </licenses>
-    </dependency>
+    </dependency>-->
     <dependency>
       <groupId>org.eclipse.microprofile.rest.client</groupId>
       <artifactId>microprofile-rest-client-api</artifactId>
