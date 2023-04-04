@@ -41,11 +41,14 @@ import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.expiration.Expiration;
 import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
 import org.wildfly.clustering.infinispan.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.distribution.Locality;
+import org.wildfly.clustering.web.cache.session.SessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
+import org.wildfly.clustering.web.cache.session.SimpleSessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.ValidSession;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -73,8 +76,8 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     private final Runnable startTask;
     private final Consumer<ImmutableSession> closeTask;
     private final Registrar<SessionManager<LC, TransactionBatch>> registrar;
+    private final Expiration expiration;
 
-    private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration registration;
 
     public InfinispanSessionManager(SessionFactory<SC, MV, AV, LC> factory, InfinispanSessionManagerConfiguration<SC, LC> configuration) {
@@ -88,6 +91,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
         this.context = configuration.getServletContext();
         this.registrar = configuration.getRegistrar();
         this.startTask = configuration.getStartTask();
+        this.expiration = configuration;
         this.closeTask = new Consumer<>() {
             @Override
             public void accept(ImmutableSession session) {
@@ -131,16 +135,6 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     }
 
     @Override
-    public Duration getDefaultMaxInactiveInterval() {
-        return this.defaultMaxInactiveInterval;
-    }
-
-    @Override
-    public void setDefaultMaxInactiveInterval(Duration duration) {
-        this.defaultMaxInactiveInterval = duration;
-    }
-
-    @Override
     public Supplier<String> getIdentifierFactory() {
         return this.identifierFactory;
     }
@@ -166,10 +160,11 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
 
     @Override
     public Session<LC> createSession(String id) {
-        Map.Entry<MV, AV> entry = this.factory.createValue(id, null);
+        SessionCreationMetaData creationMetaData = new SimpleSessionCreationMetaData();
+        creationMetaData.setTimeout(this.expiration.getTimeout());
+        Map.Entry<MV, AV> entry = this.factory.createValue(id, creationMetaData);
         if (entry == null) return null;
         Session<LC> session = this.factory.createSession(id, entry, this.context);
-        session.getMetaData().setMaxInactiveInterval(this.defaultMaxInactiveInterval);
         return new ValidSession<>(session, this.closeTask);
     }
 
