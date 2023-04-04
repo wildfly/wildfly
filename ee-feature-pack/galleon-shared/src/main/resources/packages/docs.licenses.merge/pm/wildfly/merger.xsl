@@ -1,15 +1,18 @@
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" indent="yes"/>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xalan="http://xml.apache.org/xslt">
+    <xsl:output method="xml" indent="yes" xalan:indent-amount="2" />
     <xsl:param name="fileList"/>
     <xsl:param name="fileSeparator"/>
 
     <xsl:template match="/">
-        <xsl:call-template name="startDocument"/>
-        <xsl:call-template name="tokenizeString">
-            <xsl:with-param name="list" select="$fileList"/>
-            <xsl:with-param name="delimiter" select="','"/>
-        </xsl:call-template>
-        <xsl:call-template name="endDocument"/>
+        <xsl:text>&#10;</xsl:text>
+        <xsl:element name="licenseSummary">
+            <xsl:element name="dependencies" >
+                <xsl:call-template name="tokenizeString">
+                    <xsl:with-param name="list" select="$fileList"/>
+                    <xsl:with-param name="delimiter" select="','"/>
+                </xsl:call-template>
+            </xsl:element>
+        </xsl:element>
     </xsl:template>
 
     <xsl:template name="tokenizeString">
@@ -59,36 +62,18 @@
     </xsl:template>
 
     <!-- FILE PROCESSING -->
-      
-    <xsl:template name="startDocument">
-        <xsl:text disable-output-escaping="no">
-</xsl:text>
-        <xsl:text disable-output-escaping="yes">&lt;licenseSummary&gt;</xsl:text>
-        <xsl:text disable-output-escaping="no">
-  </xsl:text>
-        <xsl:text disable-output-escaping="yes">&lt;dependencies&gt;</xsl:text>
-    </xsl:template>
-
-    <xsl:template name="endDocument">
-            <xsl:text disable-output-escaping="no">
-  </xsl:text>
-        <xsl:text disable-output-escaping="yes">&lt;/dependencies&gt;</xsl:text>
-        <xsl:text disable-output-escaping="no">
-</xsl:text>
-        <xsl:text disable-output-escaping="yes">&lt;/licenseSummary&gt;</xsl:text>
-    </xsl:template>
 
     <xsl:template name="processFile">
         <xsl:param name="fileName"/>
         <xsl:for-each select="document($fileName)/licenseSummary/dependencies/*">
-            <xsl:text disable-output-escaping="no">
-    </xsl:text>
             <xsl:copy>
-                <xsl:apply-templates select="@* | node()"/><xsl:text disable-output-escaping="no">  </xsl:text><source><xsl:call-template name="substring-after-last">
-                    <xsl:with-param name="string" select="$fileName"/>
-                    <xsl:with-param name="delimiter" select="$fileSeparator"/>
-                </xsl:call-template></source><xsl:text disable-output-escaping="no">
-    </xsl:text>
+                <xsl:apply-templates select="@* | node()"/>
+                <xsl:element name="source">
+                    <xsl:call-template name="substring-after-last">
+                        <xsl:with-param name="string" select="$fileName"/>
+                        <xsl:with-param name="delimiter" select="$fileSeparator"/>
+                    </xsl:call-template>
+                </xsl:element>
             </xsl:copy>
         </xsl:for-each>
     </xsl:template>
@@ -97,6 +82,10 @@
         <xsl:copy>
             <xsl:apply-templates select="@* | node()"/>
         </xsl:copy>
+    </xsl:template>
+
+    <xsl:template match="text()">
+        <xsl:value-of select="normalize-space(.)"/>
     </xsl:template>
 
 </xsl:stylesheet>

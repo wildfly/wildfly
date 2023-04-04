@@ -44,6 +44,7 @@
     <packaging>pom</packaging>
 
     <properties>
+        <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
         <mp.galleon.common.resources.directory>${basedir}/../../microprofile/galleon-common/src/main/resources</mp.galleon.common.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
         <feature-pack.license.directory>${basedir}/../../microprofile/galleon-common/src/main/resources/license</feature-pack.license.directory>
@@ -72,6 +73,28 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>copy-ee-galleon-shared-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <escapeString>\</escapeString>
+                            <outputDirectory>${basedir}/target/resources/packages/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <targetPath>${basedir}/target/resources/packages/docs.licenses</targetPath>
+                                    <directory>${ee.galleon.shared.resources.directory}/packages/docs.licenses</directory>
+                                </resource>
+                                <resource>
+                                    <targetPath>${basedir}/target/resources/packages/docs.licenses.merge</targetPath>
+                                    <directory>${ee.galleon.shared.resources.directory}/packages/docs.licenses.merge</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>copy-mp-galleon-feature-pack-resources</id>
                         <phase>process-resources</phase>

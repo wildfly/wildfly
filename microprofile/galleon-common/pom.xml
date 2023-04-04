@@ -43,11 +43,6 @@
     <name>WildFly: Galleon Pack MicroProfile Common</name>
     <description>Common Galleon-related content to be shared between feature packs that provide MicroProfile functionality</description>
 
-    <properties>
-        <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
-        <feature-pack.license.directory>${basedir}/src/license</feature-pack.license.directory>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -297,7 +292,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-open-api-core</artifactId>

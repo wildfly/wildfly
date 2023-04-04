@@ -152,7 +152,7 @@
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${galleon.shared.resources.directory}</directory>
+                                    <directory>${galleon.local.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -331,7 +331,7 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee-feature-pack-galleon-content</artifactId>
