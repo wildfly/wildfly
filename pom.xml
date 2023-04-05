@@ -478,7 +478,7 @@
         <version.org.hamcrest.legacy>1.3</version.org.hamcrest.legacy>
         <version.org.hibernate.commons.annotations>6.0.6.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>6.1.8.Final</version.org.hibernate.search>
-        <version.org.hibernate>6.2.0.CR4</version.org.hibernate>
+        <version.org.hibernate>6.2.0.Final</version.org.hibernate>
         <version.org.hibernate.validator>8.0.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
         <version.org.infinispan>14.0.7.Final</version.org.infinispan>
