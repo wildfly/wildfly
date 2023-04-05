@@ -31,7 +31,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
@@ -42,17 +41,17 @@ import org.jboss.modules.ModuleLoader;
  */
 public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier JSTL = ModuleIdentifier.create("javax.servlet.jstl.api");
+    private static final String JSTL = "jakarta.servlet.jstl.api";
 
-    private static final ModuleIdentifier UNDERTOW_CORE = ModuleIdentifier.create("io.undertow.core");
-    private static final ModuleIdentifier UNDERTOW_SERVLET = ModuleIdentifier.create("io.undertow.servlet");
-    private static final ModuleIdentifier UNDERTOW_JSP = ModuleIdentifier.create("io.undertow.jsp");
-    private static final ModuleIdentifier UNDERTOW_WEBSOCKET = ModuleIdentifier.create("io.undertow.websocket");
-    private static final ModuleIdentifier CLUSTERING_API = ModuleIdentifier.create("org.wildfly.clustering.web.api");
+    private static final String UNDERTOW_CORE = "io.undertow.core";
+    private static final String UNDERTOW_SERVLET = "io.undertow.servlet";
+    private static final String UNDERTOW_JSP = "io.undertow.jsp";
+    private static final String UNDERTOW_WEBSOCKET = "io.undertow.websocket";
+    private static final String CLUSTERING_API = "org.wildfly.clustering.web.api";
 
-    private static final ModuleIdentifier SERVLET_API = ModuleIdentifier.create("javax.servlet.api");
-    private static final ModuleIdentifier JSP_API = ModuleIdentifier.create("javax.servlet.jsp.api");
-    private static final ModuleIdentifier WEBSOCKET_API = ModuleIdentifier.create("javax.websocket.api");
+    private static final String SERVLET_API = "jakarta.servlet.api";
+    private static final String JSP_API = "jakarta.servlet.jsp.api";
+    private static final String WEBSOCKET_API = "jakarta.websocket.api";
 
     static {
         Module module = Module.forClass(UndertowDependencyProcessor.class);

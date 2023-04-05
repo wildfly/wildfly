@@ -30,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 class EESecurityDependencyProcessor implements DeploymentUnitProcessor {
@@ -42,11 +41,11 @@ class EESecurityDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.fromString("javax.security.enterprise.api"), false, false, true, false));
+        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, "jakarta.security.enterprise.api", false, false, true, false));
 
         Boolean securityPresent = top.getAttachment(EESecurityAnnotationProcessor.SECURITY_PRESENT);
         if(securityPresent != null && securityPresent) {
-            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.fromString(ELYTRON_JAKARTA_SECURITY), false, false, true, false));
+            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ELYTRON_JAKARTA_SECURITY, false, false, true, false));
         }
 
     }

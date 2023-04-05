@@ -46,7 +46,7 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
 
     public static final String WILDFLY_NAMING = "org.wildfly.naming";
     public static final String JBOSS_INVOCATION = "org.jboss.invocation";
-    public static final String JSON_API = "javax.json.api";
+    public static final String JSON_API = "jakarta.json.api";
     public static final String GLASSFISH_EL = "org.glassfish.javax.el";
 
     public static final SimpleAttributeDefinition EAR_SUBDEPLOYMENTS_ISOLATED =

@@ -33,17 +33,16 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 public class RarDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static ModuleIdentifier JMS_ID = ModuleIdentifier.create("javax.jms.api");
-    private static ModuleIdentifier IRON_JACAMAR_ID = ModuleIdentifier.create("org.jboss.ironjacamar.api");
-    private static ModuleIdentifier IRON_JACAMAR_IMPL_ID = ModuleIdentifier.create("org.jboss.ironjacamar.impl");
-    private static ModuleIdentifier VALIDATION_ID = ModuleIdentifier.create("javax.validation.api");
-    private static ModuleIdentifier HIBERNATE_VALIDATOR_ID = ModuleIdentifier.create("org.hibernate.validator");
-    private static ModuleIdentifier RESOURCE_API_ID = ModuleIdentifier.create("javax.resource.api");
+    private static String JMS_ID = "jakarta.jms.api";
+    private static String IRON_JACAMAR_ID = "org.jboss.ironjacamar.api";
+    private static String IRON_JACAMAR_IMPL_ID = "org.jboss.ironjacamar.impl";
+    private static String VALIDATION_ID = "jakarta.validation.api";
+    private static String HIBERNATE_VALIDATOR_ID = "org.hibernate.validator";
+    private static String RESOURCE_API_ID = "jakarta.resource.api";
 
 
     private final boolean appclient;

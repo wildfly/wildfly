@@ -39,7 +39,7 @@ import org.jboss.modules.ModuleIdentifier;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class JSFModuleIdFactory {
-    private static final String API_MODULE = "javax.faces.api";
+    private static final String API_MODULE = "jakarta.faces.api";
     private static final String IMPL_MODULE = "com.sun.jsf-impl";
     private static final String INJECTION_MODULE = "org.jboss.as.jsf-injection";
 

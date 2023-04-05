@@ -35,7 +35,7 @@ import org.jboss.modules.ModuleLoader;
  */
 class JwtDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final String EE_SECURITY_API = "javax.security.enterprise.api";
+    private static final String EE_SECURITY_API = "jakarta.security.enterprise.api";
     private static final String MP_JWT_API = "org.eclipse.microprofile.jwt.auth.api";
     private static final String SMALLRYE_JWT = "io.smallrye.jwt";
     private static final String ELYTRON_JWT = "org.wildfly.security.elytron-jwt";

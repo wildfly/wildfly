@@ -115,8 +115,8 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
                     RuntimePackageDependency.passive("org.jboss.as.weld.beanvalidation"),
                     RuntimePackageDependency.passive("org.jboss.as.weld.webservices"),
                     RuntimePackageDependency.passive("org.jboss.as.weld.transactions"),
-                    RuntimePackageDependency.required("javax.inject.api"),
-                    RuntimePackageDependency.required("javax.persistence.api"),
+                    RuntimePackageDependency.required("jakarta.inject.api"),
+                    RuntimePackageDependency.required("jakarta.persistence.api"),
                     RuntimePackageDependency.required("org.hibernate.validator.cdi"));
     }
 }

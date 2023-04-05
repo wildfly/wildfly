@@ -47,7 +47,7 @@ public class MessagingDependencyProcessor implements DeploymentUnitProcessor {
      * We include this module so that the CDI producer method for JMSContext is available for the deployment unit.
      */
     public static final String AS_MESSAGING = "org.wildfly.extension.messaging-activemq.injection";
-    public static final String JMS_API = "javax.jms.api";
+    public static final String JMS_API = "jakarta.jms.api";
     public static final String JTS = "org.jboss.jts";
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
