@@ -160,6 +160,6 @@ class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAdditionalRuntimePackages(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required("javax.security.auth.message.api"));
+        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required("jakarta.security.auth.message.api"));
     }
 }

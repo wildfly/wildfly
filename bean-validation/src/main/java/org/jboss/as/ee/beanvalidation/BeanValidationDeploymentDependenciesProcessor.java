@@ -30,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
@@ -40,9 +39,9 @@ import org.jboss.modules.ModuleLoader;
  */
 public class BeanValidationDeploymentDependenciesProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier[] DEPENDENCIES = {
-            ModuleIdentifier.create("org.hibernate.validator"),
-            ModuleIdentifier.create("javax.validation.api"),
+    private static final String[] DEPENDENCIES = {
+            "org.hibernate.validator",
+            "jakarta.validation.api",
     };
 
     @Override
@@ -51,7 +50,7 @@ public class BeanValidationDeploymentDependenciesProcessor implements Deployment
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         //
-        for (final ModuleIdentifier moduleIdentifier : DEPENDENCIES) {
+        for (final String moduleIdentifier : DEPENDENCIES) {
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, true, false, true, false));
         }
     }

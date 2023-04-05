@@ -29,7 +29,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
@@ -41,14 +40,13 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  */
 public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
 
-    public static final ModuleIdentifier JBOSSWS_API = ModuleIdentifier.create("org.jboss.ws.api");
-    public static final ModuleIdentifier JBOSSWS_SPI = ModuleIdentifier.create("org.jboss.ws.spi");
-    public static final ModuleIdentifier[] JAVAEE_APIS = {
-            ModuleIdentifier.create("javax.jws.api"),
-            ModuleIdentifier.create("javax.xml.soap.api"),
-            ModuleIdentifier.create("javax.xml.ws.api")
+    public static final String JBOSSWS_API = "org.jboss.ws.api";
+    public static final String JBOSSWS_SPI = "org.jboss.ws.spi";
+    public static final String[] JAVAEE_APIS = {
+            "jakarta.xml.ws.api",
+            "jakarta.xml.soap.api"
     };
-    public static final ModuleIdentifier XERCES_IMPL = ModuleIdentifier.create("org.apache.xerces");
+    public static final String XERCES_IMPL = "org.apache.xerces";
 
     private final boolean addJBossWSDependencies;
 
@@ -64,7 +62,7 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
             moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_API, false, true, true, false));
             moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_SPI, false, true, true, false));
         }
-        for(ModuleIdentifier api : JAVAEE_APIS) {
+        for(String api : JAVAEE_APIS) {
             moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, api, false, false, true, false));
         }
 
