@@ -42,6 +42,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -124,6 +125,7 @@ public class SessionFactoryTestCase {
 
     // Test that a Persistence unit can be injected into a Hibernate Session factory
     @Test
+    @Ignore // WFLY-17830: renable when upgrading to Hibernate ORM 6.2.1.Final which should have the https://github.com/hibernate/hibernate-orm/pull/6350 change included
     public void testInjectPUIntoHibernateSessionFactory() throws Exception {
 
         SFSBHibernateSessionFactory sfsbHibernateSessionFactory =
