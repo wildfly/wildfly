@@ -122,13 +122,13 @@
     <secure-deployment name="myAppWithRealmInline-expressions">
         <realm>${exp.realm:demo}</realm>
         <auth-server-url>${exp.auth-server-url:http://localhost:8081/auth}</auth-server-url>
-        <ssl-required>${exp.ssl-required:external}</ssl-required>
+        <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
         <resource>${exp.resource:customer-portal}</resource>
         <credential name="secret" secret="${exp.credential-password:password}" />
     </secure-deployment>
     <secure-deployment name="myAppWithProvider-expressions">
         <provider>${exp.provider:google}</provider>
-        <ssl-required>${exp.ssl-required:external}</ssl-required>
+        <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
         <client-id>${exp.client-id:customer-portal}</client-id>
         <principal-attribute>${exp.principal-attribute:firstName}</principal-attribute>
         <credential name="secret" secret="${exp.credential-password:password}" />

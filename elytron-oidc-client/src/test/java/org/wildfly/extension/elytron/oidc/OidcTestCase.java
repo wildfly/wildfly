@@ -82,14 +82,14 @@ public class OidcTestCase extends AbstractSubsystemTest {
     @Test
     public void testSecureDeploymentWithRealmInlined() throws Exception {
         String expectedJson =
-                "{\"realm\" : \"demo\", \"resource\" : \"customer-portal\", \"auth-server-url\" : \"http://localhost:8081/auth\", \"ssl-required\" : \"external\", \"credentials\" : {\"secret\" : \"password\"}}";
+                "{\"realm\" : \"demo\", \"resource\" : \"customer-portal\", \"auth-server-url\" : \"http://localhost:8081/auth\", \"ssl-required\" : \"EXTERNAL\", \"credentials\" : {\"secret\" : \"password\"}}";
         assertEquals(expectedJson, configService.getJSON("myAppWithRealmInline"));
     }
 
     @Test
     public void testSecureDeploymentWithProvider() throws Exception {
         String expectedJson =
-                "{\"provider-url\" : \"https://accounts.google.com\", \"ssl-required\" : \"external\", \"principal-attribute\" : \"firstName\", \"client-id\" : \"customer-portal\", \"credentials\" : {\"secret\" : \"password\"}}";
+                "{\"provider-url\" : \"https://accounts.google.com\", \"ssl-required\" : \"EXTERNAL\", \"principal-attribute\" : \"firstName\", \"client-id\" : \"customer-portal\", \"credentials\" : {\"secret\" : \"password\"}}";
         assertEquals(expectedJson, configService.getJSON("myAppWithProvider"));
     }
 
