@@ -72,6 +72,7 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.DockerClientFactory;
@@ -109,6 +110,7 @@ import io.restassured.RestAssured;
  *
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
+@Ignore("WFLY-17849")
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ OidcIdentityPropagationTestCase.EJBDomainSetupOverride.class, OidcIdentityPropagationTestCase.AnotherEJBDomainSetupOverride.class, OidcIdentityPropagationTestCase.PropagationSetup.class, OidcIdentityPropagationTestCase.KeycloakAndSubsystemSetup.class })
