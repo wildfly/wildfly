@@ -7,7 +7,7 @@
     <xsl:param name="product.release.name"/>
     <xsl:variable name="lowercase" select="'abcdefghijklmnopqrstuvwxyz '" />
     <xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ!'" />
-    
+
     <xsl:template match="/">
         <html>
             <head>
@@ -80,6 +80,9 @@
             <xsl:when test="$name = 'Creative Commons Attribution 2.5'">
                 <xsl:text>creative commons attribution 2.5.html</xsl:text>
             </xsl:when>
+            <xsl:when test="$name = 'FSF All Permissive License'">
+                <xsl:text>fsf all permissive license.html</xsl:text>
+            </xsl:when>
             <xsl:when test="$name = 'GNU General Public License v2.0 only'">
                 <xsl:text>gnu general public license v2.0 only.html</xsl:text>
             </xsl:when>
@@ -106,6 +109,9 @@
             </xsl:when>
             <xsl:when test="$name = 'W3C Software Notice and Document License (2002-12-31)'">
                 <xsl:text>w3c software notice and document license (2002-12-31).html</xsl:text>
+            </xsl:when>
+            <xsl:when test="$name = ''">
+                <xsl:text>.html</xsl:text>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="concat(translate($name, $uppercase, $lowercase), '.txt')"/>
