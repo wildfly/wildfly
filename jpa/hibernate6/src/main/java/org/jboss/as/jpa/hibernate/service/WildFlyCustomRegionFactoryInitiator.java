@@ -35,7 +35,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 public class WildFlyCustomRegionFactoryInitiator extends RegionFactoryInitiator {
 
     private static final String HIBERNATE_REGION_FACTORY_CLASS = "hibernate.cache.region.factory_class";
-    private static final String V60_INFINISPAN_REGION_FACTORY = "org.infinispan.hibernate.cache.v60.InfinispanRegionFactory";
+    private static final String INFINISPAN_REGION_FACTORY = "org.infinispan.hibernate.cache.v62.InfinispanRegionFactory";
     private static final String UNSPECIFIED = "UNSPECIFIED";
     private static final String NONE = "NONE";
 
@@ -49,8 +49,8 @@ public class WildFlyCustomRegionFactoryInitiator extends RegionFactoryInitiator 
         // Note that Hibernate 2lc in 5.1.x, defaults to disabled, so this code is only needed in 5.3.x+.
         if(Boolean.parseBoolean((String)useSecondLevelCache)) {
             JPA_LOGGER.tracef("WildFlyCustomRegionFactoryInitiator#resolveRegionFactory using %s for 2lc, useSecondLevelCache=%s, jpaSharedCodeModeValue=%s, regionFactory=%s",
-                    V60_INFINISPAN_REGION_FACTORY, useSecondLevelCache,jpaSharedCodeModeValue, regionFactory);
-            configurationValues.put(HIBERNATE_REGION_FACTORY_CLASS, V60_INFINISPAN_REGION_FACTORY);
+                    INFINISPAN_REGION_FACTORY, useSecondLevelCache,jpaSharedCodeModeValue, regionFactory);
+            configurationValues.put(HIBERNATE_REGION_FACTORY_CLASS, INFINISPAN_REGION_FACTORY);
             return super.resolveRegionFactory(configurationValues, registry);
         } else if(UNSPECIFIED.equals(jpaSharedCodeModeValue)
              || NONE.equals(jpaSharedCodeModeValue)) {
@@ -61,8 +61,8 @@ public class WildFlyCustomRegionFactoryInitiator extends RegionFactoryInitiator 
         }
         else {
             JPA_LOGGER.tracef("WildFlyCustomRegionFactoryInitiator#resolveRegionFactory using %s for 2lc, useSecondLevelCache=%s, jpaSharedCodeModeValue=%s, regionFactory=%s",
-                    V60_INFINISPAN_REGION_FACTORY, useSecondLevelCache,jpaSharedCodeModeValue, regionFactory);
-            configurationValues.put(HIBERNATE_REGION_FACTORY_CLASS, V60_INFINISPAN_REGION_FACTORY);
+                    INFINISPAN_REGION_FACTORY, useSecondLevelCache,jpaSharedCodeModeValue, regionFactory);
+            configurationValues.put(HIBERNATE_REGION_FACTORY_CLASS, INFINISPAN_REGION_FACTORY);
             return super.resolveRegionFactory(configurationValues, registry);
         }
     }

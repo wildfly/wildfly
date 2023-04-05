@@ -2130,7 +2130,7 @@
 
             <dependency>
                 <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-hibernate-cache-v60</artifactId>
+                <artifactId>infinispan-hibernate-cache-v62</artifactId>
                 <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
