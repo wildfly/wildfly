@@ -469,6 +469,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
                     ModelNode newValue, ModelNode oldValue) {
 
                 if (attributeDefinition != SECURITY) {
+                    super.recordCapabilitiesAndRequirements(context, attributeDefinition, newValue, oldValue);
                     return;
                 }
 
