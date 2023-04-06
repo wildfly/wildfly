@@ -884,4 +884,7 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 106, value = "The bridge %s didn't deploy.")
     OperationFailedException failedBridgeDeployment(String bridgeName);
 
+    @Message(id = 107, value = "You must define a elytron security doman when security is enabled.")
+    IllegalStateException securityEnabledWithoutDomain();
+
 }

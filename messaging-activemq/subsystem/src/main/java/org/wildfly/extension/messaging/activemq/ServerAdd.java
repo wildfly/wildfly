@@ -111,6 +111,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERSISTE
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERSIST_ID_CACHE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.SCHEDULED_THREAD_POOL_MAX_SIZE;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.SECURITY_DOMAIN;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.SECURITY_ENABLED;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.SECURITY_INVALIDATION_INTERVAL;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.SERVER_DUMP_INTERVAL;
@@ -218,9 +219,6 @@ class ServerAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         super.populateModel(context, operation, resource);
-        if(SECURITY_ENABLED.resolveModelAttribute(context, operation).asBoolean()) {
-            context.addStep(SecurityDomainCheckHandler.INSTANCE, OperationContext.Stage.MODEL);
-        }
         handleCredentialReferenceUpdate(context, resource.getModel().get(CREDENTIAL_REFERENCE.getName()), CREDENTIAL_REFERENCE.getName());
 
         // add an operation to create all the messaging paths resources that have not been already been created
@@ -336,14 +334,17 @@ class ServerAdd extends AbstractAddStepHandler {
             // Inject a reference to the Elytron security domain if one has been defined.
             Optional<Supplier<SecurityDomain>> elytronSecurityDomain = Optional.empty();
             if (configuration.isSecurityEnabled()) {
-
-            final ModelNode elytronSecurityDomainModel = ELYTRON_DOMAIN.resolveModelAttribute(context, model);
-            if (elytronSecurityDomainModel.isDefined()) {
-                ServiceName elytronDomainCapability = context.getCapabilityServiceName(ELYTRON_DOMAIN_CAPABILITY, elytronSecurityDomainModel.asString(), SecurityDomain.class);
-                elytronSecurityDomain = Optional.of(serviceBuilder.requires(elytronDomainCapability));
-            } else {
-                // legacy security
-                throw ROOT_LOGGER.legacySecurityUnsupported();
+                final ModelNode elytronSecurityDomainModel = ELYTRON_DOMAIN.resolveModelAttribute(context, model);
+                if (elytronSecurityDomainModel.isDefined()) {
+                    ServiceName elytronDomainCapability = context.getCapabilityServiceName(ELYTRON_DOMAIN_CAPABILITY, elytronSecurityDomainModel.asString(), SecurityDomain.class);
+                    elytronSecurityDomain = Optional.of(serviceBuilder.requires(elytronDomainCapability));
+                } else {
+                    final String legacySecurityDomain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asStringOrNull();
+                    if (legacySecurityDomain == null) {
+                        throw ROOT_LOGGER.securityEnabledWithoutDomain();
+                    }
+                    // legacy security
+                    throw ROOT_LOGGER.legacySecurityUnsupported();
                 }
             }
 
@@ -351,7 +352,7 @@ class ServerAdd extends AbstractAddStepHandler {
             List<Interceptor> outgoingInterceptors = processInterceptors(OUTGOING_INTERCEPTORS.resolveModelAttribute(context, operation));
 
             // Process acceptors and connectors
-            final Set<String> socketBindingNames = new HashSet<String>();
+            final Set<String> socketBindingNames = new HashSet<>();
             final Map<String, String> sslContextNames = new HashMap<>();
             TransportConfigOperationHandlers.processAcceptors(context, configuration, model, socketBindingNames, sslContextNames);
 
@@ -361,7 +362,7 @@ class ServerAdd extends AbstractAddStepHandler {
                 socketBindings.put(socketBindingName, socketBinding);
             }
 
-            final Set<String> connectorsSocketBindings = new HashSet<String>();
+            final Set<String> connectorsSocketBindings = new HashSet<>();
             configuration.setConnectorConfigurations(TransportConfigOperationHandlers.processConnectors(context, configuration.getName(), model, connectorsSocketBindings, sslContextNames));
 
             Map<String, Supplier<SSLContext>> sslContexts = new HashMap<>();

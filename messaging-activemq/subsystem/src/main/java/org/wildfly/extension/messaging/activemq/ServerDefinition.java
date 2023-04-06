@@ -148,13 +148,13 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition SECURITY_DOMAIN = create("security-domain", ModelType.STRING)
             .setAttributeGroup(SECURITY_ATTRIBUTE_GROUP)
             .setXmlName("domain")
-            .setDefaultValue(new ModelNode("other"))
             .setAlternatives("elytron-domain")
             .setRequired(false)
             .setAllowExpression(false) // references the security domain service name
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
+            .setCapabilityReference(Capabilities.LEGACY_SECURITY_DOMAIN_CAPABILITY.getName(), Capabilities.ACTIVEMQ_SERVER_CAPABILITY)
             .setDeprecated(MessagingExtension.VERSION_2_0_0)
             .build();
     public static final SimpleAttributeDefinition ELYTRON_DOMAIN = create("elytron-domain", ModelType.STRING)
