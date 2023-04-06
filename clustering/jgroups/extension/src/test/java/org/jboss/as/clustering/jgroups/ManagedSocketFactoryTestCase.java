@@ -442,7 +442,6 @@ public class ManagedSocketFactoryTestCase {
     }
 
     @Test
-    @org.junit.Ignore("WFCORE-6145")
     public void createSocketChannel() throws IOException {
         this.createSocketChannel("known-service", "binding");
         this.createSocketChannel("unknown-service", null);
@@ -477,7 +476,6 @@ public class ManagedSocketFactoryTestCase {
     }
 
     @Test
-    @org.junit.Ignore("WFCORE-6145")
     public void createServerSocketChannel() throws IOException {
         this.createServerSocketChannel("known-service", "binding");
         this.createServerSocketChannel("unknown-service", null);
