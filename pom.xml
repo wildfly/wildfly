@@ -284,12 +284,12 @@
         <version.ant.junit>1.10.12</version.ant.junit>
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.7</version.org.jacoco>
-        <version.org.jboss.galleon>5.0.9.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>5.1.0.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>6.3.3.Final</version.org.wildfly.galleon-plugins>
-        <version.org.wildfly.jar.plugin>8.1.0.Final</version.org.wildfly.jar.plugin>
+        <version.org.wildfly.galleon-plugins>6.4.0.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.jar.plugin>9.0.0.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.3.1.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>3.0.2.Final</version.org.wildfly.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
