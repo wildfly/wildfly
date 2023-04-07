@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.microprofile.reactive.messaging.deployment;
 
-import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 import static org.wildfly.microprofile.reactive.messaging.common.ReactiveMessagingAttachments.IS_REACTIVE_MESSAGING_DEPLOYMENT;
 
 import java.security.PrivilegedAction;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -39,7 +37,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.as.weld.WeldCapability;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
@@ -95,11 +92,6 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
         if (isReactiveMessagingDeployment(deploymentUnit)) {
             addModuleDependencies(deploymentUnit);
             deploymentUnit.putAttachment(IS_REACTIVE_MESSAGING_DEPLOYMENT, true);
-
-            // Using precalculated Jandex for these modules breaks in preview mode
-            ignorePrecalulatedJandex(deploymentUnit,
-                    "io.smallrye.reactive.messaging",
-                    "io.smallrye.reactive.messaging.connector.kafka");
         }
     }
 
@@ -191,14 +183,5 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
             throw MicroProfileReactiveMessagingLogger.LOGGER.experimentalPropertyNotAllowed(EXPERIMENTAL_PROPERTY);
         }
         return experimental;
-    }
-
-    @SuppressWarnings("deprecation")
-    private void ignorePrecalulatedJandex(DeploymentUnit deploymentUnit, String... modules) {
-        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
-            WeldCapability weld = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
-            weld.ignorePrecalculatedJandexForModules(deploymentUnit, modules);
-        }
     }
 }

@@ -61,9 +61,4 @@ public class WeldAttachments {
      */
     public static final AttachmentKey<ResourceRoot> CLASSES_RESOURCE_ROOT = AttachmentKey.create(ResourceRoot.class);
 
-    /**
-     * Modules which should not use a pre-calculated Jandex
-     */
-    public static final AttachmentKey<AttachmentList<String>> INGORE_PRECALCULATED_JANDEX_MODULES = AttachmentKey.createList(String.class);
-
 }
