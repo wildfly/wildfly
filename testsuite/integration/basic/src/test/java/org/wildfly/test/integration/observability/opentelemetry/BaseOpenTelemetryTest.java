@@ -19,11 +19,11 @@
 
 package org.wildfly.test.integration.observability.opentelemetry;
 
-import java.net.URL;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import jakarta.inject.Inject;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
-import jakarta.inject.Inject;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -35,6 +35,11 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
 import org.wildfly.test.integration.observability.opentelemetry.application.TestOpenTelemetryConfig;
 import org.wildfly.test.integration.observability.opentelemetry.exporter.InMemorySpanExporter;
 import org.wildfly.test.integration.observability.opentelemetry.exporter.InMemorySpanExporterProvider;
+
+import java.lang.reflect.ReflectPermission;
+import java.net.NetPermission;
+import java.net.URL;
+import java.util.PropertyPermission;
 
 public abstract class BaseOpenTelemetryTest {
     public static final String SERVICE_NAME = RandomStringUtils.random(15);
@@ -75,6 +80,17 @@ public abstract class BaseOpenTelemetryTest {
                         .addPackages(true, "org.awaitility", "org.hamcrest")
                 )
                 .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
-                .addAsWebInfResource(new StringAsset(beansXml), "beans.xml");
+                .addAsWebInfResource(new StringAsset(beansXml), "beans.xml")
+                // Some of the classes used in testing do things that break when the Security Manager is installed
+                .addAsManifestResource(createPermissionsXmlAsset(
+                                new RuntimePermission("getClassLoader"),
+                                new RuntimePermission("getProtectionDomain"),
+                                new RuntimePermission("getenv.*"),
+                                new RuntimePermission("setDefaultUncaughtExceptionHandler"),
+                                new RuntimePermission("modifyThread"),
+                                new ReflectPermission("suppressAccessChecks"),
+                                new NetPermission("getProxySelector"),
+                                new PropertyPermission("*", "read, write")),
+                        "permissions.xml");
     }
 }
