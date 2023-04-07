@@ -32,7 +32,9 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.resource.ResourceException;
 import jakarta.resource.spi.ActivationSpec;
 import jakarta.resource.spi.endpoint.MessageEndpointFactory;
+import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
+import java.lang.reflect.InvocationTargetException;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
@@ -54,6 +56,7 @@ import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.action.GetClassLoaderAction;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -153,13 +156,25 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
 
             @Override
             public TransactionManager getTransactionManager() {
-                return MessageDrivenComponent.this.getTransactionManager();
+                return ContextTransactionManager.getInstance();
+            }
+
+            @Override
+            public void setTransactionTimeout() throws SystemException {
+                try {
+                    int timeout = (Integer)activationSpec.getClass().getDeclaredMethod("getTransactionTimeout").invoke(activationSpec);
+                    if (timeout > 0) {
+                        getTransactionManager().setTransactionTimeout(timeout);
+                    }
+                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                }
             }
 
             @Override
             public boolean isDeliveryTransacted(Method method) throws NoSuchMethodException {
-                if(isBeanManagedTransaction())
+                if (isBeanManagedTransaction()) {
                     return false;
+                }
                 // an MDB doesn't expose a real view
                 TransactionAttributeType transactionAttributeType = getTransactionAttributeType(MethodInterfaceType.MessageEndpoint, method);
                 switch (transactionAttributeType) {
@@ -221,9 +236,8 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         this.endpoint = endpoint;
     }
 
-
     @Override
-    public void start(){
+    public void start() {
 
         super.start();
 

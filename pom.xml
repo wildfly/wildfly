@@ -420,8 +420,8 @@
         <version.jsoup>1.15.3</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>8.0.0</version.net.shibboleth.utilities.java-support>
-	<version.org.apache.activemq.artemis>2.28.1-SNAPSHOT</version.org.apache.activemq.artemis>
-	<!--	<version.org.apache.activemq.artemis>2.28.0</version.org.apache.activemq.artemis>-->
+	<!--<version.org.apache.activemq.artemis>2.28.1-SNAPSHOT</version.org.apache.activemq.artemis>-->
+        <version.org.apache.activemq.artemis>2.28.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>1.0.2</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.11.0</version.org.apache.avro>
         <version.org.apache.cxf>4.0.0</version.org.apache.cxf>

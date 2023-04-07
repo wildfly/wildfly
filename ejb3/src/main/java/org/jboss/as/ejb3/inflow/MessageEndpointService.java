@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.inflow;
 
+import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
@@ -49,4 +50,6 @@ public interface MessageEndpointService<T> {
     ClassLoader getClassLoader();
 
     String getActivationName();
+
+    void setTransactionTimeout() throws SystemException;
 }

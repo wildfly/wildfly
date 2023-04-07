@@ -103,6 +103,7 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
             previousTx = tm.suspend();
             boolean isTransacted = service.isDeliveryTransacted(method);
             if (isTransacted) {
+                service.setTransactionTimeout();
                 tm.begin();
                 currentTx = tm.getTransaction();
                 if (xaRes != null)
