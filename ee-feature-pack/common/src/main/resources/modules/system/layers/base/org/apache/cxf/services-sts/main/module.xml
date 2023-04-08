@@ -33,6 +33,8 @@
         <module name="java.management"/>
         <module name="java.naming"/>
         <module name="java.security.jgss"/>
+        <module name="java.xml"/>
+        <module name="java.xml.crypto"/>
         <module name="org.apache.cxf.ws-security" services="import">
           <imports>
             <include path="META-INF/cxf"/>
@@ -50,7 +52,6 @@
           </imports>
         </module>
         <module name="asm.asm" />
-        <module name="javax.api" />
         <module name="javax.annotation.api" />
         <module name="javax.jms.api" />
         <module name="javax.jws.api" />
@@ -74,7 +75,5 @@
         <module name="org.codehaus.woodstox" />
         <module name="org.joda.time" />
         <module name="org.opensaml" />
-        <module name="java.xml"/>
-        <module name="java.xml.crypto"/>
     </dependencies>
 </module>

@@ -30,14 +30,13 @@
 
     <dependencies>
         <module name="java.desktop"/>
-        <module name="java.naming"/>
-        <module name="java.sql"/>
-        <module name="java.transaction.xa"/>
-        <module name="javax.transaction.api" export="true"/>
-        <module name="javax.api" export="false">
+        <module name="java.naming" export="false">
             <exports>
                 <include path="javax/naming"/>
             </exports>
         </module>
+        <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
+        <module name="javax.transaction.api" export="true"/>
     </dependencies>
 </module>
