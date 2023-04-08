@@ -26,7 +26,4 @@
   <resources>
     <resource-root path="resource-path"/>
   </resources>
-  <dependencies>
-    <module name="javax.api"/>
-  </dependencies>
 </module>

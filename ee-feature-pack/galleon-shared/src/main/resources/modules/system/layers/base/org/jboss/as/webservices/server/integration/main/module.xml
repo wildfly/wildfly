@@ -30,7 +30,6 @@
 
     <dependencies>
         <module name="asm.asm" export="true"/>
-        <module name="javax.api" export="true"/>
         <module name="javax.jws.api" export="true"/>
         <module name="javax.wsdl4j.api" export="true"/>
         <module name="javax.xml.ws.api" export="true"/>
