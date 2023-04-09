@@ -37,4 +37,5 @@
         <module name="org.jboss.threads"/>
         <module name="org.wildfly.common"/>
     </dependencies>
+
 </module>

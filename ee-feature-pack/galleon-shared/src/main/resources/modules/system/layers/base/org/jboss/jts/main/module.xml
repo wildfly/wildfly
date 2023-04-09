@@ -39,8 +39,9 @@
         <module name="java.naming"/>
         <module name="java.sql"/>
         <module name="java.transaction.xa"/>
+        <module name="java.xml"/>
         <module name="javax.transaction.api"/>
-        <module name="sun.jdk"/>
+        <module name="jdk.jconsole"/>
         <module name="org.omg.api" />
         <module name="org.jboss.logging"/>
         <module name="org.jboss.jts.integration"/>
@@ -58,9 +59,7 @@
                 <include path="org.jboss.as.txn.integration"/>
             </imports>
         </module>
-
         <!-- For the ContextPropagationAsyncHandler used with the context propagation feature pack -->
         <module name="org.wildfly.reactive.dep.jts" services="import" optional="true"/>
-        <module name="java.xml"/>
     </dependencies>
 </module>

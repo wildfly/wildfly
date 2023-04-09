@@ -31,6 +31,7 @@
   <dependencies>
     <module name="java.desktop"/>
     <module name="java.scripting"/>
+    <module name="java.xml"/>
     <module name="com.fasterxml.classmate"/>
     <module name="javax.persistence.api"/>
     <module name="javax.validation.api"/>
@@ -41,7 +42,5 @@
     <module name="org.jboss.weld.spi"/>
     <module name="org.joda.time"/>
     <module name="org.apache.xerces" services="import"/>
-    <module name="sun.jdk" services="import"/>
-    <module name="java.xml"/>
   </dependencies>
 </module>

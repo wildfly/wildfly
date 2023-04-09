@@ -19,10 +19,8 @@
         <resource-root path="testDriver-bootableJar.jar"/>
     </resources>
     <dependencies>
-        <module name="java.sql"/>
-        <module name="sun.jdk"/>
-        <module name="javax.orb.api"/>
         <module name="java.logging"/>
-
+        <module name="java.sql"/>
+        <module name="javax.orb.api"/>
     </dependencies>
 </module>
