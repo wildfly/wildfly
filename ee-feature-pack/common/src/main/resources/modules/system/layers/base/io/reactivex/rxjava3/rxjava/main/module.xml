@@ -34,6 +34,6 @@
 
     <dependencies>
         <module name="org.reactivestreams"/>
-        <module name="sun.jdk"/>
     </dependencies>
+
 </module>

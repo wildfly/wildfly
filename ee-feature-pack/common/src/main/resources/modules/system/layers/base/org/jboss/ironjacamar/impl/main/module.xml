@@ -38,20 +38,20 @@
     <dependencies>
         <module name="java.naming"/>
         <module name="java.rmi"/>
+        <module name="java.transaction.xa"/>
+        <module name="java.xml"/>
         <module name="javax.transaction.api"/>
-        <module name="sun.jdk"/>
-        <!-- javax.security.auth.callback -->
         <module name="javax.resource.api"/>
         <module name="javax.security.auth.message.api"/>
         <module name="javax.validation.api"/>
+        <module name="javax.xml.stream.api"/>
         <module name="org.hibernate.validator" services="import"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.threads"/>
-        <module name="javax.xml.stream.api"/>
         <module name="org.wildfly.transaction.client"/>
-        <module name="java.xml"/>
     </dependencies>
+
 </module>
