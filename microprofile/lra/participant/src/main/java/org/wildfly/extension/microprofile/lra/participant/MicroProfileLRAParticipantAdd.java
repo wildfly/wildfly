@@ -46,6 +46,7 @@ import java.util.function.Supplier;
 import static org.jboss.as.controller.OperationContext.Stage.RUNTIME;
 import static org.wildfly.extension.microprofile.lra.participant.MicroProfileLRAParticipantExtension.SUBSYSTEM_NAME;
 import static org.wildfly.extension.microprofile.lra.participant.MicroProfileLRAParticipantSubsystemDefinition.ATTRIBUTES;
+import static org.wildfly.extension.microprofile.lra.participant.MicroProfileLRAParticipantSubsystemDefinition.COORDINATOR_URL_PROP;
 
 class MicroProfileLRAParticipantAdd extends AbstractBoottimeAddStepHandler {
 
@@ -57,7 +58,7 @@ class MicroProfileLRAParticipantAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         super.performBoottime(context, operation, model);
         final String url = MicroProfileLRAParticipantSubsystemDefinition.LRA_COORDINATOR_URL.resolveModelAttribute(context, model).asString();
-        System.setProperty("lra.coordinator.url", url);
+        System.setProperty(COORDINATOR_URL_PROP, url);
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
