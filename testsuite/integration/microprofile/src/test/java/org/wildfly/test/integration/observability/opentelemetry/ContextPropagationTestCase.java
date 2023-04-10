@@ -58,6 +58,13 @@ public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
                     .get();
         }
 
+        // 6 Expected spans named:
+        // Recording traceparent
+        // /ContextPropagationTestCase/contextProp2
+        // HTTP GET
+        // Making second request
+        // /ContextPropagationTestCase/contextProp1
+        // HTTP GET
         List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems(6);
 
         SpanData lastSpan = finishedSpans.get(finishedSpans.size()-1);

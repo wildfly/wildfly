@@ -53,8 +53,13 @@ public class InMemorySpanExporter implements SpanExporter {
     }
 
     public void assertSpanCount(int spanCount) {
-        Awaitility.await().pollDelay(3, SECONDS).atMost(10, SECONDS)
-                .untilAsserted(() -> Assert.assertEquals(spanCount, finishedSpanItems.size()));
+        try {
+            Awaitility.await().pollDelay(3, SECONDS).atMost(30, SECONDS)
+                    .untilAsserted(() -> Assert.assertEquals(spanCount, finishedSpanItems.size()));
+        } catch (RuntimeException e) {
+            String spanNames = finishedSpanItems.stream().map(SpanData::getName).collect(Collectors.joining("\n"));
+            throw new AssertionError("Failed to get expected spans. Got:\n" + spanNames, e);
+        }
     }
 
     public void reset() {
