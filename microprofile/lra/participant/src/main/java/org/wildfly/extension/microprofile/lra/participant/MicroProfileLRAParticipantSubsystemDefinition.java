@@ -50,6 +50,8 @@ public class MicroProfileLRAParticipantSubsystemDefinition extends PersistentRes
 
     private static final String LRA_PARTICIPANT_CAPABILITY_NAME = "org.wildfly.microprofile.lra.participant";
 
+    public static final String COORDINATOR_URL_PROP = "lra.coordinator.url";
+
     static final RuntimeCapability<Void> LRA_PARTICIPANT_CAPABILITY = RuntimeCapability.Builder
         .of(LRA_PARTICIPANT_CAPABILITY_NAME)
         .setServiceType(Void.class)

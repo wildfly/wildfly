@@ -59,7 +59,7 @@ import java.util.regex.Pattern;
 @RunAsClient
 @RunWith(Arquillian.class)
 @ServerSetup(EnableLRAExtensionsSetupTask.class)
-public class LRAParticipantSmokeTest {
+public class LRAParticipantSmokeTestCase {
 
     private static final String LRA_COORDINATOR_URL_KEY = "lra.coordinator.url";
     private static final String CLOSE_PATH = "/close";
@@ -78,8 +78,12 @@ public class LRAParticipantSmokeTest {
 
     @After
     public void after() throws IOException {
-        if (client != null) {
-            client.close();
+        try {
+            if (client != null) {
+                client.close();
+            }
+        } finally {
+            System.clearProperty(LRA_COORDINATOR_URL_KEY);
         }
     }
 
@@ -90,7 +94,7 @@ public class LRAParticipantSmokeTest {
             .addPackages(true,
                 "org.wildfly.test.integration.microprofile.lra.participant.smoke.hotel",
                 "org.wildfly.test.integration.microprofile.lra.participant.smoke.model")
-            .addClasses(LRAParticipantSmokeTest.class,
+            .addClasses(LRAParticipantSmokeTestCase.class,
                 EnableLRAExtensionsSetupTask.class,
                 CLIServerSetupTask.class)
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");

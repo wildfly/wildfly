@@ -50,6 +50,7 @@ public final class LRACoordinatorService implements Service {
 
     private final Supplier<Host> undertow;
 
+    private volatile DeploymentManager deploymentManager = null;
     private volatile Deployment deployment = null;
 
     public LRACoordinatorService(Supplier<Host> undertow) {
@@ -96,23 +97,33 @@ public final class LRACoordinatorService implements Service {
     }
 
     private void deployServlet(final DeploymentInfo deploymentInfo) {
-        DeploymentManager manager = ServletContainer.Factory.newInstance().addDeployment(deploymentInfo);
-        manager.deploy();
-        deployment = manager.getDeployment();
+        deploymentManager = ServletContainer.Factory.newInstance().addDeployment(deploymentInfo);
+        deploymentManager.deploy();
+        deployment = deploymentManager.getDeployment();
 
         try {
             undertow.get()
-                .registerDeployment(deployment, manager.start());
+                .registerDeployment(deployment, deploymentManager.start());
         } catch (ServletException e) {
             deployment = null;
         }
     }
 
     private void undeployServlet() {
-        if (deployment != null) {
-            undertow.get()
-                .unregisterDeployment(deployment);
-            deployment = null;
+        if (deploymentManager != null) {
+            if (deployment != null) {
+                undertow.get()
+                        .unregisterDeployment(deployment);
+                deployment = null;
+            }
+            try {
+                deploymentManager.stop();
+            } catch (ServletException e) {
+                MicroProfileLRACoordinatorLogger.LOGGER.failedStoppingCoordinator(CONTEXT_PATH, e);
+            } finally {
+                deploymentManager.undeploy();
+            }
+            deploymentManager = null;
         }
     }
 }

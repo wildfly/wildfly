@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.microprofile.lra.participant.service;
 
+import static org.wildfly.extension.microprofile.lra.participant.MicroProfileLRAParticipantSubsystemDefinition.COORDINATOR_URL_PROP;
+
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
@@ -50,6 +52,7 @@ public final class LRAParticipantService implements Service {
 
     private final Supplier<Host> undertow;
 
+    private volatile DeploymentManager deploymentManager = null;
     private volatile Deployment deployment = null;
 
     public LRAParticipantService(Supplier<Host> undertow) {
@@ -63,7 +66,18 @@ public final class LRAParticipantService implements Service {
 
     @Override
     public synchronized void stop(final StopContext context) {
-        undeployServlet();
+        try {
+            undeployServlet();
+        } finally {
+            // If we are stopping the server is either shutting down or reloading.
+            // In case it's a reload and this subsystem will not be installed after the reload,
+            // clear the lra.coordinator.url prop so it doesn't affect the reloaded server.
+            // If the subsystem is still in the config, the add op handler will set it again.
+            // TODO perhaps set the property in this service's start and have LRAParticipantDeploymentDependencyProcessor
+            // add a dep on this service to the next DeploymentUnitPhaseService (thus ensuring the prop
+            // is set before any deployment begins creating services).
+            System.clearProperty(COORDINATOR_URL_PROP);
+        }
     }
 
     private void deployParticipantProxy() {
@@ -96,23 +110,33 @@ public final class LRAParticipantService implements Service {
     }
 
     private void deployServlet(final DeploymentInfo deploymentInfo) {
-        DeploymentManager manager = ServletContainer.Factory.newInstance().addDeployment(deploymentInfo);
-        manager.deploy();
-        deployment = manager.getDeployment();
+        deploymentManager = ServletContainer.Factory.newInstance().addDeployment(deploymentInfo);
+        deploymentManager.deploy();
+        deployment = deploymentManager.getDeployment();
 
         try {
             undertow.get()
-                .registerDeployment(deployment, manager.start());
+                .registerDeployment(deployment, deploymentManager.start());
         } catch (ServletException e) {
             deployment = null;
         }
     }
 
     private void undeployServlet() {
-        if (deployment != null) {
-            undertow.get()
-                .unregisterDeployment(deployment);
-            deployment = null;
+        if (deploymentManager != null) {
+            if (deployment != null) {
+                undertow.get()
+                        .unregisterDeployment(deployment);
+                deployment = null;
+            }
+            try {
+                deploymentManager.stop();
+            } catch (ServletException e) {
+                MicroProfileLRAParticipantLogger.LOGGER.failedStoppingParticipant(CONTEXT_PATH, e);
+            } finally {
+                deploymentManager.undeploy();
+            }
+            deploymentManager = null;
         }
     }
 }

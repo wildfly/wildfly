@@ -23,13 +23,16 @@
 package org.wildfly.extension.microprofile.lra.coordinator._private;
 
 import io.narayana.lra.LRAConstants;
+import jakarta.servlet.ServletException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
 
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 
 /**
@@ -58,4 +61,9 @@ public interface MicroProfileLRACoordinatorLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 3, value = "Starting Narayana MicroProfile LRA Coordinator available at path %s/" + LRAConstants.COORDINATOR_PATH_NAME)
     void startingCoordinator(String path);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 4, value = "Failed to stop Narayana MicroProfile LRA Coordinator at path %s/" + LRAConstants.COORDINATOR_PATH_NAME)
+    void failedStoppingCoordinator(String path, @Cause ServletException cause);
+
 }
