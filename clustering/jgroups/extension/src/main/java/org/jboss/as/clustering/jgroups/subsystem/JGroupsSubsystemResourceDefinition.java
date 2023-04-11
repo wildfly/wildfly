@@ -40,16 +40,10 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.server.service.ClusteringRequirement;
@@ -116,31 +110,11 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
                 .addAttributes(Attribute.class)
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CHANNEL.getName()), CAPABILITIES.values())
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CHANNEL.getName()), capabilities)
-                // Tolerate duplicate add operations
-                .setAddOperationTransformation(ExecuteIfAbsentStepHandler::new)
                 ;
         ResourceServiceHandler handler = new JGroupsSubsystemServiceHandler();
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new ChannelResourceDefinition().register(registration);
         new StackResourceDefinition().register(registration);
-    }
-
-    private static class ExecuteIfAbsentStepHandler implements OperationStepHandler {
-
-        private final OperationStepHandler handler;
-
-        ExecuteIfAbsentStepHandler(OperationStepHandler handler) {
-            this.handler = handler;
-        }
-
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            PathAddress address = context.getCurrentAddress();
-            Resource parent = context.readResourceFromRoot(address.getParent(), false);
-            if (!parent.hasChild(address.getLastElement())) {
-                this.handler.execute(context, operation);
-            }
-        }
     }
 }

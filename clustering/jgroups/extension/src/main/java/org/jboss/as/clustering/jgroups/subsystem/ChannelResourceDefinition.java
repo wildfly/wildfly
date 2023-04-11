@@ -37,10 +37,15 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jgroups.JChannel;
@@ -141,6 +146,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
                 .addCapabilities(Capability.class)
                 .addCapabilities(EnumSet.allOf(ClusteringRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
                 .addRuntimeResourceRegistration(new ChannelRuntimeResourceRegistration(executors))
+                .setAddOperationTransformation(DefaultStackOperationStepHandler::new)
                 ;
         ResourceServiceHandler handler = new ChannelServiceHandler(executors);
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
@@ -152,5 +158,46 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
         new ForkResourceDefinition(executors).register(registration);
 
         return registration;
+    }
+
+    private static class DefaultStackOperationStepHandler implements OperationStepHandler {
+        private final OperationStepHandler handler;
+
+        DefaultStackOperationStepHandler(OperationStepHandler handler) {
+            this.handler = handler;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            // Add operations emitted by legacy Infinispan subsystem may not have a stack specified
+            // In this case, fix operation to use stack of default channel
+            if (!operation.hasDefined(Attribute.STACK.getName())) {
+                PathAddress subsystemAddress = context.getCurrentAddress().getParent();
+                Resource root = context.readResourceFromRoot(subsystemAddress.getParent(), false);
+                if (!root.hasChild(subsystemAddress.getLastElement())) {
+                    // Subsystem not yet added - defer operation execution
+                    context.addStep(operation, this, context.getCurrentStage());
+                    return;
+                }
+                Resource subsystem = context.readResourceFromRoot(subsystemAddress, false);
+                ModelNode subsystemModel = subsystem.getModel();
+                if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getName())) {
+                    String defaultChannel = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getName()).asString();
+                    if (!context.getCurrentAddressValue().equals(defaultChannel)) {
+                        PathElement defaultChannelPath = pathElement(defaultChannel);
+                        if (!subsystem.hasChild(defaultChannelPath)) {
+                            // Default channel was not yet added, defer operation execution
+                            context.addStep(operation, this, context.getCurrentStage());
+                            return;
+                        }
+                        Resource channel = context.readResourceFromRoot(subsystemAddress.append(defaultChannelPath), false);
+                        ModelNode channelModel = channel.getModel();
+                        String defaultStack = channelModel.get(Attribute.STACK.getName()).asString();
+                        operation.get(Attribute.STACK.getName()).set(defaultStack);
+                    }
+                }
+            }
+            this.handler.execute(context, operation);
+        }
     }
 }
