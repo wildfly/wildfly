@@ -43,22 +43,18 @@
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling"/>
         <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.ee.cache" services="import"/>
         <module name="org.wildfly.clustering.ee.infinispan" services="import"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.infinispan.embedded.api"/>
         <module name="org.wildfly.clustering.infinispan.embedded.spi" services="import"/>
-        <module name="org.wildfly.clustering.marshalling.api"/>
-        <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.server.api"/>
         <!-- Make sure galleon includes this module -->
         <module name="org.wildfly.clustering.server.infinispan" optional="true"/>
         <module name="org.wildfly.clustering.server.spi"/>
-        <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.web.cache" services="import"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.common"/>
