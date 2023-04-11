@@ -118,29 +118,6 @@
                 <!-- Enable galleon provisioning -->
                 <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <!-- When running with galleon setup in this profile, which is just the cloud-server + microprofile-fault-tolerance
-                                 which does not pull in the optional microprofile-metrics, the metrics integration is not provisioned. In this
-                                 case the tests need to be excluded as they will simply fail with NoClassDefFound-s. See suite-no-metrics.xml
-                                 for the complete list of such TCK tests (class+method).
-                            -->
-                            <suiteXmlFiles>
-                                <suiteXmlFile>suite-no-metrics.xml</suiteXmlFile>
-                            </suiteXmlFiles>
-                            <systemPropertyVariables>
-                                <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
-                                <!-- Increase timeout to reduce timing intermittent failures -->
-                                <org.eclipse.microprofile.fault.tolerance.tck.timeout.multiplier>2.0</org.eclipse.microprofile.fault.tolerance.tck.timeout.multiplier>
-                            </systemPropertyVariables>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <profile>
