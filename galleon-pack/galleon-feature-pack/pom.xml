@@ -160,10 +160,13 @@
                         <configuration>
                             <generateVersionProperty>true</generateVersionProperty>
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
-                            <licensesConfigFile>${feature-pack.license.directory}/microprofile-feature-pack-licenses.xml</licensesConfigFile>
+                            <licensesConfigFiles>
+                                <licensesConfigFile>${common.resources.directory/license/licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${feature-pack.license.directory}/microprofile-feature-pack-licenses.xml</licensesConfigFile>
+                            </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/microprofile-feature-pack-licenses.xml</licensesOutputFile>
                             <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                            <excludedArtifacts>microprofile-reactive-messaging-api|wildfly-standard-expansion-bom|wildfly-standard-ee-bom|wildfly-mp-feature-pack-galleon-common|wildfly-legacy-expansion-bom|wildfly-legacy-ee-bom|wildfly-feature-pack-common|wildfly-common-expansion-dependency-management|wildfly-common-ee-dependency-management|wildfly-ee-galleon-pack|wildfly-feature-pack-galleon-common|wildfly-feature-pack-galleon-content</excludedArtifacts>
+                            <excludedArtifacts>microprofile-reactive-messaging-api|wildfly-standard-expansion-bom|wildfly-standard-ee-bom|wildfly-mp-feature-pack-galleon-common|wildfly-legacy-expansion-bom|wildfly-legacy-ee-bom|wildfly-feature-pack-common|wildfly-common-expansion-dependency-management|wildfly-common-ee-dependency-management|wildfly-ee-galleon-pack|wildfly-feature-pack-common|wildfly-feature-pack-galleon-content</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>

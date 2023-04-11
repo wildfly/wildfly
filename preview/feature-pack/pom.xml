@@ -49,8 +49,7 @@
         <ee.common.resources.directory>${basedir}/../../ee-feature-pack/common/src/main/resources</ee.common.resources.directory>
         <ee.galleon-common.resources.directory>${basedir}/../../ee-feature-pack/galleon-common/src/main/resources</ee.galleon-common.resources.directory>
         <ee.galleon-content.resources.directory>${basedir}/../../ee-feature-pack/galleon-content/src/main/resources</ee.galleon-content.resources.directory>
-        <!-- Todo rename this 'common' to 'galleon-shared' -->
-        <full.galleon.shared.resources.directory>${basedir}/../../galleon-pack/common/src/main/resources</full.galleon.shared.resources.directory>
+        <full.common.resources.directory>${basedir}/../../galleon-pack/common/src/main/resources</full.common.resources.directory>
         <mp.galleon.common.resources.directory>${basedir}/../../microprofile/galleon-common/src/main/resources</mp.galleon.common.resources.directory>
 
         <!-- WildFly Preview modules -->
@@ -187,7 +186,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-full-galleon-shared-feature-pack-resources</id>
+                        <id>copy-full-common-feature-pack-resources</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -197,7 +196,7 @@
                             <escapeString>\</escapeString>
                             <resources>
                                 <resource>
-                                    <directory>${full.galleon.shared.resources.directory}</directory>
+                                    <directory>${full.common.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -351,7 +350,7 @@
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <!-- TODO rename this file to plain old 'licenses.xml' -->
                                 <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/wildfly-feature-pack-common-licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${full.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${full.common.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/preview-feature-pack-licenses.xml</licensesConfigFile>
