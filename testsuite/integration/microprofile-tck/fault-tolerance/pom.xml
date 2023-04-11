@@ -67,11 +67,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.microprofile.metrics</groupId>
-            <artifactId>microprofile-metrics-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
             <scope>test</scope>

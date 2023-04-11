@@ -50,10 +50,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>jakarta.json</groupId>
-            <artifactId>jakarta.json-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>
             <exclusions>
@@ -88,38 +84,12 @@
             <artifactId>wildfly-metrics</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-dmr</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>staxmapper</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.modules</groupId>
-            <artifactId>jboss-modules</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.msc</groupId>
-            <artifactId>jboss-msc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-microprofile-config-smallrye</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-undertow</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
