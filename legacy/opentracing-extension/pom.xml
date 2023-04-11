@@ -48,7 +48,7 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-standard-test-bom</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
@@ -266,7 +266,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-opentelemetry</artifactId>
             <scope>test</scope>
         </dependency>
