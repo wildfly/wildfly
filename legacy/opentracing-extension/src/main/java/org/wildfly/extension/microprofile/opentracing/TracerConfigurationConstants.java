@@ -20,15 +20,10 @@ package org.wildfly.extension.microprofile.opentracing;
  * @author Emmanuel Hugonnet (c) 2019 Red Hat, Inc.
  */
 public class TracerConfigurationConstants {
-    public static final String SMALLRYE_OPENTRACING_SERVICE_NAME = "smallrye.opentracing.serviceName";
-    public static final String SMALLRYE_OPENTRACING_TRACER = "mp.opentracing.extensions.tracer";
-    public static final String SMALLRYE_OPENTRACING_TRACER_CONFIGURATION = "mp.opentracing.extensions.tracer.configuration";
-    public static final String SMALLRYE_OPENTRACING_TRACER_MANAGED = "mp.opentracing.extensions.tracer.managed";
 
     public static final String TRACER_CONFIGURATION = "tracer-configuration";
     public static final String TRACER_CONFIGURATION_NAME = "tracer-configuration-name";
 
-    public static final String DEFAULT_TRACER = "default-tracer";
     public static final String PROPAGATION = "propagation";
 
     public static final String SAMPLER_TYPE = "sampler-type";

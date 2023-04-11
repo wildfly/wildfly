@@ -41,12 +41,6 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-mock</artifactId>
-                <version>${version.io.opentracing}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>io.rest-assured</groupId>
                 <artifactId>rest-assured</artifactId>
                 <version>${version.io.rest-assured}</version>

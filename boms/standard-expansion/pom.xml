@@ -352,23 +352,6 @@
             </dependency>
 
             <dependency>
-                <groupId>io.smallrye</groupId>
-                <artifactId>smallrye-opentracing</artifactId>
-                <version>${version.io.smallrye.smallrye-opentracing}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye</groupId>
-                <artifactId>smallrye-opentracing-contrib</artifactId>
-                <version>${version.io.smallrye.smallrye-opentracing}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>io.smallrye.common</groupId>
                 <artifactId>smallrye-common-annotation</artifactId>
                 <version>${version.io.smallrye.smallrye-common}</version>
@@ -608,30 +591,6 @@
                 <groupId>org.eclipse.microprofile.openapi</groupId>
                 <artifactId>microprofile-openapi-tck</artifactId>
                 <version>${version.org.eclipse.microprofile.openapi}</version>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.microprofile.opentracing</groupId>
-                <artifactId>microprofile-opentracing-api</artifactId>
-                <version>${version.org.eclipse.microprofile.opentracing}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.opentracing</groupId>
-                <artifactId>microprofile-opentracing-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.opentracing}</version>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.opentracing</groupId>
-                <artifactId>microprofile-opentracing-tck-rest-client</artifactId>
-                <version>${version.org.eclipse.microprofile.opentracing}</version>
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 

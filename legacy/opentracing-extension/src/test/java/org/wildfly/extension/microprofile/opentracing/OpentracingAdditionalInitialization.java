@@ -1,6 +1,7 @@
 package org.wildfly.extension.microprofile.opentracing;
 
-import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.MICROPROFILE_CONFIG_CAPABILITY_NAME;
+import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.WELD_CAPABILITY_NAME;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +12,6 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.weld.WeldCapability;
 
 class OpentracingAdditionalInitialization extends AdditionalInitialization.ManagementAdditionalInitialization {
 
@@ -27,7 +27,8 @@ class OpentracingAdditionalInitialization extends AdditionalInitialization.Manag
     protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
         super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
         Map<String, Class> capabilities = new HashMap<>();
-        capabilities.put(WELD_CAPABILITY_NAME, WeldCapability.class);
+        capabilities.put(WELD_CAPABILITY_NAME, Void.class);
+        capabilities.put(MICROPROFILE_CONFIG_CAPABILITY_NAME, Void.class);
         registerServiceCapabilities(capabilityRegistry, capabilities);
     }
 }

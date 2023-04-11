@@ -21,8 +21,6 @@
  */
 package org.wildfly.extension.microprofile.opentracing;
 
-import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
@@ -36,10 +34,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 public class SubsystemDefinition extends ModelOnlyResourceDefinition {
-    public static final String OPENTRACING_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing";
+    private static final String OPENTRACING_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing";
     private static final String TRACER_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing.tracer";
-    public static final String DEFAULT_TRACER_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing.default-tracer";
-    public static final String MICROPROFILE_CONFIG_CAPABILITY_NAME = "org.wildfly.microprofile.config";
+    static final String MICROPROFILE_CONFIG_CAPABILITY_NAME = "org.wildfly.microprofile.config";
+    static final String WELD_CAPABILITY_NAME = "org.wildfly.weld";
     public static final String DEFAULT_TRACER_NAME = "default-tracer";
 
     public static final RuntimeCapability<Void> OPENTRACING_CAPABILITY = RuntimeCapability.Builder
@@ -47,7 +45,7 @@ public class SubsystemDefinition extends ModelOnlyResourceDefinition {
         .addRequirements(WELD_CAPABILITY_NAME, MICROPROFILE_CONFIG_CAPABILITY_NAME)
         .build();
     public static final RuntimeCapability<Void> TRACER_CAPABILITY = RuntimeCapability.Builder
-            .of(TRACER_CAPABILITY_NAME, true, TracerConfiguration.class)
+            .of(TRACER_CAPABILITY_NAME, true)
             .build();
     public static final SimpleAttributeDefinition DEFAULT_TRACER = SimpleAttributeDefinitionBuilder
             .create(DEFAULT_TRACER_NAME, ModelType.STRING, true)
