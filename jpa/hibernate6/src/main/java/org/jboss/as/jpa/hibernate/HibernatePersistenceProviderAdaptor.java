@@ -26,6 +26,7 @@ import jakarta.persistence.SharedCacheMode;
 import jakarta.persistence.spi.PersistenceUnitInfo;
 
 import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.type.WrapperArrayHandling;
 import org.jboss.as.jpa.hibernate.management.HibernateManagementAdaptor;
 import org.jboss.as.jpa.hibernate.service.WildFlyCustomJtaPlatform;
 import org.jipijapa.cache.spi.Classification;
@@ -92,6 +93,11 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
         // Enable JPA Compliance mode
         putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_COMPLIANCE, true);
+
+        // WFLY-17881 default to legacy setting for
+        // https://docs.jboss.org/hibernate/orm/6.2/migration-guide/migration-guide.html#byte-and-character-array-mapping-changes
+        putPropertyIfAbsent(pu, properties, AvailableSettings.WRAPPER_ARRAY_HANDLING, WrapperArrayHandling.LEGACY);
+
     }
 
     private void failOnIncompatibleSetting(PersistenceUnitMetadata pu, Map properties) {
