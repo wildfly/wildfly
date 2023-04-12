@@ -49,7 +49,7 @@ class BasicResourceDefinition extends SimpleResourceDefinition {
         super(new Parameters(PathElement.pathElement(pathKey),
                 resourceDescriptionResolver)
                 .setAddHandler(add)
-                .setRemoveHandler(new ServiceRemoveStepHandler(add, runtimeCapabilities))
+                .setRemoveHandler(new ServiceRemoveStepHandler(add))
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(runtimeCapabilities)

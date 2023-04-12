@@ -57,7 +57,7 @@ public class RemotingProfileResourceDefinition extends SimpleResourceDefinition 
     RemotingProfileResourceDefinition() {
         super(new Parameters(EJB3SubsystemModel.REMOTING_PROFILE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.REMOTING_PROFILE))
                 .setAddHandler(ADD_HANDLER)
-                .setRemoveHandler(new ServiceRemoveStepHandler(ADD_HANDLER, REMOTING_PROFILE_CAPABILITY))
+                .setRemoveHandler(new ServiceRemoveStepHandler(ADD_HANDLER))
                 .setCapabilities(REMOTING_PROFILE_CAPABILITY));
     }
 

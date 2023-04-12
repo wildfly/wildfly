@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -42,7 +40,6 @@ class ServerRemove extends AbstractRemoveStepHandler {
     static final ServerRemove INSTANCE = new ServerRemove();
 
     private ServerRemove() {
-        super(ACTIVEMQ_SERVER_CAPABILITY);
     }
 
 

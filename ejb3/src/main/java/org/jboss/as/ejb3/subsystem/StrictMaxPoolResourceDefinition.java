@@ -150,7 +150,7 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
     StrictMaxPoolResourceDefinition() {
         super(new Parameters(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL))
                 .setAddHandler(ADD_HANDLER)
-                .setRemoveHandler(new ServiceRemoveStepHandler(null, ADD_HANDLER, STRICT_MAX_POOL_CONFIG_CAPABILITY))
+                .setRemoveHandler(new ServiceRemoveStepHandler(null, ADD_HANDLER))
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_NONE)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(STRICT_MAX_POOL_CONFIG_CAPABILITY));
