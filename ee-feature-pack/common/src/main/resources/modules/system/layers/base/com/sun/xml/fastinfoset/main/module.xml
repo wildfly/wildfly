@@ -23,6 +23,7 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="com.sun.xml.fastinfoset">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -33,7 +34,7 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="javax.xml.stream.api"/>
         <module name="java.xml"/>
     </dependencies>
+
 </module>

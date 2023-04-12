@@ -26,18 +26,17 @@
 
     <resources>
         <resource-root path="globalTest.jar"/>
-        <!-- Insert resources here -->
     </resources>
 
     <dependencies>
+        <module name="java.xml"/>
         <module name="javax.api"/>
         <module name="jakarta.resource.api"/>
         <module name="javax.enterprise.api"/>
         <module name="jakarta.inject.api"/>
         <module name="jakarta.interceptor.api"/>
-
         <module name="jakarta.validation.api"/>
         <module name="org.hibernate.validator"/>
-        <module name="javax.xml.stream.api"/>
     </dependencies>
+
 </module>

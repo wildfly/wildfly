@@ -16,6 +16,7 @@
   ~ limitations under the License.
   -->
 <module xmlns="urn:jboss:module:1.9" name="org.glassfish.jaxb">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -38,8 +39,8 @@
         <module name="java.logging"/>
         <module name="java.xml"/>
         <module name="javax.api"/>
-        <module name="javax.xml.stream.api"/>
         <module name="jakarta.activation.api"/>
         <module name="jakarta.xml.bind.api"/>
     </dependencies>
+
 </module>

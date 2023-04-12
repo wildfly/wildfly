@@ -26,16 +26,15 @@
 
     <resources>
         <resource-root path="webTest.jar"/>
-        <!-- Insert resources here -->
     </resources>
 
     <dependencies>
+        <module name="java.xml"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
         <module name="jakarta.inject.api"/>
         <module name="jakarta.servlet.api"/>
-
         <module name="jakarta.validation.api"/>
-        <module name="javax.xml.stream.api"/>
     </dependencies>
+
 </module>
