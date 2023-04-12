@@ -324,7 +324,7 @@
         <version.com.fasterxml.jackson>2.14.2</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
         <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
-        <version.com.github.ben-manes.caffeine>3.1.5</version.com.github.ben-manes.caffeine>
+        <version.com.github.ben-manes.caffeine>3.1.6</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
