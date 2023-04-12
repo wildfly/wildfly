@@ -22,8 +22,6 @@
 
 package org.wildfly.iiop.openjdk;
 
-import static org.wildfly.iiop.openjdk.Capabilities.LEGACY_SECURITY;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,8 +29,6 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -48,7 +44,6 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -164,7 +159,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .setAlternatives(Constants.SERVER_SSL_CONTEXT, Constants.CLIENT_SSL_CONTEXT)
-            .setCapabilityReference(Capabilities.LEGACY_SECURITY_DOMAIN_CAPABILITY, IIOP_CAPABILITY)
             .setDeprecated(ModelVersion.create(3))
             .build();
 
@@ -442,60 +436,15 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     IIOPRootDefinition() {
         super(new SimpleResourceDefinition.Parameters(IIOPExtension.PATH_SUBSYSTEM, IIOPExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(new IIOPSubsystemAdd(ALL_ATTRIBUTES))
-                .setRemoveHandler(new ReloadRequiredRemoveStepHandler() {
-
-                    @Override
-                    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation,
-                            Resource resource) throws OperationFailedException {
-                        super.recordCapabilitiesAndRequirements(context, operation, resource);
-                        ModelNode model = resource.getModel();
-                        String security = IIOPRootDefinition.SECURITY.resolveModelAttribute(context, model).asStringOrNull();
-                        if (SecurityAllowedValues.IDENTITY.toString().equals(security)) {
-                            context.deregisterCapabilityRequirement(LEGACY_SECURITY, Capabilities.IIOP_CAPABILITY, Constants.ORB_INIT_SECURITY);
-                        }
-                    }
-
-                })
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addCapabilities(IIOP_CAPABILITY));
     }
 
 
-
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(ALL_ATTRIBUTES) {
-            @Override
-            protected void recordCapabilitiesAndRequirements(OperationContext context, AttributeDefinition attributeDefinition,
-                    ModelNode newValue, ModelNode oldValue) {
-
-                if (attributeDefinition != SECURITY) {
-                    super.recordCapabilitiesAndRequirements(context, attributeDefinition, newValue, oldValue);
-                    return;
-                }
-
-                boolean oldIsLegacy;
-                boolean newIsLegacy;
-                try {
-                    // For historic reasons this attribute supports expressions so resolution is required.
-                    oldIsLegacy = SecurityAllowedValues.IDENTITY.toString().equals(IIOPRootDefinition.SECURITY.resolveValue(context, oldValue).asStringOrNull());
-                    newIsLegacy = SecurityAllowedValues.IDENTITY.toString().equals(IIOPRootDefinition.SECURITY.resolveValue(context, newValue).asStringOrNull());
-                } catch (OperationFailedException e) {
-                    throw new RuntimeException(e);
-                }
-
-                if (oldIsLegacy && !newIsLegacy) {
-                    // Capability was registered but no longer required.
-                    context.deregisterCapabilityRequirement(LEGACY_SECURITY, Capabilities.IIOP_CAPABILITY, Constants.ORB_INIT_SECURITY);
-                } else if (!oldIsLegacy && newIsLegacy) {
-                    // Capability wasn't required but now is.
-                    context.registerAdditionalCapabilityRequirement(LEGACY_SECURITY, LEGACY_SECURITY, LEGACY_SECURITY);
-                }
-                // Other permutations mean no change in requirement.
-            }
-        };
-
         for (AttributeDefinition attr : ALL_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(ALL_ATTRIBUTES));
         }
     }
 

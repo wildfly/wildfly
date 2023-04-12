@@ -23,8 +23,6 @@
 package org.wildfly.iiop.openjdk;
 
 import static org.wildfly.iiop.openjdk.logging.IIOPLogger.ROOT_LOGGER;
-import static org.wildfly.iiop.openjdk.Capabilities.IIOP_CAPABILITY;
-import static org.wildfly.iiop.openjdk.Capabilities.LEGACY_SECURITY;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,20 +118,6 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         super.populateModel(context, operation, resource);
         final ModelNode model = resource.getModel();
         ConfigValidator.validateConfig(context, model);
-    }
-
-    @Override
-    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource)
-            throws OperationFailedException {
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
-
-        if (IIOPExtension.SUBSYSTEM_NAME.equals(context.getCurrentAddressValue())) {
-            ModelNode model = resource.getModel();
-            String security = IIOPRootDefinition.SECURITY.resolveModelAttribute(context, model).asStringOrNull();
-            if (SecurityAllowedValues.IDENTITY.toString().equals(security)) {
-                context.registerAdditionalCapabilityRequirement(LEGACY_SECURITY, IIOP_CAPABILITY, Constants.ORB_INIT_SECURITY);
-            }
-        }
     }
 
     protected void launchServices(final OperationContext context, final ModelNode model) throws OperationFailedException {

@@ -35,9 +35,6 @@ final class Capabilities {
     References to capabilities outside of the subsystem
      */
 
-    public static final String LEGACY_SECURITY = "org.wildfly.legacy-security";
-    public static final String LEGACY_SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.legacy-security-domain";
-
     public static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
     public static final String AUTH_CONTEXT_CAPABILITY = "org.wildfly.security.authentication-context";
 }
