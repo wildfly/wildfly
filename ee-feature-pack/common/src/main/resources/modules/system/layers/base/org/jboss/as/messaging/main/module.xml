@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.messaging">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.messaging">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,6 +33,7 @@
     </resources>
 
     <dependencies>
+        <module name="java.xml"/>
         <module name="org.jboss.staxmapper"/>
         <!-- required to provide high-level Jakarta Messaging CLI commands loaded by the extension -->
         <module name="org.jboss.as.cli" />
@@ -39,4 +41,5 @@
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.logging"/>
     </dependencies>
+
 </module>
