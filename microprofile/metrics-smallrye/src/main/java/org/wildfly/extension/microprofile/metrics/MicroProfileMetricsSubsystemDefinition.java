@@ -34,7 +34,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.metrics.MetricsSubsystemDefinition;
 
 /**
@@ -43,7 +42,6 @@ import org.wildfly.extension.metrics.MetricsSubsystemDefinition;
 public class MicroProfileMetricsSubsystemDefinition extends ModelOnlyResourceDefinition {
 
     static final String MP_CONFIG = "org.wildfly.microprofile.config";
-    public static final ServiceName WILDFLY_COLLECTOR = ServiceName.parse("org.wildfly.extension.metrics.wildfly-collector");
     static final String METRICS_HTTP_CONTEXT_CAPABILITY = "org.wildfly.extension.metrics.http-context";
 
     static final RuntimeCapability<Void> MICROPROFILE_METRICS_HTTP_SECURITY_CAPABILITY =
