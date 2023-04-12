@@ -22,21 +22,17 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="jakarta.transaction.api">
+<module xmlns="urn:jboss:module:1.9" name="jakarta.transaction.api">
+
     <resources>
-        <artifact name="${jakarta.transaction:jakarta.transaction-api}">
-            <filter>
-                <exclude path="jakarta/transaction/xa"/>
-            </filter>
-        </artifact>
+        <artifact name="${jakarta.transaction:jakarta.transaction-api}"/>
     </resources>
+
     <dependencies>
-        <system export="true">
-            <paths>
-                <path name="javax/transaction/xa"/>
-            </paths>
-        </system>
+        <module name="java.rmi"/>
+        <module name="java.transaction.xa" export="true"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.interceptor.api"/>
     </dependencies>
+
 </module>

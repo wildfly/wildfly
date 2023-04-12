@@ -21,14 +21,18 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.5" name="javax.orb.api">
+<module xmlns="urn:jboss:module:1.9" name="javax.orb.api">
     <resources>
         <artifact name="${org.jboss.openjdk-orb:openjdk-orb}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.transaction.api"/>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.naming"/>
+        <module name="java.rmi"/>
         <module name="jdk.unsupported"/>
+        <module name="jakarta.transaction.api"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.jts.integration"/>
         <module name="org.jboss.iiop-client"/>
