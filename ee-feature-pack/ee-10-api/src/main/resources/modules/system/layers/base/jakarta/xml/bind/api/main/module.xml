@@ -34,7 +34,6 @@
         <module name="java.xml"/>
         <module name="jakarta.activation.api" export="true"/>
         <module name="org.eclipse.angus.activation" services="export" export="true"/>
-        <module name="javax.xml.stream.api"/>
         <!-- Export the implementation as the TCCL is typically the CL of a deployment. We do not want to export the
              services as that would trigger the loading through the service loader. This can be an issue and require
              special permissions if the security manager is present. Not exporting the services falls back to a default
@@ -46,4 +45,5 @@
          -->
         <module name="org.glassfish.jaxb" services="import" export="true"/>
     </dependencies>
+
 </module>

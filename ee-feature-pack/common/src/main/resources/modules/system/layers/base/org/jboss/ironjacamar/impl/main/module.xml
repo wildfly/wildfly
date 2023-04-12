@@ -44,7 +44,6 @@
         <module name="javax.resource.api"/>
         <module name="javax.security.auth.message.api"/>
         <module name="javax.validation.api"/>
-        <module name="javax.xml.stream.api"/>
         <module name="org.hibernate.validator" services="import"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.jboss-transaction-spi"/>

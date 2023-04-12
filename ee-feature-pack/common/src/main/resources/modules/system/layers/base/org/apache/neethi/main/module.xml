@@ -33,7 +33,7 @@
     </resources>
 
     <dependencies>
-      <module name="javax.xml.stream.api" />
       <module name="java.xml"/>
     </dependencies>
+
 </module>

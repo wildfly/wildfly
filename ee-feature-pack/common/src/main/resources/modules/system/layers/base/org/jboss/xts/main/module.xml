@@ -36,19 +36,18 @@
     <dependencies>
         <module name="java.logging"/>
         <module name="java.rmi"/>
-
-        <module name="org.jboss.jts"/>
+        <module name="java.xml"/>
 
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>
         <module name="javax.enterprise.api"/>
 
+        <module name="org.jboss.jts"/>
         <module name="org.jboss.ws.api" services="export"/>
         <module name="org.jboss.ws.jaxws-client" services="export"/>
         <module name="org.jboss.ws.cxf.jbossws-cxf-client" services="export"/>
         <module name="javax.xml.soap.api"/>
         <module name="javax.xml.ws.api"/>
-        <module name="javax.xml.stream.api"/>
 
         <!-- this is needed to get javax.xml.namespace.QName but it would be better if it were exposed on its own -->
         <!-- this is needed because our endpoints are not in a normal deployment and we need to be able
@@ -76,6 +75,5 @@
             <include path="org.jboss.as.xts.txnclient"/>
           </imports>
         </module>
-        <module name="java.xml"/>
     </dependencies>
 </module>
