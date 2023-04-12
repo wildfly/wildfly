@@ -25,7 +25,9 @@ import io.undertow.servlet.api.DeploymentInfo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
+import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -34,6 +36,7 @@ import org.jboss.narayana.rest.integration.ParticipantResource;
 import org.jboss.narayana.rest.integration.api.ParticipantsManagerFactory;
 import org.wildfly.extension.rts.jaxrs.ParticipantApplication;
 import org.wildfly.extension.rts.logging.RTSLogger;
+import org.wildfly.extension.undertow.Host;
 
 /**
  *
@@ -45,6 +48,10 @@ public final class ParticipantService extends AbstractRTSService implements Serv
     public static final String CONTEXT_PATH = ParticipantResource.BASE_PATH_SEGMENT;
 
     private static final String DEPLOYMENT_NAME = "REST-AT Participant";
+
+    public ParticipantService(Supplier<Host> hostSupplier, Supplier<SocketBinding> socketBindingSupplier) {
+        super(hostSupplier, socketBindingSupplier);
+    }
 
     @Override
     public ParticipantService getValue() throws IllegalStateException, IllegalArgumentException {
