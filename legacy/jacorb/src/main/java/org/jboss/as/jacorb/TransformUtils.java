@@ -82,7 +82,7 @@ public class TransformUtils {
                         if (legacyValue.asString().equals(JacORBSubsystemConstants.OFF)) {
                             value = new ModelNode(Constants.NONE);
                         } else {
-                            value = legacyValue;
+                            value = new ModelNode(JacORBSubsystemConstants.ELYTRON);
                         }
                         break;
                     case JacORBSubsystemConstants.SECURITY_SUPPORT_SSL:

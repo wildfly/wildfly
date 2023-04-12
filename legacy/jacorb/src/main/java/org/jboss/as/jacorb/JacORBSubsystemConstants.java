@@ -77,6 +77,7 @@ public final class JacORBSubsystemConstants {
     public static final String NAMING = "naming";
     public static final String NAMING_EXPORT_CORBALOC = "export-corbaloc";
     public static final String NAMING_ROOT_CONTEXT = "root-context";
+    public static final String ELYTRON = "elytron";
     public static final String IDENTITY = "identity";
     public static final String INTEROP = "interop";
     public static final String INTEROP_SUN = "sun";
