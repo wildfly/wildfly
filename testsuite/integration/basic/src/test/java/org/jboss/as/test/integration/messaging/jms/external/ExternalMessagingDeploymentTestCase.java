@@ -78,7 +78,7 @@ public class ExternalMessagingDeploymentTestCase {
 
     static class SetupTask extends SnapshotRestoreSetupTask {
 
-        private static final Logger logger = Logger.getLogger(SendToExternalJMSQueueTestCase.SetupTask.class);
+        private static final Logger logger = Logger.getLogger(ExternalMessagingDeploymentTestCase.SetupTask.class);
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
