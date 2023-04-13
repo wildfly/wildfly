@@ -130,7 +130,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (IIOPExtension.SUBSYSTEM_NAME.equals(context.getCurrentAddressValue())) {
             ModelNode model = resource.getModel();
             String security = IIOPRootDefinition.SECURITY.resolveModelAttribute(context, model).asStringOrNull();
-            if (SecurityAllowedValues.IDENTITY.toString().equals(security)) {
+            if (SecurityAllowedValues.IDENTITY.toString().equals(security) || SecurityAllowedValues.CLIENT.toString().equals(security)) {
                 context.registerAdditionalCapabilityRequirement(LEGACY_SECURITY, IIOP_CAPABILITY, Constants.ORB_INIT_SECURITY);
             }
         }

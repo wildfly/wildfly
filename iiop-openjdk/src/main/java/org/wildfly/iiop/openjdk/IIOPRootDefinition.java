@@ -450,7 +450,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
                         super.recordCapabilitiesAndRequirements(context, operation, resource);
                         ModelNode model = resource.getModel();
                         String security = IIOPRootDefinition.SECURITY.resolveModelAttribute(context, model).asStringOrNull();
-                        if (SecurityAllowedValues.IDENTITY.toString().equals(security)) {
+                        if (SecurityAllowedValues.IDENTITY.toString().equals(security) || SecurityAllowedValues.CLIENT.toString().equals(security)) {
                             context.deregisterCapabilityRequirement(LEGACY_SECURITY, Capabilities.IIOP_CAPABILITY, Constants.ORB_INIT_SECURITY);
                         }
                     }
@@ -477,8 +477,10 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
                 boolean newIsLegacy;
                 try {
                     // For historic reasons this attribute supports expressions so resolution is required.
-                    oldIsLegacy = SecurityAllowedValues.IDENTITY.toString().equals(IIOPRootDefinition.SECURITY.resolveValue(context, oldValue).asStringOrNull());
-                    newIsLegacy = SecurityAllowedValues.IDENTITY.toString().equals(IIOPRootDefinition.SECURITY.resolveValue(context, newValue).asStringOrNull());
+                    oldIsLegacy = SecurityAllowedValues.IDENTITY.toString().equals(IIOPRootDefinition.SECURITY.resolveValue(context, oldValue).asStringOrNull())
+                            || SecurityAllowedValues.CLIENT.toString().equals(IIOPRootDefinition.SECURITY.resolveValue(context, oldValue).asStringOrNull());
+                    newIsLegacy = SecurityAllowedValues.IDENTITY.toString().equals(IIOPRootDefinition.SECURITY.resolveValue(context, newValue).asStringOrNull())
+                            || SecurityAllowedValues.CLIENT.toString().equals(IIOPRootDefinition.SECURITY.resolveValue(context, newValue).asStringOrNull());
                 } catch (OperationFailedException e) {
                     throw new RuntimeException(e);
                 }
