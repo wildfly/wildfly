@@ -542,7 +542,7 @@
         <version.org.wildfly.naming-client>2.0.0.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.transaction.client>3.0.0.Final</version.org.wildfly.transaction.client>
-        <version.org.wildfly.wildfly-ee-9-deployment-transformer>1.0.0.Beta1</version.org.wildfly.wildfly-ee-9-deployment-transformer>
+        <version.org.wildfly.wildfly-ee-9-deployment-transformer>1.0.0.Final</version.org.wildfly.wildfly-ee-9-deployment-transformer>
         <version.sun.jaxb>${version.org.glassfish.jaxb}</version.sun.jaxb>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver>
