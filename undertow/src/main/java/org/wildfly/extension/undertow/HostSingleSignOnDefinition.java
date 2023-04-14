@@ -34,7 +34,6 @@ public class HostSingleSignOnDefinition extends SingleSignOnDefinition {
     //we use a runtime API of Object as a hack, so we can check for the presence of the capability in a DUP
     public static final RuntimeCapability<Object> HOST_SSO_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST_SSO, true, new Object())
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
-            .setServiceType(SingleSignOnService.class)
             .setDynamicNameMapper(pathElements -> new String[]{
                     pathElements.getParent().getParent().getLastElement().getValue(),
                     pathElements.getParent().getLastElement().getValue()})
@@ -48,7 +47,8 @@ public class HostSingleSignOnDefinition extends SingleSignOnDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(SingleSignOnDefinition.Attribute.class).addCapabilities(() -> HOST_SSO_CAPABILITY);
+                .addAttributes(SingleSignOnDefinition.Attribute.class).addCapabilities(() -> HOST_SSO_CAPABILITY)
+                ;
         new SimpleResourceRegistrar(descriptor, null).register(registration);
     }
 
