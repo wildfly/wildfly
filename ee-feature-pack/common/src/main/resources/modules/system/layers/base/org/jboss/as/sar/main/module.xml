@@ -53,5 +53,9 @@
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.as.naming"/>
         <module name="java.xml"/>
+        <!--
+       The Angus Activation services are required to register a Web Service via a management Bean
+       -->
+        <module name="org.eclipse.angus.activation" services="import" optional="true"/>
     </dependencies>
 </module>
