@@ -31,8 +31,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class HostSingleSignOnDefinition extends SingleSignOnDefinition {
 
-    //we use a runtime API of Object as a hack, so we can check for the presence of the capability in a DUP
-    public static final RuntimeCapability<Object> HOST_SSO_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST_SSO, true, new Object())
+    public static final RuntimeCapability<Void> HOST_SSO_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST_SSO, true)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             .setDynamicNameMapper(pathElements -> new String[]{
                     pathElements.getParent().getParent().getLastElement().getValue(),
