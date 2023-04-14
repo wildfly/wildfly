@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -33,9 +34,7 @@ public class HostSingleSignOnDefinition extends SingleSignOnDefinition {
 
     public static final RuntimeCapability<Void> HOST_SSO_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST_SSO, true)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
-            .setDynamicNameMapper(pathElements -> new String[]{
-                    pathElements.getParent().getParent().getLastElement().getValue(),
-                    pathElements.getParent().getLastElement().getValue()})
+            .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
             .build();
 
     public HostSingleSignOnDefinition() {
