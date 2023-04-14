@@ -51,13 +51,14 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.omg.CORBA.ORB;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 class IIOPRootDefinition extends PersistentResourceDefinition {
 
-    static final RuntimeCapability<Void> IIOP_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.IIOP_CAPABILITY, false).build();
+    static final RuntimeCapability<Void> IIOP_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.IIOP_CAPABILITY, false, ORB.class).build();
 
     static final ModelNode NONE = new ModelNode("none");
 
