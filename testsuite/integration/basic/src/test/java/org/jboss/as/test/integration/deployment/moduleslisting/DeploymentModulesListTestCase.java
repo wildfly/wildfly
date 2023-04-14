@@ -59,7 +59,7 @@ public class DeploymentModulesListTestCase {
     private static final String INNER_WAR_ARCHIVE_NAME = "list-modules.war";
     private static final String EAR_DEPLOYMENT_NAME = "list-modules-ear-test.ear";
     private static final String USER_MODULE = "org.hibernate";
-    private static final String CUSTOM_SLOT = "6.0";
+    private static final String CUSTOM_SLOT = "main"; // TODO WFLY-17891 install a TestModule with a non-main slot
 
     @ContainerResource
     private static ManagementClient managementClient;
@@ -121,7 +121,8 @@ public class DeploymentModulesListTestCase {
             // check module presence
             assertTrue(checkModulesListPresence(operationResult, "deployment." + EAR_DEPLOYMENT_NAME));
             // check user defined module with custom slot
-            assertTrue(checkModulesListPresence(operationResult, USER_MODULE + ":" + CUSTOM_SLOT));
+            // TODO WFLY-17891 install a TestModule with a non-main slot
+            assertTrue(checkModulesListPresence(operationResult, USER_MODULE /*+ ":" + CUSTOM_SLOT*/));
             // check module absence
             assertFalse(checkModulesListPresence(operationResult, EXAMPLE_MODULE_TO_EXCLUDE));
             // check system and user dependencies presence
