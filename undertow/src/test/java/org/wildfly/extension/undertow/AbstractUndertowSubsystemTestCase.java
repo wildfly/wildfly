@@ -96,6 +96,9 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
     @Test
     public void testRuntime() throws Exception {
+        // Skip runtime tests for old versions - since legacy SSO is only allowed in admin-only mode
+        if (!this.schema.since(UndertowSubsystemSchema.VERSION_14_0)) return;
+
         KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values)).setSubsystemXml(getSubsystemXml());
         KernelServices mainServices = builder.build();
 
