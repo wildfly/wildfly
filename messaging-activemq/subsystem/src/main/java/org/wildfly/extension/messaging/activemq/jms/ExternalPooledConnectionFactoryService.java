@@ -114,7 +114,6 @@ import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.ExternalBrokerConfigurationService;
 import org.wildfly.extension.messaging.activemq.GroupBindingService;
 import org.wildfly.extension.messaging.activemq.JGroupsDiscoveryGroupAdd;
-import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.SocketDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
@@ -132,7 +131,6 @@ import org.wildfly.security.password.interfaces.ClearPassword;
  */
 public class ExternalPooledConnectionFactoryService implements Service<ExternalPooledConnectionFactoryService> {
 
-    private static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
     private static final List<LocalizedXsdString> EMPTY_LOCL = Collections.emptyList();
     public static final String CONNECTOR_CLASSNAME = "connectorClassName";
     public static final String CONNECTION_PARAMETERS = "connectionParameters";
@@ -243,7 +241,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
             CapabilityServiceSupport capabilityServiceSupport)
         throws OperationFailedException {
 
-        ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
+        ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name);
         ExternalPooledConnectionFactoryService service = new ExternalPooledConnectionFactoryService(name,
                 connectors, groupConfiguration, jgroupClusterName, jgroupChannelName, adapterParams,
                 bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace,
@@ -271,7 +269,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
             Boolean enlistmentTrace,
             ModelNode model) throws OperationFailedException {
 
-        ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
+        ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name);
         ExternalPooledConnectionFactoryService service = new ExternalPooledConnectionFactoryService(name,
                 connectors, groupConfiguration, jgroupClusterName, jgroupChannelName, adapterParams,
                 bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, context.getCapabilityServiceSupport(), true);
@@ -319,7 +317,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
                 service.commandDispatcherFactories.put(key, commandDispatcherFactorySupplier);
                 service.clusterNames.put(key, service.jgroupsClusterName);
             } else {
-                final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(groupConfiguration.getName());
+                final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(groupConfiguration.getName());
                 Supplier<SocketBinding> socketBindingSupplier = serviceBuilder.requires(groupBinding);
                 service.groupBindings.put(key, socketBindingSupplier);
             }

@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_BRIDGE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTEM;
 
@@ -37,12 +38,8 @@ import org.jboss.msc.service.ServiceName;
  */
 public class MessagingServices {
 
-    /**
-     * The service name is "jboss.messaging-activemq"
-     */
-    private static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
-    public static final ServiceName ACTIVEMQ_CLIENT_THREAD_POOL = JBOSS_MESSAGING_ACTIVEMQ.append("client-thread-pool");
-    private static final ServiceName COMMAND_DISPATCHER_FACTORY = JBOSS_MESSAGING_ACTIVEMQ.append("command-dispatcher-factory");
+    public static final ServiceName ACTIVEMQ_CLIENT_THREAD_POOL = ACTIVEMQ_SERVER_CAPABILITY.getCapabilityServiceName().getParent().append("client-thread-pool");
+    private static final ServiceName COMMAND_DISPATCHER_FACTORY = ACTIVEMQ_SERVER_CAPABILITY.getCapabilityServiceName().getParent().append("command-dispatcher-factory");
 
     // Cached by MessagingSubsystemAdd at the beginning of runtime processing
     static volatile CapabilityServiceSupport capabilityServiceSupport;
@@ -57,7 +54,7 @@ public class MessagingServices {
         // in the PathAddress. But to be more generic and future-proof, we'll walk the tree looking
        PathAddress serverPathAddress = getActiveMQServerPathAddress(pathAddress);
        if (serverPathAddress != null && serverPathAddress.size() > 0) {
-           return JBOSS_MESSAGING_ACTIVEMQ.append(serverPathAddress.getLastElement().getValue());
+           return ACTIVEMQ_SERVER_CAPABILITY.getCapabilityServiceName(serverPathAddress.getLastElement().getValue());
        }
        return null;
    }
@@ -73,14 +70,14 @@ public class MessagingServices {
    }
 
     public static ServiceName getActiveMQServiceName() {
-        return JBOSS_MESSAGING_ACTIVEMQ;
+        return ACTIVEMQ_SERVER_CAPABILITY.getCapabilityServiceName().getParent();
     }
 
    public static ServiceName getActiveMQServiceName(String serverName) {
        if(serverName == null || serverName.isEmpty()) {
-           return JBOSS_MESSAGING_ACTIVEMQ;
+           return getActiveMQServiceName();
        }
-      return JBOSS_MESSAGING_ACTIVEMQ.append(serverName);
+      return ACTIVEMQ_SERVER_CAPABILITY.getCapabilityServiceName(serverName);
    }
 
    public static ServiceName getQueueBaseServiceName(ServiceName serverServiceName) {
@@ -96,7 +93,7 @@ public class MessagingServices {
     }
 
     public static ServiceName getJMSBridgeServiceName(String bridgeName) {
-       return JBOSS_MESSAGING_ACTIVEMQ.append(JMS_BRIDGE).append(bridgeName);
+       return ACTIVEMQ_SERVER_CAPABILITY.getCapabilityServiceName().getParent().append(JMS_BRIDGE).append(bridgeName);
     }
 
     public static ServiceName getBroadcastCommandDispatcherFactoryServiceName(String channelName) {

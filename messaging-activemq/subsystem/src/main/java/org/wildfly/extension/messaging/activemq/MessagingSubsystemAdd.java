@@ -84,8 +84,6 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    private static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
-
     final BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller;
 
     MessagingSubsystemAdd(BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller) {
@@ -207,7 +205,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
-                        final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
+                        final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name);
                         if (!groupBindingServices.contains(groupBindingServiceName)) {
                             groupBindingServices.add(groupBindingServiceName);
                         }
@@ -226,7 +224,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
-                        final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
+                        final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name);
                         if (!groupBindingServices.contains(groupBindingServiceName)) {
                             groupBindingServices.add(groupBindingServiceName);
                         }

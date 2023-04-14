@@ -27,15 +27,16 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
-import static org.jboss.as.server.services.net.SocketBindingResourceDefinition.SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.DATA_SOURCE_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_SSL_CONTEXT_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_SSL_CONTEXT_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.JMX_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.PATH_MANAGER_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ADDRESS_SETTING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
@@ -153,6 +154,8 @@ import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerPolicy;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -173,7 +176,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
@@ -198,9 +200,6 @@ class ServerAdd extends AbstractAddStepHandler {
     private static final String ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS = "brokerconfig.storeConfiguration.jdbcLockRenewPeriodMillis";
     private static final String ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS = "brokerconfig.storeConfiguration.jdbcLockExpirationMillis";
     private static final String ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS = "brokerconfig.storeConfiguration.jdbcLockAcquisitionTimeoutMillis";
-
-    private static final ServiceName SECURITY_BOOTSTRAP_SERVICE = ServiceName.JBOSS.append("security", "bootstrap");
-    private static final ServiceName SECURITY_DOMAIN_SERVICE = ServiceName.JBOSS.append("security", "security-domain");
 
     final BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller;
 
@@ -296,7 +295,7 @@ class ServerAdd extends AbstractAddStepHandler {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final ServiceTarget serviceTarget = context.getServiceTarget();
+            final CapabilityServiceTarget capabilityServiceTarget= context.getCapabilityServiceTarget();
 
             final String serverName = context.getCurrentAddressValue();
 
@@ -316,14 +315,13 @@ class ServerAdd extends AbstractAddStepHandler {
 
             // Add the ActiveMQ Service
             ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(serverName);
-            final ServiceBuilder serviceBuilder = serviceTarget.addService(activeMQServiceName);
-            Supplier pathManager = serviceBuilder.requires(context.getCapabilityServiceName(PATH_MANAGER_CAPABILITY, PathManager.class));
+            final CapabilityServiceBuilder serviceBuilder = capabilityServiceTarget.addCapability(ACTIVEMQ_SERVER_CAPABILITY);
+            Supplier<PathManager> pathManager = serviceBuilder.requiresCapability(PATH_MANAGER_CAPABILITY, PathManager.class);
 
             Optional<Supplier<DataSource>> dataSource = Optional.empty();
-            ModelNode dataSourceModel = JOURNAL_DATASOURCE.resolveModelAttribute(context, model);
-            if (dataSourceModel.isDefined()) {
-                ServiceName dataSourceCapability = context.getCapabilityServiceName(DATA_SOURCE_CAPABILITY, dataSourceModel.asString(), DataSource.class);
-                dataSource = Optional.of(serviceBuilder.requires(dataSourceCapability));
+            String dataSourceName = JOURNAL_DATASOURCE.resolveModelAttribute(context, model).asStringOrNull();
+            if (dataSourceName != null) {
+                dataSource = Optional.of(serviceBuilder.requiresCapability(DATA_SOURCE_CAPABILITY, DataSource.class, dataSourceName));
             }
             Optional<Supplier<MBeanServer>> mbeanServer = Optional.empty();
             if (context.hasOptionalCapability(JMX_CAPABILITY, ACTIVEMQ_SERVER_CAPABILITY.getDynamicName(serverName), null)) {
@@ -334,10 +332,9 @@ class ServerAdd extends AbstractAddStepHandler {
             // Inject a reference to the Elytron security domain if one has been defined.
             Optional<Supplier<SecurityDomain>> elytronSecurityDomain = Optional.empty();
             if (configuration.isSecurityEnabled()) {
-                final ModelNode elytronSecurityDomainModel = ELYTRON_DOMAIN.resolveModelAttribute(context, model);
-                if (elytronSecurityDomainModel.isDefined()) {
-                    ServiceName elytronDomainCapability = context.getCapabilityServiceName(ELYTRON_DOMAIN_CAPABILITY, elytronSecurityDomainModel.asString(), SecurityDomain.class);
-                    elytronSecurityDomain = Optional.of(serviceBuilder.requires(elytronDomainCapability));
+                final String elytronSecurityDomainName = ELYTRON_DOMAIN.resolveModelAttribute(context, model).asStringOrNull();
+                if (elytronSecurityDomainName != null) {
+                    elytronSecurityDomain = Optional.of(serviceBuilder.requiresCapability(ELYTRON_DOMAIN_CAPABILITY, SecurityDomain.class, elytronSecurityDomainName));
                 } else {
                     final String legacySecurityDomain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asStringOrNull();
                     if (legacySecurityDomain == null) {
@@ -358,7 +355,7 @@ class ServerAdd extends AbstractAddStepHandler {
 
             Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
             for (final String socketBindingName : socketBindingNames) {
-                Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(socketBindingName));
+                Supplier<SocketBinding> socketBinding = serviceBuilder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, socketBindingName);
                 socketBindings.put(socketBindingName, socketBinding);
             }
 
@@ -367,7 +364,7 @@ class ServerAdd extends AbstractAddStepHandler {
 
             Map<String, Supplier<SSLContext>> sslContexts = new HashMap<>();
             for (final Map.Entry<String, String> entry : sslContextNames.entrySet()) {
-                Supplier<SSLContext> sslContext = serviceBuilder.requires(ELYTRON_SSL_CONTEXT_CAPABILITY.getCapabilityServiceName(entry.getValue()));
+                Supplier<SSLContext> sslContext = serviceBuilder.requiresCapability(ELYTRON_SSL_CONTEXT_CAPABILITY_NAME, SSLContext.class, entry.getValue());
                 sslContexts.put(entry.getValue(), sslContext);
             }
 
@@ -377,12 +374,12 @@ class ServerAdd extends AbstractAddStepHandler {
                 // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
                 if (outbounds.get(connectorSocketBinding)) {
                     final ServiceName outboundSocketName = OUTBOUND_SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
-                    Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requires(outboundSocketName);
+                    Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requiresCapability(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, OutboundSocketBinding.class, connectorSocketBinding);
                     outboundSocketBindings.put(connectorSocketBinding, outboundSocketBinding);
                 } else {
                     // check if the socket binding has not already been added by the acceptors
                     if (!socketBindings.containsKey(connectorSocketBinding)) {
-                        Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding));
+                        Supplier<SocketBinding> socketBinding = serviceBuilder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, connectorSocketBinding);
                         socketBindings.put(connectorSocketBinding, socketBinding);
                     }
                 }
@@ -498,10 +495,9 @@ class ServerAdd extends AbstractAddStepHandler {
             }
             // Provide our custom Resource impl a ref to the ActiveMQ server so it can create child runtime resources
             ((ActiveMQServerResource) resource).setActiveMQServerServiceController(activeMQServerServiceController);
-
             // Install the JMSService
             boolean overrideInVMSecurity = OVERRIDE_IN_VM_SECURITY.resolveModelAttribute(context, operation).asBoolean();
-            JMSService.addService(serviceTarget, activeMQServiceName, overrideInVMSecurity);
+            JMSService.addService(capabilityServiceTarget, activeMQServiceName, overrideInVMSecurity);
 
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }

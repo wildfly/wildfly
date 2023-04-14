@@ -295,7 +295,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             for (Interceptor outgoingInterceptor : outgoingInterceptors) {
                 server.getServiceRegistry().addOutgoingInterceptor(outgoingInterceptor);
             }
-
             // the server is actually started by the Jakarta Messaging Service.
         } catch (Exception e) {
             throw MessagingLogger.ROOT_LOGGER.failedToStartService(e);
@@ -317,7 +316,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                         binding.get().getSocketBindings().getNamedRegistry().unregisterBinding(binding.get().getName());
                     }
                 }
-
                 // the server is actually stopped by the Jakarta Messaging Service
             }
             pathConfig.closeCallbacks(pathManager.get());
@@ -326,6 +324,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         }
     }
 
+    @Override
     public synchronized ActiveMQServer getValue() throws IllegalStateException {
         final ActiveMQServer server = this.server;
         if (server == null) {
