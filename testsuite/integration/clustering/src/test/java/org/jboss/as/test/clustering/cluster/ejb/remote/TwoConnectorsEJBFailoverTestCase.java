@@ -43,11 +43,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.common.function.ExceptionSupplier;
-
 
 import javax.naming.Context;
 
@@ -55,10 +53,8 @@ import javax.naming.Context;
  * A test of failover when both legacy remoting connector and HTTP Upgrade connector are enabled.
  * @author Richard Achmatowicz
  */
-
 @ServerSetup(TwoConnectorsEJBFailoverTestCase.ServerSetupTask.class)
 @RunWith(Arquillian.class)
-@Ignore("WFLY-17605")
 public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final int COUNT = 20;
@@ -134,6 +130,10 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
      * A SFSB failover test which accepts an EJBDirectory provider parameter to adjust client behaviour
      */
     public void test(ExceptionSupplier<EJBDirectory, Exception> directoryProvider) throws Exception {
+
+        // give the servers a moment to stabilize before invocation start
+        Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+
         try (EJBDirectory directory = directoryProvider.get()) {
             Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
 
