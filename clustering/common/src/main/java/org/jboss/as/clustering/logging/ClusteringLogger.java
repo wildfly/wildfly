@@ -70,4 +70,7 @@ public interface ClusteringLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 7, value = "The '%s' element is no longer supported and will be ignored")
     void elementIgnored(String element);
+
+    @Message(id = 8, value = "%s:%s operation is only supported in admin-only mode.")
+    OperationFailedException operationNotSupportedInNormalServerMode(String address, String operation);
 }
