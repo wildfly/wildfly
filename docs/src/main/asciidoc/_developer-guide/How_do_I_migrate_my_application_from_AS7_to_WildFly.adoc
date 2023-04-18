@@ -922,7 +922,7 @@ The new implementation replaces this configuration option with a single, robust 
 *** `java.security.Permission`
 *** `java.util.Currency`, `Locale`, `TimeZone`, `UUID`
 
-** The value type is annotated with `@org.wildfly.clustering.web.annotation.Immutable`
+** The value type is annotated with `@net.jcip.annotations.Immutable`
 
 * `<use-jk/>`
 +

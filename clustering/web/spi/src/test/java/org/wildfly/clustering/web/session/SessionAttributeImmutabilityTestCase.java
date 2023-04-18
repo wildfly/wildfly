@@ -58,6 +58,7 @@ public class SessionAttributeImmutabilityTestCase extends DefaultImmutabilityTes
         assertTrue(immutability.test(new AbstractMap.SimpleImmutableEntry<>("1", immutableObject)));
     }
 
+    @SuppressWarnings("removal")
     @Immutable
     static class ImmutableObject {
     }

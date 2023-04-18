@@ -342,10 +342,7 @@ To avoid redundant session writes, users are strongly encouraged to store immuta
 This allows the application more control over when session attributes will replicate/persist, since immutable session attributes will only update upon explicit calls to `HttpSession.setAttribute(...)`.
 
 WildFly can determine whether most JDK types are immutable, but any unrecognized/custom types are presumed to be mutable.
-To indicate that a given session attribute of a custom type should be treated as immutable by the distributed session manager, annotate the class with one of the following annotations:
-
-. `@org.wildfly.clustering.web.annotation.Immutable`
-. `@net.jcip.annotations.Immutable`
+To indicate that a given session attribute of a custom type should be treated as immutable by the distributed session manager, annotate the class with the `@net.jcip.annotations.Immutable` annotation:
 
 e.g.
 [source,java]

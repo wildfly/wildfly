@@ -32,7 +32,7 @@ import org.wildfly.clustering.web.annotation.Immutable;
  * @author Paul Ferraro
  */
 public enum SessionAttributeImmutability implements Immutability {
-    ANNOTATION(new AnnotationImmutability(Immutable.class)),
+    @SuppressWarnings("removal") ANNOTATION(new AnnotationImmutability(Immutable.class)),
     ;
     private final Immutability immutability;
 

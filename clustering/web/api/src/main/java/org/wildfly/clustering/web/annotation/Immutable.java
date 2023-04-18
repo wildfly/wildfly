@@ -28,8 +28,10 @@ import java.lang.annotation.Target;
 
 /**
  * Indicates that an object is either explicitly or effectively immutable.
+ * @deprecated Use {@link net.jcip.annotations.Immutable} instead.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Immutable {
